@@ -1,11 +1,7 @@
 package com.g_wuy.swp391.voltera.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
 
-@Getter
-@Setter
 @Entity
 @Table(name = "review")
 public class Review {
@@ -16,7 +12,7 @@ public class Review {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "writerid")
-    private User writerid;
+    private User writerId;
 
     @Column(name = "content", length = Integer.MAX_VALUE)
     private String content;
@@ -24,4 +20,46 @@ public class Review {
     @Column(name = "rating")
     private Integer rating;
 
+    // Empty constructor
+    public Review() {
+    }
+
+    // Full constructor without id
+    public Review(User writerId, String content, Integer rating) {
+        this.writerId = writerId;
+        this.content = content;
+        this.rating = rating;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public User getWriterId() {
+        return writerId;
+    }
+
+    public void setWriterId(User writerId) {
+        this.writerId = writerId;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public Integer getRating() {
+        return rating;
+    }
+
+    public void setRating(Integer rating) {
+        this.rating = rating;
+    }
 }
