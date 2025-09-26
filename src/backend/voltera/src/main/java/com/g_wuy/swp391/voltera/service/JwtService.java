@@ -40,6 +40,10 @@ public class JwtService {
         return claims.getExpiration();
     }
 
+    public String extractRole(String token) {
+        Claims claims = extractClaims(token);
+        return claims.get("role", String.class);
+    }
     public boolean isTokenValid(String token, UserDetails userDetails) {
         String username = extractUsername(token);
         return username.equals(userDetails.getUsername()) && !extractExpiration(token).before(new Date());
