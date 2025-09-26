@@ -1,4 +1,4 @@
 package com.g_wuy.swp391.voltera.service.impl;
 
-public class UserImpl {
+public class JwtServiceIml {
 }
