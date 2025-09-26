@@ -1,4 +1,55 @@
-package com.g_wuy.swp391.voltera.service.impl;
+package com.g_wuy.swp391.voltera.service;
 
-public class JwtServiceIml {
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.SignatureAlgorithm;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Service;
+
+import javax.crypto.SecretKey;
+import java.util.Date;
+
+
+@Service
+public class JwtService {
+    @Value("${jwt.secret}")
+    private String secret;
+    @Value("${jwt.experation}")
+    private int expiration;
+    private SecretKey getKey() {
+        return Keys.hmacShaKeyFor(secret.getBytes());
+    }
+
+    public String generateToken(UserDetails userDetails) {
+        return Jwts.builder()
+                .setSubject(userDetails.getUsername()) // subject = username
+                .setIssuedAt(new Date())         // thời điểm phát hành
+                .setExpiration(new Date(System.currentTimeMillis() + expiration)) // hạn
+                .signWith(getKey(), SignatureAlgorithm.HS256) // ký bằng secret key
+                .compact();
+    }
+    public String extractUsername(String token) {
+        Claims claims = extractClaims(token);
+        return claims.getSubject();
+    }
+
+    public Date extractExpiration(String token) {
+        Claims claims = extractClaims(token);
+        return claims.getExpiration();
+    }
+
+    public boolean isTokenValid(String token, UserDetails userDetails) {
+        String username = extractUsername(token);
+        return username.equals(userDetails.getUsername()) && !extractExpiration(token).before(new Date());
+    }
+
+    private Claims extractClaims(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(getKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+    }
 }
