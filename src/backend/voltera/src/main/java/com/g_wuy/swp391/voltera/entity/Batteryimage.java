@@ -2,12 +2,20 @@ package com.g_wuy.swp391.voltera.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.Instant;
-
+@Entity
+@Builder
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class Batteryimage {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,7 +25,7 @@ public class Batteryimage {
     @ManyToOne(fetch = FetchType.LAZY)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "postid")
-    private Battery postId;
+    private Battery battery;
 
     @NotNull
     @Column(name = "imageurl", nullable = false, length = Integer.MAX_VALUE)
@@ -27,46 +35,5 @@ public class Batteryimage {
     @Column(name = "uploadedat")
     private Instant uploadedAt;
 
-    // Empty constructor
-    public Batteryimage() {
-    }
 
-    // Full constructor without id
-    public Batteryimage(Battery postId, String imageUrl, Instant uploadedAt) {
-        this.postId = postId;
-        this.imageUrl = imageUrl;
-        this.uploadedAt = uploadedAt;
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public Battery getPostId() {
-        return postId;
-    }
-
-    public void setPostId(Battery postId) {
-        this.postId = postId;
-    }
-
-    public String getImageUrl() {
-        return imageUrl;
-    }
-
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
-    }
-
-    public Instant getUploadedAt() {
-        return uploadedAt;
-    }
-
-    public void setUploadedAt(Instant uploadedAt) {
-        this.uploadedAt = uploadedAt;
-    }
 }

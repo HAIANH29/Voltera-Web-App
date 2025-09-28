@@ -3,7 +3,7 @@ package com.g_wuy.swp391.voltera.service;
 import com.g_wuy.swp391.voltera.entity.Account;
 import com.g_wuy.swp391.voltera.mapper.UserMapper;
 import com.g_wuy.swp391.voltera.repository.AccountRepository;
-import com.g_wuy.swp391.voltera.repository.UserRepositoy;
+import com.g_wuy.swp391.voltera.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,7 +19,7 @@ public class UserService {
     @Autowired
     private  UserMapper userMapper;
     @Autowired
-    private UserRepositoy userRepositoy;
+    private UserRepository userRepository;
 
     public Account findByUsername(String username) {
         Account account = accountRepository.findByUsername(username);
