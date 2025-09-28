@@ -1,7 +1,7 @@
 import { Navigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import Cookies from "js-cookie";
-import { routes } from "./route";
+import { routes } from ".";
 
 const PublicRoute = ({ children }) => {
   const accessToken = Cookies.get("accessToken")?.replaceAll('"', "");
