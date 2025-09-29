@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -26,14 +27,13 @@ public class PostService {
     private final PostMapper postMapper;
 
     public PostResponse createPost(PostRequest dto, String username) throws IOException {
-        // 1. Lấy account & kiểm tra role
+
         Account account = accountRepository.findByUsername(username);
         if (!"seller".equalsIgnoreCase(account.getRole())) {
             throw new SecurityException("Only sellers can create posts");
         }
         User seller = account.getUser();
 
-        // 2. Tạo Post
         Post post = postRepository.save(Post.builder()
                 .sellerId(seller)
                 .title(dto.getTitle())
@@ -45,7 +45,7 @@ public class PostService {
                 .build()
         );
 
-        // 3. Tạo Battery
+
         BatteryDTO b = dto.getBattery();
         Battery savedBattery = batteryRepository.save(Battery.builder()
                 .post(post)
@@ -61,25 +61,20 @@ public class PostService {
                 .lifeCycle(b.getLifeCycle())
                 .build()
         );
-
-        // 4. Upload ảnh & tạo BatteryImage
-        List<String> imageUrls = dto.getImages() == null ? List.of() :
-                dto.getImages().stream().map(file -> {
-                    try {
-                        String url = s3Service.uploadFile(file);
-                        batteryimageRepository.save(Batteryimage.builder()
-                                .battery(savedBattery)
-                                .imageUrl(url)
-                                .uploadedAt(Instant.now())
-                                .build()
-                        );
-                        return url;
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }).toList();
-
-        // 5. Trả về PostResponse thông qua Mapper
+        List<String> imageUrls = new ArrayList<>();
+        if (dto.getImages() != null) {
+            for (var file : dto.getImages()) {
+                String url = s3Service.uploadFile(file);
+                batteryimageRepository.save(Batteryimage.builder()
+                        .battery(savedBattery)
+                        .imageUrl(url)
+                        .uploadedAt(Instant.now())
+                        .build() );
+                imageUrls.add(url);
+            }
+        }
         return postMapper.toPostResponse(post, savedBattery, imageUrls);
     }
+
+
 }

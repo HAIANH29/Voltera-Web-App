@@ -13,6 +13,6 @@ public class PostResponse {
     private String description;
     private BigDecimal price;
     private String status;
-    private BatteryDTO battery; // Chỉ chứa Battery
+    private BatteryDTO battery;
     private List<String> imageUrls;
 }
