@@ -38,10 +38,11 @@ public class Transaction {
     @JoinColumn(name = "contractid")
     private Contract contractid;
 
-/*
- TODO [Reverse Engineering] create field to map the 'transactionstatus' column
- Available actions: Define target Java type | Uncomment as is | Remove column mapping
-    @Column(name = "transactionstatus", columnDefinition = "transaction_status")
-    private Object transactionstatus;
-*/
+    @Enumerated(EnumType.STRING)
+    @Column(name = "transactionstatus")
+    private TransactionStatus transactionstatus;
+
+    public enum TransactionStatus {
+        PENDING, PROCESSING, COMPLETED, CANCELLED, FAILED
+    }
 }

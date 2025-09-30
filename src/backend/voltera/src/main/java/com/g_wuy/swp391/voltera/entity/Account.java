@@ -45,8 +45,23 @@ public class Account {
     private Instant updateat;
 
 
+    @Enumerated(EnumType.STRING)
     @ColumnDefault("'Pending'")
-    @Column(name = "status", columnDefinition = "account_status")
-    private Object status;
+    @Column(name = "status")
+    private AccountStatus status = AccountStatus.PENDING;
 
+    public enum AccountStatus {
+        PENDING, ACTIVE, INACTIVE, BANNED
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        createat = Instant.now();
+        updateat = Instant.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updateat = Instant.now();
+    }
 }

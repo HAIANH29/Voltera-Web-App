@@ -47,4 +47,18 @@ public class Post {
     public enum PostStatus {
         PENDING, APPROVE, REJECT
     }
+
+    @PrePersist
+    protected void onCreate() {
+        createdat = Instant.now();
+        updatedat = Instant.now();
+        if (status == null) {
+            status = PostStatus.PENDING;
+        }
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedat = Instant.now();
+    }
 }

@@ -53,4 +53,9 @@ public class Externalaccount {
     @Column(name = "createdat")
     private Instant createdat;
 
+    @PrePersist
+    protected void onCreate() {
+        createdat = Instant.now();
+    }
+
 }

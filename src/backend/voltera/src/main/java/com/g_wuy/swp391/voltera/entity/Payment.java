@@ -33,11 +33,17 @@ public class Payment {
     @Column(name = "paymentdate")
     private Instant paymentdate;
 
-/*
- TODO [Reverse Engineering] create field to map the 'paymentstatus' column
- Available actions: Define target Java type | Uncomment as is | Remove column mapping
+    @Enumerated(EnumType.STRING)
     @ColumnDefault("'Pending'")
-    @Column(name = "paymentstatus", columnDefinition = "payment_status")
-    private Object paymentstatus;
-*/
+    @Column(name = "paymentstatus")
+    private PaymentStatus paymentstatus = PaymentStatus.PENDING;
+
+    public enum PaymentStatus {
+        PENDING, PROCESSING, COMPLETED, FAILED, REFUNDED
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        paymentdate = Instant.now();
+    }
 }

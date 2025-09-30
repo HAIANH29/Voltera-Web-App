@@ -20,7 +20,7 @@ public class Complaint {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "senderid")
-    private User senderid;
+    private User sender; // Đổi tên
 
     @Size(max = 200)
     @Column(name = "problem", length = 200)
@@ -35,11 +35,17 @@ public class Complaint {
     @Column(name = "resolveat")
     private Instant resolveat;
 
-/*
- TODO [Reverse Engineering] create field to map the 'status' column
- Available actions: Define target Java type | Uncomment as is | Remove column mapping
+    @Enumerated(EnumType.STRING)
     @ColumnDefault("'PENDING'")
-    @Column(name = "status", columnDefinition = "complaint_status")
-    private Object status;
-*/
+    @Column(name = "status")
+    private ComplaintStatus status = ComplaintStatus.PENDING;
+
+    public enum ComplaintStatus {
+        PENDING, IN_PROGRESS, RESOLVED, REJECTED
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        createat = Instant.now();
+    }
 }

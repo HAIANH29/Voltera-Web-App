@@ -28,9 +28,8 @@ public class Battery {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "batterytypeid")
-    private Batterytype batterytypeid;
+    private Batterytype batterytype; // Đổi tên từ batterytypeid
 
-    @Size(max = 100)
     @NotNull
     @Column(name = "serialnumber", nullable = false, length = 100)
     private String serialnumber;

@@ -34,4 +34,9 @@ public class Batteryimage {
     @Column(name = "uploadedat")
     private Instant uploadedat;
 
+    @PrePersist
+    protected void onCreate() {
+        uploadedat = Instant.now();
+    }
+
 }

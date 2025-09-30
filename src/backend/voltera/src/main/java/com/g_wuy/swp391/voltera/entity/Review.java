@@ -1,6 +1,8 @@
 package com.g_wuy.swp391.voltera.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -22,6 +24,8 @@ public class Review {
     private String content;
 
     @Column(name = "rating")
+    @Min(1)
+    @Max(5)
     private Integer rating;
 
 }

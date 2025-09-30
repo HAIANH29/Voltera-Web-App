@@ -52,4 +52,15 @@ public class User {
     @Column(name = "updateat")
     private Instant updateat;
 
+    @PrePersist
+    protected void onCreate() {
+        createat = Instant.now();
+        updateat = Instant.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updateat = Instant.now();
+    }
+
 }

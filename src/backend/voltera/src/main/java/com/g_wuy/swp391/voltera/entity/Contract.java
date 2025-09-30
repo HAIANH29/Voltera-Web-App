@@ -3,6 +3,7 @@ package com.g_wuy.swp391.voltera.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDate;
 
@@ -18,15 +19,15 @@ public class Contract {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "postid")
-    private Post postid;
+    private Post post; // Đổi từ postid
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sellerid")
-    private User sellerid;
+    private User seller; // Đổi từ sellerid
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "buyerid")
-    private User buyerid;
+    private User buyer; // Đổi từ buyerid
 
     @Column(name = "contractfile", length = Integer.MAX_VALUE)
     private String contractfile;
@@ -36,11 +37,12 @@ public class Contract {
     @Column(name = "expirationdate")
     private LocalDate expirationdate;
 
-/*
- TODO [Reverse Engineering] create field to map the 'contractstatus' column
- Available actions: Define target Java type | Uncomment as is | Remove column mapping
+    @Enumerated(EnumType.STRING)
     @ColumnDefault("'Pending'")
-    @Column(name = "contractstatus", columnDefinition = "contract_status")
-    private Object contractstatus;
-*/
+    @Column(name = "contractstatus")
+    private ContractStatus contractstatus = ContractStatus.PENDING;
+
+    public enum ContractStatus {
+        PENDING, SIGNED, ACTIVE, EXPIRED, CANCELLED
+    }
 }
