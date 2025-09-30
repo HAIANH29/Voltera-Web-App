@@ -1,127 +1,61 @@
 import axios from "axios";
+import Cookies from "js-cookie";
+import { jwtDecode } from "jwt-decode";
 
-// /src/config/api.jsx
-// GitHub Copilot
-// Bộ helpers để giao tiếp với backend bằng axios
-
-const API_BASE_URL =
-  process.env.REACT_APP_API_URL || "http://localhost:5000/api";
-
-const apiClient = axios.create({
-  baseURL: API_BASE_URL,
-  timeout: 15000,
-  headers: {
-    "Content-Type": "application/json",
-    Accept: "application/json",
-  },
-});
-
-// Hàm lấy token từ localStorage (tuỳ project có thể đổi sang cookie hoặc redux)
-const getAuthToken = () => {
-  try {
-    return localStorage.getItem("token") || null;
-  } catch {
-    return null;
-  }
+// Get base URL from environment variables
+const baseUrl = import.meta.env.VITE_BACK_END_BASE_URL;
+const config = {
+  baseUrl,
+  timeout: 30000,
 };
+const api = axios.create(config);
+api.defaults.baseURL = baseUrl;
 
-// Đặt token cho client (có thể gọi khi login)
-export const setAuthToken = (token) => {
-  if (token) {
-    apiClient.defaults.headers.common.Authorization = `Bearer ${token}`;
-    try {
-      localStorage.setItem("token", token);
-    } catch {}
-  } else {
-    delete apiClient.defaults.headers.common.Authorization;
-    try {
-      localStorage.removeItem("token");
-    } catch {}
-  }
-};
+const handleBefore = async (config) => {
+  let accessToken = Cookies.get("accessToken")?.replaceAll('"', "");
 
-export const clearAuthToken = () => setAuthToken(null);
+  if (accessToken) {
+    const tokenExpiry = jwtDecode(accessToken).exp * 1000;
+    if (Date.now() >= tokenExpiry) {
+      try {
+        const refreshToken = Cookies.get("refreshToken")?.replaceAll('"', "");
+        console.log(refreshToken);
 
-// Request interceptor: thêm token nếu có
-apiClient.interceptors.request.use(
-  (config) => {
-    const token = getAuthToken();
-    if (token && !config.headers.Authorization) {
-      config.headers.Authorization = `Bearer ${token}`;
+        const response = await axios.post(`${baseUrl}authen/refresh-token`, {
+          refreshToken,
+        });
+        // console.log(response);
+        Cookies.set("accessToken", response.data.data?.accessToken, {
+          expires: 1,
+          secure: true,
+        }); // Expires in 7 days
+        Cookies.set("refreshToken", response.data.data?.refreshToken, {
+          expires: 7,
+          secure: true,
+        });
+      } catch (error) {
+        console.error("Failed to refresh token:", error);
+
+        // Implement logout functionality
+        Cookies.remove("accessToken");
+        Cookies.remove("refreshToken");
+
+        // Dispatch logout event or redirect to login page
+        window.location.href = "/login"; // Adjust the path according to your app's routing
+
+        return Promise.reject(error);
+      }
     }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
-// Response interceptor: chuẩn hóa lỗi
-apiClient.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    const err = {
-      message: "Unknown error",
-      status: null,
-      data: null,
-    };
-
-    if (error.response) {
-      err.status = error.response.status;
-      err.data = error.response.data;
-      // cố gắng lấy thông điệp hay nhất từ backend
-      err.message =
-        (error.response.data &&
-          (error.response.data.message || error.response.data.error)) ||
-        error.response.statusText ||
-        "Server error";
-    } else if (error.request) {
-      err.message = "No response from server";
-    } else {
-      err.message = error.message;
-    }
-
-    return Promise.reject(err);
+    config.headers.Authorization = `Bearer ${accessToken}`;
   }
-);
-
-// Helpers cơ bản
-const get = (url, params = {}, config = {}) =>
-  apiClient.get(url, { params, ...config }).then((res) => res.data);
-
-const post = (url, body = {}, config = {}) =>
-  apiClient.post(url, body, config).then((res) => res.data);
-
-const put = (url, body = {}, config = {}) =>
-  apiClient.put(url, body, config).then((res) => res.data);
-
-const del = (url, config = {}) =>
-  apiClient.delete(url, config).then((res) => res.data);
-
-// Upload file (FormData)
-const upload = (url, formData, config = {}) =>
-  apiClient
-    .post(url, formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-      ...config,
-    })
-    .then((res) => res.data);
-
-// Download file as blob
-const download = (url, params = {}, config = {}) =>
-  apiClient
-    .get(url, { params, responseType: "blob", ...config })
-    .then((res) => res.data);
-
-// Export mặc định
-const api = {
-  setAuthToken,
-  clearAuthToken,
-  get,
-  post,
-  put,
-  del,
-  upload,
-  download,
-  rawClient: apiClient, // trường hợp cần truy cập axios trực tiếp
+  return config;
 };
+
+const handleError = (error) => {
+  console.error("API Error:", error);
+  return Promise.reject(error);
+};
+
+api.interceptors.request.use(handleBefore, handleError);
 
 export default api;
