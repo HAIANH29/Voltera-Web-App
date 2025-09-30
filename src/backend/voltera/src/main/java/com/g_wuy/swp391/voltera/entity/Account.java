@@ -40,13 +40,13 @@ public class Account {
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "createat")
     private Instant createat;
+
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "updateat")
     private Instant updateat;
 
-
     @Enumerated(EnumType.STRING)
-    @ColumnDefault("'Pending'")
+    @ColumnDefault("'PENDING'")
     @Column(name = "status")
     private AccountStatus status = AccountStatus.PENDING;
 

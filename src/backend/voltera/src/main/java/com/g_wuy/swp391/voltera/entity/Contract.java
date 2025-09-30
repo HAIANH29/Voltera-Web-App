@@ -19,21 +19,22 @@ public class Contract {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "postid")
-    private Post post; // Đổi từ postid
+    private Post post; // thay vì postId
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sellerid")
-    private User seller; // Đổi từ sellerid
+    private User seller; // thay vì sellerId
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "buyerid")
-    private User buyer; // Đổi từ buyerid
+    private User buyer; // thay vì buyerId
 
     @Column(name = "contractfile", length = Integer.MAX_VALUE)
     private String contractfile;
 
     @Column(name = "signeddate")
     private LocalDate signeddate;
+
     @Column(name = "expirationdate")
     private LocalDate expirationdate;
 

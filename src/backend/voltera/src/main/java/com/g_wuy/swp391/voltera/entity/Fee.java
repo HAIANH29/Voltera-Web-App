@@ -28,5 +28,4 @@ public class Fee {
 
     @Column(name = "maxprice", precision = 12, scale = 2)
     private BigDecimal maxprice;
-
 }

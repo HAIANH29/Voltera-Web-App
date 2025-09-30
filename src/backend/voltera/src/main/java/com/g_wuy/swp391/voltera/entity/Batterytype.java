@@ -28,5 +28,4 @@ public class Batterytype {
 
     @Column(name = "description", length = Integer.MAX_VALUE)
     private String description;
-
 }

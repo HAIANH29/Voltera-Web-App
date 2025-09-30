@@ -57,5 +57,4 @@ public class Externalaccount {
     protected void onCreate() {
         createdat = Instant.now();
     }
-
 }

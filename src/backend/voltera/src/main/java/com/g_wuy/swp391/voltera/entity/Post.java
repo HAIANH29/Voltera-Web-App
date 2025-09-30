@@ -37,6 +37,7 @@ public class Post {
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "createdat")
     private Instant createdat;
+
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "updatedat")
     private Instant updatedat;
@@ -44,6 +45,7 @@ public class Post {
     @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 50, nullable = false)
     private PostStatus status = PostStatus.PENDING;
+
     public enum PostStatus {
         PENDING, APPROVE, REJECT
     }

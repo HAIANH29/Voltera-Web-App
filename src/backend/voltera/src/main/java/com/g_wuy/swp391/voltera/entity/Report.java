@@ -28,5 +28,4 @@ public class Report {
 
     @Column(name = "year")
     private Integer year;
-
 }

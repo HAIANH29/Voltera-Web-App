@@ -28,10 +28,9 @@ public class Vehicleimage {
 
     @NotNull
     @Column(name = "imageurl", nullable = false, length = Integer.MAX_VALUE)
-    private String imageurl;
+    private String imageUrl;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "uploadedat")
-    private Instant uploadedat;
-
+    private Instant uploadedAt;
 }

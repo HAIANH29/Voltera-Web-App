@@ -29,6 +29,7 @@ public class Payment {
     @Size(max = 100)
     @Column(name = "transactioncode", length = 100)
     private String transactioncode;
+
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "paymentdate")
     private Instant paymentdate;

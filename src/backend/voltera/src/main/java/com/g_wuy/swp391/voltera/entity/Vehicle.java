@@ -9,8 +9,8 @@ import org.hibernate.annotations.OnDeleteAction;
 
 import java.math.BigDecimal;
 
-@Builder
 @Data
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
@@ -28,7 +28,7 @@ public class Vehicle {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "batterytypeid")
-    private Batterytype batterytypeid;
+    private Batterytype batteryTypeId;
 
     @Size(max = 100)
     @Column(name = "brand", length = 100)
@@ -42,24 +42,28 @@ public class Vehicle {
     @Column(name = "version", length = 50)
     private String version;
 
+    @Size(max = 50)
+    @Column(name = "status", length = 50)
+    private String status;
+
     @Column(name = "odo")
     private Integer odo;
 
     @Column(name = "batterycapacity", precision = 10, scale = 2)
-    private BigDecimal batterycapacity;
+    private BigDecimal batteryCapacity;
 
     @Column(name = "range")
     private Integer range;
 
     @Column(name = "chargingtime")
-    private Integer chargingtime;
+    private Integer chargingTime;
 
     @Size(max = 50)
     @Column(name = "color", length = 50)
     private String color;
 
     @Column(name = "numberofseat")
-    private Integer numberofseat;
+    private Integer numberOfSeat;
 
     @Size(max = 50)
     @Column(name = "style", length = 50)
@@ -67,17 +71,17 @@ public class Vehicle {
 
     @ColumnDefault("false")
     @Column(name = "bodyinsurance")
-    private Boolean bodyinsurance;
+    private Boolean bodyInsurance;
 
     @ColumnDefault("false")
     @Column(name = "vehicleinspection")
-    private Boolean vehicleinspection;
+    private Boolean vehicleInspection;
 
     @Size(max = 8)
     @Column(name = "licenseplate", length = 8)
-    private String licenseplate;
+    private String licensePlate;
+
     @Size(max = 255)
     @Column(name = "origin")
     private String origin;
-
 }
