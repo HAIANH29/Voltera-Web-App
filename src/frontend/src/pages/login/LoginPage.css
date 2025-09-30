@@ -1,93 +1,64 @@
 /* ====== Base ====== */
-
 :root {
-
-    --bg: #f6f7fb;
-
+    --bg: #f3f4f6;
+    /* nền xám nhạt */
     --card: #fff;
-
+    /* trắng */
     --text: #111827;
-
+    /* đen */
     --muted: #6b7280;
-
-    --border: #e5e7eb;
-
-    --primary: #2563eb;
-
-    --primary-hover: #1d4ed8;
-
+    /* xám phụ */
+    --border: #d1d5db;
+    /* viền xám nhạt */
+    --primary: #111827;
+    /* đen */
+    --primary-hover: #000;
     --error: #ef4444;
-
-    --ring: rgba(37, 99, 235, .18);
-
+    --ring: rgba(0, 0, 0, .18);
     --radius: 14px;
-
 }
 
 @media (prefers-color-scheme: dark) {
-
     :root {
-
-        --bg: #0b0f16;
-
+        --bg: #1f2937;
+        /* nền xám đậm */
         --card: #111827;
-
-        --text: #f3f4f6;
-
+        /* đen */
+        --text: #f9fafb;
+        /* trắng */
         --muted: #9ca3af;
-
-        --border: #1f2937;
-
-        --primary: #3b82f6;
-
-        --primary-hover: #2563eb;
-
-        --ring: rgba(59, 130, 246, .2);
-
+        /* xám nhạt */
+        --border: #374151;
+        /* xám trung */
+        --primary: #f9fafb;
+        /* trắng */
+        --primary-hover: #e5e7eb;
+        --ring: rgba(255, 255, 255, .18);
     }
-
 }
 
 /* ====== Page Shell ====== */
-
 .login-page {
-
     min-height: 100svh;
-
     display: grid;
-
     place-items: center;
-
     padding: 24px 16px;
-
     background: var(--bg);
-
     color: var(--text);
-
 }
 
 /* ====== Card ====== */
-
 .card {
-
     width: 100%;
-
     max-width: 420px;
-
     background: var(--card);
-
     border: 1px solid var(--border);
-
     border-radius: var(--radius);
-
     box-shadow: 0 10px 30px rgba(0, 0, 0, .06);
-
     padding: 24px;
-
 }
 
 /* ====== Header ====== */
-
 .header {
     text-align: center;
     margin-bottom: 12px;
@@ -107,41 +78,26 @@
 }
 
 /* ====== Form ====== */
-
 .form-group {
     margin-top: 14px;
 }
 
 .label {
-
     display: inline-block;
-
     margin-bottom: 8px;
-
     font-weight: 600;
-
     font-size: 14px;
-
 }
 
 .input {
-
     width: 100%;
-
     height: 44px;
-
     padding: 0 12px;
-
     border: 1px solid var(--border);
-
     border-radius: 10px;
-
-    background: transparent;
-
+    background: #fff;
     color: var(--text);
-
     transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
-
 }
 
 .input::placeholder {
@@ -149,116 +105,71 @@
 }
 
 .input:focus {
-
     outline: none;
-
     border-color: var(--primary);
-
-    box-shadow: 0 0 0 4px var(--ring);
-
-    background: rgba(37, 99, 235, .02);
-
+    box-shadow: 0 0 0 3px var(--ring);
+    background: rgba(0, 0, 0, .02);
 }
 
 .input-error {
-
     border-color: var(--error);
-
     box-shadow: 0 0 0 3px rgba(239, 68, 68, .18);
-
 }
 
 .error-text {
-
     margin-top: 8px;
-
     color: var(--error);
-
     font-size: 13px;
-
 }
 
 /* Row (remember + forgot) */
-
 .form-group.row {
-
     display: flex;
-
     align-items: center;
-
     justify-content: space-between;
-
     gap: 12px;
-
 }
 
 /* Checkbox */
-
 .checkbox-label {
-
     display: inline-flex;
-
     align-items: center;
-
     gap: 8px;
-
     font-size: 14px;
-
     user-select: none;
-
 }
 
 .checkbox-label input {
-
     width: 16px;
     height: 16px;
-
     accent-color: var(--primary);
-
 }
 
 /* Password toggle */
-
 .password-wrapper {
     position: relative;
 }
 
 .password-toggle {
-
     position: absolute;
-
     top: 50%;
     right: 8px;
     transform: translateY(-50%);
-
     height: 28px;
     padding: 0 10px;
-
     border: 1px solid var(--border);
-
     border-radius: 999px;
-
     background: transparent;
-
     color: var(--muted);
-
     font-size: 12px;
     line-height: 1;
-
     cursor: pointer;
-
-    transition: background .15s, color .15s, border-color .15s, transform .06s;
-
 }
 
 .password-toggle:hover {
-
-    background: rgba(37, 99, 235, .08);
-
+    background: rgba(0, 0, 0, .08);
     color: var(--text);
-
-    border-color: rgba(37, 99, 235, .35);
-
+    border-color: rgba(0, 0, 0, .25);
 }
 
 .password-toggle:active {
@@ -266,29 +177,17 @@
 }
 
 /* Submit button */
-
 .button {
-
     width: 100%;
-
     height: 44px;
-
     border: none;
-
     border-radius: 10px;
-
     background: var(--primary);
-
     color: #fff;
-
     font-weight: 600;
-
     cursor: pointer;
-
     transition: background .15s, transform .06s, box-shadow .15s;
-
-    box-shadow: 0 8px 18px rgba(37, 99, 235, .18);
-
+    box-shadow: 0 8px 18px rgba(0, 0, 0, .18);
 }
 
 .button:hover {
@@ -306,17 +205,13 @@
 }
 
 /* Small link-style btn */
-
 .small-btn {
-
     border: none;
     background: transparent;
     padding: 0;
-
     color: var(--primary);
     font-size: 14px;
     cursor: pointer;
-
 }
 
 .small-btn:hover {
@@ -324,14 +219,11 @@
 }
 
 /* Footer under form */
-
 .footer {
-
     margin-top: 16px;
     text-align: center;
     font-size: 14px;
     color: var(--muted);
-
 }
 
 .link {
@@ -345,9 +237,7 @@
 }
 
 /* ====== Responsive ====== */
-
 @media (max-width:480px) {
-
     .card {
         padding: 20px;
     }
@@ -360,5 +250,4 @@
     .button {
         height: 42px;
     }
-
 }
