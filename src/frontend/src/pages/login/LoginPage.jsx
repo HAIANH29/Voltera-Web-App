@@ -1,43 +1,70 @@
 import React, { useState } from "react";
+
 import { useNavigate } from "react-router-dom";
+
+import { useFormik } from "formik";
+
+import * as Yup from "yup";
+
 import "./LoginPage.css";
+
+const schema = Yup.object({
+  email: Yup.string()
+
+    .trim()
+
+    .email("Invalid email address.")
+
+    .required("Please enter your email."),
+
+  password: Yup.string()
+
+    .min(6, "Password must be at least 6 characters.")
+
+    .required("Please enter your password."),
+
+  remember: Yup.boolean(),
+});
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+
   const [showPassword, setShowPassword] = useState(false);
-  const [remember, setRemember] = useState(false);
-  const [errors, setErrors] = useState({});
-  const [submitting, setSubmitting] = useState(false);
 
-  function validate() {
-    const e = {};
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!email.trim()) e.email = "Please enter your email.";
-    else if (!emailPattern.test(email)) e.email = "Invalid email address.";
-    if (!password) e.password = "Please enter your password.";
-    else if (password.length < 6)
-      e.password = "Password must be at least 6 characters.";
-    setErrors(e);
-    return Object.keys(e).length === 0;
-  }
+  const formik = useFormik({
+    initialValues: { email: "", password: "", remember: false },
 
-  function handleSubmit(ev) {
-    ev.preventDefault();
-    if (!validate()) return;
-    setSubmitting(true);
-    // Simulate API call
-    setTimeout(() => {
-      setSubmitting(false);
-      console.log("Login", { email, password, remember });
-      try {
-        navigate("/dashboard");
-      } catch {
-        window.location.href = "/dashboard";
-      }
-    }, 900);
-  }
+    validationSchema: schema,
+
+    onSubmit: (values, { setSubmitting }) => {
+      // Simulate API call
+
+      setSubmitting(true);
+
+      setTimeout(() => {
+        console.log("Login", values);
+
+        setSubmitting(false);
+
+        try {
+          navigate("/dashboard");
+        } catch {
+          window.location.href = "/dashboard";
+        }
+      }, 900);
+    },
+  });
+
+  const {
+    values,
+    errors,
+    touched,
+    handleChange,
+    handleBlur,
+    handleSubmit,
+    isSubmitting,
+    setFieldValue,
+  } = formik;
 
   return (
     <div className="login-page">
@@ -50,22 +77,31 @@ export default function LoginPage() {
         </div>
 
         <form onSubmit={handleSubmit} noValidate>
+          {/* Email */}
           <div className="form-group">
             <label className="label" htmlFor="email">
               Email
             </label>
             <input
               id="email"
+              name="email"
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className={`input ${errors.email ? "input-error" : ""}`}
+              value={values.email}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              className={`input ${
+                touched.email && errors.email ? "input-error" : ""
+              }`}
               placeholder="email@example.com"
               autoComplete="email"
             />
-            {errors.email && <div className="error-text">{errors.email}</div>}
+
+            {touched.email && errors.email && (
+              <div className="error-text">{errors.email}</div>
+            )}
           </div>
 
+          {/* Password */}
           <div className="form-group">
             <label className="label" htmlFor="password">
               Password
@@ -73,10 +109,14 @@ export default function LoginPage() {
             <div className="password-wrapper">
               <input
                 id="password"
+                name="password"
                 type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className={`input ${errors.password ? "input-error" : ""}`}
+                value={values.password}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                className={`input ${
+                  touched.password && errors.password ? "input-error" : ""
+                }`}
                 placeholder="••••••••"
                 autoComplete="current-password"
               />
@@ -89,17 +129,20 @@ export default function LoginPage() {
                 {showPassword ? "Hide" : "Show"}
               </button>
             </div>
-            {errors.password && (
+
+            {touched.password && errors.password && (
               <div className="error-text">{errors.password}</div>
             )}
           </div>
 
+          {/* Remember + Forgot */}
           <div className="form-group row">
             <label className="checkbox-label">
               <input
                 type="checkbox"
-                checked={remember}
-                onChange={(e) => setRemember(e.target.checked)}
+                name="remember"
+                checked={values.remember}
+                onChange={(e) => setFieldValue("remember", e.target.checked)}
               />
               Remember me
             </label>
@@ -112,15 +155,16 @@ export default function LoginPage() {
             </button>
           </div>
 
+          {/* Submit */}
           <div className="form-group">
-            <button type="submit" disabled={submitting} className="button">
-              {submitting ? "Logging in..." : "Login"}
+            <button type="submit" disabled={isSubmitting} className="button">
+              {isSubmitting ? "Logging in..." : "Login"}
             </button>
           </div>
         </form>
 
         <div className="footer">
-          Don't have an account?{" "}
+          Don&apos;t have an account?{" "}
           <span
             className="link"
             role="button"
