@@ -5,7 +5,7 @@ import com.g_wuy.swp391.voltera.entity.Post;
 import com.g_wuy.swp391.voltera.entity.Vehicle;
 import com.g_wuy.swp391.voltera.model.dto.BatteryDTO;
 import com.g_wuy.swp391.voltera.model.dto.VehicleDTO;
-import com.g_wuy.swp391.voltera.model.dto.response.PostResponse;
+import com.g_wuy.swp391.voltera.model.response.PostResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -14,7 +14,7 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface PostMapper {
     // Battery mapping
-    @Mapping(source = "batterytypeid.id", target = "batteryTypeId")
+    @Mapping(source = "batterytype.id", target = "batteryTypeId")
     BatteryDTO toDTO(Battery battery);
 
     // Vehicle mapping

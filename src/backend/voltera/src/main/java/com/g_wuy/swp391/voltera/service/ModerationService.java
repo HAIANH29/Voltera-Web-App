@@ -2,8 +2,8 @@
 package com.g_wuy.swp391.voltera.service;
 
 import com.g_wuy.swp391.voltera.entity.Post;
-import com.g_wuy.swp391.voltera.model.dto.request.ModerationRequest;
-import com.g_wuy.swp391.voltera.model.dto.response.ModerationResponse;
+import com.g_wuy.swp391.voltera.model.request.ModerationRequest;
+import com.g_wuy.swp391.voltera.model.response.ModerationResponse;
 import com.g_wuy.swp391.voltera.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;

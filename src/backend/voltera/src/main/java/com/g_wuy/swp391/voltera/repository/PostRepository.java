@@ -15,6 +15,6 @@ public interface PostRepository extends JpaRepository<Post,Integer> {
     List<Post> findByStatus(Post.PostStatus status);
     @Modifying
     @Query("UPDATE Post p SET p.status = :status, p.updatedat = CURRENT_TIMESTAMP WHERE p.id = :id")
-    void updateStatusById(@Param("id") Integer id, @Param("status") String status);
+    void updateStatusById(@Param("id") Integer id, @Param("status")String status);
     Optional<Post> findById(Integer id);
 }
