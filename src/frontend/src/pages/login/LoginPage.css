@@ -146,34 +146,39 @@
 }
 
 /* Password toggle */
-.password-wrapper {
-    position: relative;
-}
-
+/* Wrapper giữ input + toggle */
 .password-toggle {
     position: absolute;
     top: 50%;
-    right: 8px;
+    right: 10px;
     transform: translateY(-50%);
-    height: 28px;
-    padding: 0 10px;
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    background: transparent;
-    color: var(--muted);
-    font-size: 12px;
-    line-height: 1;
+
+    all: unset;
+    /* reset toàn bộ style mặc định của button */
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #6b7280;
+    /* màu xám */
 }
 
 .password-toggle:hover {
-    background: rgba(0, 0, 0, .08);
-    color: var(--text);
-    border-color: rgba(0, 0, 0, .25);
+    color: #111827;
+    /* đen khi hover */
 }
 
-.password-toggle:active {
-    transform: translateY(-50%) scale(.98);
+.password-toggle:focus {
+    outline: none;
+    /* ẩn viền khi focus */
+    box-shadow: none;
+    /* phòng khi browser thêm shadow */
+}
+
+.password-toggle svg {
+    width: 18px;
+    height: 18px;
 }
 
 /* Submit button */
