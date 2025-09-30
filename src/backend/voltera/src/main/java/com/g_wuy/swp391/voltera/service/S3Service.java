@@ -32,7 +32,7 @@ public class S3Service {
         s3Client.putObject(putObjectRequest,
                 software.amazon.awssdk.core.sync.RequestBody.fromBytes(file.getBytes()));
 
-        // trả về URL public của ảnh
+
         return "https://" + bucketName + ".s3.amazonaws.com/" + fileName;
     }
 }

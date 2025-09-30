@@ -3,15 +3,19 @@ import React from "react";
 import { Layout } from "antd";
 
 import { Outlet } from "react-router-dom";
-
+ 
 const { Header, Content, Footer } = Layout;
-
+ 
 export default function AuthLayout({ children }) {
+
   return (
-    <Layout style={{ minHeight: "100vh" }}>
+<Layout style={{ minHeight: "100vh" }}>
+
       {/* 🔹 Top */}
-      <Header
+<Header
+
         style={{
+
           background: "#fff",
 
           boxShadow: "0 1px 0 rgba(0,0,0,0.06)",
@@ -21,14 +25,17 @@ export default function AuthLayout({ children }) {
           display: "flex",
 
           alignItems: "center",
-        }}
-      >
-        <h1 style={{ margin: 0, fontSize: 20, fontWeight: 600 }}>Voltera</h1>
-      </Header>
 
+        }}
+>
+<h1 style={{ margin: 0, fontSize: 20, fontWeight: 600 }}>Voltera</h1>
+</Header>
+ 
       {/* 🔹 Body */}
-      <Content
+<Content
+
         style={{
+
           flex: 1,
 
           padding: "48px 24px",
@@ -40,16 +47,20 @@ export default function AuthLayout({ children }) {
           alignItems: "center",
 
           background: "#f5f5f5",
+
         }}
-      >
+>
+
         {/* dùng <Outlet /> cho router hoặc children trực tiếp */}
 
         {children ?? <Outlet />}
-      </Content>
-
+</Content>
+ 
       {/* 🔹 Bottom */}
-      <Footer
+<Footer
+
         style={{
+
           textAlign: "center",
 
           background: "#fff",
@@ -61,10 +72,16 @@ export default function AuthLayout({ children }) {
           fontSize: 12,
 
           color: "#999",
+
         }}
-      >
+>
+
         © {new Date().getFullYear()} Voltera. All rights reserved.
-      </Footer>
-    </Layout>
+</Footer>
+</Layout>
+
   );
+
 }
+
+ 
