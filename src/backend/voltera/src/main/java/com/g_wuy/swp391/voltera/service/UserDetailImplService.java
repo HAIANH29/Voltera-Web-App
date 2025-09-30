@@ -1,10 +1,10 @@
+// service/UserDetailImplService.java
 package com.g_wuy.swp391.voltera.service;
 
 import com.g_wuy.swp391.voltera.entity.Account;
 import com.g_wuy.swp391.voltera.repository.AccountRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -16,18 +16,18 @@ import java.util.Collections;
 @Service
 @RequiredArgsConstructor
 public class UserDetailImplService implements UserDetailsService {
-    @Autowired
-    private AccountRepository accountRepository;
+
+    private final AccountRepository accountRepository;
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Account account = accountRepository.findByUsername(username);
-        if (account == null) {
-            throw new UsernameNotFoundException("Username not found");
-        }
+        Account account = accountRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("Username not found: " + username));
+
         return new User(
                 account.getUsername(),
                 account.getPassword(),
-                Collections.emptyList()
+                Collections.singletonList(new SimpleGrantedAuthority("ROLE_SELLER"))
         );
     }
 }

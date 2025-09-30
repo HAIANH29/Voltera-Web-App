@@ -6,6 +6,7 @@ import com.g_wuy.swp391.voltera.repository.AccountRepository;
 import com.g_wuy.swp391.voltera.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -22,10 +23,7 @@ public class UserService {
     private UserRepository userRepository;
 
     public Account findByUsername(String username) {
-        Account account = accountRepository.findByUsername(username);
-        if (account == null) {
-            throw new RuntimeException("Account not found with username: " + username);
-        }
-        return account;
+        return accountRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("Username not found: " + username));
     }
 }

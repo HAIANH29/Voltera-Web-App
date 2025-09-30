@@ -2,20 +2,19 @@ package com.g_wuy.swp391.voltera.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.Instant;
-@Entity
-@Builder
+
 @Data
-@AllArgsConstructor
+@Builder
 @NoArgsConstructor
+@AllArgsConstructor
+@Entity
+@Table(name = "batteryimage")
 public class Batteryimage {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,11 +28,10 @@ public class Batteryimage {
 
     @NotNull
     @Column(name = "imageurl", nullable = false, length = Integer.MAX_VALUE)
-    private String imageUrl;
+    private String imageurl;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "uploadedat")
-    private Instant uploadedAt;
-
+    private Instant uploadedat;
 
 }

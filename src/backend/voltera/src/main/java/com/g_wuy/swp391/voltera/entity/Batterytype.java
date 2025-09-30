@@ -3,16 +3,13 @@ package com.g_wuy.swp391.voltera.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@Entity
-@Builder
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
+@Entity
 @Table(name = "batterytype")
 public class Batterytype {
     @Id
@@ -23,7 +20,7 @@ public class Batterytype {
     @Size(max = 100)
     @NotNull
     @Column(name = "typename", nullable = false, length = 100)
-    private String typeName;
+    private String typename;
 
     @Size(max = 200)
     @Column(name = "technical", length = 200)

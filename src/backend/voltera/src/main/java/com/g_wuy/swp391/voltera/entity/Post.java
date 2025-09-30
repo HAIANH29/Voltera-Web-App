@@ -2,20 +2,17 @@ package com.g_wuy.swp391.voltera.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 
-@Entity
-@Builder
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
+@Entity
 @Table(name = "post")
 public class Post {
     @Id
@@ -25,7 +22,7 @@ public class Post {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sellerid")
-    private User sellerId;
+    private User sellerid;
 
     @Size(max = 200)
     @Column(name = "title", length = 200)
@@ -37,16 +34,17 @@ public class Post {
     @Column(name = "price", precision = 12, scale = 2)
     private BigDecimal price;
 
-    @Size(max = 50)
-    @Column(name = "status", length = 50)
-    private String status;
-
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "createdat")
-    private Instant createdAt;
-
+    private Instant createdat;
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "updatedat")
-    private Instant updatedAt;
+    private Instant updatedat;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", length = 50, nullable = false)
+    private PostStatus status = PostStatus.PENDING;
+    public enum PostStatus {
+        PENDING, APPROVE, REJECT
+    }
 }
