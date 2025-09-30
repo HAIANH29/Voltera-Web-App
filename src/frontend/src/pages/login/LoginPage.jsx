@@ -149,7 +149,7 @@ export default function LoginPage() {
             <button
               type="button"
               className="small-btn"
-              onClick={() => alert("Forgot password feature")}
+              onClick={() => navigate("/forgot-password")}
             >
               Forgot password?
             </button>
