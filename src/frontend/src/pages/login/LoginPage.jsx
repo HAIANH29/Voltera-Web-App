@@ -7,7 +7,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 
 import "./LoginPage.css";
-
+import { Eye, EyeOff } from "lucide-react";
 const schema = Yup.object({
   email: Yup.string()
 
@@ -102,37 +102,28 @@ export default function LoginPage() {
           </div>
 
           {/* Password */}
-          <div className="form-group">
-            <label className="label" htmlFor="password">
-              Password
-            </label>
-            <div className="password-wrapper">
-              <input
-                id="password"
-                name="password"
-                type={showPassword ? "text" : "password"}
-                value={values.password}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                className={`input ${
-                  touched.password && errors.password ? "input-error" : ""
-                }`}
-                placeholder="••••••••"
-                autoComplete="current-password"
-              />
-              <button
-                type="button"
-                aria-label={showPassword ? "Hide password" : "Show password"}
-                onClick={() => setShowPassword((s) => !s)}
-                className="password-toggle"
-              >
-                {showPassword ? "Hide" : "Show"}
-              </button>
-            </div>
-
-            {touched.password && errors.password && (
-              <div className="error-text">{errors.password}</div>
-            )}
+          <div className="password-wrapper">
+            <input
+              id="password"
+              name="password"
+              type={showPassword ? "text" : "password"}
+              value={values.password}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              className={`input ${
+                touched.password && errors.password ? "input-error" : ""
+              }`}
+              placeholder="••••••••"
+              autoComplete="current-password"
+            />
+            <button
+              type="button"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              onClick={() => setShowPassword((s) => !s)}
+              className="password-toggle"
+            >
+              {showPassword ? <EyeOff /> : <Eye />}
+            </button>
           </div>
 
           {/* Remember + Forgot */}
