@@ -7,6 +7,7 @@ import RegisterPage from "./pages/register/RegisterPage";
 import AuthLayout from "./layout/authenLayout";
 import { Toaster } from "react-hot-toast";
 import PublicRoute from "./routes/PublicRoute";
+import ForgotPasswordPage from "./pages/forgotpasswordPage/ForgotPasswordPage";
 function App() {
   const router = createBrowserRouter([
     {
