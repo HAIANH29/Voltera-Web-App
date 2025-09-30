@@ -38,5 +38,4 @@ public class Batteryimage {
     protected void onCreate() {
         uploadedat = Instant.now();
     }
-
 }

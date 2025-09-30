@@ -3,12 +3,16 @@ package com.g_wuy.swp391.voltera.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.Instant;
 
+@NoArgsConstructor
+@AllArgsConstructor
 @Getter
 @Setter
 @Entity
@@ -40,13 +44,13 @@ public class Account {
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "createat")
     private Instant createat;
+
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "updateat")
     private Instant updateat;
 
-
     @Enumerated(EnumType.STRING)
-    @ColumnDefault("'Pending'")
+    @ColumnDefault("'PENDING'")
     @Column(name = "status")
     private AccountStatus status = AccountStatus.PENDING;
 
@@ -63,5 +67,15 @@ public class Account {
     @PreUpdate
     protected void onUpdate() {
         updateat = Instant.now();
+    }
+
+    public Account(User user, String username, String password, String role, Instant createat, Instant updateat, AccountStatus status) {
+        this.user = user;
+        this.username = username;
+        this.password = password;
+        this.role = role;
+        this.createat = createat;
+        this.updateat = updateat;
+        this.status = status;
     }
 }
