@@ -2,12 +2,14 @@ package com.g_wuy.swp391.voltera.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.Instant;
 
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Getter
 @Setter
 @Entity
@@ -47,5 +49,14 @@ public class Complaint {
     @PrePersist
     protected void onCreate() {
         createat = Instant.now();
+    }
+
+    public Complaint(User sender, String problem, String description, Instant createat, Instant resolveat, ComplaintStatus status) {
+        this.sender = sender;
+        this.problem = problem;
+        this.description = description;
+        this.createat = createat;
+        this.resolveat = resolveat;
+        this.status = status;
     }
 }

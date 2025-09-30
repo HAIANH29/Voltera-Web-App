@@ -2,12 +2,14 @@ package com.g_wuy.swp391.voltera.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.Instant;
 
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 @Getter
 @Setter
 @Entity
@@ -46,5 +48,13 @@ public class Payment {
     @PrePersist
     protected void onCreate() {
         paymentdate = Instant.now();
+    }
+
+    public Payment(Transaction transactionid, String paymentmethod, String transactioncode, Instant paymentdate, PaymentStatus paymentstatus) {
+        this.transactionid = transactionid;
+        this.paymentmethod = paymentmethod;
+        this.transactioncode = transactioncode;
+        this.paymentdate = paymentdate;
+        this.paymentstatus = paymentstatus;
     }
 }

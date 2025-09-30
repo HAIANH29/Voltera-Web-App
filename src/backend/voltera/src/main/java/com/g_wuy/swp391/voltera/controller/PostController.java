@@ -1,8 +1,8 @@
 
 package com.g_wuy.swp391.voltera.controller;
 
-import com.g_wuy.swp391.voltera.model.dto.request.PostRequest;
-import com.g_wuy.swp391.voltera.model.dto.response.PostResponse;
+import com.g_wuy.swp391.voltera.model.request.PostRequest;
+import com.g_wuy.swp391.voltera.model.response.PostResponse;
 import com.g_wuy.swp391.voltera.service.JwtService;
 import com.g_wuy.swp391.voltera.service.PostService;
 import lombok.RequiredArgsConstructor;

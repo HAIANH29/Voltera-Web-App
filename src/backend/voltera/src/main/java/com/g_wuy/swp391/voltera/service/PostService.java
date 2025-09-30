@@ -2,13 +2,14 @@ package com.g_wuy.swp391.voltera.service;
 
 import com.g_wuy.swp391.voltera.entity.*;
 import com.g_wuy.swp391.voltera.mapper.PostMapper;
-import com.g_wuy.swp391.voltera.model.dto.request.PostRequest;
-import com.g_wuy.swp391.voltera.model.dto.response.PostResponse;
+import com.g_wuy.swp391.voltera.model.request.PostRequest;
+import com.g_wuy.swp391.voltera.model.response.PostResponse;
 import com.g_wuy.swp391.voltera.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.nio.file.attribute.UserPrincipalNotFoundException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,8 +31,12 @@ public class PostService {
 
     public PostResponse createPost(PostRequest dto, String username) throws IOException {
         // 1. Xác thực seller
-        Account account = accountRepository.findByUsername(username)
-                .orElseThrow(() -> new SecurityException("Account not found: " + username));
+        Account account = accountRepository.findByUsername(username);
+
+        if (account == null) {
+            throw new UserPrincipalNotFoundException("Account not found");
+        }
+
         if (!"seller".equalsIgnoreCase(account.getRole())) {
             throw new SecurityException("Only sellers can create posts");
         }
@@ -105,7 +110,7 @@ public class PostService {
 
             savedBattery = batteryRepository.save(Battery.builder()
                     .post(post)
-                    .batterytypeid(type)
+                    .batterytype(type)
                     .serialnumber(dto.getBattery().getSerialNumber())
                     .origincapacity(dto.getBattery().getOriginCapacity())
                     .remainingcapacity(dto.getBattery().getRemainingCapacity())
