@@ -3,10 +3,14 @@ package com.g_wuy.swp391.voltera.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.Instant;
 
+@Getter
+@Setter
 @Entity
 @Table(name = "account")
 public class Account {
@@ -34,79 +38,30 @@ public class Account {
     private String role;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
-    @Column(name = "createAt")
-    private Instant createAt;
+    @Column(name = "createat")
+    private Instant createat;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
-    @Column(name = "updateAt")
-    private Instant updateAt;
+    @Column(name = "updateat")
+    private Instant updateat;
 
+    @Enumerated(EnumType.STRING)
+    @ColumnDefault("'PENDING'")
+    @Column(name = "status")
+    private AccountStatus status = AccountStatus.PENDING;
 
-    public Account() {
+    public enum AccountStatus {
+        PENDING, ACTIVE, INACTIVE, BANNED
     }
 
-    public Account(User user, String username, String password, String role, Instant createAt, Instant updateAt) {
-        this.user = user;
-        this.username = username;
-        this.password = password;
-        this.role = role;
-        this.createAt = createAt;
-        this.updateAt = updateAt;
+    @PrePersist
+    protected void onCreate() {
+        createat = Instant.now();
+        updateat = Instant.now();
     }
 
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
-    }
-
-    public Instant getCreateAt() {
-        return createAt;
-    }
-
-    public void setCreateAt(Instant createAt) {
-        this.createAt = createAt;
-    }
-
-    public Instant getUpdateAt() {
-        return updateAt;
-    }
-
-    public void setUpdateAt(Instant updateAt) {
-        this.updateAt = updateAt;
+    @PreUpdate
+    protected void onUpdate() {
+        updateat = Instant.now();
     }
 }

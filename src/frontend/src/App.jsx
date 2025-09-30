@@ -4,7 +4,7 @@ import { routes } from "./routes/";
 import HomePage from "./pages/homepage/HomePage";
 import LoginPage from "./pages/login/LoginPage";
 import RegisterPage from "./pages/register/RegisterPage";
-
+import AuthLayout from "./layout/authenLayout";
 import { Toaster } from "react-hot-toast";
 import PublicRoute from "./routes/PublicRoute";
 function App() {
@@ -21,7 +21,9 @@ function App() {
       path: routes.login,
       element: (
         <PublicRoute>
-          <LoginPage />
+          <AuthLayout>
+            <LoginPage />
+          </AuthLayout>
         </PublicRoute>
       ),
     },

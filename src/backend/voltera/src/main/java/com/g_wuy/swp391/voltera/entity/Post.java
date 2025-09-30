@@ -2,11 +2,16 @@ package com.g_wuy.swp391.voltera.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
+import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 @Entity
 @Table(name = "post")
 public class Post {
@@ -17,7 +22,7 @@ public class Post {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sellerid")
-    private User sellerId;
+    private User sellerid;
 
     @Size(max = 200)
     @Column(name = "title", length = 200)
@@ -29,94 +34,33 @@ public class Post {
     @Column(name = "price", precision = 12, scale = 2)
     private BigDecimal price;
 
-    @Size(max = 50)
-    @Column(name = "status", length = 50)
-    private String status;
-
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "createdat")
-    private Instant createdAt;
+    private Instant createdat;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "updatedat")
-    private Instant updatedAt;
+    private Instant updatedat;
 
-    // Empty constructor
-    public Post() {
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", length = 50, nullable = false)
+    private PostStatus status = PostStatus.PENDING;
+
+    public enum PostStatus {
+        PENDING, APPROVE, REJECT
     }
 
-    // Full constructor without id
-    public Post(User sellerId, String title, String description, BigDecimal price, String status, Instant createdAt, Instant updatedAt) {
-        this.sellerId = sellerId;
-        this.title = title;
-        this.description = description;
-        this.price = price;
-        this.status = status;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
+    @PrePersist
+    protected void onCreate() {
+        createdat = Instant.now();
+        updatedat = Instant.now();
+        if (status == null) {
+            status = PostStatus.PENDING;
+        }
     }
 
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public User getSellerId() {
-        return sellerId;
-    }
-
-    public void setSellerId(User sellerId) {
-        this.sellerId = sellerId;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public BigDecimal getPrice() {
-        return price;
-    }
-
-    public void setPrice(BigDecimal price) {
-        this.price = price;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Instant createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public Instant getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(Instant updatedAt) {
-        this.updatedAt = updatedAt;
+    @PreUpdate
+    protected void onUpdate() {
+        updatedat = Instant.now();
     }
 }

@@ -2,10 +2,14 @@ package com.g_wuy.swp391.voltera.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.Instant;
 
+@Getter
+@Setter
 @Entity
 @Table(name = "\"User\"")
 public class User {
@@ -52,109 +56,14 @@ public class User {
     @Column(name = "updateat")
     private Instant updateAt;
 
-    // Empty constructor
-    public User() {
+    @PrePersist
+    protected void onCreate() {
+        createAt = Instant.now();
+        updateAt = Instant.now();
     }
 
-    // Full constructor without id
-    public User(String firstName, String lastName, String fullName, String email, String phone, Boolean gender, String address, String status, Instant createAt, Instant updateAt) {
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.fullName = fullName;
-        this.email = email;
-        this.phone = phone;
-        this.gender = gender;
-        this.address = address;
-        this.status = status;
-        this.createAt = createAt;
-        this.updateAt = updateAt;
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public String getFullName() {
-        return fullName;
-    }
-
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-
-    public Boolean getGender() {
-        return gender;
-    }
-
-    public void setGender(Boolean gender) {
-        this.gender = gender;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public Instant getCreateAt() {
-        return createAt;
-    }
-
-    public void setCreateAt(Instant createAt) {
-        this.createAt = createAt;
-    }
-
-    public Instant getUpdateAt() {
-        return updateAt;
-    }
-
-    public void setUpdateAt(Instant updateAt) {
-        this.updateAt = updateAt;
+    @PreUpdate
+    protected void onUpdate() {
+        updateAt = Instant.now();
     }
 }

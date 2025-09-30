@@ -1,9 +1,14 @@
 package com.g_wuy.swp391.voltera.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
+
 import java.time.LocalDate;
 
+@Getter
+@Setter
 @Entity
 @Table(name = "contract")
 public class Contract {
@@ -14,105 +19,31 @@ public class Contract {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "postid")
-    private Post postId;
+    private Post post; // thay vì postId
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sellerid")
-    private User sellerId;
+    private User seller; // thay vì sellerId
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "buyerid")
-    private User buyerId;
+    private User buyer; // thay vì buyerId
 
     @Column(name = "contractfile", length = Integer.MAX_VALUE)
-    private String contractFile;
-
-    @Size(max = 50)
-    @Column(name = "contractstatus", length = 50)
-    private String contractStatus;
+    private String contractfile;
 
     @Column(name = "signeddate")
-    private LocalDate signedDate;
+    private LocalDate signeddate;
 
     @Column(name = "expirationdate")
-    private LocalDate expirationDate;
+    private LocalDate expirationdate;
 
-    // Empty constructor
-    public Contract() {
-    }
+    @Enumerated(EnumType.STRING)
+    @ColumnDefault("'Pending'")
+    @Column(name = "contractstatus")
+    private ContractStatus contractstatus = ContractStatus.PENDING;
 
-    // Full constructor without id
-    public Contract(Post postId, User sellerId, User buyerId, String contractFile, String contractStatus, LocalDate signedDate, LocalDate expirationDate) {
-        this.postId = postId;
-        this.sellerId = sellerId;
-        this.buyerId = buyerId;
-        this.contractFile = contractFile;
-        this.contractStatus = contractStatus;
-        this.signedDate = signedDate;
-        this.expirationDate = expirationDate;
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public Post getPostId() {
-        return postId;
-    }
-
-    public void setPostId(Post postId) {
-        this.postId = postId;
-    }
-
-    public User getSellerId() {
-        return sellerId;
-    }
-
-    public void setSellerId(User sellerId) {
-        this.sellerId = sellerId;
-    }
-
-    public User getBuyerId() {
-        return buyerId;
-    }
-
-    public void setBuyerId(User buyerId) {
-        this.buyerId = buyerId;
-    }
-
-    public String getContractFile() {
-        return contractFile;
-    }
-
-    public void setContractFile(String contractFile) {
-        this.contractFile = contractFile;
-    }
-
-    public String getContractStatus() {
-        return contractStatus;
-    }
-
-    public void setContractStatus(String contractStatus) {
-        this.contractStatus = contractStatus;
-    }
-
-    public LocalDate getSignedDate() {
-        return signedDate;
-    }
-
-    public void setSignedDate(LocalDate signedDate) {
-        this.signedDate = signedDate;
-    }
-
-    public LocalDate getExpirationDate() {
-        return expirationDate;
-    }
-
-    public void setExpirationDate(LocalDate expirationDate) {
-        this.expirationDate = expirationDate;
+    public enum ContractStatus {
+        PENDING, SIGNED, ACTIVE, EXPIRED, CANCELLED
     }
 }

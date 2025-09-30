@@ -1,10 +1,16 @@
 package com.g_wuy.swp391.voltera.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.Instant;
 
+@Getter
+@Setter
 @Entity
 @Table(name = "feedback")
 public class Feedback {
@@ -15,8 +21,10 @@ public class Feedback {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "transactionid")
-    private Transaction transactionId;
+    private Transaction transactionid;
 
+    @Min(1)
+    @Max(5)
     @Column(name = "rating")
     private Integer rating;
 
@@ -25,57 +33,10 @@ public class Feedback {
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "createdat")
-    private Instant createdAt;
+    private Instant createdat;
 
-    // Empty constructor
-    public Feedback() {
-    }
-
-    // Full constructor without id
-    public Feedback(Transaction transactionId, Integer rating, String comment, Instant createdAt) {
-        this.transactionId = transactionId;
-        this.rating = rating;
-        this.comment = comment;
-        this.createdAt = createdAt;
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public Transaction getTransactionId() {
-        return transactionId;
-    }
-
-    public void setTransactionId(Transaction transactionId) {
-        this.transactionId = transactionId;
-    }
-
-    public Integer getRating() {
-        return rating;
-    }
-
-    public void setRating(Integer rating) {
-        this.rating = rating;
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(String comment) {
-        this.comment = comment;
-    }
-
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Instant createdAt) {
-        this.createdAt = createdAt;
+    @PrePersist
+    protected void onCreate() {
+        createdat = Instant.now();
     }
 }
