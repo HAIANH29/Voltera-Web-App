@@ -31,7 +31,19 @@ function App() {
       path: routes.register,
       element: (
         <PublicRoute>
-          <RegisterPage />
+          <AuthLayout>
+            <RegisterPage />
+          </AuthLayout>
+        </PublicRoute>
+      ),
+    },
+    {
+      path: routes.forgotPassword,
+      element: (
+        <PublicRoute>
+          <AuthLayout>
+            <ForgotPasswordPage />
+          </AuthLayout>
         </PublicRoute>
       ),
     },
