@@ -1,5 +1,6 @@
 package com.g_wuy.swp391.voltera.model.request;
 
+import com.g_wuy.swp391.voltera.entity.Post.PostStatus;
 import com.g_wuy.swp391.voltera.model.dto.BatteryDTO;
 import com.g_wuy.swp391.voltera.model.dto.VehicleDTO;
 import lombok.Data;
@@ -14,7 +15,7 @@ public class PostRequest {
     private String title;
     private String description;
     private BigDecimal price;
-    private String status;
+    private PostStatus status;
     private BatteryDTO battery;
     private VehicleDTO  vehicle;
     private List<MultipartFile> images;

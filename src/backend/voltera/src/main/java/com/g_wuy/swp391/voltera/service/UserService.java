@@ -43,9 +43,9 @@ public class UserService {
             throw new RuntimeException("Account not found with id: " + accountId);
         }
         user.setId(accountId);
-        user.setFirstname(userProfile.getFirstname());
-        user.setLastname(userProfile.getLastname());
-        user.setFullname(userProfile.getFirstname() + " " + userProfile.getLastname());
+        user.setFirstName(userProfile.getFirstName());
+        user.setLastName(userProfile.getLastName());
+        user.setFullName(userProfile.getFirstName() + " " + userProfile.getLastName());
         user.setEmail(userProfile.getEmail());
         user.setPhone(userProfile.getPhone());
         user.setGender(userProfile.getGender());
