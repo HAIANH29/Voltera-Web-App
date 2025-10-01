@@ -9,6 +9,7 @@ import { Toaster } from "react-hot-toast";
 import PublicRoute from "./routes/PublicRoute";
 import ForgotPasswordPage from "./pages/forgotpasswordPage/ForgotPasswordPage";
 import MainLayout from "./layout/mainLayout";
+
 import VerifyEmailPage from "./pages/VerifyEmailPage/VerifyEmailPage";
 
 function App() {

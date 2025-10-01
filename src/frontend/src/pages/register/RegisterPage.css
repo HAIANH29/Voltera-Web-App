@@ -1,3 +1,6 @@
+
+
+
 /* ===== Tesla-like Register Form ===== */
 
 /* Cột form trung tâm */
@@ -66,57 +69,50 @@
 }
 
 /* Icon con mắt – nằm sát mép phải & giữa dọc */
-.t-eye {
-    position: absolute;
-    right: 8px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    color: #111827;
-    padding: 0;
-    z-index: 1;
-}
 
-.t-eye:focus {
-    outline: none;
+.t-eye{
+  position:absolute;
+  right:8px;
+  top:50%;
+  transform:translateY(-50%);
+  width:32px;                     /* có kích thước rõ ràng để không che vùng gõ */
+  height:32px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:none;
+  background:transparent;
+  cursor:pointer;
+  color:#111827;
+  padding:0;
+  z-index:1;                      /* trên nền input nhưng chỉ chiếm ô 32px */
 }
+.t-eye:focus{ outline:none; }
 
 /* Lỗi */
-.t-error {
-    color: #e11d48;
-    font-size: 13px;
-    margin-top: 4px;
+.t-error{
+  color:#e11d48;
+  font-size:13px;
+  margin-top:4px;
 }
 
 /* Nút Next */
-.t-btn {
-    width: 100%;
-    height: 44px;
-    border-radius: 6px;
-    border: 1px solid transparent;
-    font-weight: 600;
-    font-size: 15px;
-    cursor: pointer;
-    margin-top: 18px;
-    transition: background .15s;
+.t-btn{
+  width:100%;
+  height:44px;
+  border-radius:6px;
+  border:1px solid transparent;
+  font-weight:600;
+  font-size:15px;
+  cursor:pointer;
+  margin-top:18px;
+  transition:background .15s;
 }
+.t-btn-primary{
+  background:#9aaef2;
+  color:#fff;
+}
+.t-btn-primary:hover{ background:#8ea4ef; }
+.t-btn-primary:active{ transform: translateY(1px); }
 
-.t-btn-primary {
-    background: #9aaef2;
-    color: #fff;
-}
 
-.t-btn-primary:hover {
-    background: #8ea4ef;
-}
-
-.t-btn-primary:active {
-    transform: translateY(1px);
-}
