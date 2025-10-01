@@ -37,9 +37,15 @@ public class Account {
     @Column(name = "password", nullable = false)
     private String password;
 
-    @Size(max = 50)
-    @Column(name = "role", length = 50)
-    private String role;
+    @Enumerated(EnumType.STRING)
+    @ColumnDefault("'BUYER'")
+    private Role role;
+
+    public enum Role {
+        ADMIN, 
+        Seller, 
+        BUYER
+    }
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "createat")
@@ -67,15 +73,5 @@ public class Account {
     @PreUpdate
     protected void onUpdate() {
         updateat = Instant.now();
-    }
-
-    public Account(User user, String username, String password, String role, Instant createat, Instant updateat, AccountStatus status) {
-        this.user = user;
-        this.username = username;
-        this.password = password;
-        this.role = role;
-        this.createat = createat;
-        this.updateat = updateat;
-        this.status = status;
     }
 }

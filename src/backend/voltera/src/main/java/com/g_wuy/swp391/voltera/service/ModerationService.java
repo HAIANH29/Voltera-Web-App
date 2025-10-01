@@ -2,6 +2,7 @@
 package com.g_wuy.swp391.voltera.service;
 
 import com.g_wuy.swp391.voltera.entity.Post;
+import com.g_wuy.swp391.voltera.entity.Post.PostStatus;
 import com.g_wuy.swp391.voltera.model.request.ModerationRequest;
 import com.g_wuy.swp391.voltera.model.response.ModerationResponse;
 import com.g_wuy.swp391.voltera.repository.PostRepository;
@@ -29,7 +30,7 @@ public class ModerationService {
         }
 
         Post post = postOptional.get();
-        String newStatus = "APPROVE".equalsIgnoreCase(request.getStatus()) ? "APPROVE" : "REJECT";
+        PostStatus newStatus = PostStatus.APPROVE.equals(request.getStatus()) ? PostStatus.APPROVE : PostStatus.REJECT;
         postRepository.updateStatusById(post.getId(), newStatus);
         if (request.getReason() != null) {
             post.setDescription(post.getDescription() + "\n[Admin Note: " + request.getReason() + "]");
@@ -46,13 +47,13 @@ public class ModerationService {
         }
 
         Post post = postOptional.get();
-        postRepository.updateStatusById(post.getId(), "REJECT");
+        postRepository.updateStatusById(post.getId(), PostStatus.REJECT);
         if (reason != null) {
             post.setDescription(post.getDescription() + "\n[Reject Note: " + reason + "]");
             postRepository.save(post); // Cập nhật description
         }
 
-        return new ModerationResponse(post.getId(), "REJECT", reason);
+        return new ModerationResponse(post.getId(), PostStatus.REJECT, reason);
     }
 
     public void setInitialStatus(Post post) {

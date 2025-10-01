@@ -21,9 +21,11 @@ public interface PostMapper {
     VehicleDTO toDTO(Vehicle vehicle);
 
     // PostResponse mapping
-    @Mapping(source = "id", target = "postId")
-    @Mapping(source = "battery", target = "battery")
-    @Mapping(source = "vehicle", target = "vehicle")
-    @Mapping(source = "imageUrls", target = "imageUrls")
+    @Mapping(source = "post.id", target = "postId")
+    @Mapping(source = "post.title", target = "title")
+    @Mapping(source = "post.description", target = "description")
+    @Mapping(source = "post.price", target = "price")
+    @Mapping(source = "post.status", target = "status")
+
     PostResponse toPostResponse(Post post, Battery battery, Vehicle vehicle, List<String> imageUrls);
 }

@@ -1,6 +1,7 @@
 package com.g_wuy.swp391.voltera.service;
 
 import com.g_wuy.swp391.voltera.entity.*;
+import com.g_wuy.swp391.voltera.entity.Account.Role;
 import com.g_wuy.swp391.voltera.mapper.PostMapper;
 import com.g_wuy.swp391.voltera.model.request.PostRequest;
 import com.g_wuy.swp391.voltera.model.response.PostResponse;
@@ -37,7 +38,7 @@ public class PostService {
             throw new UserPrincipalNotFoundException("Account not found");
         }
 
-        if (!"seller".equalsIgnoreCase(account.getRole())) {
+        if (!Role.Seller.equals(account.getRole())) {
             throw new SecurityException("Only sellers can create posts");
         }
         User seller = Optional.ofNullable(account.getUser())
@@ -70,15 +71,15 @@ public class PostService {
                     .model(dto.getVehicle().getModel())
                     .version(dto.getVehicle().getVersion())
                     .odo(dto.getVehicle().getOdo())
-                    .batterycapacity(dto.getVehicle().getBatterycapacity())
+                    .batteryCapacity(dto.getVehicle().getBatterycapacity())
                     .range(dto.getVehicle().getRange())
-                    .chargingtime(dto.getVehicle().getChargingtime())
+                    .chargingTime(dto.getVehicle().getChargingtime())
                     .color(dto.getVehicle().getColor())
-                    .numberofseat(dto.getVehicle().getNumberofseat())
+                    .numberOfSeat(dto.getVehicle().getNumberofseat())
                     .style(dto.getVehicle().getStyle())
-                    .bodyinsurance(Boolean.TRUE.equals(dto.getVehicle().getBodyinsurance()))
-                    .vehicleinspection(Boolean.TRUE.equals(dto.getVehicle().getVehicleinspection()))
-                    .licenseplate(dto.getVehicle().getLicenseplate())
+                    .bodyInsurance(Boolean.TRUE.equals(dto.getVehicle().getBodyinsurance()))
+                    .vehicleInspection(Boolean.TRUE.equals(dto.getVehicle().getVehicleinspection()))
+                    .licensePlate(dto.getVehicle().getLicenseplate())
                     .origin(dto.getVehicle().getOrigin())
                     .build());
 
@@ -89,8 +90,8 @@ public class PostService {
                             String url = s3Service.uploadFile(file);
                             vehicleImageRepository.save(Vehicleimage.builder()
                                     .vehicle(savedVehicle)
-                                    .imageurl(url)
-                                    .uploadedat(Instant.now())
+                                    .imageUrl(url)
+                                    .uploadedAt(Instant.now())
                                     .build());
                             allImages.add(url);
                         } catch (IOException e) {
