@@ -5,14 +5,6 @@ import * as Yup from "yup";
 import "./RegisterPage.css";
 
 const schema = Yup.object({
-  firstName: Yup.string()
-    .trim()
-    .min(2, "First name must be at least 2 characters.")
-    .required("Please enter your first name."),
-  lastName: Yup.string()
-    .trim()
-    .min(2, "Last name must be at least 2 characters.")
-    .required("Please enter your last name."),
   email: Yup.string()
     .trim()
     .email("Invalid email address.")
@@ -35,8 +27,6 @@ export default function RegisterPage() {
 
   const formik = useFormik({
     initialValues: {
-      firstName: "",
-      lastName: "",
       email: "",
       password: "",
       confirmPassword: "",
@@ -78,53 +68,6 @@ export default function RegisterPage() {
         </div>
 
         <form onSubmit={handleSubmit} noValidate>
-          {/* First & Last name */}
-          <div className="form-row-2">
-            <div className="form-group">
-              <label className="label" htmlFor="firstName">
-                First name
-              </label>
-              <input
-                id="firstName"
-                name="firstName"
-                type="text"
-                value={values.firstName}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                className={`input ${
-                  touched.firstName && errors.firstName ? "input-error" : ""
-                }`}
-                placeholder="e.g. Alex"
-                autoComplete="given-name"
-              />
-              {touched.firstName && errors.firstName && (
-                <div className="error-text">{errors.firstName}</div>
-              )}
-            </div>
-
-            <div className="form-group">
-              <label className="label" htmlFor="lastName">
-                Last name
-              </label>
-              <input
-                id="lastName"
-                name="lastName"
-                type="text"
-                value={values.lastName}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                className={`input ${
-                  touched.lastName && errors.lastName ? "input-error" : ""
-                }`}
-                placeholder="e.g. Nguyen"
-                autoComplete="family-name"
-              />
-              {touched.lastName && errors.lastName && (
-                <div className="error-text">{errors.lastName}</div>
-              )}
-            </div>
-          </div>
-
           {/* Email */}
           <div className="form-group">
             <label className="label" htmlFor="email">
