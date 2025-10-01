@@ -1,228 +1,106 @@
-/* ===== Page layout ===== */
-.register-page {
-    min-height: 100vh;
-    display: grid;
-    place-items: center;
-    padding: 24px;
-    background: #f3f4f6;
-    /* xám nhạt */
+/* ===== Tesla-like Register Form ===== */
+
+/* Cột form trung tâm */
+.t-register{
+  width: 100%;
+  max-width: 420px;              /* gọn như Tesla */
+  margin: 60px auto;
+  color: #171a20;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-    .register-page {
-        background: #1f2937;
-        /* xám đậm */
-    }
+/* Step nhỏ, xám */
+.t-step{
+  font-size: 13px;
+  color: #6b7280;
+  margin-bottom: 10px;
 }
 
-/* ===== Card ===== */
-.card {
-    width: 100%;
-    max-width: 420px;
-    background: #fff;
-    border-radius: 16px;
-    border: 1px solid #d1d5db;
-    /* viền xám nhạt */
-    box-shadow: 0 10px 30px rgba(0, 0, 0, .06);
-    padding: 24px;
-    color: #111827;
+/* Heading */
+.t-heading{
+  font-size: 32px;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin: 0 0 20px;
 }
 
-@media (prefers-color-scheme: dark) {
-    .card {
-        background: #111827;
-        border-color: #374151;
-        color: #f9fafb;
-    }
+/* Label */
+.t-label{
+  display:block;
+  font-size:14px;
+  font-weight:600;
+  margin:14px 0 6px;
+  color:#171a20;
 }
 
-.header {
-    margin-bottom: 12px;
+/* Bọc input + eye */
+.t-field{
+  position: relative;
+  display: flex;
+  align-items: center;
 }
 
-.title {
-    font-size: 24px;
-    font-weight: 700;
-    margin: 0 0 6px;
+/* Input */
+.t-input{
+  width:100%;
+  height:44px;
+  border:1px solid #e6e6e6;
+  border-radius:6px;
+  background:#f2f2f2;
+  padding:0 44px 0 14px;          /* CHỪA CHỖ icon bên phải */
+  font-size:15px;
+  transition:border-color .15s, background .15s;
+}
+.t-input:focus{
+  outline:none;
+  border-color:#d1d5db;
+  background:#fff;
+}
+.t-input-error{ border-color:#e11d48; }
+
+/* Icon con mắt – nằm sát mép phải & giữa dọc */
+.t-eye{
+  position:absolute;
+  right:8px;
+  top:50%;
+  transform:translateY(-50%);
+  width:32px;                     /* có kích thước rõ ràng để không che vùng gõ */
+  height:32px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:none;
+  background:transparent;
+  cursor:pointer;
+  color:#111827;
+  padding:0;
+  z-index:1;                      /* trên nền input nhưng chỉ chiếm ô 32px */
+}
+.t-eye:focus{ outline:none; }
+
+/* Lỗi */
+.t-error{
+  color:#e11d48;
+  font-size:13px;
+  margin-top:4px;
 }
 
-.subtitle {
-    color: #6b7280;
-    /* xám chữ phụ */
-    font-size: 14px;
+/* Nút Next */
+.t-btn{
+  width:100%;
+  height:44px;
+  border-radius:6px;
+  border:1px solid transparent;
+  font-weight:600;
+  font-size:15px;
+  cursor:pointer;
+  margin-top:18px;
+  transition:background .15s;
 }
-
-@media (prefers-color-scheme: dark) {
-    .subtitle {
-        color: #9ca3af;
-    }
+.t-btn-primary{
+  background:#9aaef2;
+  color:#fff;
 }
-
-/* ===== Form controls ===== */
-.form-group {
-    margin-top: 14px;
-}
-
-.label {
-    display: block;
-    font-size: 14px;
-    margin-bottom: 6px;
-    font-weight: 600;
-}
-
-.input {
-    width: 100%;
-    height: 42px;
-    border-radius: 10px;
-    border: 1px solid #d1d5db;
-    padding: 0 12px;
-    background: #fff;
-    color: #111827;
-    outline: none;
-    transition: border-color .15s ease, box-shadow .15s ease;
-}
-
-.input:focus {
-    border-color: #111827;
-    /* viền đen */
-    box-shadow: 0 0 0 3px rgba(0, 0, 0, .15);
-}
-
-@media (prefers-color-scheme: dark) {
-    .input {
-        background: #1f2937;
-        color: #f9fafb;
-        border-color: #374151;
-    }
-
-    .input:focus {
-        border-color: #f9fafb;
-        box-shadow: 0 0 0 3px rgba(255, 255, 255, .18);
-    }
-}
-
-.input-error {
-    border-color: #ef4444 !important;
-    box-shadow: 0 0 0 3px rgba(239, 68, 68, .12);
-}
-
-.error-text {
-    margin-top: 6px;
-    color: #ef4444;
-    font-size: 13px;
-}
-
-/* ===== Password toggle ===== */
-.password-wrapper {
-    position: relative;
-}
-
-.password-toggle {
-    position: absolute;
-    top: 0;
-    right: 6px;
-    height: 42px;
-    padding: 0 10px;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    font-size: 12px;
-    color: #111827;
-    /* đen */
-}
-
-.password-toggle:focus {
-    outline: 2px solid rgba(0, 0, 0, .25);
-    border-radius: 6px;
-}
-
-@media (prefers-color-scheme: dark) {
-    .password-toggle {
-        color: #f9fafb;
-        /* trắng trong dark mode */
-    }
-}
-
-/* ===== Row group (checkbox + lỗi) ===== */
-.row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    flex-wrap: wrap;
-}
-
-.checkbox-label {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 14px;
-}
-
-.checkbox-label input {
-    accent-color: #111827;
-    /* đen */
-}
-
-@media (prefers-color-scheme: dark) {
-    .checkbox-label input {
-        accent-color: #f9fafb;
-        /* trắng */
-    }
-}
-
-/* ===== Primary button (đen nền, trắng chữ) ===== */
-.button {
-    width: 100%;
-    height: 44px;
-    border-radius: 10px;
-    border: 1px solid #111827;
-    background: #111827;
-    color: #fff;
-    font-weight: 600;
-    cursor: pointer;
-    transition: transform .06s ease, opacity .15s ease;
-}
-
-.button:hover {
-    opacity: .9;
-}
-
-.button:active {
-    transform: translateY(1px);
-}
-
-.button:disabled {
-    opacity: .65;
-    cursor: not-allowed;
-}
-
-/* ===== Footer ===== */
-.footer {
-    margin-top: 14px;
-    font-size: 14px;
-    text-align: center;
-    color: #6b7280;
-}
-
-@media (prefers-color-scheme: dark) {
-    .footer {
-        color: #9ca3af;
-    }
-}
-
-.link {
-    color: #111827;
-    cursor: pointer;
-    font-weight: 600;
-}
-
-.link:hover {
-    text-decoration: underline;
-}
-
-@media (prefers-color-scheme: dark) {
-    .link {
-        color: #f9fafb;
-    }
-}
+.t-btn-primary:hover{ background:#8ea4ef; }
+.t-btn-primary:active{ transform: translateY(1px); }

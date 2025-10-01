@@ -1,0 +1,54 @@
+/* ===== Verify Email Page ===== */
+
+.t-otp-container {
+  max-width: 520px;
+  text-align: center;
+  margin: 60px auto;
+}
+
+.t-otp-sub {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 6px 0 18px;
+}
+
+/* 6 ô nhập OTP */
+.t-otp-boxes {
+  display: grid;
+  grid-template-columns: repeat(6, 56px);
+  justify-content: center;
+  gap: 12px;
+  margin: 10px 0 8px;
+}
+
+.t-otp-input {
+  height: 56px;
+  width: 56px;
+  text-align: center;
+  font-size: 22px;
+  font-weight: 600;
+  border-radius: 10px;
+  border: 1px solid #e6e6e6;
+  background: #f2f2f2;
+  transition: border-color .15s, background .15s, box-shadow .15s;
+}
+.t-otp-input:focus {
+  outline: none;
+  border-color: #d1d5db;
+  background: #fff;
+}
+
+/* Nút */
+.t-btn-outline {
+  background: #f3f4f6;
+  color: #111827;
+}
+.t-btn-outline:hover {
+  background: #e9eaee;
+}
+
+.t-btn-disabled {
+  background: #e5e7eb;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
