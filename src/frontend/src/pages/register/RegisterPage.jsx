@@ -5,6 +5,7 @@ import * as Yup from "yup";
 import "./RegisterPage.css";
 
 const schema = Yup.object({
+
   firstName: Yup.string()
     .trim()
     .min(2, "First name must be at least 2 characters.")
@@ -13,6 +14,7 @@ const schema = Yup.object({
     .trim()
     .min(2, "Last name must be at least 2 characters.")
     .required("Please enter your last name."),
+
   email: Yup.string()
     .trim()
     .email("Invalid email address.")
@@ -35,8 +37,10 @@ export default function RegisterPage() {
 
   const formik = useFormik({
     initialValues: {
+
       firstName: "",
       lastName: "",
+
       email: "",
       password: "",
       confirmPassword: "",
@@ -78,6 +82,7 @@ export default function RegisterPage() {
         </div>
 
         <form onSubmit={handleSubmit} noValidate>
+
           {/* First & Last name */}
           <div className="form-row-2">
             <div className="form-group">
@@ -124,6 +129,7 @@ export default function RegisterPage() {
               )}
             </div>
           </div>
+
 
           {/* Email */}
           <div className="form-group">

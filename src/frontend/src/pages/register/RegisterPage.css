@@ -58,6 +58,7 @@
     }
 }
 
+
 /* grid 2 ô cho tên */
 .form-row-2 {
     display: grid;
@@ -70,6 +71,7 @@
         grid-template-columns: 1fr 1fr;
     }
 }
+
 
 /* ===== Form controls ===== */
 .form-group {
