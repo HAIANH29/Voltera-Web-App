@@ -10,13 +10,14 @@
 }
 
 .header-container {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 0 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   height: 70px;
+  position: relative;
 }
 
 /* Logo Section - Left */
@@ -61,22 +62,28 @@
   list-style: none;
   margin: 0;
   padding: 0;
-  gap: 32px;
+  gap: 24px;
+  justify-content: center;
+  align-items: center;
 }
 
 .nav-item {
   position: relative;
+  display: flex;
+  align-items: center;
 }
 
 .nav-link {
   text-decoration: none;
   color: #374151;
   font-weight: 500;
-  font-size: 16px;
-  padding: 8px 16px;
+  font-size: 15px;
+  padding: 8px 12px;
   border-radius: 6px;
   transition: all 0.2s ease;
   position: relative;
+  white-space: nowrap;
+  text-align: center;
 }
 
 .nav-link:hover {
@@ -337,6 +344,124 @@
 }
 
 /* Responsive Design */
+
+/* Large screens - 1200px and up */
+@media (min-width: 1200px) {
+  .nav-menu {
+    gap: 32px;
+  }
+  
+  .nav-link {
+    font-size: 16px;
+    padding: 8px 16px;
+  }
+}
+
+/* Large desktop - 1024px to 1199px */
+@media (max-width: 1199px) and (min-width: 1025px) {
+  .header-container {
+    max-width: 960px;
+    padding: 0 20px;
+  }
+  
+  .nav-menu {
+    gap: 20px;
+  }
+  
+  .nav-link {
+    font-size: 15px;
+    padding: 8px 12px;
+  }
+}
+
+/* Tablet landscape - 1024px */
+@media (max-width: 1024px) and (min-width: 992px) {
+  .header-container {
+    max-width: 100%;
+    padding: 0 18px;
+  }
+  
+  .nav-menu {
+    gap: 18px;
+  }
+  
+  .nav-link {
+    font-size: 14px;
+    padding: 6px 10px;
+  }
+  
+  .header-right {
+    gap: 14px;
+    min-width: 260px;
+  }
+  
+  .post-item-btn {
+    padding: 0 14px !important;
+    font-size: 13px;
+    height: 36px !important;
+  }
+  
+  .logo-text {
+    font-size: 22px;
+  }
+}
+
+/* Medium tablet - 992px */
+@media (max-width: 991px) and (min-width: 769px) {
+  .header-container {
+    max-width: 100%;
+    padding: 0 16px;
+  }
+  
+  .nav-menu {
+    gap: 16px;
+  }
+  
+  .nav-link {
+    font-size: 14px;
+    padding: 6px 8px;
+  }
+  
+  .header-right {
+    gap: 12px;
+    min-width: 240px;
+  }
+  
+  .post-item-btn {
+    padding: 0 12px !important;
+    font-size: 13px;
+    height: 34px !important;
+  }
+}
+
+/* Tablet - 768px to 991px */
+@media (max-width: 991px) and (min-width: 769px) {
+  .header-container {
+    max-width: 100%;
+    padding: 0 16px;
+  }
+  
+  .nav-menu {
+    gap: 16px;
+  }
+  
+  .nav-link {
+    font-size: 14px;
+    padding: 6px 10px;
+  }
+  
+  .header-right {
+    gap: 12px;
+    min-width: 280px;
+  }
+  
+  .post-item-btn {
+    padding: 0 16px !important;
+    font-size: 14px;
+  }
+}
+
+/* Small tablet and large phone - 768px and below */
 @media (max-width: 768px) {
   .header-container {
     padding: 0 16px;
@@ -346,8 +471,13 @@
     display: none;
   }
   
-  .header-right .post-item-btn {
+  .header-right .post-menu-container {
     display: none;
+  }
+  
+  .header-right {
+    gap: 10px;
+    min-width: auto;
   }
   
   .mobile-menu-toggle {
@@ -362,15 +492,26 @@
     right: -16px;
     min-width: 200px;
   }
+  
+  .cart-icon {
+    width: 22px;
+    height: 22px;
+  }
 }
 
+/* Mobile - 640px and below */
 @media (max-width: 640px) {
   .header-container {
     height: 60px;
+    padding: 0 12px;
   }
   
   .logo {
     height: 32px;
+  }
+  
+  .logo-text {
+    font-size: 18px;
   }
   
   .avatar-image,
@@ -378,6 +519,59 @@
     width: 32px;
     height: 32px;
     font-size: 14px;
+  }
+  
+  .cart-icon {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .cart-badge {
+    font-size: 11px;
+    min-width: 16px;
+    height: 16px;
+  }
+}
+
+/* Very small screens - 480px and below */
+@media (max-width: 480px) {
+  .header-container {
+    padding: 0 8px;
+    height: 56px;
+  }
+  
+  .logo-text {
+    display: none;
+  }
+  
+  .header-right {
+    gap: 8px;
+  }
+  
+  .user-dropdown {
+    right: -8px;
+    left: auto;
+    transform: none;
+    min-width: 180px;
+  }
+}
+
+/* Ultra small screens - 360px and below */
+@media (max-width: 360px) {
+  .header-container {
+    padding: 0 6px;
+  }
+  
+  .avatar-image,
+  .avatar-placeholder {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+  
+  .cart-icon {
+    width: 18px;
+    height: 18px;
   }
 }
 

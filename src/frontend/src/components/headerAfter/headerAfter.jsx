@@ -68,6 +68,12 @@ const HeaderAfter = ({ user = { name: 'John Doe', avatar: null } }) => {
                 Favorites
               </Link>
             </li>
+            {/* Thêm About Us */}
+            <li className="nav-item">
+              <Link to="/about" className="nav-link">
+                About Us
+              </Link>
+            </li>
           </ul>
         </nav>
 
