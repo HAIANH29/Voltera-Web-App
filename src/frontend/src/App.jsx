@@ -8,8 +8,8 @@ import AuthLayout from "./layout/authenLayout";
 import { Toaster } from "react-hot-toast";
 import PublicRoute from "./routes/PublicRoute";
 import ForgotPasswordPage from "./pages/forgotpasswordPage/ForgotPasswordPage";
-
 import MainLayout from "./layout/mainLayout";
+import VerifyEmailPage from "./pages/VerifyEmailPage/VerifyEmailPage";
 
 function App() {
   const router = createBrowserRouter([
@@ -20,6 +20,16 @@ function App() {
           <MainLayout>
             <HomePage />
           </MainLayout>
+        </PublicRoute>
+      ),
+    },
+    {
+      path: routes.verifyEmail,
+      element: (
+        <PublicRoute>
+          <AuthLayout>
+            <VerifyEmailPage />
+          </AuthLayout>
         </PublicRoute>
       ),
     },

@@ -33,28 +33,18 @@ export default function AuthLayout({ children }) {
  
       {/* 🔹 Body */}
 <Content
-
-        style={{
-
-          flex: 1,
-
-          padding: "48px 24px",
-
-          display: "flex",
-
-          justifyContent: "center",
-
-          alignItems: "center",
-
-          background: "#f5f5f5",
-
-        }}
+  style={{
+    flex: 1,
+    padding: "0 16px",     // ↓ bớt padding (trước là 48px 24px)
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    background: "#fff",    // ↓ nền trắng phẳng như Tesla (trước là #f5f5f5)
+  }}
 >
-
-        {/* dùng <Outlet /> cho router hoặc children trực tiếp */}
-
-        {children ?? <Outlet />}
+  {children ?? <Outlet />}
 </Content>
+
  
       {/* 🔹 Bottom */}
 <Footer
