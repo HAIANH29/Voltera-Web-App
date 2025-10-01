@@ -8,13 +8,16 @@ import AuthLayout from "./layout/authenLayout";
 import { Toaster } from "react-hot-toast";
 import PublicRoute from "./routes/PublicRoute";
 import ForgotPasswordPage from "./pages/forgotpasswordPage/ForgotPasswordPage";
+import MainLayout from "./layout/mainLayout";
 function App() {
   const router = createBrowserRouter([
     {
       path: routes.home,
       element: (
         <PublicRoute>
-          <HomePage />
+          <MainLayout>
+            <HomePage />
+          </MainLayout>
         </PublicRoute>
       ),
     },
