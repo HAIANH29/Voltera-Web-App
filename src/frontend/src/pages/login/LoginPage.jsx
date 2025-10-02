@@ -46,13 +46,13 @@ api.interceptors.request.use(
 
 // [STEP 4] API checkEmail
 async function checkEmail(email) {
-  const res = await api.post("authen/check-email", { email: email.trim() });
+  const res = await api.post("auth/check-email", { email: email.trim() });
   return !!(res.data?.exists ?? res.data?.data?.exists);
 }
 
 // [STEP 5] API login
 async function loginApi({ email, password }) {
-  const res = await api.post("authen/login", { email: email.trim(), password });
+  const res = await api.post("auth/login", { email: email.trim(), password });
   const { accessToken, refreshToken, user } = res.data?.data || {};
   if (!accessToken) throw new Error("No access token returned");
 
