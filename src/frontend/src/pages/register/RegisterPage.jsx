@@ -32,7 +32,7 @@ export default function RegisterPage() {
         console.log("Register payload:", values);
         setSubmitting(false);
         // Bước 2: verify email / OTP
-        navigate("/verify-email", { state: { email: values.email } });
+        navigate("/verify-email", { state: { email: values.email, purpose: "signup" } });
       }, 500);
     },
   });

@@ -9,7 +9,7 @@ import { Toaster } from "react-hot-toast";
 import PublicRoute from "./routes/PublicRoute";
 import ForgotPasswordPage from "./pages/forgotpasswordPage/ForgotPasswordPage";
 import MainLayout from "./layout/mainLayout";
-
+import ResetPasswordPage from "./pages/resetPasswordPage/ResetPasswordPage";
 import VerifyEmailPage from "./pages/VerifyEmailPage/VerifyEmailPage";
 
 function App() {
@@ -60,6 +60,16 @@ function App() {
         <PublicRoute>
           <AuthLayout>
             <ForgotPasswordPage />
+          </AuthLayout>
+        </PublicRoute>
+      ),
+    },
+    {
+      path: routes.resetPassword,
+      element: (
+        <PublicRoute>
+          <AuthLayout>
+            <ResetPasswordPage />
           </AuthLayout>
         </PublicRoute>
       ),

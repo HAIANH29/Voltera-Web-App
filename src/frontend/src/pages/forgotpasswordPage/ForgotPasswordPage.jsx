@@ -8,7 +8,7 @@ export default function ForgotPasswordPage() {
     const email = e.currentTarget.elements.email.value.trim();
     if (!email) return;
     // TODO: gọi API gửi OTP tại đây (await sendOTP(email))
-    navigate("/verify-email", { state: { email } }); // hoặc routes.verifyEmail
+    navigate("/verify-email", { state: { email, purpose: "reset" } }); // hoặc routes.verifyEmail
   };
 
   return (

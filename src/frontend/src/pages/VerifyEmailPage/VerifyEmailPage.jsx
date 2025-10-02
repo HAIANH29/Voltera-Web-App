@@ -8,15 +8,28 @@ const RESEND_SECONDS = 30;
 export default function VerifyEmailPage() {
   const { state } = useLocation();
   const email = state?.email || "";
+  const purpose = state?.purpose || "signup"; // "signup" | "reset"
   const navigate = useNavigate();
 
   const [code, setCode] = useState(Array(CODE_LENGTH).fill(""));
   const inputsRef = useRef([]);
-
   const [left, setLeft] = useState(RESEND_SECONDS);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+
+  // Fallback: nếu không có email thì đưa về trang tương ứng
+  useEffect(() => {
+    if (!email) {
+      navigate(purpose === "reset" ? "/forgot-password" : "/register", {
+        replace: true,
+      });
+    }
+  }, [email, navigate, purpose]);
+
+  // Countdown resend
   useEffect(() => {
     if (left <= 0) return;
-    const t = setInterval(() => setLeft(s => s - 1), 1000);
+    const t = setInterval(() => setLeft((s) => s - 1), 1000);
     return () => clearInterval(t);
   }, [left]);
 
@@ -26,12 +39,13 @@ export default function VerifyEmailPage() {
   }, []);
 
   const handleChange = (i, value) => {
+    setError("");
     const v = value.replace(/\D/g, "");
     if (!v) {
-      setCode(prev => prev.map((c, idx) => (idx === i ? "" : c)));
+      setCode((prev) => prev.map((c, idx) => (idx === i ? "" : c)));
       return;
     }
-    setCode(prev => {
+    setCode((prev) => {
       const next = [...prev];
       next[i] = v[0];
       return next;
@@ -43,12 +57,10 @@ export default function VerifyEmailPage() {
     if (e.key === "Backspace" && !code[i] && i > 0) {
       inputsRef.current[i - 1]?.focus();
     }
-    if (e.key === "ArrowLeft" && i > 0) {
-      inputsRef.current[i - 1]?.focus();
-    }
-    if (e.key === "ArrowRight" && i < CODE_LENGTH - 1) {
+    if (e.key === "ArrowLeft" && i > 0) inputsRef.current[i - 1]?.focus();
+    if (e.key === "ArrowRight" && i < CODE_LENGTH - 1)
       inputsRef.current[i + 1]?.focus();
-    }
+    if (e.key === "Enter") submit(); // enter để submit nhanh
   };
 
   const handlePaste = (e) => {
@@ -56,37 +68,94 @@ export default function VerifyEmailPage() {
     const text = e.clipboardData.getData("text").replace(/\D/g, "");
     if (!text) return;
     const arr = Array(CODE_LENGTH).fill("");
-    for (let i = 0; i < Math.min(text.length, CODE_LENGTH); i++) {
+    for (let i = 0; i < Math.min(text.length, CODE_LENGTH); i++)
       arr[i] = text[i];
-    }
     setCode(arr);
     const last = Math.min(text.length - 1, CODE_LENGTH - 1);
     inputsRef.current[last]?.focus();
   };
 
   const joined = code.join("");
-  const isComplete = joined.length === CODE_LENGTH;
+  const isComplete =
+    joined.length === CODE_LENGTH && code.every((c) => c !== "");
 
-  const submit = () => {
-    if (!isComplete) return;
-    console.log("Verify code:", { email, code: joined });
-    navigate("/welcome"); // hoặc call API verify
-  };
+  // Auto submit khi đủ 6 số
+  useEffect(() => {
+    if (isComplete && !submitting) submit();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isComplete]);
 
-  const resend = () => {
+  async function submit() {
+    if (!isComplete || submitting) return;
+    setSubmitting(true);
+    setError("");
+
+    try {
+      // TODO: gọi API verify thực tế:
+      // const res = await api.verifyOtp({ email, code: joined, purpose });
+      // Demo giả lập:
+      await new Promise((r) => setTimeout(r, 500));
+      const res = {
+        verified: joined === "123456", // demo: chỉ code 123456 là đúng
+        resetToken: purpose === "reset" ? "rtok_demo_123" : null,
+      };
+
+      if (!res.verified) {
+        setError("The code you entered is incorrect or expired.");
+        setSubmitting(false);
+        // focus lại ô đầu để gõ lại
+        inputsRef.current[0]?.focus();
+        return;
+      }
+
+      if (purpose === "signup") {
+        navigate("/login", { replace: true });
+      } else {
+        // reset password flow
+        navigate("/reset-password", {
+          replace: true,
+          state: { resetToken: res.resetToken, email },
+        });
+      }
+    } catch (e) {
+      setError("Something went wrong. Please try again.");
+      setSubmitting(false);
+    }
+  }
+
+  const resend = async () => {
     if (left > 0) return;
-    console.log("Resend code to:", email);
-    setLeft(RESEND_SECONDS);
+    try {
+      // TODO: await api.sendOtp({ email, purpose })
+      await new Promise((r) => setTimeout(r, 300));
+      setLeft(RESEND_SECONDS);
+    } catch (e) {
+      setError("Unable to resend code. Please try again later.");
+    }
   };
+
+  const heading =
+    purpose === "reset" ? "Verify to Change Password" : "Verify Your Email";
+  const subtitle =
+    purpose === "reset" ? (
+      <>
+        Enter the 6-digit code to change password for{" "}
+        <strong>{email || "your email"}</strong>
+      </>
+    ) : (
+      <>
+        Enter the 6-digit code sent to <strong>{email || "your email"}</strong>
+      </>
+    );
 
   return (
-    <div className="t-register t-otp-container">
-      <div className="t-step">Step 3 of 3</div>
-      <h1 className="t-heading">Verify Your Email</h1>
+    <div className="t-otp-container">
+      <div className="t-step">
+        Step {purpose === "reset" ? "2 of 3" : "3 of 3"}
+      </div>
+      <h1 className="t-heading">{heading}</h1>
 
-      <p className="t-otp-sub">
-        Enter the code sent to <strong>{email || "your email"}</strong>
-      </p>
+      <p className="t-otp-sub">{subtitle}</p>
 
       <div className="t-otp-boxes" onPaste={handlePaste}>
         {code.map((val, i) => (
@@ -95,33 +164,43 @@ export default function VerifyEmailPage() {
             ref={(el) => (inputsRef.current[i] = el)}
             className="t-otp-input"
             inputMode="numeric"
+            aria-label={`Digit ${i + 1}`}
             pattern="[0-9]*"
             maxLength={1}
             value={val}
             onChange={(e) => handleChange(i, e.target.value)}
             onKeyDown={(e) => handleKeyDown(i, e)}
+            disabled={submitting}
           />
         ))}
       </div>
 
+      {error && (
+        <div className="t-error" role="alert">
+          {error}
+        </div>
+      )}
+
       <button
         className={`t-btn ${isComplete ? "t-btn-primary" : "t-btn-disabled"}`}
         onClick={submit}
-        disabled={!isComplete}
+        disabled={!isComplete || submitting}
         style={{ marginTop: 24 }}
       >
-        Continue
+        {submitting ? "Verifying…" : "Continue"}
       </button>
 
       <button
         type="button"
         className="t-btn t-btn-outline"
         onClick={resend}
-        disabled={left > 0}
+        disabled={left > 0 || submitting}
         style={{ marginTop: 12 }}
       >
         {left > 0 ? `Resend Code in ${left}s` : "Resend Code"}
       </button>
+
+      
     </div>
   );
 }
