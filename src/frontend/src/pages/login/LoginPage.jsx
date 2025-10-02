@@ -1,8 +1,18 @@
+// src/pages/login/LoginPage.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import axios from "axios";
+import Cookies from "js-cookie";
+import { jwtDecode } from "jwt-decode";
 import "./LoginPage.css";
+
+const BASE_URL = import.meta.env.VITE_BACK_END_BASE_URL?.replace(/\/?$/, "/");
+const api = axios.create({
+  baseURL: BASE_URL,
+  timeout: 30000,
+});
 
 const emailSchema = Yup.object({
   email: Yup.string()
