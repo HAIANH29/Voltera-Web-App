@@ -12,8 +12,10 @@
   "dependencies": {
     "@vitejs/plugin-react": "^5.0.2",
     "antd": "^5.27.4",
+    "axios": "^1.12.2",
     "formik": "^2.4.6",
     "js-cookie": "^3.0.5",
+    "jwt-decode": "^4.0.0",
     "lucide-react": "^0.544.0",
     "prop-types": "^15.8.1",
     "react": "^19.1.1",
