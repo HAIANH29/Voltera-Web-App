@@ -5,6 +5,9 @@ import * as Yup from "yup";
 import { Eye, EyeOff } from "lucide-react";
 import "./RegisterPage.css";
 
+// ⬇️ TODO: sửa path tới instance axios của bạn
+import api from "@/api";
+
 const schema = Yup.object({
   email: Yup.string()
     .trim()
@@ -22,18 +25,50 @@ export default function RegisterPage() {
   const navigate = useNavigate();
   const [showPwd, setShowPwd] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [serverError, setServerError] = useState("");
 
   const formik = useFormik({
     initialValues: { email: "", password: "", confirmPassword: "" },
     validationSchema: schema,
-    onSubmit: (values, { setSubmitting }) => {
+    onSubmit: async (values, { setSubmitting }) => {
+      setServerError("");
       setSubmitting(true);
-      setTimeout(() => {
-        console.log("Register payload:", values);
+      try {
+        // ⬇️ Không gửi confirmPassword lên server
+        const payload = {
+          email: values.email.trim(),
+          password: values.password,
+          // TODO: nếu backend cần thêm username/phone/... thì bổ sung ở đây
+        };
+
+        // ⬇️ TODO: đổi endpoint nếu backend khác (vd: auth/register, api/v1/auth/signup)
+        const res = await api.post("authen/register", payload);
+        const data = res?.data?.data;
+
+        // Nếu backend trả token/flag verify email → chuyển trang verify
+        if (data?.emailVerifyToken || data?.needVerify || data?.email) {
+          navigate("/verify-email", {
+            state: { email: values.email.trim(), purpose: "signup" },
+            replace: true,
+          });
+        } else {
+          // Trường hợp không cần verify (tuỳ hệ thống), có thể đưa về login
+          navigate("/login", { replace: true });
+        }
+      } catch (err) {
+        // Bắt lỗi an toàn
+        const resp = err?.response;
+        const msg =
+          resp?.data?.message ||
+          resp?.data?.detail ||
+          (Array.isArray(resp?.data?.errors) &&
+            resp.data.errors[0]?.description) ||
+          err?.message ||
+          "Something went wrong. Please try again.";
+        setServerError(msg);
+      } finally {
         setSubmitting(false);
-        // Bước 2: verify email / OTP
-        navigate("/verify-email", { state: { email: values.email, purpose: "signup" } });
-      }, 500);
+      }
     },
   });
 
@@ -68,6 +103,7 @@ export default function RegisterPage() {
           className={`t-input ${
             touched.email && errors.email ? "t-input-error" : ""
           }`}
+          disabled={isSubmitting}
         />
         {touched.email && errors.email && (
           <div className="t-error">{errors.email}</div>
@@ -89,12 +125,14 @@ export default function RegisterPage() {
             className={`t-input ${
               touched.password && errors.password ? "t-input-error" : ""
             }`}
+            disabled={isSubmitting}
           />
           <button
             type="button"
             className="t-eye"
             aria-label={showPwd ? "Hide password" : "Show password"}
             onClick={() => setShowPwd((s) => !s)}
+            onMouseDown={(e) => e.preventDefault()} // tránh focus ring xấu
           >
             {showPwd ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
@@ -121,18 +159,25 @@ export default function RegisterPage() {
                 ? "t-input-error"
                 : ""
             }`}
+            disabled={isSubmitting}
           />
           <button
             type="button"
             className="t-eye"
             aria-label={showConfirm ? "Hide password" : "Show password"}
             onClick={() => setShowConfirm((s) => !s)}
+            onMouseDown={(e) => e.preventDefault()}
           >
             {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
         </div>
         {touched.confirmPassword && errors.confirmPassword && (
           <div className="t-error">{errors.confirmPassword}</div>
+        )}
+
+        {/* Server error */}
+        {serverError && (
+          <div className="t-error t-error-server">{serverError}</div>
         )}
 
         {/* Next */}
