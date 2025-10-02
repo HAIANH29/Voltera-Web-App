@@ -23,7 +23,7 @@ api.interceptors.request.use(
         const expMs = jwtDecode(accessToken).exp * 1000;
         if (Date.now() >= expMs) {
           const refreshToken = Cookies.get("refreshToken")?.replaceAll('"', "");
-          const res = await axios.post(`${BASE_URL}authen/refresh-token`, {
+          const res = await axios.post(`${BASE_URL}auth/refresh-token`, {
             refreshToken,
           });
           const { accessToken: newAT, refreshToken: newRT } = res.data.data;
