@@ -1,96 +1,132 @@
-
-
 /* Form wrapper chuẩn Tesla: hẹp, không card */
-.tesla-login{
+.tesla-login {
   width: 100%;
-  max-width: 360px;      /* ← hẹp lại (320–360px) */
+  max-width: 360px;
+  /* ← hẹp lại (320–360px) */
   margin: 0 auto;
   color: #171a20;
 }
 
 /* Title */
-.t-title{
+.t-title {
   font-size: 36px;
   line-height: 1.2;
   font-weight: 700;
-  margin: 16px 0 28px;   /* thoáng hơn 1 chút */
+  margin: 16px 0 28px;
+  /* thoáng hơn 1 chút */
   text-align: left;
 }
 
 /* Label + input */
-.t-label{
-  display:block;
-  font-size:14px;
-  font-weight:600;
-  margin-bottom:8px;
-  color:#171a20;
+.t-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #171a20;
 }
 
-.t-input{
-  width:100%;
-  height:46px;                        /* Tesla khá gọn */
-  border:1px solid #e7e7e7;           /* viền rất nhạt */
+.t-input {
+  width: 100%;
+  height: 46px;
+  /* Tesla khá gọn */
+  border: 1px solid #e7e7e7;
+  /* viền rất nhạt */
   border-radius: 6px;
-  background:#f2f2f2;                 /* xám nhạt hơn */
-  padding:0 12px;
-  font-size:15px;
+  background: #f2f2f2;
+  /* xám nhạt hơn */
+  padding: 0 12px;
+  font-size: 15px;
   transition: border-color .15s, background .15s, box-shadow .15s;
 }
-.t-input:focus{
-  outline:none;
-  border-color:#d1d5db;
-  background:#fff;
-  box-shadow:none;                    /* Tesla hầu như không đổ bóng */
+
+.t-input:focus {
+  outline: none;
+  border-color: #d1d5db;
+  background: #fff;
+  box-shadow: none;
+  /* Tesla hầu như không đổ bóng */
 }
-.t-input-error{ border-color:#e11d48; }
-.t-error{ color:#e11d48; font-size:13px; margin-top:6px; }
+
+.t-input-error {
+  border-color: #e11d48;
+}
+
+.t-error {
+  color: #e11d48;
+  font-size: 13px;
+  margin-top: 6px;
+}
 
 /* Buttons */
-.t-btn{
-  width:100%;
-  height:46px;
-  border-radius:6px;
-  border:1px solid transparent;
-  font-weight:600;
-  font-size:15px;
-  cursor:pointer;
-  margin-top:14px;
+.t-btn {
+  width: 100%;
+  height: 46px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  margin-top: 14px;
   transition: background .15s, transform .06s;
 }
-.t-btn-primary{
-  background:#9aaef2;                 /* xanh nhạt */
-  color:#fff;
-}
-.t-btn-primary:hover{ background:#8ea4ef; }
-.t-btn-primary:active{ transform: translateY(1px); }
 
-.t-btn-ghost{
-  background:#f3f4f6;
-  color:#171a20;
-  border:1px solid #e7e7e7;
+.t-btn-primary {
+  background: #9aaef2;
+  /* xanh nhạt */
+  color: #fff;
 }
-.t-btn-ghost:hover{ background:#eee; }
+
+.t-btn-primary:hover {
+  background: #8ea4ef;
+}
+
+.t-btn-primary:active {
+  transform: translateY(1px);
+}
+
+.t-btn-ghost {
+  background: #f3f4f6;
+  color: #171a20;
+  border: 1px solid #e7e7e7;
+}
+
+.t-btn-ghost:hover {
+  background: #eee;
+}
 
 /* Link */
-.t-link{
-  margin-top:14px;
-  background:none; border:none;
-  color:#171a20;
+.t-link {
+  
+  margin-top: 14px;
+  background: none;
+  border: none;
+  color: #171a20;
   text-decoration: underline;
-  font-size:14px;
-  cursor:pointer;
+  font-size: 14px;
+  cursor: pointer;
 }
 
 /* Divider */
-.t-divider{
-  display:flex; align-items:center; gap:10px;
-  color:#6b7280; font-size:14px; margin:18px 0;
+.t-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #6b7280;
+  font-size: 14px;
+  margin: 18px 0;
 }
-.t-divider::before, .t-divider::after{
-  content:""; flex:1; border-top:1px solid #e7e7e7;
+
+.t-divider::before,
+.t-divider::after {
+  content: "";
+  flex: 1;
+  border-top: 1px solid #e7e7e7;
 }
 
 /* Email preview ở step 2 */
-.t-email-preview{ font-size:14px; color:#6b7280; margin-bottom:14px; }
-
-
+.t-email-preview {
+  font-size: 14px;
+  color: #6b7280;
+  margin-bottom: 14px;
+}
