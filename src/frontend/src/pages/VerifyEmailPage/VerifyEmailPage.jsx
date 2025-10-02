@@ -151,7 +151,7 @@ export default function VerifyEmailPage() {
   return (
     <div className="t-otp-container">
       <div className="t-step">
-        Step {purpose === "reset" ? "2 of 3" : "3 of 3"}
+        Step {purpose === "reset" ? "1 of 2" : "2 of 2"}
       </div>
       <h1 className="t-heading">{heading}</h1>
 
