@@ -6,7 +6,7 @@ import { Eye, EyeOff } from "lucide-react";
 import "./RegisterPage.css";
 
 // ⬇️ TODO: sửa path tới instance axios của bạn
-import api from "@/api";
+import api from '../../config/api';
 
 const schema = Yup.object({
   email: Yup.string()
