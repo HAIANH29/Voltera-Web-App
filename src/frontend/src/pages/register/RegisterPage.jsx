@@ -6,7 +6,7 @@ import { Eye, EyeOff } from "lucide-react";
 import "./RegisterPage.css";
 
 // ⬇️ TODO: sửa path tới instance axios của bạn
-import api from '../../config/api';
+import api from "../../config/api";
 
 const schema = Yup.object({
   email: Yup.string()
@@ -42,7 +42,7 @@ export default function RegisterPage() {
         };
 
         // ⬇️ TODO: đổi endpoint nếu backend khác (vd: auth/register, api/v1/auth/signup)
-        const res = await api.post("authen/register", payload);
+        const res = await api.post("auth/register", payload);
         const data = res?.data?.data;
 
         // Nếu backend trả token/flag verify email → chuyển trang verify

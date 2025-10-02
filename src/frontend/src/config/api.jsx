@@ -21,7 +21,7 @@ const handleBefore = async (config) => {
         const refreshToken = Cookies.get("refreshToken")?.replaceAll('"', "");
         console.log(refreshToken);
 
-        const response = await axios.post(`${baseUrl}authen/refresh-token`, {
+        const response = await axios.post(`${baseUrl}auth/refresh-token`, {
           refreshToken,
         });
         // console.log(response);
