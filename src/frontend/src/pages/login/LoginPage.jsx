@@ -91,7 +91,7 @@ export default function LoginPage() {
         // [STEP 5] Gọi login API
         await loginApi(values);
         // [STEP 7] Navigate khi login thành công
-        navigate("/dashboard");
+        navigate("/");
       } catch (err) {
         const message =
           err?.response?.data?.message ||

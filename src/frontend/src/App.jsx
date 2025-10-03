@@ -4,7 +4,7 @@ import { routes } from "./routes/";
 import HomePage from "./pages/homepage/HomePage";
 import LoginPage from "./pages/login/LoginPage";
 import RegisterPage from "./pages/register/RegisterPage";
-import AuthLayout from "./layout/authenLayout";
+import AuthLayout from "./layout/authenLayout.jsx";
 import { Toaster } from "react-hot-toast";
 import PublicRoute from "./routes/PublicRoute";
 import ForgotPasswordPage from "./pages/forgotpasswordPage/ForgotPasswordPage";
