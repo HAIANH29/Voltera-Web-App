@@ -1,13 +1,12 @@
 // src/pages/login/LoginPage.jsx
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { jwtDecode } from "jwt-decode";
 import "./LoginPage.css";
-
+import { useNavigate, Link } from "react-router-dom";
 // [STEP 3] Axios config + interceptor
 const BASE_URL = import.meta.env.VITE_BACK_END_BASE_URL?.replace(/\/?$/, "/");
 const api = axios.create({
@@ -140,6 +139,7 @@ export default function LoginPage() {
   };
 
   return (
+      
     <div className="tesla-login">
       <h1 className="t-title">Sign In</h1>
       {!!formMsg && <div className="t-error t-error-global">{formMsg}</div>}

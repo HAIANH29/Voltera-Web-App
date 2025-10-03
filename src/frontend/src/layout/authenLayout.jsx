@@ -1,77 +1,80 @@
+// src/layout/AuthLayout.jsx
 import React from "react";
-
 import { Layout } from "antd";
+import { Outlet, Link } from "react-router-dom"; // <- thêm Link
 
-import { Outlet } from "react-router-dom";
- 
 const { Header, Content, Footer } = Layout;
- 
+
 export default function AuthLayout({ children }) {
-
   return (
-<Layout style={{ minHeight: "100vh" }}>
-
+    <Layout style={{ minHeight: "100vh" }}>
       {/* 🔹 Top */}
-<Header
-
+      <Header
         style={{
-
           background: "#fff",
-
           boxShadow: "0 1px 0 rgba(0,0,0,0.06)",
-
           padding: "0 24px",
-
           display: "flex",
-
           alignItems: "center",
-
         }}
->
-<h1 style={{ margin: 0, fontSize: 20, fontWeight: 600 }}>Voltera</h1>
-</Header>
- 
+      >
+        <Link
+          to="/"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+            textDecoration: "none",
+          }}
+        >
+          <img
+            src="/logo-voltera.png"
+            alt="Voltera Logo"
+            style={{ width: 28, height: 28, display: "block" }}
+            onError={(e) => {
+              e.currentTarget.src = "/vite.svg";
+            }}
+          />
+          <span
+            style={{
+              fontSize: 20,
+              fontWeight: 700,
+              letterSpacing: "-0.01em",
+              color: "#1e40af",
+            }}
+          >
+            Voltera
+          </span>
+        </Link>
+      </Header>
+
       {/* 🔹 Body */}
-<Content
-  style={{
-    flex: 1,
-    padding: "0 16px",     // ↓ bớt padding (trước là 48px 24px)
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    background: "#fff",    // ↓ nền trắng phẳng như Tesla (trước là #f5f5f5)
-  }}
->
-  {children ?? <Outlet />}
-</Content>
-
- 
-      {/* 🔹 Bottom */}
-<Footer
-
+      <Content
         style={{
-
-          textAlign: "center",
-
+          flex: 1,
+          padding: "0 16px",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
           background: "#fff",
-
-          borderTop: "1px solid #f0f0f0",
-
-          padding: "16px 0",
-
-          fontSize: 12,
-
-          color: "#999",
-
         }}
->
+      >
+        {children ?? <Outlet />}
+      </Content>
 
+      {/* 🔹 Bottom */}
+      <Footer
+        style={{
+          textAlign: "center",
+          background: "#fff",
+          borderTop: "1px solid #f0f0f0",
+          padding: "16px 0",
+          fontSize: 12,
+          color: "#999",
+        }}
+      >
         © {new Date().getFullYear()} Voltera. All rights reserved.
-</Footer>
-</Layout>
-
+      </Footer>
+    </Layout>
   );
-
 }
-
- 
