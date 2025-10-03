@@ -7,6 +7,7 @@ import Cookies from "js-cookie";
 import { jwtDecode } from "jwt-decode";
 import "./LoginPage.css";
 import { useNavigate, Link } from "react-router-dom";
+
 // [STEP 3] Axios config + interceptor
 const BASE_URL = import.meta.env.VITE_BACK_END_BASE_URL?.replace(/\/?$/, "/");
 const api = axios.create({
@@ -43,10 +44,30 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// [STEP 4] API checkEmail
+// ---- MOCK MODE (dùng khi chưa có DB/backend) ----
+const OFFLINE =
+  !BASE_URL || BASE_URL === "/" || import.meta.env.VITE_USE_MOCK === "1";
+const MOCK_REGISTERED_EMAILS = new Set([
+  "test@voltera.com",
+  "demo@example.com",
+  "admin@voltera.io",
+]);
+
+// [STEP 4] API checkEmail (tự rơi về mock khi offline hoặc call lỗi)
 async function checkEmail(email) {
-  const res = await api.post("auth/check-email", { email: email.trim() });
-  return !!(res.data?.exists ?? res.data?.data?.exists);
+  const e = email.trim().toLowerCase();
+
+  if (OFFLINE) {
+    // 🔹 Mock logic: chỉ một vài email coi như đã đăng ký
+    return MOCK_REGISTERED_EMAILS.has(e);
+  }
+
+  try {
+    const res = await api.post("auth/check-email", { email: e });
+    return Boolean(res.data?.exists ?? res.data?.data?.exists);
+  } catch (err) {
+    throw err; // để UI báo lỗi mạng
+  }
 }
 
 // [STEP 5] API login
@@ -80,6 +101,7 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1); // 1: email, 2: password
   const [formMsg, setFormMsg] = useState("");
+  const [checking, setChecking] = useState(false);
 
   // [STEP 2] Formik validate
   const formik = useFormik({
@@ -88,10 +110,13 @@ export default function LoginPage() {
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
       setFormMsg("");
       try {
-        // [STEP 5] Gọi login API
         await loginApi(values);
+<<<<<<< HEAD
         // [STEP 7] Navigate khi login thành công
         navigate("/");
+=======
+        navigate("/dashboard");
+>>>>>>> c9a0a5c5a174f3134f347ff901b4ad5f47aa12e8
       } catch (err) {
         const message =
           err?.response?.data?.message ||
@@ -124,22 +149,35 @@ export default function LoginPage() {
   // [STEP 4] Kiểm tra email trước khi sang step password
   const goNext = async () => {
     setFormMsg("");
+
+    // 1) Validate format trước (Yup)
     try {
       await emailSchema.validate({ email: values.email });
+    } catch {
+      setTouched({ email: true }, true);
+      validateForm();
+      return;
+    }
+
+    // 2) Kiểm tra tồn tại (API hoặc mock)
+    setChecking(true);
+    try {
       const exists = await checkEmail(values.email);
       if (!exists) {
         setFieldError("email", "This email is not registered.");
         return;
       }
       setStep(2);
-    } catch {
-      setTouched({ email: true }, true);
-      validateForm();
+    } catch (err) {
+      setFormMsg(
+        "We can't verify your email right now. Please try again later."
+      );
+    } finally {
+      setChecking(false);
     }
   };
 
   return (
-      
     <div className="tesla-login">
       <h1 className="t-title">Sign In</h1>
       {!!formMsg && <div className="t-error t-error-global">{formMsg}</div>}
@@ -170,8 +208,9 @@ export default function LoginPage() {
             type="button"
             className="t-btn t-btn-primary"
             onClick={goNext}
+            disabled={checking}
           >
-            Next
+            {checking ? "Checking..." : "Next"}
           </button>
 
           <button
