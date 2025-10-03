@@ -78,7 +78,6 @@ async function checkEmailDual(email) {
       return Boolean(res.data?.exists ?? res.data?.data?.exists);
     } catch (err) {
       // Fallback sang mock nếu server die/CORS/lỗi đường dẫn
-      // console.warn("[checkEmail] API failed, fallback to MOCK:", err?.message);
       return MOCK_REGISTERED_EMAILS.has(e);
     }
   }
@@ -102,7 +101,6 @@ async function loginApiDual({ email, password }) {
       return { user };
     } catch (err) {
       // Fallback sang mock để bạn vẫn test được full flow
-      // console.warn("[login] API failed, fallback to MOCK:", err?.message);
       return loginMock({ email: e, password });
     }
   }
