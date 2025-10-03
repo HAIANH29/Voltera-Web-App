@@ -6,14 +6,28 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import { jwtDecode } from "jwt-decode";
 import "./LoginPage.css";
-import { useNavigate, Link } from "react-router-dom";
-// [STEP 3] Axios config + interceptor
+import { useNavigate } from "react-router-dom";
+
+/** =========================
+ *  CONFIG
+ *  ========================= */
 const BASE_URL = import.meta.env.VITE_BACK_END_BASE_URL?.replace(/\/?$/, "/");
+const FORCE_MOCK = import.meta.env.VITE_USE_MOCK === "1";
+
+// Mock data cho test nhanh
+const MOCK_REGISTERED_EMAILS = new Set([
+  "test@voltera.com",
+  "demo@example.com",
+  "admin@voltera.io",
+]);
+
+// Axios instance
 const api = axios.create({
-  baseURL: BASE_URL,
+  baseURL: BASE_URL || "/", // nếu chưa set, vẫn có instance
   timeout: 30000,
 });
 
+// Interceptor refresh token (chỉ chạy khi có token)
 api.interceptors.request.use(
   async (config) => {
     let accessToken = Cookies.get("accessToken")?.replaceAll('"', "");
@@ -33,7 +47,7 @@ api.interceptors.request.use(
       } catch (err) {
         Cookies.remove("accessToken");
         Cookies.remove("refreshToken");
-        window.location.href = "/login";
+        // giữ nguyên trang login khi token fail
         return Promise.reject(err);
       }
       config.headers.Authorization = `Bearer ${accessToken}`;
@@ -43,25 +57,82 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// [STEP 4] API checkEmail
-async function checkEmail(email) {
-  const res = await api.post("auth/check-email", { email: email.trim() });
-  return !!(res.data?.exists ?? res.data?.data?.exists);
+/** =========================
+ *  DUAL MODE HELPERS
+ *  ========================= */
+
+// Heuristic để quyết định có thể gọi API thật hay không
+const canUseRealApi = () => {
+  if (FORCE_MOCK) return false;             // ép mock qua .env
+  if (!BASE_URL || BASE_URL === "/") return false; // chưa cấu hình
+  return true;
+};
+
+// checkEmail – ưu tiên API thật, fallback mock khi lỗi
+async function checkEmailDual(email) {
+  const e = email.trim().toLowerCase();
+
+  if (canUseRealApi()) {
+    try {
+      const res = await api.post("auth/check-email", { email: e });
+      return Boolean(res.data?.exists ?? res.data?.data?.exists);
+    } catch (err) {
+      // Fallback sang mock nếu server die/CORS/lỗi đường dẫn
+      // console.warn("[checkEmail] API failed, fallback to MOCK:", err?.message);
+      return MOCK_REGISTERED_EMAILS.has(e);
+    }
+  }
+
+  // Mock mode
+  return MOCK_REGISTERED_EMAILS.has(e);
 }
 
-// [STEP 5] API login
-async function loginApi({ email, password }) {
-  const res = await api.post("auth/login", { email: email.trim(), password });
-  const { accessToken, refreshToken, user } = res.data?.data || {};
-  if (!accessToken) throw new Error("No access token returned");
+// loginApi – ưu tiên API thật, fallback mock khi lỗi
+async function loginApiDual({ email, password }) {
+  const e = email.trim().toLowerCase();
 
-  Cookies.set("accessToken", accessToken, { expires: 1, secure: true });
-  Cookies.set("refreshToken", refreshToken, { expires: 7, secure: true });
-  localStorage.setItem("currentUser", JSON.stringify(user || null));
-  return { user };
+  if (canUseRealApi()) {
+    try {
+      const res = await api.post("auth/login", { email: e, password });
+      const { accessToken, refreshToken, user } = res.data?.data || {};
+      if (!accessToken) throw new Error("No access token returned");
+      Cookies.set("accessToken", accessToken, { expires: 1, secure: true });
+      Cookies.set("refreshToken", refreshToken, { expires: 7, secure: true });
+      localStorage.setItem("currentUser", JSON.stringify(user || null));
+      return { user };
+    } catch (err) {
+      // Fallback sang mock để bạn vẫn test được full flow
+      // console.warn("[login] API failed, fallback to MOCK:", err?.message);
+      return loginMock({ email: e, password });
+    }
+  }
+
+  // Mock mode
+  return loginMock({ email: e, password });
 }
 
-// [STEP 2] Yup schemas
+// Logic mock login
+function loginMock({ email, password }) {
+  if (!MOCK_REGISTERED_EMAILS.has(email)) {
+    const err = new Error("Email not registered (MOCK).");
+    err.code = "MOCK_EMAIL_NOT_FOUND";
+    throw err;
+  }
+  if (password !== "123456") {
+    const err = new Error("Wrong password (hint: 123456) (MOCK).");
+    err.code = "MOCK_WRONG_PASSWORD";
+    throw err;
+  }
+  // Giả lập set "token" nhẹ nhàng để test guard khác nếu cần
+  localStorage.setItem("currentUser", JSON.stringify({ email, name: "Mock User" }));
+  Cookies.set("accessToken", "mock-access-token", { expires: 1, secure: true });
+  Cookies.set("refreshToken", "mock-refresh-token", { expires: 7, secure: true });
+  return { user: { email, name: "Mock User" } };
+}
+
+/** =========================
+ *  Yup schemas
+ *  ========================= */
 const emailSchema = Yup.object({
   email: Yup.string()
     .trim()
@@ -75,31 +146,38 @@ const passwordSchema = Yup.object({
     .required("Please enter your password."),
 });
 
-// [STEP 1] UI component LoginPage
+/** =========================
+ *  UI
+ *  ========================= */
 export default function LoginPage() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1); // 1: email, 2: password
   const [formMsg, setFormMsg] = useState("");
+  const [checking, setChecking] = useState(false);
 
-  // [STEP 2] Formik validate
   const formik = useFormik({
     initialValues: { email: "", password: "" },
     validationSchema: step === 1 ? emailSchema : passwordSchema,
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
       setFormMsg("");
       try {
-        // [STEP 5] Gọi login API
-        await loginApi(values);
-        // [STEP 7] Navigate khi login thành công
-        navigate("/");
+        await loginApiDual(values);
+        navigate("/"); // về Home ở "/"
       } catch (err) {
-        const message =
-          err?.response?.data?.message ||
-          err?.message ||
-          "Login failed. Please try again.";
-        if (err?.response?.status === 401) {
+        // Nếu là lỗi mock rõ ràng → đẩy vào field password
+        if (err?.code === "MOCK_WRONG_PASSWORD") {
+          setFieldError("password", err.message);
+        } else if (err?.code === "MOCK_EMAIL_NOT_FOUND") {
+          // Lỡ có case nhảy thẳng submit khi email chưa qua Step1
+          setFieldError("email", "This email is not registered.");
+          setStep(1);
+        } else if (err?.response?.status === 401) {
           setFieldError("password", "Email or password is incorrect.");
         } else {
+          const message =
+            err?.response?.data?.message ||
+            err?.message ||
+            "Login failed. Please try again.";
           setFormMsg(message);
         }
       } finally {
@@ -121,27 +199,40 @@ export default function LoginPage() {
     setFieldError,
   } = formik;
 
-  // [STEP 4] Kiểm tra email trước khi sang step password
+  // Step 1: kiểm tra email
   const goNext = async () => {
     setFormMsg("");
+
+    // 1) validate format
     try {
       await emailSchema.validate({ email: values.email });
-      const exists = await checkEmail(values.email);
+    } catch {
+      setTouched({ email: true }, true);
+      validateForm();
+      return;
+    }
+
+    // 2) check tồn tại (real → mock fallback)
+    setChecking(true);
+    try {
+      const exists = await checkEmailDual(values.email);
       if (!exists) {
         setFieldError("email", "This email is not registered.");
         return;
       }
       setStep(2);
-    } catch {
-      setTouched({ email: true }, true);
-      validateForm();
+    } catch (err) {
+      // chỉ hiển thị banner, không rơi vào console noise
+      setFormMsg("We can't verify your email right now. Please try again later.");
+    } finally {
+      setChecking(false);
     }
   };
 
   return (
-      
     <div className="tesla-login">
       <h1 className="t-title">Sign In</h1>
+
       {!!formMsg && <div className="t-error t-error-global">{formMsg}</div>}
 
       {/* Step 1: Email */}
@@ -170,8 +261,9 @@ export default function LoginPage() {
             type="button"
             className="t-btn t-btn-primary"
             onClick={goNext}
+            disabled={checking}
           >
-            Next
+            {checking ? "Checking..." : "Next"}
           </button>
 
           <button

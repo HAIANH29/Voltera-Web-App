@@ -6,74 +6,74 @@ import LoginPage from "./pages/login/LoginPage";
 import RegisterPage from "./pages/register/RegisterPage";
 import AuthLayout from "./layout/authenLayout.jsx";
 import { Toaster } from "react-hot-toast";
-import PublicRoute from "./routes/PublicRoute";
+// ❌ KHÔNG dùng PublicRoute cho login/register nữa
+// import PublicRoute from "./routes/PublicRoute";
 import ForgotPasswordPage from "./pages/forgotpasswordPage/ForgotPasswordPage";
 import MainLayout from "./layout/mainLayout";
 import ResetPasswordPage from "./pages/resetPasswordPage/ResetPasswordPage";
-import VerifyEmailPage from "./pages/VerifyEmailPage/VerifyEmailPage";
+import VerifyEmailPage from "./pages/VerifyEmailPage/VerifyEmailPage"; // giữ đúng theo path bạn đang dùng
 
 function App() {
   const router = createBrowserRouter([
+    // 🟢 Home công khai
     {
       path: routes.home,
       element: (
-        <PublicRoute>
-          <MainLayout>
-            <HomePage />
-          </MainLayout>
-        </PublicRoute>
+        <MainLayout>
+          <HomePage />
+        </MainLayout>
+      ),
+      errorElement: (
+        <div style={{ padding: 20, color: "crimson" }}>
+          Route error 🚨
+        </div>
       ),
     },
+
+    // 🟠 Trang auth: KHÔNG bọc PublicRoute => luôn truy cập được
     {
       path: routes.verifyEmail,
       element: (
-        <PublicRoute>
-          <AuthLayout>
-            <VerifyEmailPage />
-          </AuthLayout>
-        </PublicRoute>
+        <AuthLayout>
+          <VerifyEmailPage />
+        </AuthLayout>
       ),
     },
     {
       path: routes.login,
       element: (
-        <PublicRoute>
-          <AuthLayout>
-            <LoginPage />
-          </AuthLayout>
-        </PublicRoute>
+        <AuthLayout>
+          <LoginPage />
+        </AuthLayout>
       ),
     },
     {
       path: routes.register,
       element: (
-        <PublicRoute>
-          <AuthLayout>
-            <RegisterPage />
-          </AuthLayout>
-        </PublicRoute>
+        <AuthLayout>
+          <RegisterPage />
+        </AuthLayout>
       ),
     },
     {
       path: routes.forgotPassword,
       element: (
-        <PublicRoute>
-          <AuthLayout>
-            <ForgotPasswordPage />
-          </AuthLayout>
-        </PublicRoute>
+        <AuthLayout>
+          <ForgotPasswordPage />
+        </AuthLayout>
       ),
     },
     {
       path: routes.resetPassword,
       element: (
-        <PublicRoute>
-          <AuthLayout>
-            <ResetPasswordPage />
-          </AuthLayout>
-        </PublicRoute>
+        <AuthLayout>
+          <ResetPasswordPage />
+        </AuthLayout>
       ),
     },
+
+    // optional 404
+    { path: "*", element: <div style={{ padding: 20 }}>404 Not Found</div> },
   ]);
 
   return (
