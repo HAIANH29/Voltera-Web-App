@@ -6,4 +6,7 @@ export const routes = {
   forgotPassword: "/forgot-password",
   resetPassword: "/reset-password",
   verifyEmail: "/verify-email",
+  vehicles: "/vehicles",
+  electrics: "/electrics",
+  favorites: "/favorites",
 };

@@ -2,6 +2,9 @@ import "./App.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { routes } from "./routes/";
 import HomePage from "./pages/homepage/HomePage";
+import VehiclesPage from "./pages/vehiclesPage/vehiclesPage";
+import ElectricsPage from "./pages/electricsPage/electricsPage";
+import FavoritesPage from "./pages/favoritesPage/favoritesPage";
 import LoginPage from "./pages/login/LoginPage";
 import RegisterPage from "./pages/register/RegisterPage";
 import AuthLayout from "./layout/authenLayout.jsx";
@@ -29,6 +32,31 @@ function App() {
         </div>
       ),
     },
+    {
+      path: routes.vehicles,
+      element: (
+        <MainLayout>
+          <VehiclesPage />
+        </MainLayout>
+      ),
+    },
+    {
+      path: routes.electrics,
+      element: (
+        <MainLayout>
+          <ElectricsPage />
+        </MainLayout>
+      ),
+    },
+    {
+      path: routes.favorites,
+      element: (
+        <MainLayout>
+          <FavoritesPage />
+        </MainLayout>
+      ),
+    },
+    
 
     // 🟠 Trang auth: KHÔNG bọc PublicRoute => luôn truy cập được
     {
