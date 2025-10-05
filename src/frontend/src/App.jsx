@@ -9,16 +9,16 @@ import LoginPage from "./pages/login/LoginPage";
 import RegisterPage from "./pages/register/RegisterPage";
 import AuthLayout from "./layout/authenLayout.jsx";
 import { Toaster } from "react-hot-toast";
-// ❌ KHÔNG dùng PublicRoute cho login/register nữa
+
 // import PublicRoute from "./routes/PublicRoute";
 import ForgotPasswordPage from "./pages/forgotpasswordPage/ForgotPasswordPage";
 import MainLayout from "./layout/mainLayout";
 import ResetPasswordPage from "./pages/resetPasswordPage/ResetPasswordPage";
-import VerifyEmailPage from "./pages/VerifyEmailPage/VerifyEmailPage"; // giữ đúng theo path bạn đang dùng
+import VerifyEmailPage from "./pages/VerifyEmailPage/VerifyEmailPage"; 
 import AboutUsPage from "./pages/AboutUsPage/AboutUsPage";
 function App() {
   const router = createBrowserRouter([
-    // 🟢 Home công khai
+    
     {
       path: routes.home,
       element: (
@@ -55,7 +55,7 @@ function App() {
       ),
     },
 
-    // 🟠 Trang auth: KHÔNG bọc PublicRoute => luôn truy cập được
+
     {
       path: routes.verifyEmail,
       element: (
