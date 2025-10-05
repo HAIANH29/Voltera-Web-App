@@ -9,4 +9,5 @@ export const routes = {
   vehicles: "/vehicles",
   electrics: "/electrics",
   favorites: "/favorites",
+  aboutUs: "/about",
 };

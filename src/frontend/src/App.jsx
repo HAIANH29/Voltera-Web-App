@@ -15,7 +15,7 @@ import ForgotPasswordPage from "./pages/forgotpasswordPage/ForgotPasswordPage";
 import MainLayout from "./layout/mainLayout";
 import ResetPasswordPage from "./pages/resetPasswordPage/ResetPasswordPage";
 import VerifyEmailPage from "./pages/VerifyEmailPage/VerifyEmailPage"; // giữ đúng theo path bạn đang dùng
-
+import AboutUsPage from "./pages/AboutUsPage/AboutUsPage";
 function App() {
   const router = createBrowserRouter([
     // 🟢 Home công khai
@@ -27,9 +27,7 @@ function App() {
         </MainLayout>
       ),
       errorElement: (
-        <div style={{ padding: 20, color: "crimson" }}>
-          Route error 🚨
-        </div>
+        <div style={{ padding: 20, color: "crimson" }}>Route error 🚨</div>
       ),
     },
     {
@@ -56,7 +54,6 @@ function App() {
         </MainLayout>
       ),
     },
-    
 
     // 🟠 Trang auth: KHÔNG bọc PublicRoute => luôn truy cập được
     {
@@ -97,6 +94,14 @@ function App() {
         <AuthLayout>
           <ResetPasswordPage />
         </AuthLayout>
+      ),
+    },
+    {
+      path: routes.aboutUs,
+      element: (
+        <MainLayout>
+          <AboutUsPage />
+        </MainLayout>
       ),
     },
 
