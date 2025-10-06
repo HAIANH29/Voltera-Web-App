@@ -542,7 +542,7 @@ export default function CreateListingForm({ listingType = "vehicle", currentUser
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="vehicle-wizard space-y-6">
       {/* Progress */}
       <div>
         <div className="flex justify-between text-sm mb-2">

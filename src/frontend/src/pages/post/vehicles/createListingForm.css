@@ -281,3 +281,120 @@
   .v-radio-card{ background:#12161c; }
   .v-dropzone{ background: linear-gradient(180deg,#12161c,#0f141b); }
 }
+/* ===== Center cứng cho trang Post Vehicle (bất kể parent layout ra sao) */
+.vehicle-wizard{
+  /* set bề rộng & center */
+  width: min(100%, 56rem);     /* ~ max-w-4xl */
+  max-width: 56rem;
+  margin-left: auto;
+  margin-right: auto;
+
+  /* đệm 2 bên cho mobile */
+  padding-left: 16px;
+  padding-right: 16px;
+
+  /* nếu parent là flex thì auto margin vẫn center, thêm align-self cho chắc */
+  align-self: center;
+  display: block;              /* tránh bị ảnh hưởng align-items từ parent flex */
+}
+
+/* Nếu header/tiêu đề của trang nằm ngoài .vehicle-wizard, bạn có thể wrap nó
+   bằng .vehicle-intro và dùng cùng công thức để center: */
+.vehicle-intro{
+  width: min(100%, 56rem);
+  margin-inline: auto;
+  padding-inline: 16px;
+}
+
+/* Bảo đảm card/phần tử con không “đòi” kích thước lạ */
+.vehicle-wizard .v-card{ width:100%; }
+.vehicle-wizard .v-progress{ width:100%; }
+
+/* Tránh overflow khiến grid đẩy lệch */
+.vehicle-wizard .v-grid > *{ min-width: 0; }
+
+/* (Chỉ dùng nếu vẫn thấy lệch do layout cha set flex ngang) 
+main, .main-content, .page-content{
+  display: block !important;
+}
+*/
+/* Container chung: cùng width + cùng padding cho title, progress, card */
+.vehicle-container{
+  width: min(100%, 56rem);     /* = 896px (max-w-4xl) */
+  margin-inline: auto;
+  padding-inline: 16px;        /* đệm đều 2 bên */
+  align-self: center;          /* nếu parent là flex */
+}
+
+/* Bên trong container, form ăn full theo container */
+.vehicle-container .vehicle-wizard{
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;                  /* quan trọng: bỏ padding để không lệch với title */
+}
+
+/* Card & progress fill container */
+.vehicle-container .v-card{ width: 100%; }
+.vehicle-container .v-progress{ width: 100%; }
+
+/* Phòng overflow làm lệch grid */
+.vehicle-container .v-grid > *{ min-width: 0; }
+/* ===== Center cứng cho toàn bộ form ===== */
+.vehicle-wizard{
+  /* cùng quy mô với max-w-4xl */
+  width: min(100%, 56rem);
+  max-width: 56rem;
+  margin-left: auto;
+  margin-right: auto;
+
+  /* để hoạt động cả khi parent là flex */
+  align-self: center;
+  display: block;
+
+  /* đừng thêm padding ở đây nếu title/desc nằm ngoài —
+     sẽ bị lệch mép trái với title. */
+}
+
+/* Bảo đảm phần con fill đúng chiều ngang container */
+.vehicle-wizard .v-card{ width:100%; }
+.vehicle-wizard .v-progress{ width:100%; }
+.vehicle-wizard .v-grid > *{ min-width:0; } /* tránh overflow đẩy lệch */
+.vehicle-intro{
+  width: min(100%, 56rem);
+  margin-inline: auto;
+  /* không padding để mép trái trùng với form */
+}
+/* ==== CHỐNG DÍNH FOOTER — tạo khoảng đệm cuối trang ==== */
+/* Nếu bạn đang dùng wrapper .vehicle-container như mình gợi ý: */
+.vehicle-container{
+  /* thêm khoảng trống phía dưới cho cả form + nút */
+  padding-bottom: clamp(96px, 10vh, 160px);
+  /* iOS safe area */
+  padding-bottom: max(clamp(96px, 10vh, 160px), env(safe-area-inset-bottom, 0));
+}
+
+/* Nếu không có .vehicle-container, áp thẳng vào .vehicle-wizard */
+.vehicle-wizard{
+  padding-bottom: max(clamp(96px, 10vh, 160px), env(safe-area-inset-bottom, 0));
+}
+
+/* Tăng khoảng trống ngay dưới cụm nút (theo cấu trúc hiện tại) */
+.vehicle-wizard > .flex.justify-between{
+  margin-top: 16px;
+  margin-bottom: 48px;        /* tạo khe hở trước khi tới footer */
+  gap: 12px;
+  flex-wrap: wrap;             /* mobile đẹp hơn */
+}
+
+/* Mobile: tăng thêm khoảng trống cho an toàn */
+@media (max-width: 640px){
+  .vehicle-wizard > .flex.justify-between{
+    margin-bottom: 64px;
+  }
+}
+
+/* (Tuỳ chọn) nếu footer dùng <footer>, tạo khoảng cách nhẹ ở trên */
+footer{
+  margin-top: 24px;
+}
