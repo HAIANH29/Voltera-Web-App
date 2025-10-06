@@ -8,6 +8,7 @@ import FavoritesPage from "./pages/favoritesPage/favoritesPage";
 import LoginPage from "./pages/login/LoginPage";
 import RegisterPage from "./pages/register/RegisterPage";
 import AuthLayout from "./layout/authenLayout.jsx";
+import SupportPage from "./pages/SupportPage/SupportPage.jsx";
 import { Toaster } from "react-hot-toast";
 
 // import PublicRoute from "./routes/PublicRoute";
@@ -104,6 +105,14 @@ function App() {
         </MainLayout>
       ),
     },
+    {
+      path: routes.support,
+      element: (
+        <MainLayout>
+          <SupportPage />
+        </MainLayout>
+      ),
+    },
 
     // optional 404
     { path: "*", element: <div style={{ padding: 20 }}>404 Not Found</div> },
@@ -111,7 +120,7 @@ function App() {
 
   return (
     <>
-      <Toaster position="top-right" reverseOrder={false} />
+      <Toaster position="top-right" />
       <RouterProvider router={router} />
     </>
   );

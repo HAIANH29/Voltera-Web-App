@@ -10,4 +10,5 @@ export const routes = {
   electrics: "/electrics",
   favorites: "/favorites",
   aboutUs: "/about",
+  support: "/support",
 };
