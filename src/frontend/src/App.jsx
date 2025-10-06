@@ -16,6 +16,7 @@ import MainLayout from "./layout/mainLayout";
 import ResetPasswordPage from "./pages/resetPasswordPage/ResetPasswordPage";
 import VerifyEmailPage from "./pages/VerifyEmailPage/VerifyEmailPage"; 
 import AboutUsPage from "./pages/AboutUsPage/AboutUsPage";
+import PostVehicleWizard from "./pages/post/vehicles/PostVehicleWizard";
 function App() {
   const router = createBrowserRouter([
     
@@ -38,6 +39,7 @@ function App() {
         </MainLayout>
       ),
     },
+
     {
       path: routes.electrics,
       element: (
@@ -54,7 +56,14 @@ function App() {
         </MainLayout>
       ),
     },
-
+     {
+      path: routes.postVehicles,
+      element: (     
+          <MainLayout>
+            <PostVehicleWizard />
+          </MainLayout>     
+      ),
+    },
 
     {
       path: routes.verifyEmail,
