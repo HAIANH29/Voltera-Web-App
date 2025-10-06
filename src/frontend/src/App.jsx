@@ -56,14 +56,14 @@ function App() {
         </MainLayout>
       ),
     },
-     {
-      path: routes.postVehicles,
-      element: (     
-          <MainLayout>
-            <PostVehicleWizard />
-          </MainLayout>     
-      ),
-    },
+    //  {
+    //   path: routes.postVehicles,
+    //   element: (     
+    //       <MainLayout>
+    //         <PostVehicleWizard />
+    //       </MainLayout>     
+    //   ),
+    // },
 
     {
       path: routes.verifyEmail,
