@@ -1,6 +1,7 @@
 import React from "react";
 import CreateListingForm from "./CreateListingForm";
 
+
 export default function PostVehicleWizard() {
   return (
     <div className="mx-auto max-w-6xl" style={{ padding: "24px 0" }}>

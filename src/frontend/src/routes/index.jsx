@@ -12,4 +12,6 @@ export const routes = {
   favorites: "/favorites",
   aboutUs: "/about",
   postVehicles: "/post/vehicles",
+  support: "/support",
+
 };
