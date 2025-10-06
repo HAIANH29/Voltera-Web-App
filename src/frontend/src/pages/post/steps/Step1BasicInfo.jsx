@@ -1,7 +1,7 @@
 import React from "react";
 import { Form, Input, Select, InputNumber, Button } from "antd";
-import { useVehiclePost } from "../useVehiclePost";
-import { BRANDS, MODELS, YEARS, CONDITIONS } from "../../../../config/vehicleOptions";
+import { useVehiclePost } from "../vehicles/useVehiclePost";
+import { BRANDS, MODELS, YEARS, CONDITIONS } from "../../../config/vehicleOptions";
 
 export default function Step1BasicInfo() {
   const { data } = useVehiclePost().state;

@@ -5,7 +5,7 @@ import RightSidebar from "../../../components/ui/RightSidebar";
 import PreviewCard from "../../../components/miniPost/PreviewCard";
 import { PostingTips } from "../../../components/ui/RightSidebar";
 
-import Step1BasicInfo from "./steps/Step1BasicInfo";
+import Step1BasicInfo from "../steps/Step1BasicInfo";
 import Step2Battery from "./steps/Step2Battery";
 import Step3PhotosDocs from "./steps/Step3PhotosDocs";
 import Step4Pricing from "./steps/Step4Pricing";
