@@ -10,7 +10,7 @@ import RegisterPage from "./pages/register/RegisterPage";
 import AuthLayout from "./layout/authenLayout.jsx";
 import SupportPage from "./pages/SupportPage/SupportPage.jsx";
 import { Toaster } from "react-hot-toast";
-
+import PostElectricWizard from "./pages/post/electrics/PostElectricWizard"; 
 import ForgotPasswordPage from "./pages/forgotpasswordPage/ForgotPasswordPage";
 import MainLayout from "./layout/mainLayout";
 import ResetPasswordPage from "./pages/resetPasswordPage/ResetPasswordPage";
@@ -66,6 +66,14 @@ function App() {
         </MainLayout>
       ),
     },
+       {
+    path: routes.postElectric,
+    element: (
+      <MainLayout>
+        <PostElectricWizard />
+      </MainLayout>
+    ),
+  },
     {
       path: routes.verifyEmail,
       element: (
@@ -138,7 +146,6 @@ function App() {
 
     // optional 404
     { path: "*", element: <div style={{ padding: 20 }}>404 Not Found</div> },
-    
   ]);
 
   return (

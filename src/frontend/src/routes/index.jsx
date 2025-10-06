@@ -13,5 +13,5 @@ export const routes = {
   aboutUs: "/about",
   postVehicles: "/post/vehicles",
   support: "/support",
-
+  postElectric: "/post/electrics",
 };
