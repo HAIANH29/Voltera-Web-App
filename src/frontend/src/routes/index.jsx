@@ -1,3 +1,4 @@
+// src/routes/index.jsx
 export const routes = {
   home: "/",
   login: "/login",
@@ -10,4 +11,5 @@ export const routes = {
   electrics: "/electrics",
   favorites: "/favorites",
   aboutUs: "/about",
+  postVehicles: "/post/vehicles",
 };

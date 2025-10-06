@@ -1,6 +1,6 @@
 import "./App.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { routes } from "./routes/";
+import { routes } from "./routes/index.jsx"; // ✅ sửa lại đường dẫn import CHÍNH XÁC
 import HomePage from "./pages/homepage/HomePage";
 import VehiclesPage from "./pages/vehiclesPage/vehiclesPage";
 import ElectricsPage from "./pages/electricsPage/electricsPage";
@@ -10,16 +10,18 @@ import RegisterPage from "./pages/register/RegisterPage";
 import AuthLayout from "./layout/authenLayout.jsx";
 import { Toaster } from "react-hot-toast";
 
-// import PublicRoute from "./routes/PublicRoute";
 import ForgotPasswordPage from "./pages/forgotpasswordPage/ForgotPasswordPage";
 import MainLayout from "./layout/mainLayout";
 import ResetPasswordPage from "./pages/resetPasswordPage/ResetPasswordPage";
-import VerifyEmailPage from "./pages/VerifyEmailPage/VerifyEmailPage"; 
+import VerifyEmailPage from "./pages/VerifyEmailPage/VerifyEmailPage";
 import AboutUsPage from "./pages/AboutUsPage/AboutUsPage";
 import PostVehicleWizard from "./pages/post/vehicles/PostVehicleWizard";
+
+console.log("routes:", routes);
+console.log("postVehicles:", routes.postVehicles);
+
 function App() {
   const router = createBrowserRouter([
-    
     {
       path: routes.home,
       element: (
@@ -39,7 +41,6 @@ function App() {
         </MainLayout>
       ),
     },
-
     {
       path: routes.electrics,
       element: (
@@ -56,15 +57,14 @@ function App() {
         </MainLayout>
       ),
     },
-    //  {
-    //   path: routes.postVehicles,
-    //   element: (     
-    //       <MainLayout>
-    //         <PostVehicleWizard />
-    //       </MainLayout>     
-    //   ),
-    // },
-
+    {
+      path: routes.postVehicles, // ✅ route chính
+      element: (
+        <MainLayout>
+          <PostVehicleWizard />
+        </MainLayout>
+      ),
+    },
     {
       path: routes.verifyEmail,
       element: (
@@ -113,9 +113,18 @@ function App() {
         </MainLayout>
       ),
     },
-
-    // optional 404
-    { path: "*", element: <div style={{ padding: 20 }}>404 Not Found</div> },
+    // ✅ thêm route fallback để tránh "No routes matched location"
+    {
+      path: "*",
+      element: (
+        <MainLayout>
+          <div style={{ padding: 40, textAlign: "center" }}>
+            <h2>404 - Page Not Found</h2>
+            <p>The page you are looking for doesn’t exist.</p>
+          </div>
+        </MainLayout>
+      ),
+    },
   ]);
 
   return (
