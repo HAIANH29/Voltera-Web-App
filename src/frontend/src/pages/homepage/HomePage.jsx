@@ -1,5 +1,5 @@
 import React from "react";
-// Import the FontAwesomeIcon component and specific icons
+import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCar,
@@ -195,16 +195,18 @@ export default function HomePage() {
           Join thousands of users buying and selling EVs and batteries every day.
         </p>
         <div className="cta-buttons">
-          <button className="cta-btn primary">
+          {/* Link to the post vehicle page */}
+          <Link to="/post/vehicles" className="cta-btn primary">
             <FontAwesomeIcon icon={faPlusCircle} /> Post a listing
-          </button>
-          <button className="cta-btn ghost">Explore products</button>
+          </Link>
+          {/* Link to explore products */}
+          <Link to="/vehicles" className="cta-btn ghost">
+            Explore products
+          </Link>
         </div>
       </section>
 
-      <footer className="home-footer">
-        © {new Date().getFullYear()} Voltera. All rights reserved.
-      </footer>
+      {/* No local footer: the global FooterComponent in MainLayout will handle the site footer */}
     </div>
   );
 }
