@@ -1,16 +1,23 @@
 package com.g_wuy.swp391.voltera.service;
 
-import com.g_wuy.swp391.voltera.entity.*;
-import com.g_wuy.swp391.voltera.entity.Account.Role;
-import com.g_wuy.swp391.voltera.mapper.PostMapper;
-import com.g_wuy.swp391.voltera.model.request.PostRequest;
-import com.g_wuy.swp391.voltera.model.response.PostResponse;
-import com.g_wuy.swp391.voltera.repository.*;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import com.g_wuy.swp391.voltera.entity.*;
+import com.g_wuy.swp391.voltera.exception.AccountNotFound;
+import com.g_wuy.swp391.voltera.mapper.PostMapper;
+import com.g_wuy.swp391.voltera.model.request.PostRequest;
+import com.g_wuy.swp391.voltera.model.request.RejectRequest;
+import com.g_wuy.swp391.voltera.model.response.ModerationResponse;
+import com.g_wuy.swp391.voltera.model.response.PostResponse;
+import com.g_wuy.swp391.voltera.model.response.RejectResponse;
+import com.g_wuy.swp391.voltera.repository.*;
+
 import java.io.IOException;
-import java.nio.file.attribute.UserPrincipalNotFoundException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,12 +29,9 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final BatteryRepository batteryRepository;
-    private final BatterytypeRepository batterytypeRepository;
-    private final BatteryimageRepository batteryimageRepository;
+    private final BatteryTypeRepository batteryTypeRepository;
     private final AccountRepository accountRepository;
     private final VehicleRepository vehicleRepository;
-    private final VehicleImageRepository vehicleImageRepository;
-    private final S3Service s3Service;
     private final PostMapper postMapper;
 
     public PostResponse createPost(PostRequest dto, String username) throws IOException {
@@ -35,23 +39,25 @@ public class PostService {
         Account account = accountRepository.findByUsername(username);
 
         if (account == null) {
-            throw new UserPrincipalNotFoundException("Account not found");
+            throw new AccountNotFound("Account not found");
         }
 
-        if (!Role.Seller.equals(account.getRole())) {
+        if (!"SELLER".equalsIgnoreCase(account.getRole())) {
             throw new SecurityException("Only sellers can create posts");
         }
+
         User seller = Optional.ofNullable(account.getUser())
                 .orElseThrow(() -> new SecurityException("Seller information not found"));
 
         // 2. Tạo Post
         Post post = postRepository.save(Post.builder()
-                .sellerid(seller)
+                .sellerId(seller)
                 .title(dto.getTitle())
                 .description(dto.getDescription())
                 .price(dto.getPrice())
-                .createdat(Instant.now())
-                .updatedat(Instant.now())
+                .status("PENDING")
+                .createdAt(Instant.now())
+                .updatedAt(Instant.now())
                 .build());
 
         // 3. Xử lý Vehicle hoặc Battery
@@ -81,65 +87,30 @@ public class PostService {
                     .vehicleInspection(Boolean.TRUE.equals(dto.getVehicle().getVehicleinspection()))
                     .licensePlate(dto.getVehicle().getLicenseplate())
                     .origin(dto.getVehicle().getOrigin())
+                    .status("AVAILABLE")
                     .build());
-
-            if (dto.getVehicleImages() != null) {
-                for (var file : dto.getVehicleImages()) {
-                    if (file != null && !file.isEmpty()) {
-                        try {
-                            String url = s3Service.uploadFile(file);
-                            vehicleImageRepository.save(Vehicleimage.builder()
-                                    .vehicle(savedVehicle)
-                                    .imageUrl(url)
-                                    .uploadedAt(Instant.now())
-                                    .build());
-                            allImages.add(url);
-                        } catch (IOException e) {
-                            throw new IOException("Failed to upload vehicle image: " + e.getMessage(), e);
-                        }
-                    }
-                }
-            }
 
         } else if (dto.getBattery() != null) {
             // Battery
-            Integer typeId = dto.getBattery().getBatteryTypeId();
+            Integer typeId = dto.getBattery().getBatteryTypeId().getId();
             if (typeId == null) throw new IllegalArgumentException("Battery type ID is required");
 
-            Batterytype type = batterytypeRepository.findById(typeId)
+            Batterytype type = batteryTypeRepository.findById(typeId)
                     .orElseThrow(() -> new IllegalArgumentException("Battery type not found: " + typeId));
 
             savedBattery = batteryRepository.save(Battery.builder()
                     .post(post)
-                    .batterytype(type)
-                    .serialnumber(dto.getBattery().getSerialNumber())
-                    .origincapacity(dto.getBattery().getOriginCapacity())
-                    .remainingcapacity(dto.getBattery().getRemainingCapacity())
-                    .mileagecovered(dto.getBattery().getMileageCovered())
+                    .batteryTypeId(type)
+                    .serialNumber(dto.getBattery().getSerialNumber())
+                    .originCapacity(dto.getBattery().getOriginCapacity())
+                    .remainingCapacity(dto.getBattery().getRemainingCapacity())
+                    .mileageCovered(dto.getBattery().getMileageCovered())
                     .voltage(dto.getBattery().getVoltage())
-                    .cyclecount(dto.getBattery().getCycleCount())
+                    .cycleCount(dto.getBattery().getCycleCount())
                     .warranty(dto.getBattery().getWarranty())
                     .weight(dto.getBattery().getWeight())
                     .lifecycle(dto.getBattery().getLifeCycle())
                     .build());
-
-            if (dto.getImages() != null) {
-                for (var file : dto.getImages()) {
-                    if (file != null && !file.isEmpty()) {
-                        try {
-                            String url = s3Service.uploadFile(file);
-                            batteryimageRepository.save(Batteryimage.builder()
-                                    .battery(savedBattery)
-                                    .imageurl(url)
-                                    .uploadedat(Instant.now())
-                                    .build());
-                            allImages.add(url);
-                        } catch (IOException e) {
-                            throw new IOException("Failed to upload battery image: " + e.getMessage(), e);
-                        }
-                    }
-                }
-            }
 
         } else {
             throw new IllegalArgumentException("Provide either vehicle or battery details.");
@@ -148,4 +119,29 @@ public class PostService {
         // 4. Trả về response
         return postMapper.toPostResponse(post, savedBattery, savedVehicle, allImages);
     }
+
+    public List<Post> getPostByStatus(String status) {
+        return postRepository.getAllPostByStatus(status);
+    }
+
+    public ModerationResponse approvePost(Integer postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Post not found"));
+        post.setStatus("APPROVE");
+        postRepository.save(post);
+        return new ModerationResponse(post.getId(), post.getStatus(), null);
+    }
+
+    public RejectResponse rejectPost(Integer postId, RejectRequest request) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Post not found"));
+        post.setStatus("REJECT");
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String adminUsername = auth != null ? auth.getName() : "Unknown";
+
+        postRepository.save(post);
+        return postMapper.toRejectResponse(post, adminUsername, request.getReason());
+    }
+
 }

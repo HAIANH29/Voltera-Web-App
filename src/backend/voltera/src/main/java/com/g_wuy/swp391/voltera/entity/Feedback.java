@@ -1,16 +1,12 @@
 package com.g_wuy.swp391.voltera.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.Instant;
 
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
 @Getter
 @Setter
 @Entity
@@ -23,10 +19,8 @@ public class Feedback {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "transactionid")
-    private Transaction transactionid;
+    private Transaction transactionId;
 
-    @Min(1)
-    @Max(5)
     @Column(name = "rating")
     private Integer rating;
 
@@ -35,10 +29,6 @@ public class Feedback {
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "createdat")
-    private Instant createdat;
+    private Instant createdAt;
 
-    @PrePersist
-    protected void onCreate() {
-        createdat = Instant.now();
-    }
 }

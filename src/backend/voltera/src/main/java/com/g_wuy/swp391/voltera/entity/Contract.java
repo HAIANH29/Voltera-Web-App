@@ -1,14 +1,13 @@
 package com.g_wuy.swp391.voltera.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDate;
 
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 @Getter
 @Setter
 @Entity
@@ -21,31 +20,28 @@ public class Contract {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "postid")
-    private Post post; // thay vì postId
+    private Post postId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sellerid")
-    private User seller; // thay vì sellerId
+    private User sellerId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "buyerid")
-    private User buyer; // thay vì buyerId
+    private User buyerId;
 
     @Column(name = "contractfile", length = Integer.MAX_VALUE)
-    private String contractfile;
+    private String contractFile;
+
+    @Size(max = 20)
+    @ColumnDefault("'PENDING'")
+    @Column(name = "contractstatus", length = 20)
+    private String contractStatus;
 
     @Column(name = "signeddate")
-    private LocalDate signeddate;
+    private LocalDate signedDate;
 
     @Column(name = "expirationdate")
-    private LocalDate expirationdate;
+    private LocalDate expirationDate;
 
-    @Enumerated(EnumType.STRING)
-    @ColumnDefault("'Pending'")
-    @Column(name = "contractstatus")
-    private ContractStatus contractstatus = ContractStatus.PENDING;
-
-    public enum ContractStatus {
-        PENDING, SIGNED, ACTIVE, EXPIRED, CANCELLED
-    }
 }

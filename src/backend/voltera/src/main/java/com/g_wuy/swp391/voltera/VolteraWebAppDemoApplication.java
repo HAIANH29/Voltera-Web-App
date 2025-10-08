@@ -4,10 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class VolteraApplication {
+public class VolteraWebAppDemoApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(VolteraApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(VolteraWebAppDemoApplication.class, args);
+    }
 
 }

@@ -1,13 +1,11 @@
 package com.g_wuy.swp391.voltera.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
 @Getter
 @Setter
 @Entity
@@ -20,14 +18,15 @@ public class Fee {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "postid")
-    private Post postid;
+    private Post postId;
 
     @Column(name = "percentage", precision = 5, scale = 2)
     private BigDecimal percentage;
 
     @Column(name = "minprice", precision = 12, scale = 2)
-    private BigDecimal minprice;
+    private BigDecimal minPrice;
 
     @Column(name = "maxprice", precision = 12, scale = 2)
-    private BigDecimal maxprice;
+    private BigDecimal maxPrice;
+
 }

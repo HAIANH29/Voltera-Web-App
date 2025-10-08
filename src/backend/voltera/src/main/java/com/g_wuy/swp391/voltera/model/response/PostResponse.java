@@ -1,12 +1,12 @@
 package com.g_wuy.swp391.voltera.model.response;
 
-import com.g_wuy.swp391.voltera.entity.Post.PostStatus;
-import com.g_wuy.swp391.voltera.model.dto.BatteryDTO;
-import com.g_wuy.swp391.voltera.model.dto.VehicleDTO;
-import lombok.Data;
-
 import java.math.BigDecimal;
 import java.util.List;
+
+import com.g_wuy.swp391.voltera.model.dto.BatteryDto;
+import com.g_wuy.swp391.voltera.model.dto.VehicleDto;
+
+import lombok.Data;
 
 @Data
 public class PostResponse {
@@ -14,8 +14,8 @@ public class PostResponse {
     private String title;
     private String description;
     private BigDecimal price;
-    private PostStatus status;
-    private BatteryDTO battery;
-    private VehicleDTO vehicle;
+    private String status;
+    private BatteryDto battery;
+    private VehicleDto vehicle;
     private List<String> imageUrls;
 }

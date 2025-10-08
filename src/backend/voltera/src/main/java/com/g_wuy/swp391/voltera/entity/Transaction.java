@@ -1,15 +1,14 @@
 package com.g_wuy.swp391.voltera.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
 @Getter
 @Setter
 @Entity
@@ -22,7 +21,7 @@ public class Transaction {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "postid")
-    private Post post;
+    private Post postId;
 
     @Column(name = "reportid")
     private Integer reportId;
@@ -34,18 +33,16 @@ public class Transaction {
     @Column(name = "updateat")
     private Instant updateAt;
 
+    @Size(max = 20)
+    @ColumnDefault("'PENDING'")
+    @Column(name = "transactionstatus", length = 20)
+    private String transactionStatus;
+
     @Column(name = "price", precision = 12, scale = 2)
     private BigDecimal price;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "contractid")
-    private Contract contract;
+    private Contract contractId;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "transactionstatus")
-    private TransactionStatus transactionStatus;
-
-    public enum TransactionStatus {
-        PENDING, PROCESSING, COMPLETED, CANCELLED, FAILED
-    }
 }

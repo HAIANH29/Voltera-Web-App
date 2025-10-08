@@ -5,14 +5,17 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.math.BigDecimal;
 import java.time.Instant;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
+@Getter
+@Setter
 @Entity
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "post")
 public class Post {
     @Id
@@ -22,7 +25,8 @@ public class Post {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sellerid")
-    private User sellerid;
+    @JsonIgnore
+    private User sellerId;
 
     @Size(max = 200)
     @Column(name = "title", length = 200)
@@ -34,33 +38,17 @@ public class Post {
     @Column(name = "price", precision = 12, scale = 2)
     private BigDecimal price;
 
+    @Size(max = 20)
+    @ColumnDefault("'PENDING'")
+    @Column(name = "status", length = 20)
+    private String status;
+
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "createdat")
-    private Instant createdat;
+    private Instant createdAt;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "updatedat")
-    private Instant updatedat;
+    private Instant updatedAt;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", length = 50, nullable = false)
-    private PostStatus status = PostStatus.PENDING;
-
-    public enum PostStatus {
-        PENDING, APPROVE, REJECT
-    }
-
-    @PrePersist
-    protected void onCreate() {
-        createdat = Instant.now();
-        updatedat = Instant.now();
-        if (status == null) {
-            status = PostStatus.PENDING;
-        }
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        updatedat = Instant.now();
-    }
 }

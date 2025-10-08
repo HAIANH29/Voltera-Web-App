@@ -1,23 +1,20 @@
 package com.g_wuy.swp391.voltera.model.request;
 
-import com.g_wuy.swp391.voltera.entity.Post.PostStatus;
-import com.g_wuy.swp391.voltera.model.dto.BatteryDTO;
-import com.g_wuy.swp391.voltera.model.dto.VehicleDTO;
-import lombok.Data;
-import org.springframework.web.multipart.MultipartFile;
-
 import java.math.BigDecimal;
-import java.util.List;
 
+import com.g_wuy.swp391.voltera.model.dto.BatteryDto;
+import com.g_wuy.swp391.voltera.model.dto.VehicleDto;
+
+import lombok.Data;
 
 @Data
 public class PostRequest {
     private String title;
     private String description;
     private BigDecimal price;
-    private PostStatus status;
-    private BatteryDTO battery;
-    private VehicleDTO  vehicle;
-    private List<MultipartFile> images;
-    private List<MultipartFile> vehicleImages;
+    private String status;
+    private BatteryDto battery;
+    private VehicleDto vehicle;
+//    private List<MultipartFile> images;
+//    private List<MultipartFile> vehicleImages;
 }

@@ -1,17 +1,30 @@
 package com.g_wuy.swp391.voltera.repository;
 
-import com.g_wuy.swp391.voltera.entity.Account;
+import jakarta.transaction.Transactional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
+import com.g_wuy.swp391.voltera.entity.Account;
 
 @Repository
-public interface AccountRepository extends JpaRepository<Account,Integer> {
-
+public interface AccountRepository extends JpaRepository<Account, Integer> {
     Account findByUsername(String username);
     boolean existsByUsername(String username);
-    Optional<Account> findById(Integer id);
     boolean existsAccountById(Integer id);
     Account findAccountById(Integer id);
+
+    @Query("SELECT COUNT(a) > 0 FROM Account a WHERE a.username = :username")
+    boolean existsAccountByUsername(@Param("username") String username);
+
+    @Modifying
+    @Transactional
+    @Query("Update Account a SET a.status = 'APPROVE' WHERE a.id = :id")
+    int approveAccountById(@Param("id") Integer id);
+
+    @Query("SELECT COUNT(a) > 0 FROM Account a WHERE a.username = :username")
+    boolean isEmailExist(@Param("username") String username);
 }

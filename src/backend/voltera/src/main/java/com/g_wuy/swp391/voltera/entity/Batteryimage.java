@@ -2,17 +2,16 @@ package com.g_wuy.swp391.voltera.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.Instant;
 
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter
+@Setter
 @Entity
 @Table(name = "batteryimage")
 public class Batteryimage {
@@ -24,18 +23,14 @@ public class Batteryimage {
     @ManyToOne(fetch = FetchType.LAZY)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "postid")
-    private Battery battery;
+    private Battery postId;
 
     @NotNull
     @Column(name = "imageurl", nullable = false, length = Integer.MAX_VALUE)
-    private String imageurl;
+    private String imageUrl;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "uploadedat")
-    private Instant uploadedat;
+    private Instant uploadedAt;
 
-    @PrePersist
-    protected void onCreate() {
-        uploadedat = Instant.now();
-    }
 }

@@ -1,10 +1,13 @@
 package com.g_wuy.swp391.voltera.model.dto;
 
+import java.math.BigDecimal;
+
+import com.g_wuy.swp391.voltera.entity.Batterytype;
+
 import lombok.Data;
 
-import java.math.BigDecimal;
 @Data
-public class BatteryDTO {
+public class BatteryDto {
     private String serialNumber;
     private BigDecimal originCapacity;
     private BigDecimal remainingCapacity;
@@ -14,5 +17,5 @@ public class BatteryDTO {
     private String warranty;
     private BigDecimal weight;
     private String lifeCycle;
-    private Integer batteryTypeId;
+    private Batterytype batteryTypeId;
 }

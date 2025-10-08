@@ -1,20 +1,14 @@
 package com.g_wuy.swp391.voltera.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import org.hibernate.annotations.ColumnDefault;
+import lombok.*;
 
 import java.time.Instant;
 
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Getter
-@Setter
 @Entity
 @Table(name = "account")
 public class Account {
@@ -28,50 +22,35 @@ public class Account {
     private User user;
 
     @Size(max = 100)
-    @NotNull
     @Column(name = "username", nullable = false, length = 100)
     private String username;
 
     @Size(max = 255)
-    @NotNull
     @Column(name = "password", nullable = false)
     private String password;
 
-    @Enumerated(EnumType.STRING)
-    @ColumnDefault("'BUYER'")
-    private Role role;
+    @Size(max = 20)
+    @Column(name = "role", length = 20)
+    private String role;
 
-    public enum Role {
-        ADMIN, 
-        Seller, 
-        BUYER
-    }
+    @Size(max = 20)
+    @Column(name = "status", length = 20)
+    private String status;
 
-    @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "createat")
-    private Instant createat;
+    private Instant createAt;
 
-    @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "updateat")
-    private Instant updateat;
-
-    @Enumerated(EnumType.STRING)
-    @ColumnDefault("'PENDING'")
-    @Column(name = "status")
-    private AccountStatus status = AccountStatus.PENDING;
-
-    public enum AccountStatus {
-        PENDING, ACTIVE, INACTIVE, BANNED
-    }
+    private Instant updateAt;
 
     @PrePersist
     protected void onCreate() {
-        createat = Instant.now();
-        updateat = Instant.now();
+        createAt = Instant.now();
+        updateAt = Instant.now();
     }
 
     @PreUpdate
     protected void onUpdate() {
-        updateat = Instant.now();
+        updateAt = Instant.now();
     }
 }

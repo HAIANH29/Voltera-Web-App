@@ -2,15 +2,15 @@ package com.g_wuy.swp391.voltera.service;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
-
 
 @Service
 public class JwtService {
@@ -23,11 +23,13 @@ public class JwtService {
     }
 
     public String generateToken(UserDetails userDetails) {
+        String role = userDetails.getAuthorities().iterator().next().getAuthority(); // lấy role đầu tiên
         return Jwts.builder()
                 .setSubject(userDetails.getUsername()) // subject = username
-                .setIssuedAt(new Date())         // thời điểm phát hành
-                .setExpiration(new Date(System.currentTimeMillis() + expiration)) // hạn
-                .signWith(getKey(), SignatureAlgorithm.HS256) // ký bằng secret key
+                .claim("role", role)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + expiration))
+                .signWith(getKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
     public String extractUsername(String token) {
@@ -55,5 +57,13 @@ public class JwtService {
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
+    }
+
+    public String extractTokenFromRequest(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+        return null;
     }
 }

@@ -1,11 +1,10 @@
 package com.g_wuy.swp391.voltera.model.dto;
 
-import lombok.Data;
-
 import java.math.BigDecimal;
 
+import lombok.Data;
 @Data
-public class VehicleDTO {
+public class VehicleDto {
     private String brand;
     private String model;
     private String version;

@@ -1,13 +1,11 @@
 package com.g_wuy.swp391.voltera.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
 @Getter
 @Setter
 @Entity
@@ -20,14 +18,15 @@ public class Report {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "senderid")
-    private User senderid;
+    private User senderId;
 
     @Column(name = "totalcost", precision = 12, scale = 2)
-    private BigDecimal totalcost;
+    private BigDecimal totalCost;
 
     @Column(name = "month")
     private Integer month;
 
     @Column(name = "year")
     private Integer year;
+
 }

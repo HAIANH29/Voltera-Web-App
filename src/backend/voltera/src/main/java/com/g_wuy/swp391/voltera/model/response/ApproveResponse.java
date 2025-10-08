@@ -1,7 +1,10 @@
 package com.g_wuy.swp391.voltera.model.response;
 
+import lombok.Data;
+
 import java.time.Instant;
 
+@Data
 public class ApproveResponse {
     private Integer accountId;      // ID của account được approve
     private String username;        // Username của account

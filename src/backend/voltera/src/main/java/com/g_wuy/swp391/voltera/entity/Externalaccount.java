@@ -3,16 +3,14 @@ package com.g_wuy.swp391.voltera.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.Instant;
 
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
 @Getter
 @Setter
 @Entity
@@ -36,27 +34,23 @@ public class Externalaccount {
     @Size(max = 200)
     @NotNull
     @Column(name = "provideruserid", nullable = false, length = 200)
-    private String provideruserid;
+    private String providerUserId;
 
     @Size(max = 150)
     @Column(name = "email", length = 150)
     private String email;
 
     @Column(name = "accesstoken", length = Integer.MAX_VALUE)
-    private String accesstoken;
+    private String accessToken;
 
     @Column(name = "refreshtoken", length = Integer.MAX_VALUE)
-    private String refreshtoken;
+    private String refreshToken;
 
     @Column(name = "expiresat")
-    private Instant expiresat;
+    private Instant expiresAt;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "createdat")
-    private Instant createdat;
+    private Instant createdAt;
 
-    @PrePersist
-    protected void onCreate() {
-        createdat = Instant.now();
-    }
 }

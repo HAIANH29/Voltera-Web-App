@@ -1,12 +1,21 @@
 package com.g_wuy.swp391.voltera.service;
 
-import com.g_wuy.swp391.voltera.entity.Account;
-import com.g_wuy.swp391.voltera.repository.AccountRepository;
+import jakarta.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
+import com.g_wuy.swp391.voltera.configuration.SecurityConfig;
+import com.g_wuy.swp391.voltera.entity.Account;
+import com.g_wuy.swp391.voltera.entity.User;
+import com.g_wuy.swp391.voltera.exception.AccountNotFound;
+import com.g_wuy.swp391.voltera.exception.EmailAlreadyExistsException;
+import com.g_wuy.swp391.voltera.exception.UsernameAlreadyExistsException;
+import com.g_wuy.swp391.voltera.mapper.AccountMapper;
+import com.g_wuy.swp391.voltera.model.request.RegisterRequest;
+import com.g_wuy.swp391.voltera.model.response.RegisterResponse;
+import com.g_wuy.swp391.voltera.repository.AccountRepository;
+import com.g_wuy.swp391.voltera.repository.UserRepository;
 
 @Service
 public class AccountService {
@@ -14,32 +23,57 @@ public class AccountService {
     private AccountRepository accountRepository;
 
     @Autowired
-    private PasswordEncoder passwordEncoder;
+    private AccountMapper accountMapper;
 
-    public Account registerAccount(Account account) {
-        if (accountRepository.existsByUsername(account.getUsername())) {
-            throw new RuntimeException("Username is already taken");
-        }
-        account.setCreateat(Instant.now());
-        account.setPassword(passwordEncoder.encode(account.getPassword()));
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private SecurityConfig securityConfiguration;
+
+    public Account save(Account account) {
         return accountRepository.save(account);
+    }
+
+    public RegisterResponse register(RegisterRequest registerRequest) {
+        String username = registerRequest.getUsername();
+        String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$";
+
+        if (accountRepository.existsAccountByUsername(username)) {
+            throw new UsernameAlreadyExistsException("This username already existed");
+        }
+
+        if (username.matches(emailRegex)) {
+            if (accountRepository.isEmailExist(username)) {
+                throw new EmailAlreadyExistsException("This email already exists");
+            }
+        }
+
+        User userRegis = new User();
+        userRegis.setEmail(username.matches(emailRegex) ? username : null);
+        User userSaved = userRepository.save(userRegis);
+
+        Account account = accountMapper.toAccount(registerRequest);
+        account.setUser(userSaved);
+        account.setStatus("PENDING");
+        account.setRole(registerRequest.getRole());
+        account.setPassword(securityConfiguration.passwordEncoder().encode(registerRequest.getPassword()));
+
+        accountRepository.save(account);
+
+        return accountMapper.toRegisterResponse(account);
+    }
+
+    @Transactional
+    public Account approveAccount(Integer id) {
+        int approved = accountRepository.approveAccountById(id);
+        if (approved == 0) {
+            throw new AccountNotFound("Account isn't exist or already approved");
+        }
+        return accountRepository.findAccountById(id);
     }
 
     public Account findAccountById(Integer id) {
         return accountRepository.findAccountById(id);
-    }
-
-    public Account approveAccount(Account account) {
-        account.setStatus(Account.AccountStatus.ACTIVE);
-        account.setUpdateat(Instant.now());
-        return account;
-    }
-
-    public void saveAccount(Account account) {
-        accountRepository.save(account);
-    }
-
-    public boolean isAccountExist(Integer id) {
-        return accountRepository.existsById(id);
     }
 }

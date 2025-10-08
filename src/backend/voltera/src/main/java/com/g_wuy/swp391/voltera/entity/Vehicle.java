@@ -9,11 +9,12 @@ import org.hibernate.annotations.OnDeleteAction;
 
 import java.math.BigDecimal;
 
-@Data
-@Builder
+@Getter
+@Setter
+@Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
+@Builder
 @Table(name = "vehicle")
 public class Vehicle {
     @Id
@@ -26,9 +27,6 @@ public class Vehicle {
     @JoinColumn(name = "postid", nullable = false)
     private Post post;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "batterytypeid")
-    private Batterytype batteryTypeId;
 
     @Size(max = 100)
     @Column(name = "brand", length = 100)
@@ -41,10 +39,6 @@ public class Vehicle {
     @Size(max = 50)
     @Column(name = "version", length = 50)
     private String version;
-
-    @Size(max = 50)
-    @Column(name = "status", length = 50)
-    private String status;
 
     @Column(name = "odo")
     private Integer odo;
@@ -84,4 +78,9 @@ public class Vehicle {
     @Size(max = 255)
     @Column(name = "origin")
     private String origin;
+
+    @Size(max = 20)
+    @Column(name = "status", length = 20)
+    private String status;
+
 }

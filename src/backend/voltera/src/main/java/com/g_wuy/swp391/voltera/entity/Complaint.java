@@ -2,14 +2,12 @@ package com.g_wuy.swp391.voltera.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.Instant;
 
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 @Getter
 @Setter
 @Entity
@@ -22,7 +20,7 @@ public class Complaint {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "senderid")
-    private User sender; // Đổi tên
+    private User senderId;
 
     @Size(max = 200)
     @Column(name = "problem", length = 200)
@@ -31,32 +29,16 @@ public class Complaint {
     @Column(name = "description", length = Integer.MAX_VALUE)
     private String description;
 
+    @Size(max = 20)
+    @ColumnDefault("'PENDING'")
+    @Column(name = "status", length = 20)
+    private String status;
+
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "createat")
-    private Instant createat;
+    private Instant createAt;
+
     @Column(name = "resolveat")
-    private Instant resolveat;
+    private Instant resolveAt;
 
-    @Enumerated(EnumType.STRING)
-    @ColumnDefault("'PENDING'")
-    @Column(name = "status")
-    private ComplaintStatus status = ComplaintStatus.PENDING;
-
-    public enum ComplaintStatus {
-        PENDING, IN_PROGRESS, RESOLVED, REJECTED
-    }
-
-    @PrePersist
-    protected void onCreate() {
-        createat = Instant.now();
-    }
-
-    public Complaint(User sender, String problem, String description, Instant createat, Instant resolveat, ComplaintStatus status) {
-        this.sender = sender;
-        this.problem = problem;
-        this.description = description;
-        this.createat = createat;
-        this.resolveat = resolveat;
-        this.status = status;
-    }
 }

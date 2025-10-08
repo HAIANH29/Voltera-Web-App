@@ -5,11 +5,12 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
+@Getter
+@Setter
 @Entity
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "batterytype")
 public class Batterytype {
     @Id
@@ -28,4 +29,5 @@ public class Batterytype {
 
     @Column(name = "description", length = Integer.MAX_VALUE)
     private String description;
+
 }

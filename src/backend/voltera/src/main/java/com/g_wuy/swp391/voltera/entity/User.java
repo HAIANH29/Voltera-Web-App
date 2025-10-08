@@ -2,18 +2,16 @@ package com.g_wuy.swp391.voltera.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.Instant;
 
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
 @Getter
 @Setter
 @Entity
-@Table(name = "\"User\"")
+@Table(name = "\"user\"")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,11 +20,11 @@ public class User {
 
     @Size(max = 100)
     @Column(name = "firstname", length = 100)
-    private String firstName;
+    private String firstname;
 
     @Size(max = 100)
     @Column(name = "lastname", length = 100)
-    private String lastName;
+    private String lastname;
 
     @Size(max = 200)
     @Column(name = "fullname", length = 200)
@@ -45,10 +43,6 @@ public class User {
 
     @Column(name = "address", length = Integer.MAX_VALUE)
     private String address;
-
-    @Size(max = 50)
-    @Column(name = "status", length = 50)
-    private String status;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "createat")
