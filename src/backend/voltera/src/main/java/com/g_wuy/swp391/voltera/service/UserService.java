@@ -1,5 +1,6 @@
 package com.g_wuy.swp391.voltera.service;
 
+import com.g_wuy.swp391.voltera.exception.DataNotMatches;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -48,6 +49,12 @@ public class UserService {
         }
         if (userRepository.isEmailExist(profileRequest.getEmail())) {
             throw new EmailAlreadyExistsException("Email " + profileRequest.getEmail() + " is exist");
+        }
+        if ("^(?:0)(?:3[0-9]|5[0-9]|7[0-9]|8[0-9]|9[0-9])\\d{7}$\n".matches(profileRequest.getPhone())) {
+            throw new DataNotMatches("Phone number isn't belong to Viet Nam");
+        }
+        if ("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$\n".matches(profileRequest.getEmail())) {
+            throw new DataNotMatches("This is not an email format");
         }
         user.setId(accountId);
         user.setFirstname(profileRequest.getFirstname());

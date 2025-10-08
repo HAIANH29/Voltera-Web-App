@@ -43,6 +43,12 @@ public class Account {
     @Column(name = "updateat")
     private Instant updateAt;
 
+    @Column(name = "accesstoken")
+    private String accessToken;
+
+    @Column(name = "refreshtoken")
+    private String refreshToken;
+
     @PrePersist
     protected void onCreate() {
         createAt = Instant.now();
