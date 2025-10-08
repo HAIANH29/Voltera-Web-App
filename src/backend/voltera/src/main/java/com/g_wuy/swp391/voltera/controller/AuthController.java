@@ -1,5 +1,6 @@
 package com.g_wuy.swp391.voltera.controller;
 
+import com.g_wuy.swp391.voltera.exception.AccountNotFound;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -57,7 +58,9 @@ public class AuthController {
                 new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
         );
         Account account = userService.findByUsername(request.getUsername());
-
+        if (account == null) {
+            throw new AccountNotFound("Account not found with username");
+        }
         // Chuyển đổi Account thành UserDetails
         UserDetails userDetails = userDetailsService.loadUserByUsername(request.getUsername());
         String token = jwtService.generateToken(userDetails);

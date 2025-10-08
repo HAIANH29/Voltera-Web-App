@@ -1,7 +1,10 @@
 package com.g_wuy.swp391.voltera.service;
 
+import com.g_wuy.swp391.voltera.exception.LicensePlateAlreadyExist;
+import com.g_wuy.swp391.voltera.exception.SerialNumberAlreadyExist;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -24,15 +27,20 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor
 public class PostService {
 
-    private final PostRepository postRepository;
-    private final BatteryRepository batteryRepository;
-    private final BatteryTypeRepository batteryTypeRepository;
-    private final AccountRepository accountRepository;
-    private final VehicleRepository vehicleRepository;
-    private final PostMapper postMapper;
+    @Autowired
+    private PostRepository postRepository;
+    @Autowired
+    private BatteryRepository batteryRepository;
+    @Autowired
+    private BatteryTypeRepository batteryTypeRepository;
+    @Autowired
+    private AccountRepository accountRepository;
+    @Autowired
+    private VehicleRepository vehicleRepository;
+    @Autowired
+    private PostMapper postMapper;
 
     public PostResponse createPost(PostRequest dto, String username) throws IOException {
         // 1. Xác thực seller
@@ -70,6 +78,9 @@ public class PostService {
         List<String> allImages = new ArrayList<>();
 
         if (dto.getVehicle() != null) {
+            if (vehicleRepository.isLicensePlateExist(dto.getVehicle().getLicenseplate())) {
+                throw new LicensePlateAlreadyExist("This License Plate is already exists");
+            }
             // Vehicle
             savedVehicle = vehicleRepository.save(Vehicle.builder()
                     .post(post)
@@ -98,6 +109,9 @@ public class PostService {
             Batterytype type = batteryTypeRepository.findById(typeId)
                     .orElseThrow(() -> new IllegalArgumentException("Battery type not found: " + typeId));
 
+            if (batteryRepository.isSerialNumberExist(dto.getBattery().getSerialNumber())) {
+                throw new SerialNumberAlreadyExist("This serial number already exists");
+            }
             savedBattery = batteryRepository.save(Battery.builder()
                     .post(post)
                     .batteryTypeId(type)
