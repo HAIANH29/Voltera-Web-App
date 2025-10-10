@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import MiniPost from "../../components/miniPost/miniPost"; // Đường dẫn đúng đến miniPost
+import MiniPost from "../../components/miniPost/miniPost";
+import Pagination from "../../components/pagination/pagination";
 import "./electricsPage.css";
 
 // Mock data cho pin điện
@@ -267,7 +268,51 @@ const mockElectricsData = [
       weight: "580kg",
       lifeCycle: "2700 cycles"
     }
-  }
+  },
+  {
+    id: 13,
+    image: "https://images.unsplash.com/photo-1554744512-d6c603f27c54?w=400",
+    productName: "Ford Mustang Mach-E Battery",
+    basicInfo: ["NCM", "88kWh", "2700 cycles"],
+    sellerName: "Ford Vietnam",
+    price: 490000000,
+    isNew: true,
+    isFavorite: false,
+    batteryDetails: {
+      batteryType: "NCM811",
+      serialNumber: "FOR-MCE-88-132",
+      originalCapacity: "88kWh",
+      remainingCapacity: "85.6kWh",
+      mileageCovered: "19000km",
+      voltage: "400V",
+      cycleCount: 334,
+      warranty: "8 năm",
+      weight: "580kg",
+      lifeCycle: "2700 cycles"
+    }
+  },
+  {
+    id: 14,
+    image: "https://images.unsplash.com/photo-1554744512-d6c603f27c54?w=400",
+    productName: "Ford Mustang Mach-E Battery",
+    basicInfo: ["NCM", "88kWh", "2700 cycles"],
+    sellerName: "Ford Vietnam",
+    price: 490000000,
+    isNew: true,
+    isFavorite: false,
+    batteryDetails: {
+      batteryType: "NCM811",
+      serialNumber: "FOR-MCE-88-132",
+      originalCapacity: "88kWh",
+      remainingCapacity: "85.6kWh",
+      mileageCovered: "19000km",
+      voltage: "400V",
+      cycleCount: 334,
+      warranty: "8 năm",
+      weight: "580kg",
+      lifeCycle: "2700 cycles"
+    }
+  },
 ];
 
 const ITEMS_PER_PAGE = 12; // 4x3 grid
@@ -318,92 +363,6 @@ export default function ElectricsPage() {
   const handlePageChange = (page) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  // Render pagination buttons
-  const renderPagination = () => {
-    const pages = [];
-    const maxVisiblePages = 5;
-    
-    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-    
-    if (endPage - startPage + 1 < maxVisiblePages) {
-      startPage = Math.max(1, endPage - maxVisiblePages + 1);
-    }
-
-    // Previous button
-    if (currentPage > 1) {
-      pages.push(
-        <button
-          key="prev"
-          className="pagination-btn pagination-nav"
-          onClick={() => handlePageChange(currentPage - 1)}
-        >
-          ‹
-        </button>
-      );
-    }
-
-    // First page
-    if (startPage > 1) {
-      pages.push(
-        <button
-          key={1}
-          className="pagination-btn"
-          onClick={() => handlePageChange(1)}
-        >
-          1
-        </button>
-      );
-      if (startPage > 2) {
-        pages.push(<span key="ellipsis1" className="pagination-ellipsis">...</span>);
-      }
-    }
-
-    // Page numbers
-    for (let i = startPage; i <= endPage; i++) {
-      pages.push(
-        <button
-          key={i}
-          className={`pagination-btn ${i === currentPage ? 'active' : ''}`}
-          onClick={() => handlePageChange(i)}
-        >
-          {i}
-        </button>
-      );
-    }
-
-    // Last page
-    if (endPage < totalPages) {
-      if (endPage < totalPages - 1) {
-        pages.push(<span key="ellipsis2" className="pagination-ellipsis">...</span>);
-      }
-      pages.push(
-        <button
-          key={totalPages}
-          className="pagination-btn"
-          onClick={() => handlePageChange(totalPages)}
-        >
-          {totalPages}
-        </button>
-      );
-    }
-
-    // Next button
-    if (currentPage < totalPages) {
-      pages.push(
-        <button
-          key="next"
-          className="pagination-btn pagination-nav"
-          onClick={() => handlePageChange(currentPage + 1)}
-        >
-          ›
-        </button>
-      );
-    }
-
-    return pages;
   };
 
   if (loading) {
@@ -459,7 +418,11 @@ export default function ElectricsPage() {
       {totalPages > 1 && (
         <div className="pagination-container">
           <div className="pagination">
-            {renderPagination()}
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+            />
           </div>
           <div className="pagination-info">
             Hiển thị {startIndex + 1}-{Math.min(endIndex, batteries.length)} trong tổng số {batteries.length} pin điện

@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import MiniPost from "../../components/miniPost/miniPost";
+import Pagination from "../../components/pagination/pagination";
 import "./vehiclesPage.css";
+import { useNavigate } from "react-router-dom";
 
 // ===== Mock data (giữ nguyên của bạn, chỉ dán lại) =====
 const mockVehiclesData = [
@@ -119,7 +121,9 @@ const mockVehiclesData = [
     numberOfSeat: 5,
     style: "Hatchback",
     image:
+
       "data:image/webp;base64,UklGRiAwAABXRUJQVlA4IBQwAADQ4wCdASrAAf0APp1EnEslo6knqJHsiSATiWduH65M5uMXlWxt51xv39X3P/qtZ+XjeG/…", // rút gọn cho ngắn
+
     sellerName: "Võ Thị F",
     price: 950000000,
     isFavorite: false,
@@ -247,6 +251,44 @@ const mockVehiclesData = [
     isFavorite: false,
     year: 2021,
   },
+  {
+    postID: "VH012",
+    batteryType: "Lithium-ion",
+    brand: "Jaguar",
+    model: "I-PACE",
+    version: "HSE",
+    status: "old",
+    odo: 22000,
+    batteryCapacity: "90 kWh",
+    range: "470 km",
+    chargingTime: "7h (AC) / 40min (DC)",
+    color: "Yulong White",
+    numberOfSeat: 5,
+    style: "SUV",
+    image: "https://images.unsplash.com/photo-1571068316344-75bc76f77890?w=400",
+    sellerName: "Lý Thị M",
+    price: 3200000000,
+    isFavorite: false,
+  },
+  {
+    postID: "VH012",
+    batteryType: "Lithium-ion",
+    brand: "Jaguar",
+    model: "I-PACE",
+    version: "HSE",
+    status: "old",
+    odo: 22000,
+    batteryCapacity: "90 kWh",
+    range: "470 km",
+    chargingTime: "7h (AC) / 40min (DC)",
+    color: "Yulong White",
+    numberOfSeat: 5,
+    style: "SUV",
+    image: "https://images.unsplash.com/photo-1571068316344-75bc76f77890?w=400",
+    sellerName: "Lý Thị M",
+    price: 3200000000,
+    isFavorite: false,
+  },
 ];
 
 const ITEMS_PER_PAGE = 12;
@@ -255,6 +297,7 @@ export default function VehiclesPage() {
   // data + loading
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   // search + filters
   const [search, setSearch] = useState("");
@@ -360,8 +403,10 @@ export default function VehiclesPage() {
   };
 
   const handleCardClick = (vehicle) => {
+
     // TODO: navigate(`/vehicles/${vehicle.postID}`)
     console.log("Clicked vehicle:", vehicle.postID);
+
   };
 
   const handlePageChange = (page) => {
@@ -384,6 +429,7 @@ export default function VehiclesPage() {
     setSearch("");
     setCurrentPage(1);
   };
+
 
   // pagination buttons (giữ logic gọn)
   const renderPagination = () => {
@@ -449,6 +495,7 @@ export default function VehiclesPage() {
   const formatProductName = (v) => `${v.brand} ${v.model} ${v.version}`;
 
   // ====== UI ======
+
   if (loading) {
     return (
       <div className="vehicles-page">
@@ -628,7 +675,13 @@ export default function VehiclesPage() {
       {/* Pagination */}
       {filtered.length > 0 && (
         <div className="pagination-container">
-          <div className="pagination">{renderPagination()}</div>
+          <div className="pagination">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+            />
+          </div>
           <div className="pagination-info">
             Showing {startIndex + 1}-{Math.min(endIndex, filtered.length)} of {filtered.length} vehicles
           </div>
