@@ -8,11 +8,11 @@
   --bg:#ffffff;
   --card:#ffffff;
   --line:#e7ebf0;
-  --ink:#0b0f13;
+  --ink:#3b82f6;
   --ink-2:#1f2937;
   --soft:#f6f7f9;
   --accent:#2563eb;     /* trang chung mặc định xanh */
-  --accent-ink:#fff;
+  --accent-ink:#3b82f6;
   --ease:cubic-bezier(.22,.61,.36,1);
 }
 
@@ -79,8 +79,8 @@
 /* Buttons (ghi đè lib để không còn “ô xám”/viền lạ) */
 .login-btn,
 .register-btn{
-  background:var(--ink) !important;
-  color:var(--accent-ink) !important;
+  background:#2563eb !important;
+  color:#ffffff!important;
   border:0 !important; box-shadow:none !important;
   border-radius:999px !important;
   height:40px !important; padding:0 16px !important;
@@ -89,9 +89,9 @@
 }
 .login-btn:hover,
 .register-btn:hover{
-  background:#000 !important;
+  background:#1e40af !important;
   transform:translateY(-1px);
-  box-shadow:0 8px 24px rgba(0,0,0,.18) !important;
+  box-shadow:0 8px 24px rgba(59, 7, 149, 0.18) !important;
 }
 
 /* Mobile toggle */
