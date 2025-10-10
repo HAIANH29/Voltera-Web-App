@@ -39,7 +39,9 @@ public class UserService {
         Account account = accountRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new AccountNotFound("Account not found with username: " + request.getUsername()));
 
-
+        if (!"APPROVE".equalsIgnoreCase(account.getStatus())) {
+            throw new RuntimeException("Your account has not been approved yet.");
+        }
         String accessToken = jwtService.generateToken(account);
         String refreshToken = jwtService.generateRefreshToken(account);
 
@@ -91,4 +93,12 @@ public class UserService {
 
         return userRepository.save(user);
     }
+    public void logout(String username) {
+        Account account = accountRepository.findByUsername(username)
+                .orElseThrow(() -> new AccountNotFound("Account not found with username: " + username));
+
+        account.setRefreshToken(null);
+        accountRepository.save(account);
+    }
+
 }
