@@ -1,6 +1,6 @@
 package com.g_wuy.swp391.voltera.controller;
 
-import jakarta.servlet.http.HttpServletRequest;
+
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -8,7 +8,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import com.g_wuy.swp391.voltera.entity.Post;
-import com.g_wuy.swp391.voltera.mapper.PostMapper;
 import com.g_wuy.swp391.voltera.model.request.PostRequest;
 import com.g_wuy.swp391.voltera.model.request.RejectRequest;
 import com.g_wuy.swp391.voltera.model.response.ModerationResponse;
@@ -29,8 +28,7 @@ public class PostController {
     private PostService postService;
     @Autowired
     private JwtService jwtService;
-    @Autowired
-    private PostMapper postMapper;
+
 
     @PostMapping("/api/posts")
     public ResponseEntity<PostResponse> createPost(

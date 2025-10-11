@@ -17,14 +17,12 @@ import java.util.Optional;
 
 @Mapper(componentModel = "spring")
 public interface PostMapper {
-    // Battery mapping
+
     @Mapping(source = "batteryTypeId", target = "batteryTypeId")
     BatteryDTO toDTO(Battery battery);
 
-    // Vehicle mapping
     VehicleDTO toDTO(Vehicle vehicle);
 
-    // PostResponse mapping
     @Mapping(source = "post.id", target = "postId")
     @Mapping(source = "post.title", target = "title")
     @Mapping(source = "post.description", target = "description")
@@ -32,8 +30,6 @@ public interface PostMapper {
     @Mapping(source = "post.status", target = "status")
 
     PostResponse toPostResponse(Post post, Battery battery, Vehicle vehicle, List<String> imageUrls);
-
-    PostResponse toPostResponse(Optional<Post> post);
 
     @Mapping(source = "post.id", target = "postId")
     @Mapping(source = "post.title", target = "title")
