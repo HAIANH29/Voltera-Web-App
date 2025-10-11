@@ -18,6 +18,8 @@ public class JwtService {
     private String secret;
     @Value("${jwt.expiration}")
     private int expiration;
+    @Value("${jwt.refresh-expiration}")
+    private long refreshExpiration;
     private SecretKey getKey() {
         return Keys.hmacShaKeyFor(secret.getBytes());
     }
@@ -32,6 +34,14 @@ public class JwtService {
                 .signWith(getKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
+    public String generateRefreshToken(UserDetails userDetails) {
+        return Jwts.builder()
+                .setSubject(userDetails.getUsername())
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + refreshExpiration))
+                .signWith(getKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
     public String extractUsername(String token) {
         Claims claims = extractClaims(token);
         return claims.getSubject();
@@ -42,10 +52,6 @@ public class JwtService {
         return claims.getExpiration();
     }
 
-    public String extractRole(String token) {
-        Claims claims = extractClaims(token);
-        return claims.get("role", String.class);
-    }
     public boolean isTokenValid(String token, UserDetails userDetails) {
         String username = extractUsername(token);
         return username.equals(userDetails.getUsername()) && !extractExpiration(token).before(new Date());
@@ -59,11 +65,7 @@ public class JwtService {
                 .getBody();
     }
 
-    public String extractTokenFromRequest(HttpServletRequest request) {
-        String bearerToken = request.getHeader("Authorization");
-        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
-        }
-        return null;
+    public boolean isTokenExpired(String token) {
+        return extractExpiration(token).before(new Date());
     }
 }

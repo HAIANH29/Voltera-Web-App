@@ -44,11 +44,9 @@ public class PostService {
 
     public PostResponse createPost(PostRequest dto, String username) throws IOException {
         // 1. Xác thực seller
-        Account account = accountRepository.findByUsername(username);
+        Account account = accountRepository.findByUsername(username)
+                .orElseThrow(() -> new AccountNotFound("Account not found" ));
 
-        if (account == null) {
-            throw new AccountNotFound("Account not found");
-        }
 
         if (!"SELLER".equalsIgnoreCase(account.getRole())) {
             throw new SecurityException("Only sellers can create posts");

@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 
 import lombok.Data;
 @Data
-public class VehicleDto {
+public class VehicleDTO {
     private String brand;
     private String model;
     private String version;

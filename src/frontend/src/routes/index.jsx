@@ -13,7 +13,9 @@ export const routes = {
   electrics: "/electrics",
   favorites: "/favorites",
   aboutUs: "/about",
-  postVehicles: "/post/vehicles",
   support: "/support",
+  postVehicles: "/post/vehicles",
   postElectric: "/post/electrics",
+  vehicleDetail: "/vehicles/:id",
+  electricDetail: "/electrics/:id",
 };

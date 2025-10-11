@@ -10,11 +10,12 @@ import org.springframework.stereotype.Repository;
 
 import com.g_wuy.swp391.voltera.entity.Account;
 
+import java.util.Optional;
+
 @Repository
 public interface AccountRepository extends JpaRepository<Account, Integer> {
-    Account findByUsername(String username);
-    boolean existsByUsername(String username);
-    boolean existsAccountById(Integer id);
+    Optional<Account> findByUsername(String username);
+
     Account findAccountById(Integer id);
 
     @Query("SELECT COUNT(a) > 0 FROM Account a WHERE a.username = :username")

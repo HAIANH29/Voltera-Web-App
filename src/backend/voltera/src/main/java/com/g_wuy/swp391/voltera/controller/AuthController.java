@@ -1,31 +1,18 @@
 package com.g_wuy.swp391.voltera.controller;
 
-import com.g_wuy.swp391.voltera.exception.AccountNotAcceptException;
-import com.g_wuy.swp391.voltera.exception.AccountNotFound;
-import lombok.RequiredArgsConstructor;
+
+import com.g_wuy.swp391.voltera.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
-import jakarta.validation.Valid;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
-import com.g_wuy.swp391.voltera.entity.Account;
-import com.g_wuy.swp391.voltera.mapper.AccountMapper;
+import org.springframework.web.bind.annotation.*;
+
 import com.g_wuy.swp391.voltera.model.request.LoginRequest;
 import com.g_wuy.swp391.voltera.model.request.RegisterRequest;
 import com.g_wuy.swp391.voltera.model.response.LoginResponse;
 import com.g_wuy.swp391.voltera.model.response.RegisterResponse;
 import com.g_wuy.swp391.voltera.service.AccountService;
-import com.g_wuy.swp391.voltera.service.JwtService;
-import com.g_wuy.swp391.voltera.service.UserService;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -33,19 +20,8 @@ public class AuthController {
 
     @Autowired
     private AccountService accountService;
-
     @Autowired
     private UserService userService;
-    @Autowired
-    private UserDetailsService userDetailsService;
-    @Autowired
-    private AccountMapper accountMapper;
-
-    @Autowired
-    private AuthenticationManager authManager;
-
-     @Autowired
-    private JwtService  jwtService;
 
     @PostMapping("/register")
     public ResponseEntity<RegisterResponse> register(@RequestBody RegisterRequest request){
@@ -54,26 +30,13 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
-        authManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
-        );
-        Account account = userService.findByUsername(request.getUsername());
-        if (account == null) {
-            throw new AccountNotFound("Account not found with username");
-        }
-        if (account.getStatus().equalsIgnoreCase("PENDING")) {
-            throw new AccountNotAcceptException("This account hasn't already approved yet");
-        }
-        // Chuyển đổi Account thành UserDetails
-        UserDetails userDetails = userDetailsService.loadUserByUsername(request.getUsername());
-        String token = jwtService.generateToken(userDetails);
-
-        // Ánh xạ từ Account sang LoginResponse sử dụng Mapper
-        LoginResponse response = accountMapper.toLoginResponse(account);
-        response.setToken(token);
-        response.setRole(response.getRole());
-
-        return ResponseEntity.ok(response);
+    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
+        return ResponseEntity.ok(userService.login(request));
     }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<LoginResponse> refresh(@RequestParam String refreshToken) {
+        return ResponseEntity.ok(userService.refresh(refreshToken));
+    }
+
 }
