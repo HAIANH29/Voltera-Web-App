@@ -219,7 +219,7 @@ const HeaderAfter = ({ user: userProp }) => {
                 <ul className="post-dropdown-menu">
                   <li>
                     <Link
-                      to="/post-vehicle"
+                      to="/post/vehicles"
                       className="post-dropdown-item"
                       onClick={() => setShowPostMenu(false)}
                     >
@@ -241,7 +241,7 @@ const HeaderAfter = ({ user: userProp }) => {
                   </li>
                   <li>
                     <Link
-                      to="/post-electric"
+                      to="/post/electrics"
                       className="post-dropdown-item"
                       onClick={() => setShowPostMenu(false)}
                     >
@@ -259,7 +259,7 @@ const HeaderAfter = ({ user: userProp }) => {
                         />
                       </svg>
                       Post Electric
-                    </Link>
+                    </Link >
                   </li>
                 </ul>
               </div>

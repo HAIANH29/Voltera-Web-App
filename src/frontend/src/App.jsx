@@ -18,6 +18,7 @@ import VerifyEmailPage from "./pages/VerifyEmailPage/VerifyEmailPage";
 import AboutUsPage from "./pages/AboutUsPage/AboutUsPage";
 import PostVehicleWizard from "./pages/post/vehicles/PostVehicleWizard";
 import VehicleDetail from "./pages/vehicleDetail/vehicleDetail";
+import DashboardAdmin from "./pages/dashboardAdmin/dashboardAdmin.jsx";
 
 console.log("routes:", routes);
 console.log("postVehicles:", routes.postVehicles);
@@ -149,6 +150,14 @@ function App() {
       element: (
         <MainLayout>
           <SupportPage />
+        </MainLayout>
+      ),
+    },
+    {
+      path: routes.support,
+      element: (
+        <MainLayout>
+          <DashboardAdmin/>
         </MainLayout>
       ),
     },
