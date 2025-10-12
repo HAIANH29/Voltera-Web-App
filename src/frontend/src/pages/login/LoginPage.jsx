@@ -11,45 +11,84 @@ import { useNavigate } from "react-router-dom";
 /** =========================
  *  CONFIG
  *  ========================= */
-const BASE_URL = import.meta.env.VITE_BACK_END_BASE_URL?.replace(/\/?$/, "/");
+// YÊU CẦU: .env nên set BASE_URL kèm prefix /api/v1/ luôn, ví dụ:
+// VITE_BACK_END_BASE_URL=http://localhost:8080/api/v1/
+const rawBase = import.meta.env.VITE_BACK_END_BASE_URL || "/";
+const BASE_URL = rawBase.replace(/\/?$/, "/"); // đảm bảo có trailing /
 const FORCE_MOCK = import.meta.env.VITE_USE_MOCK === "1";
 
-// Mock data cho test nhanh
+// Mock data để test nhanh (khi FORCE_MOCK=1 hoặc server lỗi)
 const MOCK_REGISTERED_EMAILS = new Set([
   "test@voltera.com",
   "demo@example.com",
   "admin@voltera.io",
 ]);
 
-// Axios instance
+/** =========================
+ *  AXIOS + INTERCEPTORS
+ *  ========================= */
 const api = axios.create({
-  baseURL: BASE_URL || "/", // nếu chưa set, vẫn có instance
+  baseURL: BASE_URL, // ví dụ http://localhost:8080/api/v1/
   timeout: 30000,
 });
 
-// Interceptor refresh token (chỉ chạy khi có token)
+// helper set/get/remove token
+const setTokens = (accessToken, refreshToken) => {
+  if (accessToken) Cookies.set("accessToken", accessToken, { expires: 1 });
+  if (refreshToken) Cookies.set("refreshToken", refreshToken, { expires: 7 });
+};
+const clearTokens = () => {
+  Cookies.remove("accessToken");
+  Cookies.remove("refreshToken");
+};
+
+// gọi refresh đúng với BE (@RequestParam)
+async function refreshWithQueryParam() {
+  const refreshToken = Cookies.get("refreshToken")?.replaceAll('"', "");
+  if (!refreshToken) throw new Error("No refresh token");
+  // body = null, query param ở { params: { refreshToken } }
+  const res = await axios.post(`${BASE_URL}auth/refresh`, null, {
+    params: { refreshToken },
+    timeout: 15000,
+  });
+
+  // Hỗ trợ nhiều format response:
+  const data = res.data?.data ?? res.data ?? {};
+  const newAT = data.accessToken;
+  const newRT = data.refreshToken || refreshToken; // có thể BE giữ nguyên RT
+  if (!newAT) throw new Error("Refresh returned no accessToken");
+  setTokens(newAT, newRT);
+  return { accessToken: newAT, refreshToken: newRT };
+}
+
+// REQUEST: gắn Authorization + (nếu decode được) làm mới khi đã hết hạn
 api.interceptors.request.use(
   async (config) => {
     let accessToken = Cookies.get("accessToken")?.replaceAll('"', "");
-    if (accessToken) {
+    if (!accessToken) return config;
+
+    // Thử decode; nếu token mock/không hợp lệ -> bỏ qua bước đánh giá hạn
+    let expired = false;
+    try {
+      const expMs = jwtDecode(accessToken).exp * 1000;
+      expired = Date.now() >= expMs;
+    } catch {
+      // token không decode được (mock…) => để BE tự quyết, không refresh ở đây
+      expired = false;
+    }
+
+    if (expired) {
       try {
-        const expMs = jwtDecode(accessToken).exp * 1000;
-        if (Date.now() >= expMs) {
-          const refreshToken = Cookies.get("refreshToken")?.replaceAll('"', "");
-          const res = await axios.post(`${BASE_URL}auth/refresh-token`, {
-            refreshToken,
-          });
-          const { accessToken: newAT, refreshToken: newRT } = res.data.data;
-          Cookies.set("accessToken", newAT, { expires: 1, secure: true });
-          Cookies.set("refreshToken", newRT, { expires: 7, secure: true });
-          accessToken = newAT;
-        }
-      } catch (err) {
-        Cookies.remove("accessToken");
-        Cookies.remove("refreshToken");
-        // giữ nguyên trang login khi token fail
-        return Promise.reject(err);
+        const { accessToken: newAT } = await refreshWithQueryParam();
+        accessToken = newAT;
+      } catch (e) {
+        clearTokens();
+        // Để request hiện tại fail 401 -> response interceptor sẽ không còn refresh nữa
+        // vì không có refresh token, user sẽ bị điều hướng ra login tùy nơi gọi.
       }
+    }
+
+    if (accessToken) {
       config.headers.Authorization = `Bearer ${accessToken}`;
     }
     return config;
@@ -57,50 +96,68 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+// RESPONSE: nếu 401 thì refresh + retry 1 lần
+api.interceptors.response.use(
+  (res) => res,
+  async (error) => {
+    const original = error.config;
+    const status = error?.response?.status;
+
+    // chỉ retry 1 lần
+    if (status === 401 && !original?._retry) {
+      original._retry = true;
+      try {
+        const { accessToken } = await refreshWithQueryParam();
+        original.headers = original.headers || {};
+        original.headers.Authorization = `Bearer ${accessToken}`;
+        return api.request(original);
+      } catch (e) {
+        clearTokens();
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 /** =========================
  *  DUAL MODE HELPERS
  *  ========================= */
-
-// Heuristic để quyết định có thể gọi API thật hay không
 const canUseRealApi = () => {
-  if (FORCE_MOCK) return false;             // ép mock qua .env
-  if (!BASE_URL || BASE_URL === "/") return false; // chưa cấu hình
+  if (FORCE_MOCK) return false;
+  if (!BASE_URL || BASE_URL === "/") return false;
   return true;
 };
 
-// checkEmail – ưu tiên API thật, fallback mock khi lỗi
+// KHÔNG GỌI check-email ở BE (vì BE không có). Step 1 chỉ validate format.
+// Hàm này để giữ nguyên flow “dual mode” nếu bạn vẫn muốn check cục bộ khi mock.
 async function checkEmailDual(email) {
   const e = email.trim().toLowerCase();
-
   if (canUseRealApi()) {
-    try {
-      const res = await api.post("auth/check-email", { email: e });
-      return Boolean(res.data?.exists ?? res.data?.data?.exists);
-    } catch (err) {
-      // Fallback sang mock nếu server die/CORS/lỗi đường dẫn
-      return MOCK_REGISTERED_EMAILS.has(e);
-    }
+    // BE không có /auth/check-email => luôn cho qua Step 2
+    return true;
   }
-
-  // Mock mode
+  // Mock mode: kiểm tra trong danh sách giả lập
   return MOCK_REGISTERED_EMAILS.has(e);
 }
 
-// loginApi – ưu tiên API thật, fallback mock khi lỗi
 async function loginApiDual({ email, password }) {
   const e = email.trim().toLowerCase();
 
   if (canUseRealApi()) {
     try {
+      // ĐÚNG back-end: POST /api/v1/auth/login
       const res = await api.post("auth/login", { email: e, password });
-      const { accessToken, refreshToken, user } = res.data?.data || {};
+      const data = res.data?.data ?? res.data ?? {};
+      const accessToken = data.accessToken;
+      const refreshToken = data.refreshToken;
+      const user = data.user || data.profile || null;
+
       if (!accessToken) throw new Error("No access token returned");
-      Cookies.set("accessToken", accessToken, { expires: 1, secure: true });
-      Cookies.set("refreshToken", refreshToken, { expires: 7, secure: true });
-      localStorage.setItem("currentUser", JSON.stringify(user || null));
+      setTokens(accessToken, refreshToken);
+      localStorage.setItem("currentUser", JSON.stringify(user));
       return { user };
     } catch (err) {
-      // Fallback sang mock để bạn vẫn test được full flow
+      // Fallback mock để vẫn test được
       return loginMock({ email: e, password });
     }
   }
@@ -109,7 +166,6 @@ async function loginApiDual({ email, password }) {
   return loginMock({ email: e, password });
 }
 
-// Logic mock login
 function loginMock({ email, password }) {
   if (!MOCK_REGISTERED_EMAILS.has(email)) {
     const err = new Error("Email not registered (MOCK).");
@@ -121,10 +177,12 @@ function loginMock({ email, password }) {
     err.code = "MOCK_WRONG_PASSWORD";
     throw err;
   }
-  // Giả lập set "token" nhẹ nhàng để test guard khác nếu cần
-  localStorage.setItem("currentUser", JSON.stringify({ email, name: "Mock User" }));
-  Cookies.set("accessToken", "mock-access-token", { expires: 1, secure: true });
-  Cookies.set("refreshToken", "mock-refresh-token", { expires: 7, secure: true });
+  localStorage.setItem(
+    "currentUser",
+    JSON.stringify({ email, name: "Mock User" })
+  );
+  // token mock không decode được -> đã handle try/catch ở interceptor
+  setTokens("mock-access-token", "mock-refresh-token");
   return { user: { email, name: "Mock User" } };
 }
 
@@ -160,13 +218,11 @@ export default function LoginPage() {
       setFormMsg("");
       try {
         await loginApiDual(values);
-        navigate("/"); // về Home ở "/"
+        navigate("/"); // về trang chủ
       } catch (err) {
-        // Nếu là lỗi mock rõ ràng → đẩy vào field password
         if (err?.code === "MOCK_WRONG_PASSWORD") {
           setFieldError("password", err.message);
         } else if (err?.code === "MOCK_EMAIL_NOT_FOUND") {
-          // Lỡ có case nhảy thẳng submit khi email chưa qua Step1
           setFieldError("email", "This email is not registered.");
           setStep(1);
         } else if (err?.response?.status === 401) {
@@ -197,11 +253,9 @@ export default function LoginPage() {
     setFieldError,
   } = formik;
 
-  // Step 1: kiểm tra email
+  // Step 1: validate format + (mock) check cục bộ
   const goNext = async () => {
     setFormMsg("");
-
-    // 1) validate format
     try {
       await emailSchema.validate({ email: values.email });
     } catch {
@@ -209,8 +263,6 @@ export default function LoginPage() {
       validateForm();
       return;
     }
-
-    // 2) check tồn tại (real → mock fallback)
     setChecking(true);
     try {
       const exists = await checkEmailDual(values.email);
@@ -219,9 +271,9 @@ export default function LoginPage() {
         return;
       }
       setStep(2);
-    } catch (err) {
-      // chỉ hiển thị banner, không rơi vào console noise
-      setFormMsg("We can't verify your email right now. Please try again later.");
+    } catch {
+      // Không chặn người dùng — vì BE không có check-email
+      setStep(2);
     } finally {
       setChecking(false);
     }

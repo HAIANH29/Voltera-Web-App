@@ -2,6 +2,8 @@ package com.g_wuy.swp391.voltera.service;
 
 import jakarta.transaction.Transactional;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -75,7 +77,7 @@ public class AccountService {
         return accountRepository.findAccountById(id);
     }
 
-    public Account findAccountByUsername(String username) {
+    public Optional<Account> findAccountByUsername(String username) {
         if (username == null || username.isEmpty()) {
             throw new BusinessException("Username not found");
         }

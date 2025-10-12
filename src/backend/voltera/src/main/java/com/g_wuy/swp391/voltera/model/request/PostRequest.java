@@ -15,6 +15,6 @@ public class PostRequest {
     private String status;
     private BatteryDTO battery;
     private VehicleDTO vehicle;
-//    private List<MultipartFile> images;
-//    private List<MultipartFile> vehicleImages;
+    // private List<MultipartFile> images;
+    // private List<MultipartFile> vehicleImages;
 }
