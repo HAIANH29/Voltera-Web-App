@@ -153,14 +153,14 @@ function App() {
         </MainLayout>
       ),
     },
-    {
-      path: routes.support,
-      element: (
-        <MainLayout>
-          <DashboardAdmin/>
-        </MainLayout>
-      ),
-    },
+    // {
+    //   path: routes.support,
+    //   element: (
+    //     <MainLayout>
+    //       <DashboardAdmin/>
+    //     </MainLayout>
+    //   ),
+    // },
 
     // optional 404
     { path: "*", element: <div style={{ padding: 20 }}>404 Not Found</div> },
