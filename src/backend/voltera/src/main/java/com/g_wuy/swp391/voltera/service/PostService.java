@@ -1,17 +1,12 @@
 package com.g_wuy.swp391.voltera.service;
 
-import com.g_wuy.swp391.voltera.exception.LicensePlateAlreadyExist;
-import com.g_wuy.swp391.voltera.exception.SerialNumberAlreadyExist;
-import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.g_wuy.swp391.voltera.entity.*;
-import com.g_wuy.swp391.voltera.exception.AccountNotFound;
+import com.g_wuy.swp391.voltera.exception.BusinessException;
 import com.g_wuy.swp391.voltera.mapper.PostMapper;
 import com.g_wuy.swp391.voltera.model.request.PostRequest;
 import com.g_wuy.swp391.voltera.model.request.RejectRequest;
@@ -47,7 +42,7 @@ public class PostService {
         Account account = accountRepository.findByUsername(username);
 
         if (account == null) {
-            throw new AccountNotFound("Account not found");
+            throw new BusinessException("Account not found");
         }
 
         if (!"SELLER".equalsIgnoreCase(account.getRole())) {
@@ -79,7 +74,7 @@ public class PostService {
 
         if (dto.getVehicle() != null) {
             if (vehicleRepository.isLicensePlateExist(dto.getVehicle().getLicenseplate())) {
-                throw new LicensePlateAlreadyExist("This License Plate is already exists");
+                throw new BusinessException("This License Plate is already exists");
             }
             // Vehicle
             savedVehicle = vehicleRepository.save(Vehicle.builder()
@@ -110,7 +105,7 @@ public class PostService {
                     .orElseThrow(() -> new IllegalArgumentException("Battery type not found: " + typeId));
 
             if (batteryRepository.isSerialNumberExist(dto.getBattery().getSerialNumber())) {
-                throw new SerialNumberAlreadyExist("This serial number already exists");
+                throw new BusinessException("This serial number already exists");
             }
             savedBattery = batteryRepository.save(Battery.builder()
                     .post(post)

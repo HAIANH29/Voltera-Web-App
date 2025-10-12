@@ -9,6 +9,8 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.g_wuy.swp391.voltera.entity.Account;
+import java.util.List;
+
 
 @Repository
 public interface AccountRepository extends JpaRepository<Account, Integer> {

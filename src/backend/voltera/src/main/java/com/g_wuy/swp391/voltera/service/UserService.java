@@ -1,13 +1,12 @@
 package com.g_wuy.swp391.voltera.service;
 
-import com.g_wuy.swp391.voltera.exception.DataNotMatches;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.g_wuy.swp391.voltera.entity.Account;
 import com.g_wuy.swp391.voltera.entity.User;
-import com.g_wuy.swp391.voltera.exception.AccountNotFound;
-import com.g_wuy.swp391.voltera.exception.EmailAlreadyExistsException;
+import com.g_wuy.swp391.voltera.exception.BusinessException;
+import com.g_wuy.swp391.voltera.exception.LogicException;
 import com.g_wuy.swp391.voltera.mapper.AccountMapper;
 import com.g_wuy.swp391.voltera.model.request.ProfileRequest;
 import com.g_wuy.swp391.voltera.repository.AccountRepository;
@@ -24,9 +23,6 @@ public class UserService {
     @Autowired
     private AccountRepository accountRepository;
 
-    @Autowired
-    private AccountMapper accountMapper;
-
 
     public User saveUser(User user){
         return userRepository.save(user);
@@ -35,7 +31,7 @@ public class UserService {
     public Account findByUsername(String username) {
         Account account = accountRepository.findByUsername(username);
         if (account == null) {
-            throw new AccountNotFound("Account not found with username: " + username);
+            throw new BusinessException("Account not found with username: " + username);
         }
         return account;
     }
@@ -45,16 +41,16 @@ public class UserService {
 
         Optional<Account> account = accountRepository.findById(accountId);
         if (account.isEmpty()) {
-            throw new AccountNotFound("Account not found with id: " + accountId);
+            throw new BusinessException("Account not found with id: " + accountId);
         }
         if (userRepository.isEmailExist(profileRequest.getEmail())) {
-            throw new EmailAlreadyExistsException("Email " + profileRequest.getEmail() + " is exist");
+            throw new BusinessException("Email " + profileRequest.getEmail() + " is exist");
         }
         if ("^(?:0)(?:3[0-9]|5[0-9]|7[0-9]|8[0-9]|9[0-9])\\d{7}$\n".matches(profileRequest.getPhone())) {
-            throw new DataNotMatches("Phone number isn't belong to Viet Nam");
+            throw new LogicException("Phone number isn't belong to Viet Nam");
         }
         if ("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$\n".matches(profileRequest.getEmail())) {
-            throw new DataNotMatches("This is not an email format");
+            throw new LogicException("This is not an email format");
         }
         user.setId(accountId);
         user.setFirstname(profileRequest.getFirstname());
@@ -66,5 +62,12 @@ public class UserService {
         user.setAddress(profileRequest.getAddress());
 
         return userRepository.save(user);
+    }
+
+    public User findUserByUsername(String username) {
+        if (username == null || username.isEmpty()) {
+            throw new BusinessException("Username not found");
+        }
+        return userRepository.findUserByUsername(username);
     }
 }

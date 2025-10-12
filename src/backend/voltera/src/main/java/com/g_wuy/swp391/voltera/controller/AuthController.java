@@ -1,15 +1,13 @@
 package com.g_wuy.swp391.voltera.controller;
 
-import com.g_wuy.swp391.voltera.exception.AccountNotAcceptException;
-import com.g_wuy.swp391.voltera.exception.AccountNotFound;
-import lombok.RequiredArgsConstructor;
+import com.g_wuy.swp391.voltera.exception.BusinessException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -60,10 +58,10 @@ public class AuthController {
         );
         Account account = userService.findByUsername(request.getUsername());
         if (account == null) {
-            throw new AccountNotFound("Account not found with username");
+            throw new BusinessException("Account not found with username");
         }
         if (account.getStatus().equalsIgnoreCase("PENDING")) {
-            throw new AccountNotAcceptException("This account hasn't already approved yet");
+            throw new BusinessException("This account hasn't already approved yet");
         }
         // Chuyển đổi Account thành UserDetails
         UserDetails userDetails = userDetailsService.loadUserByUsername(request.getUsername());

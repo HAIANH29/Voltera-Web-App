@@ -7,7 +7,7 @@ import com.g_wuy.swp391.voltera.entity.Batterytype;
 import lombok.Data;
 
 @Data
-public class BatteryDto {
+public class BatteryDTO {
     private String serialNumber;
     private BigDecimal originCapacity;
     private BigDecimal remainingCapacity;

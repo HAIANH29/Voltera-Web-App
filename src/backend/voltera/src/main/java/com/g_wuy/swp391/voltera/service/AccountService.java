@@ -8,9 +8,7 @@ import org.springframework.stereotype.Service;
 import com.g_wuy.swp391.voltera.configuration.SecurityConfig;
 import com.g_wuy.swp391.voltera.entity.Account;
 import com.g_wuy.swp391.voltera.entity.User;
-import com.g_wuy.swp391.voltera.exception.AccountNotFound;
-import com.g_wuy.swp391.voltera.exception.EmailAlreadyExistsException;
-import com.g_wuy.swp391.voltera.exception.UsernameAlreadyExistsException;
+import com.g_wuy.swp391.voltera.exception.BusinessException;
 import com.g_wuy.swp391.voltera.mapper.AccountMapper;
 import com.g_wuy.swp391.voltera.model.request.RegisterRequest;
 import com.g_wuy.swp391.voltera.model.response.RegisterResponse;
@@ -40,12 +38,12 @@ public class AccountService {
         String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$";
 
         if (accountRepository.existsAccountByUsername(username)) {
-            throw new UsernameAlreadyExistsException("This username already existed");
+            throw new BusinessException("This username already existed");
         }
 
         if (username.matches(emailRegex)) {
             if (accountRepository.isEmailExist(username)) {
-                throw new EmailAlreadyExistsException("This email already exists");
+                throw new BusinessException("This email already exists");
             }
         }
 
@@ -68,12 +66,19 @@ public class AccountService {
     public Account approveAccount(Integer id) {
         int approved = accountRepository.approveAccountById(id);
         if (approved == 0) {
-            throw new AccountNotFound("Account isn't exist or already approved");
+            throw new BusinessException("Account isn't exist or already approved");
         }
         return accountRepository.findAccountById(id);
     }
 
     public Account findAccountById(Integer id) {
         return accountRepository.findAccountById(id);
+    }
+
+    public Account findAccountByUsername(String username) {
+        if (username == null || username.isEmpty()) {
+            throw new BusinessException("Username not found");
+        }
+        return accountRepository.findByUsername(username);
     }
 }

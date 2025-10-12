@@ -2,8 +2,8 @@ package com.g_wuy.swp391.voltera.model.request;
 
 import java.math.BigDecimal;
 
-import com.g_wuy.swp391.voltera.model.dto.BatteryDto;
-import com.g_wuy.swp391.voltera.model.dto.VehicleDto;
+import com.g_wuy.swp391.voltera.model.dto.BatteryDTO;
+import com.g_wuy.swp391.voltera.model.dto.VehicleDTO;
 
 import lombok.Data;
 
@@ -13,8 +13,8 @@ public class PostRequest {
     private String description;
     private BigDecimal price;
     private String status;
-    private BatteryDto battery;
-    private VehicleDto vehicle;
+    private BatteryDTO battery;
+    private VehicleDTO vehicle;
 //    private List<MultipartFile> images;
 //    private List<MultipartFile> vehicleImages;
 }
