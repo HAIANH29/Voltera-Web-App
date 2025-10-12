@@ -8,12 +8,10 @@ import org.mapstruct.Mapping;
 import com.g_wuy.swp391.voltera.entity.Battery;
 import com.g_wuy.swp391.voltera.entity.Post;
 import com.g_wuy.swp391.voltera.entity.Vehicle;
-
 import com.g_wuy.swp391.voltera.model.response.PostResponse;
 import com.g_wuy.swp391.voltera.model.response.RejectResponse;
 
 import java.util.List;
-import java.util.Optional;
 
 @Mapper(componentModel = "spring")
 public interface PostMapper {
@@ -21,6 +19,7 @@ public interface PostMapper {
     @Mapping(source = "batteryTypeId", target = "batteryTypeId")
     BatteryDTO toDTO(Battery battery);
 
+    // Vehicle mapping
     VehicleDTO toDTO(Vehicle vehicle);
 
     @Mapping(source = "post.id", target = "postId")
@@ -28,7 +27,6 @@ public interface PostMapper {
     @Mapping(source = "post.description", target = "description")
     @Mapping(source = "post.price", target = "price")
     @Mapping(source = "post.status", target = "status")
-
     PostResponse toPostResponse(Post post, Battery battery, Vehicle vehicle, List<String> imageUrls);
 
     @Mapping(source = "post.id", target = "postId")

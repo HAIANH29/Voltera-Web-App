@@ -1,11 +1,9 @@
 package com.g_wuy.swp391.voltera.controller;
 
-
+import com.g_wuy.swp391.voltera.exception.BusinessException;
 import com.g_wuy.swp391.voltera.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-
-
 import org.springframework.web.bind.annotation.*;
 
 import com.g_wuy.swp391.voltera.model.request.LoginRequest;
@@ -38,6 +36,7 @@ public class AuthController {
     public ResponseEntity<LoginResponse> refresh(@RequestParam String refreshToken) {
         return ResponseEntity.ok(userService.refresh(refreshToken));
     }
+
     @PostMapping("/logout")
     public ResponseEntity<?> logout(@RequestParam String username) {
         userService.logout(username);

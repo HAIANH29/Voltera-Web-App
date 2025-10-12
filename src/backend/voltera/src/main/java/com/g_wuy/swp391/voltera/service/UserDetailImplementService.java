@@ -1,6 +1,6 @@
 package com.g_wuy.swp391.voltera.service;
 
-import com.g_wuy.swp391.voltera.exception.AccountNotFound;
+import com.g_wuy.swp391.voltera.exception.BusinessException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -23,7 +23,7 @@ public class UserDetailImplementService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Account account = accountRepository.findByUsername(username)
-                .orElseThrow(() -> new AccountNotFound("Account not found" ));
+                .orElseThrow(() -> new BusinessException("Account not found" ));
 
         return new User(
                 account.getUsername(),

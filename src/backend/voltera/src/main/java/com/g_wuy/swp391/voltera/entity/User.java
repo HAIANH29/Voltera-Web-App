@@ -3,6 +3,7 @@ package com.g_wuy.swp391.voltera.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 
@@ -10,6 +11,7 @@ import java.time.Instant;
 
 @Getter
 @Setter
+@NoArgsConstructor
 @Entity
 @Table(name = "\"user\"")
 public class User {
