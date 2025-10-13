@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import MiniPost from "../../components/miniPost/miniPost";
 import Pagination from "../../components/pagination/pagination";
 import "./electricsPage.css";
 
-// Mock data cho pin điện
+// Mock data cho pin điện (giữ nguyên của bạn)
 const mockElectricsData = [
   {
     id: 1,
@@ -18,7 +18,7 @@ const mockElectricsData = [
       batteryType: "Lithium-ion",
       serialNumber: "TSL-85-2023-001",
       originalCapacity: "85kWh",
-      remainingCapacity: "82kWh", 
+      remainingCapacity: "82kWh",
       mileageCovered: "15000km",
       voltage: "400V",
       cycleCount: 245,
@@ -41,7 +41,7 @@ const mockElectricsData = [
       serialNumber: "VF8-87-2023-012",
       originalCapacity: "87.7kWh",
       remainingCapacity: "84.2kWh",
-      mileageCovered: "28000km", 
+      mileageCovered: "28000km",
       voltage: "355V",
       cycleCount: 456,
       warranty: "10 năm",
@@ -64,7 +64,7 @@ const mockElectricsData = [
       originalCapacity: "80kWh",
       remainingCapacity: "79.1kWh",
       mileageCovered: "8500km",
-      voltage: "400V", 
+      voltage: "400V",
       cycleCount: 128,
       warranty: "8 năm",
       weight: "510kg",
@@ -315,107 +315,377 @@ const mockElectricsData = [
   },
 ];
 
-const ITEMS_PER_PAGE = 12; // 4x3 grid
+const ITEMS_PER_PAGE = 12;
 
+// Helpers parse số từ chuỗi như "85kWh", "400V", "15000km"
+const parseNumber = (text) => {
+  if (!text && text !== 0) return NaN;
+  if (typeof text === "number") return text;
+  const m = String(text).match(/[\d.]+/);
+  return m ? Number(m[0]) : NaN;
+};
+
+// ====================================
+//            COMPONENT
+// ====================================
 export default function ElectricsPage() {
   const [batteries, setBatteries] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
 
+  // TÁCH DRAFT vs APPLIED (giống trang Vehicles)
+  const initialFilters = {
+    type: "",          // batteryDetails.batteryType
+    isNew: "",         // "", "new", "used"
+    minPrice: "",
+    maxPrice: "",
+    minCapacity: "",   // kWh từ originalCapacity
+    maxCapacity: "",
+    minVoltage: "",
+    maxVoltage: "",
+    minCycles: "",
+    maxCycles: "",
+    seller: "",        // exact sellerName
+  };
+
+  const [draftSearch, setDraftSearch] = useState("");     // search theo productName/sellerName
+  const [appliedSearch, setAppliedSearch] = useState("");
+
+  const [draftFilters, setDraftFilters] = useState(initialFilters);
+  const [appliedFilters, setAppliedFilters] = useState(initialFilters);
+
+  // pagination
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Fetch giả lập
   useEffect(() => {
-    // Giả lập việc fetch data
-    const fetchBatteries = async () => {
+    (async () => {
       setLoading(true);
-      // Giả lập delay API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((r) => setTimeout(r, 800));
       setBatteries(mockElectricsData);
       setLoading(false);
-    };
-
-    fetchBatteries();
+    })();
   }, []);
 
-  // Tính toán pagination
-  const totalPages = Math.ceil(batteries.length / ITEMS_PER_PAGE);
+  // OPTIONS cho select
+  const types = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          batteries
+            .map((b) => b.batteryDetails?.batteryType)
+            .filter(Boolean)
+        )
+      ).sort(),
+    [batteries]
+  );
+
+  const sellers = useMemo(
+    () =>
+      Array.from(new Set(batteries.map((b) => b.sellerName).filter(Boolean))).sort(),
+    [batteries]
+  );
+
+  // FILTER chỉ dựa trên APPLIED
+  const filtered = useMemo(() => {
+    const s = appliedSearch.trim().toLowerCase();
+    const f = appliedFilters;
+
+    return batteries.filter((b) => {
+      const name = (b.productName || "").toLowerCase();
+      const seller = (b.sellerName || "").toLowerCase();
+      const type = b.batteryDetails?.batteryType || "";
+
+      const capacity = parseNumber(b.batteryDetails?.originalCapacity); // kWh
+      const voltage = parseNumber(b.batteryDetails?.voltage);           // V
+      const cycles = Number(b.batteryDetails?.cycleCount ?? NaN);
+
+      const matchSearch = !s || name.includes(s) || seller.includes(s);
+      const matchType = !f.type || type === f.type;
+
+      const matchIsNew =
+        !f.isNew ||
+        (f.isNew === "new" && b.isNew === true) ||
+        (f.isNew === "used" && b.isNew === false);
+
+      const priceOKMin = !f.minPrice || b.price >= Number(f.minPrice);
+      const priceOKMax = !f.maxPrice || b.price <= Number(f.maxPrice);
+
+      const capOKMin = !f.minCapacity || (!isNaN(capacity) && capacity >= Number(f.minCapacity));
+      const capOKMax = !f.maxCapacity || (!isNaN(capacity) && capacity <= Number(f.maxCapacity));
+
+      const voltOKMin = !f.minVoltage || (!isNaN(voltage) && voltage >= Number(f.minVoltage));
+      const voltOKMax = !f.maxVoltage || (!isNaN(voltage) && voltage <= Number(f.maxVoltage));
+
+      const cyclesOKMin = !f.minCycles || (!isNaN(cycles) && cycles >= Number(f.minCycles));
+      const cyclesOKMax = !f.maxCycles || (!isNaN(cycles) && cycles <= Number(f.maxCycles));
+
+      const sellerOK = !f.seller || b.sellerName === f.seller;
+
+      return (
+        matchSearch &&
+        matchType &&
+        matchIsNew &&
+        priceOKMin &&
+        priceOKMax &&
+        capOKMin &&
+        capOKMax &&
+        voltOKMin &&
+        voltOKMax &&
+        cyclesOKMin &&
+        cyclesOKMax &&
+        sellerOK
+      );
+    });
+  }, [batteries, appliedSearch, appliedFilters]);
+
+  // Pagination dựa trên filtered
+  const totalPages = Math.ceil((filtered.length || 0) / ITEMS_PER_PAGE) || 1;
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
-  const currentBatteries = batteries.slice(startIndex, endIndex);
+  const currentBatteries = filtered.slice(startIndex, endIndex);
 
-  // Xử lý favorite
+  // Favorite
   const handleFavoriteClick = (batteryId) => {
-    setBatteries(prev =>
-      prev.map(battery =>
-        battery.id === batteryId
-          ? { ...battery, isFavorite: !battery.isFavorite }
-          : battery
-      )
+    setBatteries((prev) =>
+      prev.map((b) => (b.id === batteryId ? { ...b, isFavorite: !b.isFavorite } : b))
     );
   };
 
-  // Xử lý click vào card
+  // Card click
   const handleCardClick = (battery) => {
-    console.log("Clicked battery:", battery);
-    // Có thể navigate đến trang chi tiết
-    // navigate(`/batteries/${battery.id}`);
+    console.log("Clicked battery:", battery.id);
   };
 
-  // Xử lý thay đổi trang
+  // Page change
   const handlePageChange = (page) => {
     setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  if (loading) {
-    return (
-      <div className="electrics-page">
-        <div className="electrics-header">
-          <h1>Pin Điện</h1>
-          <p>Khám phá các loại pin xe điện chất lượng cao</p>
-        </div>
-        <div className="loading-grid">
-          {Array.from({ length: 12 }).map((_, index) => (
-            <div key={index} className="loading-card">
-              <div className="loading-image"></div>
+  // Reset cả draft & applied
+  const resetFilters = () => {
+    setDraftFilters(initialFilters);
+    setDraftSearch("");
+    setAppliedFilters(initialFilters);
+    setAppliedSearch("");
+    setCurrentPage(1);
+  };
+
+ if (loading) {
+  return (
+    <div className="electrics-page">
+      <div className="electrics-header">
+        <h1>EV Batteries</h1>
+        <p>Explore high-quality EV battery packs and modules</p>
+      </div>
+
+      <div className="layout">
+        {/* Sidebar skeleton để khung giống vehicles */}
+        <aside className="filters skeleton-box" />
+
+        {/* Grid skeleton 12 items */}
+        <div className="electrics-grid">
+          {Array.from({ length: 12 }).map((_, idx) => (
+            <div key={idx} className="loading-card">
+              <div className="loading-image" />
               <div className="loading-content">
-                <div className="loading-line long"></div>
-                <div className="loading-line medium"></div>
-                <div className="loading-line short"></div>
+                <div className="loading-line long" />
+                <div className="loading-line medium" />
+                <div className="loading-line short" />
               </div>
             </div>
           ))}
         </div>
       </div>
-    );
-  }
+    </div>
+  );
+}
+
 
   return (
     <div className="electrics-page">
-      {/* Header */}
-      <div className="electrics-header">
-        <h1>Pin Điện</h1>
-        <p>Khám phá {batteries.length} loại pin xe điện chất lượng cao và bền bỉ</p>
-      </div>
+      {/* Top bar: Search + quick summary */}
+      <div className="topbar">
+  <select className="topbar-select" defaultValue="">
+    <option value="">— All cities —</option>
+    <option>Hà Nội</option>
+    <option>TP. HCM</option>
+    <option>Đà Nẵng</option>
+  </select>
 
-      {/* Batteries Grid */}
-      <div className="electrics-grid">
-        {currentBatteries.map((battery) => (
-          <MiniPost
-            key={battery.id}
-            image={battery.image}
-            productName={battery.productName}
-            basicInfo={battery.basicInfo}
-            sellerName={battery.sellerName}
-            price={battery.price}
-            isNew={battery.isNew}
-            isFavorite={battery.isFavorite}
-            onFavoriteClick={() => handleFavoriteClick(battery.id)}
-            onClick={() => handleCardClick(battery)}
-          />
-        ))}
+  <input
+    className="topbar-search"
+    placeholder="Search by product or seller…"
+    value={draftSearch}
+    onChange={(e) => setDraftSearch(e.target.value)}
+  />
+  <button
+    className="topbar-btn"
+    onClick={() => {
+      setAppliedSearch(draftSearch);
+      setCurrentPage(1);
+    }}
+  >
+    Search
+  </button>
+</div>
+
+   <div className="electrics-header">
+  <h1>EV Batteries</h1>
+  <p>Explore high-quality EV battery packs and modules</p>
+</div>
+
+      <div className="layout">
+        {/* Sidebar Filters (dùng draft*) */}
+        <aside className="filters">
+          <h3>Filter Batteries</h3>
+
+          <label>Type</label>
+          <select
+            value={draftFilters.type}
+            onChange={(e) => setDraftFilters({ ...draftFilters, type: e.target.value })}
+          >
+            <option value="">— All —</option>
+            {types.map((t) => (
+              <option key={t} value={t}>
+                {t}
+              </option>
+            ))}
+          </select>
+
+          <label>Condition</label>
+          <select
+            value={draftFilters.isNew}
+            onChange={(e) => setDraftFilters({ ...draftFilters, isNew: e.target.value })}
+          >
+            <option value="">— All —</option>
+            <option value="new">New</option>
+            <option value="used">Used</option>
+          </select>
+
+          <label>Seller</label>
+          <select
+            value={draftFilters.seller}
+            onChange={(e) => setDraftFilters({ ...draftFilters, seller: e.target.value })}
+          >
+            <option value="">— All —</option>
+            {sellers.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+
+          <label>Price range (VND)</label>
+          <div className="price-row">
+            <input
+              type="number"
+              placeholder="Min"
+              value={draftFilters.minPrice}
+              onChange={(e) => setDraftFilters({ ...draftFilters, minPrice: e.target.value })}
+            />
+            <span>—</span>
+            <input
+              type="number"
+              placeholder="Max"
+              value={draftFilters.maxPrice}
+              onChange={(e) => setDraftFilters({ ...draftFilters, maxPrice: e.target.value })}
+            />
+          </div>
+
+          <label>Capacity (kWh)</label>
+          <div className="price-row">
+            <input
+              type="number"
+              placeholder="Min"
+              value={draftFilters.minCapacity}
+              onChange={(e) => setDraftFilters({ ...draftFilters, minCapacity: e.target.value })}
+            />
+            <span>—</span>
+            <input
+              type="number"
+              placeholder="Max"
+              value={draftFilters.maxCapacity}
+              onChange={(e) => setDraftFilters({ ...draftFilters, maxCapacity: e.target.value })}
+            />
+          </div>
+
+          <label>Voltage (V)</label>
+          <div className="price-row">
+            <input
+              type="number"
+              placeholder="Min"
+              value={draftFilters.minVoltage}
+              onChange={(e) => setDraftFilters({ ...draftFilters, minVoltage: e.target.value })}
+            />
+            <span>—</span>
+            <input
+              type="number"
+              placeholder="Max"
+              value={draftFilters.maxVoltage}
+              onChange={(e) => setDraftFilters({ ...draftFilters, maxVoltage: e.target.value })}
+            />
+          </div>
+
+          <label>Cycle count</label>
+          <div className="price-row">
+            <input
+              type="number"
+              placeholder="Min"
+              value={draftFilters.minCycles}
+              onChange={(e) => setDraftFilters({ ...draftFilters, minCycles: e.target.value })}
+            />
+            <span>—</span>
+            <input
+              type="number"
+              placeholder="Max"
+              value={draftFilters.maxCycles}
+              onChange={(e) => setDraftFilters({ ...draftFilters, maxCycles: e.target.value })}
+            />
+          </div>
+
+          <div className="filter-actions">
+            <button
+              className="btn-apply"
+              onClick={() => {
+                setAppliedFilters(draftFilters);
+                setAppliedSearch(draftSearch);
+                setCurrentPage(1);
+              }}
+            >
+              Apply Filter
+            </button>
+            <button className="btn-reset" onClick={resetFilters}>
+              Reset
+            </button>
+          </div>
+        </aside>
+
+        {/* Grid */}
+        <div className="electrics-grid">
+          {currentBatteries.map((battery) => (
+            <MiniPost
+              key={battery.id}
+              image={battery.image}
+              productName={battery.productName}
+              basicInfo={battery.basicInfo}
+              sellerName={battery.sellerName}
+              price={battery.price}
+              isNew={battery.isNew}
+              isFavorite={battery.isFavorite}
+              onFavoriteClick={() => handleFavoriteClick(battery.id)}
+              onClick={() => handleCardClick(battery)}
+            />
+          ))}
+
+          {!currentBatteries.length && (
+            <div className="empty">No batteries found. Try adjusting the filters.</div>
+          )}
+        </div>
       </div>
 
       {/* Pagination */}
-      {totalPages > 1 && (
+      {filtered.length > 0 && (
         <div className="pagination-container">
           <div className="pagination">
             <Pagination
@@ -425,7 +695,8 @@ export default function ElectricsPage() {
             />
           </div>
           <div className="pagination-info">
-            Hiển thị {startIndex + 1}-{Math.min(endIndex, batteries.length)} trong tổng số {batteries.length} pin điện
+           {`Showing ${startIndex + 1}-${Math.min(endIndex, filtered.length)} of ${filtered.length} batteries`}
+
           </div>
         </div>
       )}

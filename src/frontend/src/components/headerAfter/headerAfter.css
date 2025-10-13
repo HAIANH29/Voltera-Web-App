@@ -43,7 +43,7 @@
 .logo-text {
   font-size: 24px;
   font-weight: 700;
-  color: #2563eb;
+  color: hwb(221 15% 8%);
   background: none;
   -webkit-background-clip: unset;
   -webkit-text-fill-color: unset;
