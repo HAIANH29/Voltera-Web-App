@@ -38,7 +38,7 @@ public class PostService {
     private PostMapper postMapper;
 
     public PostResponse createPost(PostRequest dto, String username) throws IOException {
-        // 1. Xác thực seller
+
         Account account = accountRepository.findByUsername(username)
                 .orElseThrow(() -> new BusinessException("Account not found"));
 
@@ -49,7 +49,7 @@ public class PostService {
         User seller = Optional.ofNullable(account.getUser())
                 .orElseThrow(() -> new SecurityException("Seller information not found"));
 
-        // 2. Tạo Post
+
         Post post = postRepository.save(Post.builder()
                 .sellerId(seller)
                 .title(dto.getTitle())
@@ -73,7 +73,7 @@ public class PostService {
             if (vehicleRepository.isLicensePlateExist(dto.getVehicle().getLicenseplate())) {
                 throw new BusinessException("This License Plate is already exists");
             }
-            // Vehicle
+
             savedVehicle = vehicleRepository.save(Vehicle.builder()
                     .post(post)
                     .brand(dto.getVehicle().getBrand())
@@ -94,7 +94,7 @@ public class PostService {
                     .build());
 
         } else if (dto.getBattery() != null) {
-            // Battery
+
             Integer typeId = dto.getBattery().getBatteryTypeId().getId();
             if (typeId == null) throw new IllegalArgumentException("Battery type ID is required");
 
@@ -122,7 +122,7 @@ public class PostService {
             throw new IllegalArgumentException("Provide either vehicle or battery details.");
         }
 
-        // 4. Trả về response
+
         return postMapper.toPostResponse(post, savedBattery, savedVehicle, allImages);
     }
 
