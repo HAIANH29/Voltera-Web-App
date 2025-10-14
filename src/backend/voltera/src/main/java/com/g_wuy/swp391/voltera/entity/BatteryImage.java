@@ -2,8 +2,7 @@ package com.g_wuy.swp391.voltera.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
@@ -13,8 +12,11 @@ import java.time.Instant;
 @Getter
 @Setter
 @Entity
-@Table(name = "vehicleimage")
-public class Vehicleimage {
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Table(name = "batteryimage")
+public class BatteryImage {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "imageid", nullable = false)
@@ -23,7 +25,7 @@ public class Vehicleimage {
     @ManyToOne(fetch = FetchType.LAZY)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "postid")
-    private Vehicle postId;
+    private Battery battery;
 
     @NotNull
     @Column(name = "imageurl", nullable = false, length = Integer.MAX_VALUE)

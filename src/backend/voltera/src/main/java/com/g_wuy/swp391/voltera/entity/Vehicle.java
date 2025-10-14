@@ -8,6 +8,8 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -82,5 +84,9 @@ public class Vehicle {
     @Size(max = 20)
     @Column(name = "status", length = 20)
     private String status;
+
+    @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<VehicleImage> images = new ArrayList<>();
+
 
 }

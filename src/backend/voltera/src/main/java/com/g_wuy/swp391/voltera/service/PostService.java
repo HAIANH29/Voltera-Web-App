@@ -14,6 +14,7 @@ import com.g_wuy.swp391.voltera.model.response.ModerationResponse;
 import com.g_wuy.swp391.voltera.model.response.PostResponse;
 import com.g_wuy.swp391.voltera.model.response.RejectResponse;
 import com.g_wuy.swp391.voltera.repository.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -36,8 +37,13 @@ public class PostService {
     private VehicleRepository vehicleRepository;
     @Autowired
     private PostMapper postMapper;
+    @Autowired
+    private VehicleImageRepository vehicleImageRepository;
+    @Autowired
+    private BatteryImageRepository batteryImageRepository;
 
     public PostResponse createPost(PostRequest dto, String username) throws IOException {
+
 
         Account account = accountRepository.findByUsername(username)
                 .orElseThrow(() -> new BusinessException("Account not found"));
@@ -50,6 +56,7 @@ public class PostService {
                 .orElseThrow(() -> new SecurityException("Seller information not found"));
 
 
+        // 🔹 2. Tạo Post
         Post post = postRepository.save(Post.builder()
                 .sellerId(seller)
                 .title(dto.getTitle())
@@ -60,7 +67,8 @@ public class PostService {
                 .updatedAt(Instant.now())
                 .build());
 
-        // 3. Xử lý Vehicle hoặc Battery
+
+
         if (dto.getVehicle() != null && dto.getBattery() != null) {
             throw new IllegalArgumentException("Choose either a vehicle or a battery, not both.");
         }
@@ -68,10 +76,9 @@ public class PostService {
         Battery savedBattery = null;
         Vehicle savedVehicle = null;
         List<String> allImages = new ArrayList<>();
-
         if (dto.getVehicle() != null) {
             if (vehicleRepository.isLicensePlateExist(dto.getVehicle().getLicenseplate())) {
-                throw new BusinessException("This License Plate is already exists");
+                throw new BusinessException("This License Plate already exists");
             }
 
             savedVehicle = vehicleRepository.save(Vehicle.builder()
@@ -93,8 +100,21 @@ public class PostService {
                     .status("AVAILABLE")
                     .build());
 
-        } else if (dto.getBattery() != null) {
+            // 🔹 Lưu URL ảnh xe
+            if (dto.getVehicleImages() != null && !dto.getVehicleImages().isEmpty()) {
+                for (String url : dto.getVehicleImages()) {
+                    vehicleImageRepository.save(VehicleImage.builder()
+                            .vehicle(savedVehicle)
+                            .imageUrl(url)
+                            .uploadedAt(Instant.now())
+                            .build());
+                }
+                allImages.addAll(dto.getVehicleImages());
+            }
+        }
 
+        // 🔹 Nếu là pin
+        else if (dto.getBattery() != null) {
             Integer typeId = dto.getBattery().getBatteryTypeId().getId();
             if (typeId == null) throw new IllegalArgumentException("Battery type ID is required");
 
@@ -104,6 +124,7 @@ public class PostService {
             if (batteryRepository.isSerialNumberExist(dto.getBattery().getSerialNumber())) {
                 throw new BusinessException("This serial number already exists");
             }
+
             savedBattery = batteryRepository.save(Battery.builder()
                     .post(post)
                     .batteryTypeId(type)
@@ -118,13 +139,27 @@ public class PostService {
                     .lifecycle(dto.getBattery().getLifeCycle())
                     .build());
 
-        } else {
+
+            if (dto.getBatteryImages() != null && !dto.getBatteryImages().isEmpty()) {
+                for (String url : dto.getBatteryImages()) {
+                    batteryImageRepository.save(BatteryImage.builder()
+                            .battery(savedBattery)
+                            .imageUrl(url)
+                            .uploadedAt(Instant.now())
+                            .build());
+                }
+                allImages.addAll(dto.getBatteryImages());
+            }
+        }
+        else {
             throw new IllegalArgumentException("Provide either vehicle or battery details.");
         }
 
 
         return postMapper.toPostResponse(post, savedBattery, savedVehicle, allImages);
     }
+
+
 
     public List<Post> getPostByStatus(String status) {
         return postRepository.getAllPostByStatus(status);

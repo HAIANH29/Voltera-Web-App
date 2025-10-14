@@ -1,6 +1,8 @@
 package com.g_wuy.swp391.voltera.configuration;
 
 
+import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import software.amazon.awssdk.regions.Region;
 
@@ -10,8 +12,10 @@ import org.springframework.context.annotation.Bean;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.ListBucketsRequest;
 
 @Configuration
+
 public class AWS3Config {
     @Value("${aws.access-key}")
      private String accessKey;

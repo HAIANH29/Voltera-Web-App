@@ -1,11 +1,13 @@
 package com.g_wuy.swp391.voltera.model.request;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import com.g_wuy.swp391.voltera.model.dto.BatteryDTO;
 import com.g_wuy.swp391.voltera.model.dto.VehicleDTO;
 
 import lombok.Data;
+
 
 @Data
 public class PostRequest {
@@ -15,6 +17,6 @@ public class PostRequest {
     private String status;
     private BatteryDTO battery;
     private VehicleDTO vehicle;
-    // private List<MultipartFile> images;
-    // private List<MultipartFile> vehicleImages;
+    private List<String> vehicleImages;
+    private List<String> batteryImages;
 }
