@@ -66,10 +66,11 @@ export default function VehicleDetail() {
   useEffect(() => {
     const fetchVehicle = async () => {
       setLoading(true);
+      console.log("📌 postID từ URL:", postID);
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 800));
       
-      const foundVehicle = mockData.vehicles.find(v => v.postID === postID);
+      const foundVehicle = mockVehiclesData.find(v => v.postID === postID);
       if (foundVehicle) {
         setVehicle(foundVehicle);
         setIsFavorite(foundVehicle.isFavorite);
@@ -99,9 +100,9 @@ export default function VehicleDetail() {
 
   if (loading) {
     return (
-      <div className="vehicle-detail">
+      <div className="vehicle-detail-page">
         <div className="detail-loading">
-          <div className="loading-spinner"></div>
+          <div className="detail-loading-spinner"></div>
           <p>Đang tải thông tin xe...</p>
         </div>
       </div>
@@ -110,10 +111,10 @@ export default function VehicleDetail() {
 
   if (!vehicle) {
     return (
-      <div className="vehicle-detail">
-        <div className="not-found">
+      <div className="vehicle-detail-page">
+        <div className="detail-not-found">
           <h2>No vehicle found</h2>
-          <button onClick={() => navigate('/vehicles')} className="back-btn">
+          <button onClick={() => navigate('/vehicles')} className="detail-back-btn">
             Back to list
           </button>
         </div>
@@ -122,9 +123,9 @@ export default function VehicleDetail() {
   }
 
   return (
-    <div className="vehicle-detail">
+    <div className="vehicle-detail-page">
       {/* Breadcrumb */}
-      <div className="breadcrumb">
+      <div className="detail-breadcrumb">
         <span onClick={() => navigate('/')} className="breadcrumb-link">Trang chủ</span>
         <span className="breadcrumb-separator">/</span>
         <span onClick={() => navigate('/vehicles')} className="breadcrumb-link">Xe điện</span>
@@ -132,10 +133,10 @@ export default function VehicleDetail() {
         <span className="breadcrumb-current">{vehicle.brand} {vehicle.model}</span>
       </div>
 
-      <div className="detail-container">
+      <div className="detail-main-container">
         {/* Left Column - Images */}
-        <div className="detail-images">
-          <div className="main-image">
+        <div className="detail-images-tabs">
+          <div className="detail-main-image">
             <img 
               src={vehicle.images?.[selectedImage] || vehicle.image || '/placeholder-car.jpg'} 
               alt={`${vehicle.brand} ${vehicle.model}`}
@@ -147,7 +148,7 @@ export default function VehicleDetail() {
           </div>
           
           {vehicle.images && vehicle.images.length > 1 && (
-            <div className="image-thumbnails">
+            <div className="detail-image-thumbnails">
               {vehicle.images.map((img, index) => (
                 <div 
                   key={index}
@@ -159,120 +160,27 @@ export default function VehicleDetail() {
               ))}
             </div>
           )}
-        </div>
-
-        {/* Right Column - Details */}
-        <div className="detail-info">
-          <div className="vehicle-header">
-            <h1 className="vehicle-title">
-              {vehicle.brand} {vehicle.model} {vehicle.version}
-            </h1>
-            <button 
-              className={`favorite-btn ${isFavorite ? 'active' : ''}`}
-              onClick={handleFavoriteClick}
-            >
-              <span className="heart-icon">♥</span>
-            </button>
-          </div>
-
-          <div className="price-section">
-            <div className="price">{formatPrice(vehicle.price)}</div>
-            <div className="price-note">Giá bán</div>
-          </div>
-
-          {/* Key Information */}
-          <div className="key-info">
-            <div className="info-grid">
-              <div className="info-item">
-                <span className="info-label">Battery Type:</span>
-                <span className="info-value">{vehicle.batteryType}</span>
-              </div>
-              <div className="info-item">
-                <span className="info-label">Battery Capacity:</span>
-                <span className="info-value">{vehicle.batteryCapacity}</span>
-              </div>
-              <div className="info-item">
-                <span className="info-label">Range:</span>
-                <span className="info-value">{vehicle.range}</span>
-              </div>
-              <div className="info-item">
-                <span className="info-label">Charging Time:</span>
-                <span className="info-value">{vehicle.chargingTime}</span>
-              </div>
-              <div className="info-item">
-                <span className="info-label">Number of Seats:</span>
-                <span className="info-value">{vehicle.numberOfSeat}</span>
-              </div>
-              <div className="info-item">
-                <span className="info-label">Style:</span>
-                <span className="info-value">{vehicle.style}</span>
-              </div>
-              <div className="info-item">
-                <span className="info-label">Color:</span>
-                <span className="info-value">{vehicle.color}</span>
-              </div>
-              <div className="info-item">
-                <span className="info-label">ODO:</span>
-                <span className="info-value">
-                  {vehicle.odo > 0 ? `${vehicle.odo.toLocaleString()} km` : 'New car'}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Contact Section */}
-          <div className="contact-section">
-            <div className="seller-info">
-              <h3>Seller Information</h3>
-              <div className="seller-details">
-                <div className="seller-name">{vehicle.sellerInfo?.name || vehicle.sellerName}</div>
-                {vehicle.sellerInfo?.rating && (
-                  <div className="seller-rating">
-                    <span className="stars">★★★★★</span>
-                    <span className="rating-text">({vehicle.sellerInfo.rating}/5)</span>
-                  </div>
-                )}
-                {vehicle.sellerInfo?.address && (
-                  <div className="seller-location">{vehicle.sellerInfo.address}</div>
-                )}
-              </div>
-            </div>
-            
-            <div className="contact-buttons">
-              <button className="contact-btn primary" onClick={handleContactSeller}>
-                <span className="phone-icon">📞</span>
-                Liên hệ người bán
-              </button>
-              <button className="contact-btn secondary">
-                <span className="message-icon">💬</span>
-                Nhắn tin
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Detailed Information Tabs */}
-      <div className="detail-tabs">
-        <div className="tabs-container">
-          <div className="tab-content">
+          {/* Detailed Information Tabs */}
+      <div className="detail-tabs-section">
+        <div className="detail-tabs-container">
+          <div className="detail-tab-content">
             {/* Description */}
-            <div className="content-section">
+            <div className="detail-content-section">
               <h2>Description</h2>
-              <div className="description">
+              <div className="detail-description">
                 {vehicle.description || "Modern electric car with advanced technology and beautiful design."}
               </div>
             </div>
 
             {/* Features */}
             {vehicle.features && (
-              <div className="content-section">
+              <div className="detail-content-section">
                 <h2>Outstanding Features</h2>
-                <div className="features-grid">
+                <div className="detail-features-grid">
                   {vehicle.features.map((feature, index) => (
-                    <div key={index} className="feature-item">
-                      <span className="feature-icon">✓</span>
-                      <span className="feature-text">{feature}</span>
+                    <div key={index} className="detail-feature-item">
+                      <span className="detail-feature-icon">✓</span>
+                      <span className="detail-feature-text">{feature}</span>
                     </div>
                   ))}
                 </div>
@@ -281,13 +189,13 @@ export default function VehicleDetail() {
 
             {/* Specifications */}
             {vehicle.specifications && (
-              <div className="content-section">
+              <div className="detail-content-section">
                 <h2>Specifications</h2>
-                <div className="specifications-table">
+                <div className="detail-specifications-table">
                   {Object.entries(vehicle.specifications).map(([key, value]) => (
-                    <div key={key} className="spec-row">
-                      <div className="spec-label">{key}</div>
-                      <div className="spec-value">{value}</div>
+                    <div key={key} className="detail-spec-row">
+                      <div className="detail-spec-label">{key}</div>
+                      <div className="detail-spec-value">{value}</div>
                     </div>
                   ))}
                 </div>
@@ -296,6 +204,99 @@ export default function VehicleDetail() {
           </div>
         </div>
       </div>
+        </div>
+
+        {/* Right Column - Details */}
+        <div className="detail-info-section">
+          <div className="detail-vehicle-header">
+            <h1 className="detail-vehicle-title">
+              {vehicle.brand} {vehicle.model} {vehicle.version}
+            </h1>
+            <button 
+              className={`detail-favorite-btn ${isFavorite ? 'active' : ''}`}
+              onClick={handleFavoriteClick}
+            >
+              <span className="detail-heart-icon">♥</span>
+            </button>
+          </div>
+
+          <div className="detail-price-section">
+            <div className="detail-price">{formatPrice(vehicle.price)}</div>
+            <div className="detail-price-note">Giá bán</div>
+          </div>
+
+          {/* Key Information */}
+          <div className="detail-key-info">
+            <div className="detail-info-grid">
+              <div className="detail-info-item">
+                <span className="detail-info-label">Battery Type:</span>
+                <span className="detail-info-value">{vehicle.batteryType}</span>
+              </div>
+              <div className="detail-info-item">
+                <span className="detail-info-label">Battery Capacity:</span>
+                <span className="detail-info-value">{vehicle.batteryCapacity}</span>
+              </div>
+              <div className="detail-info-item">
+                <span className="detail-info-label">Range:</span>
+                <span className="detail-info-value">{vehicle.range}</span>
+              </div>
+              <div className="detail-info-item">
+                <span className="detail-info-label">Charging Time:</span>
+                <span className="detail-info-value">{vehicle.chargingTime}</span>
+              </div>
+              <div className="detail-info-item">
+                <span className="detail-info-label">Number of Seats:</span>
+                <span className="detail-info-value">{vehicle.numberOfSeat}</span>
+              </div>
+              <div className="detail-info-item">
+                <span className="detail-info-label">Style:</span>
+                <span className="detail-info-value">{vehicle.style}</span>
+              </div>
+              <div className="detail-info-item">
+                <span className="detail-info-label">Color:</span>
+                <span className="detail-info-value">{vehicle.color}</span>
+              </div>
+              <div className="detail-info-item">
+                <span className="detail-info-label">ODO:</span>
+                <span className="detail-info-value">
+                  {vehicle.odo > 0 ? `${vehicle.odo.toLocaleString()} km` : 'New car'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Contact Section */}
+          <div className="detail-contact-section">
+            <div className="detail-seller-info">
+              <h3>Seller Information</h3>
+              <div className="detail-seller-details">
+                <div className="detail-seller-name">{vehicle.sellerInfo?.name || vehicle.sellerName}</div>
+                {vehicle.sellerInfo?.rating && (
+                  <div className="detail-seller-rating">
+                    <span className="detail-stars">★★★★★</span>
+                    <span className="detail-rating-text">({vehicle.sellerInfo.rating}/5)</span>
+                  </div>
+                )}
+                {vehicle.sellerInfo?.address && (
+                  <div className="detail-seller-location">{vehicle.sellerInfo.address}</div>
+                )}
+              </div>
+            </div>
+
+            <div className="detail-contact-buttons">
+              <button className="detail-contact-btn primary" onClick={handleContactSeller}>
+                <span className="phone-icon">📞</span>
+                Liên hệ người bán
+              </button>
+              <button className="detail-contact-btn secondary">
+                <span className="message-icon">💬</span>
+                Nhắn tin
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   );
 }

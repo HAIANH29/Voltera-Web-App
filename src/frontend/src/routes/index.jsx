@@ -16,6 +16,6 @@ export const routes = {
   support: "/support",
   postVehicles: "/post/vehicles",
   postElectric: "/post/electrics",
-  vehicleDetail: "/vehicles/:id",
-  electricDetail: "/electrics/:id",
+  vehicleDetail: "/vehicles/:postID",
+  electricDetail: "/electrics/:postID",
 };

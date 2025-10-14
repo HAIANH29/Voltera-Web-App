@@ -4,7 +4,7 @@ import Pagination from "../../components/pagination/pagination";
 import "./vehiclesPage.css";
 import { useNavigate } from "react-router-dom";
 
-// ===== Mock data (giữ nguyên của bạn, chỉ dán lại) =====
+// ===== Mock data (có thể giữ nguyên của bạn) =====
 const mockVehiclesData = [
   {
     postID: "VH001",
@@ -120,10 +120,7 @@ const mockVehiclesData = [
     color: "Gun Metallic",
     numberOfSeat: 5,
     style: "Hatchback",
-    image:
-
-      "data:image/webp;base64,UklGRiAwAABXRUJQVlA4IBQwAADQ4wCdASrAAf0APp1EnEslo6knqJHsiSATiWduH65M5uMXlWxt51xv39X3P/qtZ+XjeG/…", // rút gọn cho ngắn
-
+    image: "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?w=400",
     sellerName: "Võ Thị F",
     price: 950000000,
     isFavorite: false,
@@ -143,8 +140,7 @@ const mockVehiclesData = [
     color: "Racing Yellow",
     numberOfSeat: 4,
     style: "Sedan",
-    image:
-      "https://www.motortrend.com/uploads/2022/12/2023-Porsche-Taycan-GTS-001.jpg",
+    image: "https://www.motortrend.com/uploads/2022/12/2023-Porsche-Taycan-GTS-001.jpg",
     sellerName: "Đặng Văn G",
     price: 6200000000,
     isFavorite: false,
@@ -164,8 +160,7 @@ const mockVehiclesData = [
     color: "Obsidian Black",
     numberOfSeat: 5,
     style: "Sedan",
-    image:
-      "https://tla-image.azureedge.net/api/v1/image/vehicle/Car/Mercedes-Benz/Mercedes-Benz/2/123889/1256",
+    image: "https://tla-image.azureedge.net/api/v1/image/vehicle/Car/Mercedes-Benz/Mercedes-Benz/2/123889/1256",
     sellerName: "Bùi Thị H",
     price: 5500000000,
     isFavorite: true,
@@ -251,47 +246,21 @@ const mockVehiclesData = [
     isFavorite: false,
     year: 2021,
   },
-  {
-    postID: "VH012",
-    batteryType: "Lithium-ion",
-    brand: "Jaguar",
-    model: "I-PACE",
-    version: "HSE",
-    status: "old",
-    odo: 22000,
-    batteryCapacity: "90 kWh",
-    range: "470 km",
-    chargingTime: "7h (AC) / 40min (DC)",
-    color: "Yulong White",
-    numberOfSeat: 5,
-    style: "SUV",
-    image: "https://images.unsplash.com/photo-1571068316344-75bc76f77890?w=400",
-    sellerName: "Lý Thị M",
-    price: 3200000000,
-    isFavorite: false,
-  },
-  {
-    postID: "VH012",
-    batteryType: "Lithium-ion",
-    brand: "Jaguar",
-    model: "I-PACE",
-    version: "HSE",
-    status: "old",
-    odo: 22000,
-    batteryCapacity: "90 kWh",
-    range: "470 km",
-    chargingTime: "7h (AC) / 40min (DC)",
-    color: "Yulong White",
-    numberOfSeat: 5,
-    style: "SUV",
-    image: "https://images.unsplash.com/photo-1571068316344-75bc76f77890?w=400",
-    sellerName: "Lý Thị M",
-    price: 3200000000,
-    isFavorite: false,
-  },
 ];
 
 const ITEMS_PER_PAGE = 12;
+
+const initialFilters = {
+  brand: "",
+  model: "",
+  color: "",
+  style: "",
+  status: "", // new | old
+  seats: "", // 4 | 5 | 7 ...
+  minPrice: "",
+  maxPrice: "",
+  year: "",
+};
 
 export default function VehiclesPage() {
   // data + loading
@@ -299,19 +268,12 @@ export default function VehiclesPage() {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  // search + filters
-  const [search, setSearch] = useState("");
-  const [filters, setFilters] = useState({
-    brand: "",
-    model: "",
-    color: "",
-    style: "",
-    status: "", // new | old
-    seats: "", // 4 | 5 | 7 ...
-    minPrice: "",
-    maxPrice: "",
-    year: "",
-  });
+  // ======= TÁCH DRAFT vs APPLIED =======
+  const [draftSearch, setDraftSearch] = useState("");
+  const [appliedSearch, setAppliedSearch] = useState("");
+
+  const [draftFilters, setDraftFilters] = useState(initialFilters);
+  const [appliedFilters, setAppliedFilters] = useState(initialFilters);
 
   // pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -348,29 +310,30 @@ export default function VehiclesPage() {
     [vehicles]
   );
   const years = useMemo(
-    () => Array.from(new Set(vehicles.map((v) => v.year))).sort((a, b) => b - a),
+    () => Array.from(new Set(vehicles.map((v) => v.year).filter(Boolean))).sort((a, b) => b - a),
     [vehicles]
   );
 
-  // lọc + search
+  // lọc CHỈ dựa trên applied*
   const filtered = useMemo(() => {
-    const s = search.trim().toLowerCase();
+    const s = appliedSearch.trim().toLowerCase();
+    const f = appliedFilters;
     return vehicles.filter((v) => {
       const matchSearch =
         !s ||
         `${v.brand} ${v.model} ${v.version}`.toLowerCase().includes(s) ||
-        v.sellerName.toLowerCase().includes(s);
+        (v.sellerName || "").toLowerCase().includes(s);
 
-      const inBrand = !filters.brand || v.brand === filters.brand;
-      const inModel = !filters.model || v.model === filters.model;
-      const inColor = !filters.color || v.color === filters.color;
-      const inStyle = !filters.style || v.style === filters.style;
-      const inStatus = !filters.status || v.status === filters.status;
-      const inSeats = !filters.seats || String(v.numberOfSeat) === String(filters.seats);
-      const inYear = !filters.year || String(v.year) === String(filters.year);
+      const inBrand = !f.brand || v.brand === f.brand;
+      const inModel = !f.model || v.model === f.model;
+      const inColor = !f.color || v.color === f.color;
+      const inStyle = !f.style || v.style === f.style;
+      const inStatus = !f.status || v.status === f.status;
+      const inSeats = !f.seats || String(v.numberOfSeat) === String(f.seats);
+      const inYear = !f.year || String(v.year) === String(f.year);
 
-      const minOK = !filters.minPrice || v.price >= Number(filters.minPrice);
-      const maxOK = !filters.maxPrice || v.price <= Number(filters.maxPrice);
+      const minOK = !f.minPrice || v.price >= Number(f.minPrice);
+      const maxOK = !f.maxPrice || v.price <= Number(f.maxPrice);
 
       return (
         matchSearch &&
@@ -385,7 +348,7 @@ export default function VehiclesPage() {
         maxOK
       );
     });
-  }, [vehicles, search, filters]);
+  }, [vehicles, appliedSearch, appliedFilters]);
 
   // paginate
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE) || 1;
@@ -403,10 +366,8 @@ export default function VehiclesPage() {
   };
 
   const handleCardClick = (vehicle) => {
-
     // TODO: navigate(`/vehicles/${vehicle.postID}`)
     console.log("Clicked vehicle:", vehicle.postID);
-
   };
 
   const handlePageChange = (page) => {
@@ -415,75 +376,11 @@ export default function VehiclesPage() {
   };
 
   const resetFilters = () => {
-    setFilters({
-      brand: "",
-      model: "",
-      color: "",
-      style: "",
-      status: "",
-      seats: "",
-      minPrice: "",
-      maxPrice: "",
-      year: "",
-    });
-    setSearch("");
+    setDraftFilters(initialFilters);
+    setDraftSearch("");
+    setAppliedFilters(initialFilters);
+    setAppliedSearch("");
     setCurrentPage(1);
-  };
-
-
-  // pagination buttons (giữ logic gọn)
-  const renderPagination = () => {
-    const pages = [];
-    const maxVisible = 5;
-
-    let start = Math.max(1, currentPage - Math.floor(maxVisible / 2));
-    let end = Math.min(totalPages, start + maxVisible - 1);
-    if (end - start + 1 < maxVisible) start = Math.max(1, end - maxVisible + 1);
-
-    if (currentPage > 1)
-      pages.push(
-        <button key="prev" className="pg-btn pg-nav" onClick={() => handlePageChange(currentPage - 1)}>
-          ‹
-        </button>
-      );
-
-    if (start > 1) {
-      pages.push(
-        <button key={1} className="pg-btn" onClick={() => handlePageChange(1)}>
-          1
-        </button>
-      );
-      if (start > 2) pages.push(<span key="e1" className="pg-ellipsis">…</span>);
-    }
-
-    for (let i = start; i <= end; i++) {
-      pages.push(
-        <button
-          key={i}
-          className={`pg-btn ${i === currentPage ? "active" : ""}`}
-          onClick={() => handlePageChange(i)}
-        >
-          {i}
-        </button>
-      );
-    }
-
-    if (end < totalPages) {
-      if (end < totalPages - 1) pages.push(<span key="e2" className="pg-ellipsis">…</span>);
-      pages.push(
-        <button key={totalPages} className="pg-btn" onClick={() => handlePageChange(totalPages)}>
-          {totalPages}
-        </button>
-      );
-    }
-
-    if (currentPage < totalPages)
-      pages.push(
-        <button key="next" className="pg-btn pg-nav" onClick={() => handlePageChange(currentPage + 1)}>
-          ›
-        </button>
-      );
-    return pages;
   };
 
   const formatBasicInfo = (v) => [
@@ -495,7 +392,6 @@ export default function VehiclesPage() {
   const formatProductName = (v) => `${v.brand} ${v.model} ${v.version}`;
 
   // ====== UI ======
-
   if (loading) {
     return (
       <div className="vehicles-page">
@@ -532,22 +428,30 @@ export default function VehiclesPage() {
           <option>TP. HCM</option>
           <option>Đà Nẵng</option>
         </select>
+
+        {/* SEARCH điều khiển bằng draftSearch */}
         <input
           className="topbar-search"
           placeholder="Search by Brand, Model, Seller…"
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
+          value={draftSearch}
+          onChange={(e) => setDraftSearch(e.target.value)}
+        />
+        <button
+          className="topbar-btn"
+          onClick={() => {
+            setAppliedSearch(draftSearch);
             setCurrentPage(1);
           }}
-        />
-        <button className="topbar-btn" onClick={() => setCurrentPage(1)}>Search</button>
+        >
+          Search
+        </button>
       </div>
 
       <div className="vehicles-header">
         <h1>Electric Vehicles</h1>
         <p>
-          Showing {filtered.length} result{filtered.length !== 1 ? "s" : ""}{filtered.length !== vehicles.length ? ` (from ${vehicles.length})` : ""}
+          Showing {filtered.length} result{filtered.length !== 1 ? "s" : ""}
+          {filtered.length !== vehicles.length ? ` (from ${vehicles.length})` : ""}
         </p>
       </div>
 
@@ -558,46 +462,75 @@ export default function VehiclesPage() {
 
           <label>Brand</label>
           <select
-            value={filters.brand}
-            onChange={(e) => { setFilters({ ...filters, brand: e.target.value, model: "" }); setCurrentPage(1); }}
+            value={draftFilters.brand}
+            onChange={(e) =>
+              setDraftFilters({ ...draftFilters, brand: e.target.value, model: "" })
+            }
           >
             <option value="">— All —</option>
-            {brands.map((b) => <option key={b} value={b}>{b}</option>)}
+            {brands.map((b) => (
+              <option key={b} value={b}>
+                {b}
+              </option>
+            ))}
           </select>
 
           <label>Model</label>
           <select
-            value={filters.model}
-            onChange={(e) => { setFilters({ ...filters, model: e.target.value }); setCurrentPage(1); }}
+            value={draftFilters.model}
+            onChange={(e) =>
+              setDraftFilters({ ...draftFilters, model: e.target.value })
+            }
           >
             <option value="">— All —</option>
             {models
-              .filter((m) => !filters.brand || vehicles.some(v => v.brand === filters.brand && v.model === m))
-              .map((m) => <option key={m} value={m}>{m}</option>)}
+              .filter((m) =>
+                !draftFilters.brand ||
+                vehicles.some((v) => v.brand === draftFilters.brand && v.model === m)
+              )
+              .map((m) => (
+                <option key={m} value={m}>
+                  {m}
+                </option>
+              ))}
           </select>
 
           <label>Color</label>
           <select
-            value={filters.color}
-            onChange={(e) => { setFilters({ ...filters, color: e.target.value }); setCurrentPage(1); }}
+            value={draftFilters.color}
+            onChange={(e) =>
+              setDraftFilters({ ...draftFilters, color: e.target.value })
+            }
           >
             <option value="">— All —</option>
-            {colors.map((c) => <option key={c} value={c}>{c}</option>)}
+            {colors.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
           </select>
 
           <label>Style</label>
           <select
-            value={filters.style}
-            onChange={(e) => { setFilters({ ...filters, style: e.target.value }); setCurrentPage(1); }}
+            value={draftFilters.style}
+            onChange={(e) =>
+              setDraftFilters({ ...draftFilters, style: e.target.value })
+            }
           >
             <option value="">— All —</option>
-            {styles.map((s) => <option key={s} value={s}>{s}</option>)}
+            {styles.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
           </select>
 
           <label>Status</label>
           <select
-            value={filters.status}
-            onChange={(e) => { setFilters({ ...filters, status: e.target.value }); setCurrentPage(1); }}
+            value={draftFilters.status}
+            onChange={(e) =>
+              setDraftFilters({ ...draftFilters, status: e.target.value })
+            }
           >
             <option value="">— All —</option>
             <option value="new">New</option>
@@ -606,11 +539,17 @@ export default function VehiclesPage() {
 
           <label>Seats</label>
           <select
-            value={filters.seats}
-            onChange={(e) => { setFilters({ ...filters, seats: e.target.value }); setCurrentPage(1); }}
+            value={draftFilters.seats}
+            onChange={(e) =>
+              setDraftFilters({ ...draftFilters, seats: e.target.value })
+            }
           >
             <option value="">— All —</option>
-            {seats.map((s) => <option key={s} value={s}>{s}</option>)}
+            {seats.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
           </select>
 
           <label>Price range (VND)</label>
@@ -618,32 +557,51 @@ export default function VehiclesPage() {
             <input
               type="number"
               placeholder="Min"
-              value={filters.minPrice}
-              onChange={(e) => setFilters({ ...filters, minPrice: e.target.value })}
-              onBlur={() => setCurrentPage(1)}
+              value={draftFilters.minPrice}
+              onChange={(e) =>
+                setDraftFilters({ ...draftFilters, minPrice: e.target.value })
+              }
             />
             <span>—</span>
             <input
               type="number"
               placeholder="Max"
-              value={filters.maxPrice}
-              onChange={(e) => setFilters({ ...filters, maxPrice: e.target.value })}
-              onBlur={() => setCurrentPage(1)}
+              value={draftFilters.maxPrice}
+              onChange={(e) =>
+                setDraftFilters({ ...draftFilters, maxPrice: e.target.value })
+              }
             />
           </div>
 
           <label>Year of Manufacture</label>
           <select
-            value={filters.year}
-            onChange={(e) => { setFilters({ ...filters, year: e.target.value }); setCurrentPage(1); }}
+            value={draftFilters.year}
+            onChange={(e) =>
+              setDraftFilters({ ...draftFilters, year: e.target.value })
+            }
           >
             <option value="">— All —</option>
-            {years.map((y) => <option key={y} value={y}>{y}</option>)}
+            {years.map((y) => (
+              <option key={y} value={y}>
+                {y}
+              </option>
+            ))}
           </select>
 
           <div className="filter-actions">
-            <button className="btn-apply" onClick={() => setCurrentPage(1)}>Apply Filter</button>
-            <button className="btn-reset" onClick={resetFilters}>Reset</button>
+            <button
+              className="btn-apply"
+              onClick={() => {
+                setAppliedFilters(draftFilters);
+                setAppliedSearch(draftSearch);
+                setCurrentPage(1);
+              }}
+            >
+              Apply Filter
+            </button>
+            <button className="btn-reset" onClick={resetFilters}>
+              Reset
+            </button>
           </div>
         </aside>
 
@@ -665,9 +623,7 @@ export default function VehiclesPage() {
           ))}
 
           {!currentVehicles.length && (
-            <div className="empty">
-              Không tìm thấy xe phù hợp. Hãy điều chỉnh bộ lọc.
-            </div>
+            <div className="empty">Không tìm thấy xe phù hợp. Hãy điều chỉnh bộ lọc.</div>
           )}
         </div>
       </div>
@@ -683,7 +639,9 @@ export default function VehiclesPage() {
             />
           </div>
           <div className="pagination-info">
-            Showing {startIndex + 1}-{Math.min(endIndex, filtered.length)} of {filtered.length} vehicles
+            {`Showing ${startIndex + 1}-${Math.min(endIndex, filtered.length)} of ${
+              filtered.length
+            } vehicles`}
           </div>
         </div>
       )}
