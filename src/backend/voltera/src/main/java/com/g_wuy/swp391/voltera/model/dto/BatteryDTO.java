@@ -2,7 +2,7 @@ package com.g_wuy.swp391.voltera.model.dto;
 
 import java.math.BigDecimal;
 
-import com.g_wuy.swp391.voltera.entity.Batterytype;
+import com.g_wuy.swp391.voltera.entity.BatteryType;
 
 import lombok.Data;
 
@@ -17,5 +17,5 @@ public class BatteryDTO {
     private String warranty;
     private BigDecimal weight;
     private String lifeCycle;
-    private Batterytype batteryTypeId;
+    private BatteryType batteryTypeId;
 }

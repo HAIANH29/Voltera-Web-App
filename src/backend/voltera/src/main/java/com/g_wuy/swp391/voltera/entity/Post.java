@@ -51,4 +51,7 @@ public class Post {
     @Column(name = "updatedat")
     private Instant updatedAt;
 
+    @OneToOne(mappedBy = "post", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Vehicle vehicle;
+
 }

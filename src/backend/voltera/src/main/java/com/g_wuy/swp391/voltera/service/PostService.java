@@ -1,6 +1,10 @@
 package com.g_wuy.swp391.voltera.service;
 
+import com.g_wuy.swp391.voltera.model.request.FilterRequest;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -16,10 +20,12 @@ import com.g_wuy.swp391.voltera.model.response.RejectResponse;
 import com.g_wuy.swp391.voltera.repository.*;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import jakarta.persistence.criteria.Predicate;
 
 @Service
 public class PostService {
@@ -91,6 +97,7 @@ public class PostService {
                     .licensePlate(dto.getVehicle().getLicenseplate())
                     .origin(dto.getVehicle().getOrigin())
                     .status("AVAILABLE")
+                    .yearManufacture(dto.getVehicle().getYearmanufacture())
                     .build());
 
         } else if (dto.getBattery() != null) {
@@ -98,7 +105,7 @@ public class PostService {
             Integer typeId = dto.getBattery().getBatteryTypeId().getId();
             if (typeId == null) throw new IllegalArgumentException("Battery type ID is required");
 
-            Batterytype type = batteryTypeRepository.findById(typeId)
+            BatteryType type = batteryTypeRepository.findById(typeId)
                     .orElseThrow(() -> new IllegalArgumentException("Battery type not found: " + typeId));
 
             if (batteryRepository.isSerialNumberExist(dto.getBattery().getSerialNumber())) {
@@ -150,4 +157,57 @@ public class PostService {
         return postMapper.toRejectResponse(post, adminUsername, request.getReason());
     }
 
+    public List<Post> filterVehicle(FilterRequest request) {
+        Specification<Post> specification = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            Join<Post, Vehicle> vehicleJoin = root.join("vehicle", JoinType.INNER);
+            Join<Post, User> userJoin = root.join("sellerId", JoinType.INNER);
+            if (request.getKeyword() != null || !request.getKeyword().equals("")) {
+                predicates.add(cb.like(cb.lower(vehicleJoin.get("model")), "%" + request.getKeyword().toLowerCase() + "%"));
+            }
+            if (request.getAddress() != null && !request.getAddress().isEmpty()) {
+                predicates.add(cb.like(cb.lower(userJoin.get("address")), "%" + request.getAddress() + "%"));
+            }
+            if (request.getBrand() != null || !request.getBrand().isEmpty()) {
+                predicates.add(cb.like(cb.lower(vehicleJoin.get("brand")), "%" + request.getBrand() + "%"));
+            }
+            if (request.getColor() != null || !request.getColor().isEmpty()) {
+                predicates.add(cb.equal(cb.lower(vehicleJoin.get("color")), request.getColor()));
+            }
+            if (request.getOrigin() != null || !request.getOrigin().isEmpty()) {
+                predicates.add(cb.like(cb.lower(vehicleJoin.get("origin")), "%" + request.getOrigin() + "%"));
+            }
+            // style
+            if (request.getStyle() != null && !request.getStyle().isEmpty()) {
+                predicates.add(cb.like(cb.lower(vehicleJoin.get("style")), "%" + request.getStyle().toLowerCase() + "%"));
+            }
+            if (request.isBodyInsurance()) {
+                predicates.add(cb.isTrue(vehicleJoin.get("bodyinsurance")));
+            }
+            if (request.isVehicleInspection()) {
+                predicates.add(cb.isTrue(vehicleJoin.get("vehicleinspection")));
+            }
+            if (request.getMinPrice() != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("price"), request.getMinPrice()));
+            }
+            if (request.getMaxPrice() != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.get("price"), request.getMaxPrice()));
+            }
+            // year range
+            if (request.getMinYearManufacture() > 0) {
+                predicates.add(cb.greaterThanOrEqualTo(vehicleJoin.get("yearmanufacture"), request.getMinYearManufacture()));
+            }
+            if (request.getMaxYearManufacture() > 0) {
+                predicates.add(cb.lessThanOrEqualTo(vehicleJoin.get("yearmanufacture"), request.getMaxYearManufacture()));
+            }
+            if (request.getNumberOfSeat() != null && request.getNumberOfSeat() > 0) {
+                predicates.add(cb.equal(vehicleJoin.get("numberofseat"), request.getNumberOfSeat()));
+            }
+            predicates.add(cb.equal(vehicleJoin.get("status"), "AVAILABLE"));
+
+            // Gộp tất cả điều kiện bằng AND
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+        return postRepository.findAll(specification);
+    }
 }

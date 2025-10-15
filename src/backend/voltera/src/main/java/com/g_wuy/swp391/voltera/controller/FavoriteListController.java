@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.g_wuy.swp391.voltera.entity.Favoritelist;
+import com.g_wuy.swp391.voltera.entity.FavoriteList;
 import com.g_wuy.swp391.voltera.entity.User;
 import com.g_wuy.swp391.voltera.exception.BusinessException;
 import com.g_wuy.swp391.voltera.mapper.FavListMapper;
@@ -38,7 +38,7 @@ public class FavoriteListController {
     private FavListMapper favListMapper;
 
     @PostMapping("/add/{postID}")
-    public ResponseEntity<Favoritelist> addToList(
+    public ResponseEntity<FavoriteList> addToList(
         @RequestHeader("Authorization") String authHeader, 
         @PathVariable("postID") Integer postId) {
         String token = authHeader.substring(7);
@@ -75,7 +75,7 @@ public class FavoriteListController {
         if (user == null) {
             throw new BusinessException("User Not found");
         }
-        List<Favoritelist> favoritelists = favoriteService.getFavoritelistsByUserID(user.getId());
-        return ResponseEntity.ok(favListMapper.toDtoList(favoritelists));
+        List<FavoriteList> favoriteLists = favoriteService.getFavoritelistsByUserID(user.getId());
+        return ResponseEntity.ok(favListMapper.toDtoList(favoriteLists));
     }
 }

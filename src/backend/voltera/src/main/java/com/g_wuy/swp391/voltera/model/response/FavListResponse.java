@@ -11,5 +11,5 @@ public class FavListResponse {
     private Integer postId;
     private String postTitle;
     private BigDecimal price;
-    private String thumbnailUrl;
+    // private String thumbnailUrl;
 }

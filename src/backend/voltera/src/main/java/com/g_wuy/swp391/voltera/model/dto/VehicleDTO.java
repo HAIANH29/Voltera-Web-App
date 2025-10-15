@@ -19,4 +19,5 @@ public class VehicleDTO {
     private Boolean vehicleinspection;
     private String licenseplate;
     private String origin;
+    private int yearmanufacture;
 }

@@ -29,7 +29,7 @@ public class Battery {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "batterytypeid")
-    private Batterytype batteryTypeId;
+    private BatteryType batteryTypeId;
 
     @Size(max = 100)
     @NotNull

@@ -83,4 +83,6 @@ public class Vehicle {
     @Column(name = "status", length = 20)
     private String status;
 
+    @Column(name = "yearmanufacture")
+    private int yearManufacture;
 }

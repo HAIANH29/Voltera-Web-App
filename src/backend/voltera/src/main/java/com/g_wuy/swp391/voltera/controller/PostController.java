@@ -8,6 +8,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import com.g_wuy.swp391.voltera.entity.Post;
+import com.g_wuy.swp391.voltera.model.request.FilterRequest;
 import com.g_wuy.swp391.voltera.model.request.PostRequest;
 import com.g_wuy.swp391.voltera.model.request.RejectRequest;
 import com.g_wuy.swp391.voltera.model.response.ModerationResponse;

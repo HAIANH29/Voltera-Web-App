@@ -1,6 +1,5 @@
 package com.g_wuy.swp391.voltera.controller;
 
-import com.g_wuy.swp391.voltera.exception.BusinessException;
 import com.g_wuy.swp391.voltera.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

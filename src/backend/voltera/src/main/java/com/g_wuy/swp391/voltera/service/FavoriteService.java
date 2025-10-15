@@ -1,12 +1,11 @@
 package com.g_wuy.swp391.voltera.service;
 
-import com.g_wuy.swp391.voltera.entity.Favoritelist;
+import com.g_wuy.swp391.voltera.entity.FavoriteList;
 import com.g_wuy.swp391.voltera.entity.Post;
 import com.g_wuy.swp391.voltera.entity.User;
 import com.g_wuy.swp391.voltera.exception.BusinessException;
 import com.g_wuy.swp391.voltera.repository.FavoriteListRepository;
 import com.g_wuy.swp391.voltera.repository.PostRepository;
-import com.g_wuy.swp391.voltera.repository.UserRepository;
 
 import java.util.List;
 
@@ -22,7 +21,7 @@ public class FavoriteService {
     @Autowired
     private PostRepository postRepository;
 
-    public Favoritelist addToFavoriteList(User currentUser, Integer postID) {
+    public FavoriteList addToFavoriteList(User currentUser, Integer postID) {
         if (currentUser == null) {
             throw new  BusinessException("User not found");
         }
@@ -34,23 +33,23 @@ public class FavoriteService {
         if (favPost == null) {
            throw new BusinessException("Post not found");
         }
-        Favoritelist favList = Favoritelist.builder().userid(currentUser).postid(favPost).build();
+        FavoriteList favList = FavoriteList.builder().userid(currentUser).postid(favPost).build();
         return favoriteListRepository.save(favList);
     }
 
     public void removeFromFavList(Integer userID, Integer postID) {
-        Favoritelist favoritelist = favoriteListRepository.findByUseridAndPostid(userID, postID);
+        FavoriteList favoritelist = favoriteListRepository.findByUseridAndPostid(userID, postID);
         if (favoritelist == null) {
             throw new BusinessException("Post not found");
         }
         favoriteListRepository.delete(favoritelist);
     }
 
-    public List<Favoritelist> getFavoritelistsByUserID(Integer userID) {
+    public List<FavoriteList> getFavoritelistsByUserID(Integer userID) {
         if (userID == null) {
             throw new BusinessException("User not found");
         }
-        List<Favoritelist> favoritelists = favoriteListRepository.findByUserid(userID);
-        return favoritelists;
+        List<FavoriteList> favoriteLists = favoriteListRepository.findByUserid(userID);
+        return favoriteLists;
     }
 }
