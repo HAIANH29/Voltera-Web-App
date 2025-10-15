@@ -103,7 +103,7 @@ export default function VehicleDetail() {
       <div className="vehicle-detail-page">
         <div className="detail-loading">
           <div className="detail-loading-spinner"></div>
-          <p>Đang tải thông tin xe...</p>
+          <p>Loading ...</p>
         </div>
       </div>
     );
@@ -126,9 +126,9 @@ export default function VehicleDetail() {
     <div className="vehicle-detail-page">
       {/* Breadcrumb */}
       <div className="detail-breadcrumb">
-        <span onClick={() => navigate('/')} className="breadcrumb-link">Trang chủ</span>
+        <span onClick={() => navigate('/')} className="breadcrumb-link">Home</span>
         <span className="breadcrumb-separator">/</span>
-        <span onClick={() => navigate('/vehicles')} className="breadcrumb-link">Xe điện</span>
+        <span onClick={() => navigate('/vehicles')} className="breadcrumb-link">Electric Vehicles</span>
         <span className="breadcrumb-separator">/</span>
         <span className="breadcrumb-current">{vehicle.brand} {vehicle.model}</span>
       </div>
@@ -222,7 +222,7 @@ export default function VehicleDetail() {
 
           <div className="detail-price-section">
             <div className="detail-price">{formatPrice(vehicle.price)}</div>
-            <div className="detail-price-note">Giá bán</div>
+            <div className="detail-price-note">Price</div>
           </div>
 
           {/* Key Information */}
@@ -286,11 +286,11 @@ export default function VehicleDetail() {
             <div className="detail-contact-buttons">
               <button className="detail-contact-btn primary" onClick={handleContactSeller}>
                 <span className="phone-icon">📞</span>
-                Liên hệ người bán
+                Contact Seller
               </button>
               <button className="detail-contact-btn secondary">
-                <span className="message-icon">💬</span>
-                Nhắn tin
+                <span className="buy-icon">🛒</span>
+                Buy
               </button>
             </div>
           </div>

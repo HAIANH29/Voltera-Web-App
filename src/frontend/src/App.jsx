@@ -18,6 +18,7 @@ import VerifyEmailPage from "./pages/VerifyEmailPage/VerifyEmailPage";
 import AboutUsPage from "./pages/AboutUsPage/AboutUsPage";
 import PostVehicleWizard from "./pages/post/vehicles/PostVehicleWizard";
 import VehicleDetail from "./pages/vehicleDetail/vehicleDetail";
+import ElectricDetail from "./pages/electricDetail/electricDetail";
 import DashboardAdmin from "./pages/dashboardAdmin/dashboardAdmin";
 
 console.log("routes:", routes);
@@ -81,6 +82,14 @@ function App() {
     element: (
       <MainLayout>
         <VehicleDetail />
+      </MainLayout>
+    ),
+    },
+    {
+    path: routes.electricDetail,
+    element: (
+      <MainLayout>
+        <ElectricDetail />
       </MainLayout>
     ),
     },
