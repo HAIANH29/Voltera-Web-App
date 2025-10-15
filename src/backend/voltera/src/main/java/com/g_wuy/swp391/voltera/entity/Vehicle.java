@@ -1,5 +1,6 @@
 package com.g_wuy.swp391.voltera.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.*;
@@ -27,6 +28,7 @@ public class Vehicle {
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "postid", nullable = false)
+    @JsonIgnore
     private Post post;
 
 

@@ -60,4 +60,10 @@ public class PostController {
                                      @RequestBody RejectRequest request) {
         return postService.rejectPost(postId, request);
     }
+    
+    @PostMapping("/filter/vehicle")
+    public ResponseEntity<List<Post>> filterPosts(@RequestBody FilterRequest request) {
+        List<Post> result = postService.filterVehicle(request);
+        return ResponseEntity.ok(result);
+    }
 }
