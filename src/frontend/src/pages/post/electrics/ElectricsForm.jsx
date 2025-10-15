@@ -1,8 +1,9 @@
-// src/pages/post/electrics/ElectricsForm.jsx
 import React from "react";
 import { Battery, Camera, FileText, DollarSign, MapPin, Upload, X } from "lucide-react";
 
-// ====== State init ======
+/* =========================
+   State init / helpers
+   ========================= */
 export const initialElectricsData = {
   // Basic
   title: "", brand: "", model: "", year: "", condition: "", description: "",
@@ -23,9 +24,7 @@ export const initialElectricsData = {
   hazmatAck: false, agreeTerms: false, confirmOwnership: false,
 };
 
-export const vehicleBrands = []; // not used here
 export const batteryBrands = ["Tesla","CATL","BYD","LG Energy Solution","Panasonic","Samsung SDI","SK Innovation","CALB"];
-
 export const basicYears = Array.from({ length: 15 }, (_, i) => 2024 - i);
 
 export const validateElectrics = (d) => {
@@ -37,7 +36,6 @@ export const validateElectrics = (d) => {
   return errors;
 };
 
-// Chỉ giữ field liên quan pin khi submit
 export const sanitizeElectricsPayload = (d, uploadedImages, currentUser) => ({
   // common
   title: d.title, brand: d.brand, model: d.model, year: d.year, condition: d.condition, description: d.description,
@@ -54,7 +52,9 @@ export const sanitizeElectricsPayload = (d, uploadedImages, currentUser) => ({
   createdAt: new Date().toISOString(), seller: currentUser,
 });
 
-// ====== Shared small atoms ======
+/* =========================
+   Small atoms
+   ========================= */
 const L = ({ htmlFor, children }) => <label htmlFor={htmlFor} className="v-label">{children}</label>;
 const Inp = (props) => <input {...props} className={`v-input ${props.className||""}`} />;
 const Textarea = (props) => <textarea {...props} className={`v-textarea ${props.className||""}`} />;
@@ -69,7 +69,9 @@ const Card = ({ title, icon, children }) => (
   </div>
 );
 
-// ====== STEPS UI ======
+/* =========================
+   Steps
+   ========================= */
 export const StepBasic = ({ data, set }) => (
   <Card title="Basic Information" icon={<Battery className="w-5 h-5" />}>
     <div className="v-grid">
@@ -434,7 +436,7 @@ export const StepReview = ({ data, images }) => (
   </Card>
 );
 
-// Đăng ký step cho Wizard
+/* Register steps for Wizard */
 export const ElectricsSteps = [
   { key: "basic",    title: "Basic",    component: StepBasic },
   { key: "battery",  title: "Battery",  component: StepBattery },

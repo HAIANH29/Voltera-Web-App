@@ -23,6 +23,7 @@ import java.util.List;
 
 
 @RestController
+@RequestMapping("/api/post")
 public class PostController {
 
     @Autowired
@@ -31,7 +32,7 @@ public class PostController {
     private JwtService jwtService;
 
 
-    @PostMapping("/api/posts")
+    @PostMapping("/create")
     public ResponseEntity<PostResponse> createPost(
             @RequestHeader("Authorization") String authHeader,
             @RequestBody PostRequest dto) throws IOException {
@@ -42,7 +43,7 @@ public class PostController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/api/post/{status}")
+    @GetMapping("/list/{status}")
     public List<Post> getAllPost(@PathVariable("status") String status) {
         return postService.getPostByStatus(status);
     }

@@ -1,7 +1,5 @@
 package com.g_wuy.swp391.voltera.mapper;
 
-import com.g_wuy.swp391.voltera.model.dto.BatteryDTO;
-import com.g_wuy.swp391.voltera.model.dto.VehicleDTO;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -10,17 +8,15 @@ import com.g_wuy.swp391.voltera.entity.Post;
 import com.g_wuy.swp391.voltera.entity.Vehicle;
 import com.g_wuy.swp391.voltera.model.response.PostResponse;
 import com.g_wuy.swp391.voltera.model.response.RejectResponse;
+import org.mapstruct.NullValuePropertyMappingStrategy;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring",
+        nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+
 public interface PostMapper {
 
-    @Mapping(source = "batteryTypeId", target = "batteryTypeId")
-    BatteryDTO toDTO(Battery battery);
-
-    // Vehicle mapping
-    VehicleDTO toDTO(Vehicle vehicle);
 
     @Mapping(source = "post.id", target = "postId")
     @Mapping(source = "post.title", target = "title")

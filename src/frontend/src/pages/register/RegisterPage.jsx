@@ -1,11 +1,13 @@
+// src/pages/register/RegisterPage.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { Eye, EyeOff } from "lucide-react";
+import Cookies from "js-cookie";
 import "./RegisterPage.css";
 
-// ⬇️ TODO: sửa path tới instance axios của bạn
+// axios instance của bạn (đã set baseURL = VITE_BACK_END_BASE_URL, vd: http://localhost:8080/api/v1/)
 import api from "../../config/api";
 
 const schema = Yup.object({
@@ -34,37 +36,62 @@ export default function RegisterPage() {
       setServerError("");
       setSubmitting(true);
       try {
-        // ⬇️ Không gửi confirmPassword lên server
+        // payload khớp RegisterRequest (theo BE bạn gửi trước đó tối thiểu có email/password)
         const payload = {
           email: values.email.trim(),
           password: values.password,
-          // TODO: nếu backend cần thêm username/phone/... thì bổ sung ở đây
+          // nếu RegisterRequest của bạn còn name/phone... thêm vào đây
         };
 
-        // ⬇️ TODO: đổi endpoint nếu backend khác (vd: auth/register, api/v1/auth/signup)
+        // BE path: /api/v1/auth/register  (baseURL đã là /api/v1/, nên chỉ cần "auth/register")
         const res = await api.post("auth/register", payload);
-        const data = res?.data?.data;
 
-        // Nếu backend trả token/flag verify email → chuyển trang verify
-        if (data?.emailVerifyToken || data?.needVerify || data?.email) {
-          navigate("/verify-email", {
-            state: { email: values.email.trim(), purpose: "signup" },
-            replace: true,
-          });
-        } else {
-          // Trường hợp không cần verify (tuỳ hệ thống), có thể đưa về login
-          navigate("/login", { replace: true });
+        // hỗ trợ cả 2 kiểu response: { ... } hoặc { data: {...} }
+        const body = res?.data?.data ?? res?.data ?? {};
+
+        // Nếu BE trả token (ít gặp ở register), tự lưu và cho vào app luôn
+        const accessToken = body.accessToken;
+        const refreshToken = body.refreshToken;
+
+        if (accessToken) {
+          Cookies.set("accessToken", accessToken, { expires: 1 });
+          if (refreshToken)
+            Cookies.set("refreshToken", refreshToken, { expires: 7 });
+          // Nếu có trả kèm user, bạn có thể lưu:
+          if (body.user || body.profile) {
+            localStorage.setItem(
+              "currentUser",
+              JSON.stringify(body.user || body.profile)
+            );
+          }
+          navigate("/", { replace: true });
+          return;
         }
+
+        // Trường hợp phổ biến: đăng ký xong -> đi login
+        navigate("/login", {
+          replace: true,
+          state: { email: values.email.trim(), justRegistered: true },
+        });
       } catch (err) {
-        // Bắt lỗi an toàn
+        // Chuẩn hoá thông điệp lỗi
         const resp = err?.response;
-        const msg =
+        const status = resp?.status;
+        let msg =
           resp?.data?.message ||
           resp?.data?.detail ||
           (Array.isArray(resp?.data?.errors) &&
             resp.data.errors[0]?.description) ||
           err?.message ||
-          "Something went wrong. Please try again.";
+          "Registration failed. Please try again.";
+
+        // Gợi ý case thường gặp
+        if (status === 409 || /exist/i.test(msg)) {
+          msg = "This email is already in use.";
+        } else if (status === 400 && /validation/i.test(msg)) {
+          msg = "Invalid data. Please check your inputs.";
+        }
+
         setServerError(msg);
       } finally {
         setSubmitting(false);
@@ -132,7 +159,7 @@ export default function RegisterPage() {
             className="t-eye"
             aria-label={showPwd ? "Hide password" : "Show password"}
             onClick={() => setShowPwd((s) => !s)}
-            onMouseDown={(e) => e.preventDefault()} // tránh focus ring xấu
+            onMouseDown={(e) => e.preventDefault()}
           >
             {showPwd ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
@@ -180,7 +207,7 @@ export default function RegisterPage() {
           <div className="t-error t-error-server">{serverError}</div>
         )}
 
-        {/* Next */}
+        {/* Submit */}
         <button
           type="submit"
           className="t-btn t-btn-primary"

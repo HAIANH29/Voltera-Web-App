@@ -174,10 +174,10 @@
   background:#fff;
   cursor:pointer;
 }
-.pg-btn.active{ background:#2563eb; color:#fff; border-color:var(#2563eb); }
+.pg-btn.active{ background:#2563eb; color:#fff; border-color:#2563eb; }
 .pg-nav{ font-weight:700; }
-.pg-ellipsis{ display:inline-flex; align-items:center; padding:0 6px; color:var(--muted); }
-.pagination-info{ color:var(--muted); }
+.pg-ellipsis{ display:inline-flex; align-items:center; padding:0 6px; color:#2563eb; }
+.pagination-info{ color:#2563eb; }
 
 /* Empty state */
 .empty{

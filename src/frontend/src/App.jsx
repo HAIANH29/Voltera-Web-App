@@ -18,7 +18,7 @@ import VerifyEmailPage from "./pages/VerifyEmailPage/VerifyEmailPage";
 import AboutUsPage from "./pages/AboutUsPage/AboutUsPage";
 import PostVehicleWizard from "./pages/post/vehicles/PostVehicleWizard";
 import VehicleDetail from "./pages/vehicleDetail/vehicleDetail";
-import DashboardAdmin from "./pages/dashboardAdmin/dashboardAdmin.jsx";
+import DashboardAdmin from "./pages/dashboardAdmin/dashboardAdmin";
 
 console.log("routes:", routes);
 console.log("postVehicles:", routes.postVehicles);
@@ -153,14 +153,14 @@ function App() {
         </MainLayout>
       ),
     },
-    // {
-    //   path: routes.support,
-    //   element: (
-    //     <MainLayout>
-    //       <DashboardAdmin/>
-    //     </MainLayout>
-    //   ),
-    // },
+    {
+      path: routes.dashboardAdmin,
+      element: (
+        <MainLayout>
+          <DashboardAdmin />
+        </MainLayout>
+      ),
+    },
 
     // optional 404
     { path: "*", element: <div style={{ padding: 20 }}>404 Not Found</div> },
