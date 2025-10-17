@@ -18,4 +18,5 @@ export const routes = {
   postElectric: "/post/electrics",
   vehicleDetail: "/vehicles/:postID",
   electricDetail: "/electrics/:postID",
+ 
 };
