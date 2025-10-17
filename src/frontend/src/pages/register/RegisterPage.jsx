@@ -36,15 +36,19 @@ export default function RegisterPage() {
       setServerError("");
       setSubmitting(true);
       try {
-        // payload khớp RegisterRequest (theo BE bạn gửi trước đó tối thiểu có email/password)
+        // payload khớp RegisterRequest backend: {username, password, role}
         const payload = {
-          email: values.email.trim(),
+          username: values.email.trim(), // Backend expect username field
           password: values.password,
-          // nếu RegisterRequest của bạn còn name/phone... thêm vào đây
+          role: "BUYER", // Default role cho user đăng ký
         };
+
+        console.log("Sending register request:", payload);
 
         // BE path: /api/v1/auth/register  (baseURL đã là /api/v1/, nên chỉ cần "auth/register")
         const res = await api.post("auth/register", payload);
+
+        console.log("Register response:", res.data);
 
         // hỗ trợ cả 2 kiểu response: { ... } hoặc { data: {...} }
         const body = res?.data?.data ?? res?.data ?? {};
@@ -69,11 +73,26 @@ export default function RegisterPage() {
         }
 
         // Trường hợp phổ biến: đăng ký xong -> đi login
-        navigate("/login", {
-          replace: true,
-          state: { email: values.email.trim(), justRegistered: true },
-        });
+        // Kiểm tra status của account
+        if (body.status === "PENDING") {
+          navigate("/login", {
+            replace: true,
+            state: {
+              email: values.email.trim(),
+              justRegistered: true,
+              message:
+                "Registration successful! Your account is pending approval. Please wait for admin approval before logging in.",
+            },
+          });
+        } else {
+          navigate("/login", {
+            replace: true,
+            state: { email: values.email.trim(), justRegistered: true },
+          });
+        }
       } catch (err) {
+        console.error("Register error:", err.response?.data || err.message);
+
         // Chuẩn hoá thông điệp lỗi
         const resp = err?.response;
         const status = resp?.status;
@@ -86,8 +105,9 @@ export default function RegisterPage() {
           "Registration failed. Please try again.";
 
         // Gợi ý case thường gặp
-        if (status === 409 || /exist/i.test(msg)) {
-          msg = "This email is already in use.";
+        if (status === 409 || /exist/i.test(msg) || /already/i.test(msg)) {
+          msg =
+            "This email is already registered. Please try with a different email.";
         } else if (status === 400 && /validation/i.test(msg)) {
           msg = "Invalid data. Please check your inputs.";
         }
