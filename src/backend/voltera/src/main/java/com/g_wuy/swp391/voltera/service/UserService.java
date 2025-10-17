@@ -1,5 +1,6 @@
 package com.g_wuy.swp391.voltera.service;
 
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -96,7 +97,7 @@ public class UserService {
         user.setId(accountId);
         user.setFirstname(profileRequest.getFirstname());
         user.setLastname(profileRequest.getLastname());
-        user.setFullName(profileRequest.getFirstname() + " " + profileRequest.getLastname());
+        user.setFullname(profileRequest.getFirstname() + " " + profileRequest.getLastname());
         user.setEmail(profileRequest.getEmail());
         user.setPhone(profileRequest.getPhone());
         user.setGender(profileRequest.getGender());
@@ -118,5 +119,18 @@ public class UserService {
 
         account.setRefreshToken(null);
         accountRepository.save(account);
+    }
+    @Transactional
+    public void updateAvatar(String username, String avatarUrl) {
+        Account account = accountRepository.findByUsername(username)
+                .orElseThrow(() -> new BusinessException("Account not found"));
+
+        User user = account.getUser();
+        if (user == null) {
+            throw new BusinessException("User info not found for this account");
+        }
+
+        user.setAvatar(avatarUrl);
+        userRepository.save(user);
     }
 }

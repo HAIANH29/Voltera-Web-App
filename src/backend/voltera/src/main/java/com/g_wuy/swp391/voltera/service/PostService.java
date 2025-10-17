@@ -74,7 +74,6 @@ public class PostService {
                 .build());
 
 
-
         if (dto.getVehicle() != null && dto.getBattery() != null) {
             throw new IllegalArgumentException("Choose either a vehicle or a battery, not both.");
         }
@@ -157,15 +156,15 @@ public class PostService {
                 }
                 allImages.addAll(dto.getBatteryImages());
             }
-        }
-        else {
+        } else {
             throw new IllegalArgumentException("Provide either vehicle or battery details.");
         }
+        PostResponse response = postMapper.toPostResponse(post, savedBattery, savedVehicle, allImages);
+        response.setLocation(seller.getAddress());
 
+        return response;
 
-        return postMapper.toPostResponse(post, savedBattery, savedVehicle, allImages);
     }
-
 
 
     public List<Post> getPostByStatus(String status) {
