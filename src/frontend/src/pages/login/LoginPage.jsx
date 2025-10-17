@@ -46,9 +46,14 @@ async function loginApiDual({ email, password }) {
     setAccessToken(accessToken);
     localStorage.setItem(
       "currentUser",
-      JSON.stringify({ userId: data.userId, role: data.role })
+      JSON.stringify({ 
+        userId: data.userId, 
+        role: data.role,
+        email: e,
+        username: e
+      })
     );
-    return { user: { userId: data.userId, role: data.role } };
+    return { user: { userId: data.userId, role: data.role, email: e, username: e } };
   }
 
   // MOCK
@@ -60,9 +65,15 @@ function loginMock({ email, password }) {
   setAccessToken("mock-access-token");
   localStorage.setItem(
     "currentUser",
-    JSON.stringify({ email, name: "Mock User" })
+    JSON.stringify({ 
+      email, 
+      username: email,
+      name: "Mock User",
+      userId: 1,
+      role: "USER"
+    })
   );
-  return { user: { email, name: "Mock User" } };
+  return { user: { email, username: email, name: "Mock User", userId: 1, role: "USER" } };
 }
 
 const emailSchema = Yup.object({

@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
+import api from "../../config/api";
 import "./headerAfter.css";
 
 /**
@@ -30,9 +31,15 @@ const HeaderAfter = ({ user: userProp }) => {
     if (userProp && (userProp.name || userProp.email)) return userProp;
     try {
       const raw = localStorage.getItem("currentUser");
-      return raw
-        ? JSON.parse(raw)
-        : { name: "User", email: "user@example.com" };
+      const stored = raw ? JSON.parse(raw) : null;
+      if (stored && (stored.email || stored.username)) {
+        return {
+          ...stored,
+          name: stored.name || stored.username || stored.email || "User",
+          email: stored.email || stored.username || "user@example.com"
+        };
+      }
+      return { name: "User", email: "user@example.com" };
     } catch {
       return { name: "User", email: "user@example.com" };
     }
@@ -79,21 +86,68 @@ const HeaderAfter = ({ user: userProp }) => {
   }, [showUserMenu, showPostMenu]);
 
   // ----- handlers -----
-  const handleLogout = () => {
+  const handleLogout = async () => {
     try {
-      // Xoá token & user (nhớ path: "/" cho chắc chắn)
+      // 1. Get username từ multiple sources
+      let username = currentUser?.username || currentUser?.email || currentUser?.name;
+      
+      // 2. Nếu không có username trong currentUser, thử decode JWT token
+      if (!username || username === "user@example.com") {
+        try {
+          const accessToken = Cookies.get("accessToken");
+          if (accessToken) {
+            // Decode JWT payload (base64 decode middle part)
+            const payload = JSON.parse(atob(accessToken.split('.')[1]));
+            username = payload.sub || payload.username || payload.email;
+            console.log("Username from JWT token:", username);
+          }
+        } catch (tokenError) {
+          console.error("Failed to decode JWT token:", tokenError);
+        }
+      }
+      
+      console.log("Current user object:", currentUser);
+      console.log("Final username for logout:", username);
+      
+      // 3. Call backend logout API nếu có username hợp lệ
+      if (username && username !== "user@example.com" && username !== "User") {
+        try {
+          await api.post("/auth/logout", null, {
+            params: { username }
+          });
+          console.log("Backend logout successful");
+        } catch (apiError) {
+          console.error("Backend logout failed:", apiError.response?.data || apiError.message);
+          // Continue with client cleanup even if API fails
+        }
+      } else {
+        console.log("No valid username found, skipping backend logout API");
+      }
+      
+      // 4. Clear client-side data
       Cookies.remove("accessToken", { path: "/" });
       Cookies.remove("refreshToken", { path: "/" });
       localStorage.removeItem("currentUser");
 
-      // Đóng menu & điều hướng
+      // 5. Đóng menu & điều hướng
       setShowUserMenu(false);
       navigate("/");
 
+      console.log("Logout completed successfully");
+      
       // Tuỳ chọn: phát event để các nơi khác có thể lắng nghe
       // window.dispatchEvent(new Event("auth:logout"));
     } catch (err) {
       console.error("Logout error:", err);
+      
+      // Vẫn clear client-side data ngay cả khi có lỗi
+      Cookies.remove("accessToken", { path: "/" });
+      Cookies.remove("refreshToken", { path: "/" });
+      localStorage.removeItem("currentUser");
+      setShowUserMenu(false);
+      navigate("/");
+      
+      console.log("Logout completed with error, but client cleanup done");
     }
   };
 

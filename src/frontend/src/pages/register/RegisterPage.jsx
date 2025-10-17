@@ -63,9 +63,24 @@ export default function RegisterPage() {
             Cookies.set("refreshToken", refreshToken, { expires: 7 });
           // Nếu có trả kèm user, bạn có thể lưu:
           if (body.user || body.profile) {
+            const userInfo = body.user || body.profile;
             localStorage.setItem(
               "currentUser",
-              JSON.stringify(body.user || body.profile)
+              JSON.stringify({
+                ...userInfo,
+                email: values.email.trim(),
+                username: values.email.trim()
+              })
+            );
+          } else {
+            // Fallback: lưu thông tin cơ bản từ form
+            localStorage.setItem(
+              "currentUser",
+              JSON.stringify({
+                email: values.email.trim(),
+                username: values.email.trim(),
+                role: "BUYER"
+              })
             );
           }
           navigate("/", { replace: true });
