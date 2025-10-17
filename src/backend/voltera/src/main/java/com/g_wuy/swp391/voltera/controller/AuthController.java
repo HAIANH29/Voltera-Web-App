@@ -13,6 +13,7 @@ import com.g_wuy.swp391.voltera.service.AccountService;
 
 @RestController
 @RequestMapping("/api/v1/auth")
+@CrossOrigin(origins = "http://localhost:5173") // FE port (Vite)
 public class AuthController {
 
     @Autowired
