@@ -55,4 +55,7 @@ public class User {
     @Column(name = "avatar", length = Integer.MAX_VALUE)
     private String avatar;
 
+    @Column(name = "emailverified")
+    private Boolean emailVerified;
+
 }

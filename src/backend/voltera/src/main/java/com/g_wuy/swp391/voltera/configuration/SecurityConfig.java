@@ -1,5 +1,6 @@
 package com.g_wuy.swp391.voltera.configuration;
 
+import com.g_wuy.swp391.voltera.component.JwtAuthentificationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;

@@ -1,5 +1,6 @@
 package com.g_wuy.swp391.voltera.repository;
 
+import com.g_wuy.swp391.voltera.entity.User;
 import jakarta.transaction.Transactional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,7 +16,7 @@ import java.util.Optional;
 @Repository
 public interface AccountRepository extends JpaRepository<Account, Integer> {
     Optional<Account> findByUsername(String username);
-
+    Optional<Account> findByUser(User user);
     Account findAccountById(Integer id);
 
     @Query("SELECT COUNT(a) > 0 FROM Account a WHERE a.username = :username")

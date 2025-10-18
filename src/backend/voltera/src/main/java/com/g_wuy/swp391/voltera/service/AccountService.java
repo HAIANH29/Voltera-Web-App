@@ -27,6 +27,8 @@ public class AccountService {
 
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private OtpService  otpService;
 
     @Autowired
     private SecurityConfig securityConfiguration;
@@ -49,8 +51,10 @@ public class AccountService {
             }
         }
 
+        String email = username.matches(emailRegex) ? username : null;
         User userRegis = new User();
-        userRegis.setEmail(username.matches(emailRegex) ? username : null);
+        userRegis.setEmail(email);
+        userRegis.setEmailVerified(false);
         User userSaved = userRepository.save(userRegis);
 
         Account account = accountMapper.toAccount(registerRequest);
@@ -60,6 +64,9 @@ public class AccountService {
         account.setPassword(securityConfiguration.passwordEncoder().encode(registerRequest.getPassword()));
 
         accountRepository.save(account);
+        if (userSaved.getEmail() != null) {
+            otpService.generateOtp(userSaved.getEmail());
+        }
 
         return accountMapper.toRegisterResponse(account);
     }

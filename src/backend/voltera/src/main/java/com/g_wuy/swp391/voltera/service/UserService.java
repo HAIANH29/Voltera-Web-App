@@ -2,6 +2,7 @@ package com.g_wuy.swp391.voltera.service;
 
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import com.g_wuy.swp391.voltera.entity.Account;
@@ -18,7 +19,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
+import java.time.Duration;
 import java.util.Optional;
+import java.util.Random;
 
 @Service
 @RequiredArgsConstructor
@@ -29,10 +32,16 @@ public class UserService {
 
     @Autowired
     private final AccountRepository accountRepository;
-
+    @Autowired
     private final AccountMapper accountMapper;
+    @Autowired
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    @Autowired
+    private OtpService otpService;
+
+
+
 
     public LoginResponse login(LoginRequest request) {
         authenticationManager.authenticate(
@@ -133,4 +142,44 @@ public class UserService {
         user.setAvatar(avatarUrl);
         userRepository.save(user);
     }
+    public void verifyRegisterOtp(String email, String otp) {
+        User user = userRepository.findUserByEmail(email)
+                .orElseThrow(() -> new BusinessException("User not found"));
+
+        if (!otpService.verifyOtp(email, otp)) {
+            throw new BusinessException("OTP invalid or expired");
+        }
+
+        user.setEmailVerified(true);
+        userRepository.save(user);
+    }
+
+    public LoginResponse loginWithGoogle(String email){
+        User user = userRepository.findUserByEmail(email)
+                .orElseThrow(() -> new BusinessException("Email not found"));
+
+        Account account = accountRepository.findByUser(user)
+                .orElseThrow(() -> new BusinessException("Account not found"));
+
+        if(!"APPROVED".equals(account.getStatus())){
+            throw new BusinessException("Account not approved yet");
+        }
+
+        if(!Boolean.TRUE.equals(user.getEmailVerified())){
+            throw new BusinessException("Email not verified");
+        }
+
+        String token = jwtService.generateToken(account);
+        String refreshToken = jwtService.generateRefreshToken(account);
+
+        account.setRefreshToken(refreshToken);
+        accountRepository.save(account);
+
+        return LoginResponse.builder()
+                .userId(account.getId())
+                .role(account.getRole())
+                .token(token)
+                .build();
+    }
+
 }

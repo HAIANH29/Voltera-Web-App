@@ -1,4 +1,4 @@
-package com.g_wuy.swp391.voltera.configuration;
+package com.g_wuy.swp391.voltera.component;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
