@@ -390,17 +390,18 @@ td {
     table {
         font-size: 12px;
     }
-    
-    th, td {
+
+    th,
+    td {
         padding: 12px 8px;
     }
-    
+
     .action-buttons {
         flex-direction: row;
         gap: 6px;
         flex-wrap: wrap;
     }
-    
+
     .approve-btn,
     .reject-btn {
         font-size: 11px;

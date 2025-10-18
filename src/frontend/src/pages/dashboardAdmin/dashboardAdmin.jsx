@@ -291,18 +291,22 @@ export default function DashboardAdmin() {
               <tbody>
                 {pendingAccounts.map((account, index) => (
                   <tr key={account.id}>
-                    <td>A{String(index + 1).padStart(3, '0')}</td>
+                    <td>A{String(index + 1).padStart(3, "0")}</td>
                     <td>{account.username}</td>
                     <td>{account.email}</td>
                     <td>
                       <span
-                        className={`role-badge ${account.role?.toLowerCase() || 'unknown'}`}
+                        className={`role-badge ${
+                          account.role?.toLowerCase() || "unknown"
+                        }`}
                       >
-                        {account.role || 'N/A'}
+                        {account.role || "N/A"}
                       </span>
                     </td>
                     <td>
-                      <span className="status-badge pending">{account.status}</span>
+                      <span className="status-badge pending">
+                        {account.status}
+                      </span>
                     </td>
                     <td>
                       <div className="approval-actions">
