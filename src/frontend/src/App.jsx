@@ -17,6 +17,7 @@ import AdminLayout from "./layout/adminLayout";
 import ResetPasswordPage from "./pages/resetPasswordPage/ResetPasswordPage";
 import VerifyEmailPage from "./pages/VerifyEmailPage/VerifyEmailPage";
 import AboutUsPage from "./pages/AboutUsPage/AboutUsPage";
+import ProfilePage from "./pages/profile/ProfilePage";
 import PostVehicleWizard from "./pages/post/vehicles/PostVehicleWizard";
 import VehicleDetail from "./pages/vehicleDetail/vehicleDetail";
 import ElectricDetail from "./pages/electricDetail/electricDetail";
@@ -141,6 +142,14 @@ function App() {
       element: (
         <MainLayout>
           <AboutUsPage />
+        </MainLayout>
+      ),
+    },
+    {
+      path: routes.profile,
+      element: (
+        <MainLayout>
+          <ProfilePage />
         </MainLayout>
       ),
     },

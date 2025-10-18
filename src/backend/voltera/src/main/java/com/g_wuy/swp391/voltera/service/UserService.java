@@ -92,7 +92,10 @@ public class UserService {
         if (account.isEmpty()) {
             throw new BusinessException("Account not found with id: " + accountId);
         }
-        if (userRepository.isEmailExist(profileRequest.getEmail())) {
+        
+        // Check if email exists for other users (not current user)
+        User existingUserWithEmail = userRepository.findUserByEmail(profileRequest.getEmail()).orElse(null);
+        if (existingUserWithEmail != null && !existingUserWithEmail.getId().equals(accountId)) {
             throw new BusinessException("Email " + profileRequest.getEmail() + " is exist");
         }
 
@@ -113,6 +116,17 @@ public class UserService {
         user.setAddress(profileRequest.getAddress());
 
         return userRepository.save(user);
+    }
+
+    public User getUserProfile(String username) {
+        if (username == null || username.isEmpty()) {
+            throw new BusinessException("Username not found");
+        }
+        User user = userRepository.findUserByUsername(username);
+        if (user == null) {
+            throw new BusinessException("User profile not found for username: " + username);
+        }
+        return user;
     }
 
     public User findUserByUsername(String username) {

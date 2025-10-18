@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.g_wuy.swp391.voltera.entity.Account;
 import com.g_wuy.swp391.voltera.entity.User;
+import com.g_wuy.swp391.voltera.exception.BusinessException;
 import com.g_wuy.swp391.voltera.mapper.AccountMapper;
 import com.g_wuy.swp391.voltera.mapper.UserMapper;
 import com.g_wuy.swp391.voltera.model.request.ProfileRequest;
@@ -45,12 +46,26 @@ public class UserController {
         return ResponseEntity.ok(accountMapper.toAccountResponse(accountApprove));
     }
 
-    @PutMapping("/api/users/{id}")
+    @GetMapping("/api/v1/users/me/profile")
+    public ResponseEntity<ProfileResponse> getUserProfile(Authentication authentication) {
+        String username = authentication.getName();
+        User user = userService.getUserProfile(username);
+        return ResponseEntity.ok(userMapper.toProfileResponse(user));
+    }
+
+    @PutMapping("/api/v1/users/me/profile")
     public ResponseEntity<ProfileResponse> saveProfile(
-            @PathVariable("id") Integer userId,
+            Authentication authentication,
             @RequestBody ProfileRequest request) {
 
-        User userProfile = userService.saveProfile(userId, request);
+        String username = authentication.getName();
+        // Get current user's ID from authentication
+        User currentUser = userService.findUserByUsername(username);
+        if (currentUser == null) {
+            throw new BusinessException("User not found");
+        }
+        
+        User userProfile = userService.saveProfile(currentUser.getId(), request);
         return ResponseEntity.ok(userMapper.toProfileResponse(userProfile));
     }
 

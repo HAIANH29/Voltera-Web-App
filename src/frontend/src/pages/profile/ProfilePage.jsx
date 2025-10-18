@@ -1,0 +1,177 @@
+import React, { useEffect, useState } from "react";
+import api from "../../config/api";
+import "./ProfilePage.css";
+
+export default function ProfilePage() {
+  const [profile, setProfile] = useState(null);
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({
+    fullName: "",
+    email: "",
+    phone: "",
+    gender: "",
+    address: "",
+  });
+
+  useEffect(() => {
+    loadProfile();
+  }, []);
+
+  async function loadProfile() {
+    try {
+      const res = await api.get("/users/me/profile");
+      setProfile(res.data);
+      setForm({
+        fullName: res.data.fullname || "", // backend returns 'fullname'
+        email: res.data.email || "",
+        phone: res.data.phone || "",
+        gender:
+          res.data.gender === true
+            ? "male"
+            : res.data.gender === false
+            ? "female"
+            : "",
+        address: res.data.address || "",
+      });
+    } catch (err) {
+      console.error("Load profile error", err);
+    }
+  }
+
+  function onChange(e) {
+    const { name, value } = e.target;
+    setForm((s) => ({ ...s, [name]: value }));
+  }
+
+  async function onSave() {
+    setSaving(true);
+    try {
+      // Convert frontend form to backend format
+      const [firstname, ...lastnameParts] = form.fullName.trim().split(" ");
+      const lastname = lastnameParts.join(" ") || "";
+
+      const profileData = {
+        firstname: firstname || "",
+        lastname: lastname,
+        email: form.email,
+        phone: form.phone,
+        gender:
+          form.gender === "male"
+            ? true
+            : form.gender === "female"
+            ? false
+            : null,
+        address: form.address,
+      };
+
+      const res = await api.put("/users/me/profile", profileData);
+      setProfile(res.data);
+      setEditing(false);
+    } catch (err) {
+      console.error("Save profile error", err);
+      alert("Save failed");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (!profile) return <div className="profile-root">Loading profile...</div>;
+
+  return (
+    <div className="profile-root">
+      <div className="profile-card">
+        <h2>Your Profile</h2>
+
+        {!editing ? (
+          <div className="profile-view">
+            <p>
+              <strong>Full Name:</strong> {profile.fullname}
+            </p>
+            <p>
+              <strong>Email:</strong> {profile.email}
+            </p>
+            <p>
+              <strong>Phone Number:</strong> {profile.phone}
+            </p>
+            <p>
+              <strong>Gender:</strong>{" "}
+              {profile.gender
+                ? "Male"
+                : profile.gender === false
+                ? "Female"
+                : "Not specified"}
+            </p>
+            <p>
+              <strong>Address:</strong> {profile.address}
+            </p>
+            <div className="profile-actions">
+              <button onClick={() => setEditing(true)} className="btn">
+                Edit
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="profile-edit">
+            <label>
+              Full Name
+              <input
+                name="fullName"
+                value={form.fullName || ""}
+                onChange={onChange}
+              />
+            </label>
+            <label>
+              Email
+              <input
+                name="email"
+                type="email"
+                value={form.email || ""}
+                onChange={onChange}
+              />
+            </label>
+            <label>
+              Phone Number
+              <input
+                name="phone"
+                value={form.phone || ""}
+                onChange={onChange}
+              />
+            </label>
+            <label>
+              Gender
+              <select
+                name="gender"
+                value={form.gender || ""}
+                onChange={onChange}
+              >
+                <option value="">Select</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+              </select>
+            </label>
+            <label>
+              Address
+              <textarea
+                name="address"
+                value={form.address || ""}
+                onChange={onChange}
+              />
+            </label>
+            <div className="profile-actions">
+              <button onClick={onSave} className="btn" disabled={saving}>
+                {saving ? "Saving..." : "Save"}
+              </button>
+              <button
+                onClick={() => setEditing(false)}
+                className="btn btn-secondary"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

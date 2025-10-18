@@ -15,6 +15,7 @@ export const routes = {
   favorites: "/favorites",
   aboutUs: "/about",
   support: "/support",
+  profile: "/profile",
   postVehicles: "/post/vehicles",
   postElectric: "/post/electrics",
   vehicleDetail: "/vehicles/:postID",
