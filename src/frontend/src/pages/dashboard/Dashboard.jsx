@@ -3,9 +3,9 @@ import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 
 // Import các dashboard components
-import DashboardAdmin from "./dashboardAdmin/dashboardAdmin";
-import DashboardBuyer from "./dashboardBuyer/dashboardBuyer";
-import DashboardSeller from "./dashboardSeller/dashboardSeller";
+import DashboardAdmin from "../dashboardAdmin/dashboardAdmin";
+import DashboardBuyer from "../dashboardBuyer/dashboardBuyer";
+import DashboardSeller from "../dashboardSeller/dashboardSeller";
 
 /**
  * Dashboard Router - Điều hướng đến đúng dashboard dựa trên role
