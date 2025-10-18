@@ -3,6 +3,7 @@ package com.g_wuy.swp391.voltera.service;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.g_wuy.swp391.voltera.entity.Account;
@@ -36,11 +37,12 @@ public class UserService {
     private final AccountMapper accountMapper;
     @Autowired
     private final JwtService jwtService;
-    private final AuthenticationManager authenticationManager;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
     @Autowired
     private OtpService otpService;
 
-
+    private final AuthenticationManager authenticationManager;
 
 
     public LoginResponse login(LoginRequest request) {
@@ -196,4 +198,20 @@ public class UserService {
                 .build();
     }
 
+    public void checkEmailExists(String email) {
+        if(!userRepository.existsByEmail(email)) {
+            throw new BusinessException("Email not found");
+        }
+    }
+
+    public void updatePassword(String email, String newPassword) {
+        User user = userRepository.findUserByEmail(email)
+                .orElseThrow(() -> new BusinessException("User not found"));
+
+        Account account = accountRepository.findByUser(user)
+                .orElseThrow(() -> new BusinessException("Account not found"));
+
+        account.setPassword(passwordEncoder.encode(newPassword));
+        accountRepository.save(account);
+    }
 }

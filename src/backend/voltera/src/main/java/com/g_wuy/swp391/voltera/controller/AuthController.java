@@ -61,10 +61,4 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/verify-otp")
-    public ResponseEntity<String> verifyOtp(@RequestBody OtpRequest request) {
-        userService.verifyRegisterOtp(request.getEmail(), request.getOtp());
-        return ResponseEntity.ok("Email verified successfully");
-    }
-
 }

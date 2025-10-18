@@ -9,7 +9,7 @@ import com.g_wuy.swp391.voltera.entity.Vehicle;
 
 @Repository
 public interface VehicleRepository extends JpaRepository<Vehicle, Integer> {
-
+   
     @Query("SELECT COUNT(v) > 0 FROM Vehicle v WHERE v.licensePlate = :licensePlate")
     boolean isLicensePlateExist(@Param("licensePlate") String licensePlate);
 }

@@ -46,11 +46,11 @@ public class User {
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "createat")
-    private Instant createat;
+    private Instant createAt;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "updateat")
-    private Instant updateat;
+    private Instant updateAt;
 
     @Column(name = "avatar", length = Integer.MAX_VALUE)
     private String avatar;
