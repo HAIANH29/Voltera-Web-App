@@ -71,6 +71,16 @@ export default function DashboardAdmin() {
       // Gọi API backend để lấy danh sách pending accounts
       const res = await api.get("/admin/accounts/pending");
       console.log("Pending accounts loaded:", res.data);
+      console.log("Total accounts:", res.data.length);
+      res.data.forEach((account, index) => {
+        console.log(`Account ${index}:`, {
+          accountId: account.accountId,
+          id: account.id,
+          username: account.username,
+          email: account.email,
+          allFields: Object.keys(account),
+        });
+      });
       setPendingAccounts(res.data);
     } catch (error) {
       console.error("Error loading pending accounts:", error);
@@ -97,7 +107,9 @@ export default function DashboardAdmin() {
       alert(`Account ${email} has been approved successfully!`);
 
       // Remove approved account from list
-      setPendingAccounts((prev) => prev.filter((acc) => acc.id !== accountId));
+      setPendingAccounts((prev) =>
+        prev.filter((acc) => acc.accountId !== accountId)
+      );
     } catch (error) {
       console.error("Failed to approve account:", error);
       const errorMsg =
@@ -123,7 +135,9 @@ export default function DashboardAdmin() {
       alert(`Account ${email} has been rejected.`);
 
       // Remove rejected account from list
-      setPendingAccounts((prev) => prev.filter((acc) => acc.id !== accountId));
+      setPendingAccounts((prev) =>
+        prev.filter((acc) => acc.accountId !== accountId)
+      );
     } catch (error) {
       console.error("Failed to reject account:", error);
       const errorMsg =
@@ -290,7 +304,7 @@ export default function DashboardAdmin() {
               </thead>
               <tbody>
                 {pendingAccounts.map((account, index) => (
-                  <tr key={account.id}>
+                  <tr key={account.accountId}>
                     <td>A{String(index + 1).padStart(3, "0")}</td>
                     <td>{account.username}</td>
                     <td>{account.email}</td>
@@ -313,7 +327,10 @@ export default function DashboardAdmin() {
                         <button
                           className="approve-btn"
                           onClick={() =>
-                            handleApproveAccount(account.id, account.email)
+                            handleApproveAccount(
+                              account.accountId,
+                              account.email
+                            )
                           }
                           title="Approve Account"
                         >
@@ -322,7 +339,10 @@ export default function DashboardAdmin() {
                         <button
                           className="reject-btn"
                           onClick={() =>
-                            handleRejectAccount(account.id, account.email)
+                            handleRejectAccount(
+                              account.accountId,
+                              account.email
+                            )
                           }
                           title="Reject Account"
                         >

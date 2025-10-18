@@ -16,5 +16,10 @@ public interface AccountMapper {
     LoginResponse toLoginResponse(Account account);
     Account toAccount(RegisterRequest request);
     RegisterResponse toRegisterResponse(Account account);
+    
+    @Mapping(source = "id", target = "accountId")
+    @Mapping(source = "id", target = "userId")
+    @Mapping(target = "approvedAt", ignore = true)
+    @Mapping(target = "fullname", ignore = true)
     ApproveResponse toAccountResponse(Account account);
 }
