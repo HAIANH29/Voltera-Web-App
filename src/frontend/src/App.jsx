@@ -10,9 +10,10 @@ import RegisterPage from "./pages/register/RegisterPage";
 import AuthLayout from "./layout/authenLayout.jsx";
 import SupportPage from "./pages/SupportPage/SupportPage.jsx";
 import { Toaster } from "react-hot-toast";
-import PostElectricWizard from "./pages/post/electrics/PostElectricWizard"; 
+import PostElectricWizard from "./pages/post/electrics/PostElectricWizard";
 import ForgotPasswordPage from "./pages/forgotpasswordPage/ForgotPasswordPage";
 import MainLayout from "./layout/mainLayout";
+import AdminLayout from "./layout/adminLayout";
 import ResetPasswordPage from "./pages/resetPasswordPage/ResetPasswordPage";
 import VerifyEmailPage from "./pages/VerifyEmailPage/VerifyEmailPage";
 import AboutUsPage from "./pages/AboutUsPage/AboutUsPage";
@@ -20,6 +21,7 @@ import PostVehicleWizard from "./pages/post/vehicles/PostVehicleWizard";
 import VehicleDetail from "./pages/vehicleDetail/vehicleDetail";
 import ElectricDetail from "./pages/electricDetail/electricDetail";
 import DashboardAdmin from "./pages/dashboardAdmin/dashboardAdmin";
+import Dashboard from "./pages/Dashboard";
 
 console.log("routes:", routes);
 console.log("postVehicles:", routes.postVehicles);
@@ -61,7 +63,7 @@ function App() {
         </MainLayout>
       ),
     },
-     
+
     {
       path: routes.postVehicles, // ✅ route chính
       element: (
@@ -71,28 +73,28 @@ function App() {
       ),
     },
     {
-    path: routes.postElectric,
-    element: (
-      <MainLayout>
-        <PostElectricWizard />
-      </MainLayout>
-    ),
+      path: routes.postElectric,
+      element: (
+        <MainLayout>
+          <PostElectricWizard />
+        </MainLayout>
+      ),
     },
     {
-    path: routes.vehicleDetail,
-    element: (
-      <MainLayout>
-        <VehicleDetail />
-      </MainLayout>
-    ),
+      path: routes.vehicleDetail,
+      element: (
+        <MainLayout>
+          <VehicleDetail />
+        </MainLayout>
+      ),
     },
     {
-    path: routes.electricDetail,
-    element: (
-      <MainLayout>
-        <ElectricDetail />
-      </MainLayout>
-    ),
+      path: routes.electricDetail,
+      element: (
+        <MainLayout>
+          <ElectricDetail />
+        </MainLayout>
+      ),
     },
     {
       path: routes.verifyEmail,
@@ -164,11 +166,98 @@ function App() {
       ),
     },
     {
-      path: routes.dashboardAdmin,
+      path: routes.dashboard,
       element: (
         <MainLayout>
-          <DashboardAdmin />
+          <Dashboard />
         </MainLayout>
+      ),
+    },
+    {
+      path: routes.dashboardAdmin,
+      element: (
+        <AdminLayout>
+          <DashboardAdmin />
+        </AdminLayout>
+      ),
+    },
+
+    // Admin routes with AdminLayout
+    {
+      path: routes.adminUsers,
+      element: (
+        <AdminLayout>
+          <div style={{ padding: 20 }}>
+            <h1>Users Management</h1>
+            <p>Admin users management page will be implemented here.</p>
+          </div>
+        </AdminLayout>
+      ),
+    },
+    {
+      path: routes.adminPosts,
+      element: (
+        <AdminLayout>
+          <div style={{ padding: 20 }}>
+            <h1>Posts Management</h1>
+            <p>Admin posts management page will be implemented here.</p>
+          </div>
+        </AdminLayout>
+      ),
+    },
+    {
+      path: routes.adminOrders,
+      element: (
+        <AdminLayout>
+          <div style={{ padding: 20 }}>
+            <h1>Orders Management</h1>
+            <p>Admin orders management page will be implemented here.</p>
+          </div>
+        </AdminLayout>
+      ),
+    },
+    {
+      path: routes.adminAnalytics,
+      element: (
+        <AdminLayout>
+          <div style={{ padding: 20 }}>
+            <h1>Analytics</h1>
+            <p>Admin analytics page will be implemented here.</p>
+          </div>
+        </AdminLayout>
+      ),
+    },
+    {
+      path: routes.adminSettings,
+      element: (
+        <AdminLayout>
+          <div style={{ padding: 20 }}>
+            <h1>Settings</h1>
+            <p>Admin settings page will be implemented here.</p>
+          </div>
+        </AdminLayout>
+      ),
+    },
+    {
+      path: routes.adminProfile,
+      element: (
+        <AdminLayout>
+          <div style={{ padding: 20 }}>
+            <h1>Admin Profile</h1>
+            <p>Admin profile page will be implemented here.</p>
+          </div>
+        </AdminLayout>
+      ),
+    },
+    {
+      path: routes.adminAccount,
+      element: (
+        <AdminLayout>
+          <div style={{ padding: 20 }}>
+            <h1>Account Settings</h1>
+            <p>Admin account settings page will be implemented here.</p>
+          </div>
+        </AdminLayout>
       ),
     },
 

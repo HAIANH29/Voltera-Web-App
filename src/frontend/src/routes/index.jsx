@@ -3,6 +3,7 @@ export const routes = {
   home: "/",
   login: "/login",
   register: "/register",
+  dashboard: "/dashboard", // Route chung cho dashboard - sẽ điều hướng theo role
   dashboardBuyer: "/dashboard-buyer",
   dashboardSeller: "/dashboard-seller",
   dashboardAdmin: "/dashboard-admin",
@@ -18,5 +19,13 @@ export const routes = {
   postElectric: "/post/electrics",
   vehicleDetail: "/vehicles/:postID",
   electricDetail: "/electrics/:postID",
- 
+
+  // Admin routes
+  adminUsers: "/admin/users",
+  adminPosts: "/admin/posts",
+  adminOrders: "/admin/orders",
+  adminAnalytics: "/admin/analytics",
+  adminSettings: "/admin/settings",
+  adminProfile: "/admin/profile",
+  adminAccount: "/admin/account",
 };
