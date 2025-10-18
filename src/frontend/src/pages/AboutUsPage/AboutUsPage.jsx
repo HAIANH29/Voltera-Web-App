@@ -64,7 +64,7 @@ export default function AboutUsPage({ className = "" }) {
 
           <div className="vt-split-col vt-card-stack">
             <article className="vt-card">
-              <h3 className="vt-card-title">For Buyers</h3>
+              <h3 className="vt-card-title">🛒 For Buyers</h3>
               <p>
                 Search by range, chemistry, state of health, and provenance.
               </p>
@@ -76,7 +76,7 @@ export default function AboutUsPage({ className = "" }) {
             </article>
 
             <article className="vt-card">
-              <h3 className="vt-card-title">For Sellers</h3>
+              <h3 className="vt-card-title">💰 For Sellers</h3>
               <p>
                 List EVs or battery assets in minutes—reach a global audience.
               </p>
@@ -106,19 +106,19 @@ export default function AboutUsPage({ className = "" }) {
 
           <div className="vt-grid3">
             <div className="vt-tile">
-              <h4>Traceability</h4>
+              <h4>🔗 Traceability</h4>
               <p>
                 Chain-of-custody from OEM to second-life with audit-ready logs.
               </p>
             </div>
             <div className="vt-tile">
-              <h4>Health Scoring</h4>
+              <h4>📊 Health Scoring</h4>
               <p>
                 Unified score from telemetry, test benches, and warranty claims.
               </p>
             </div>
             <div className="vt-tile">
-              <h4>Circularity</h4>
+              <h4>♻️ Circularity</h4>
               <p>
                 Second-life & recycling partners built into the transaction
                 flow.
@@ -151,10 +151,10 @@ export default function AboutUsPage({ className = "" }) {
               <h3>Ready to trade?</h3>
               <p>Create a verified business account and start listing today.</p>
               <div className="vt-actions">
-                <a href="#" className="vt-btn primary">
+                <a href="/register" className="vt-btn primary">
                   Get Started
                 </a>
-                <a href="#" className="vt-btn">
+                <a href="/support" className="vt-btn">
                   Talk to Sales
                 </a>
               </div>
@@ -168,21 +168,21 @@ export default function AboutUsPage({ className = "" }) {
         <div className="vt-wrap">
           <ul className="vt-values-list">
             <li>
-              <span className="vt-cap">Clarity</span>
+              <span className="vt-cap">💎 Clarity</span>
               <p>
                 No fine print. Straightforward pricing and real battery data.
               </p>
             </li>
             <li>
-              <span className="vt-cap">Speed</span>
+              <span className="vt-cap">⚡ Speed</span>
               <p>From listing to payout, we automate the boring parts.</p>
             </li>
             <li>
-              <span className="vt-cap">Sustainability</span>
+              <span className="vt-cap">🌱 Sustainability</span>
               <p>Built around reuse, repair, and responsible recycling.</p>
             </li>
             <li>
-              <span className="vt-cap">Security</span>
+              <span className="vt-cap">🔒 Security</span>
               <p>Bank-grade encryption, role-based access, immutable logs.</p>
             </li>
           </ul>

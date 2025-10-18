@@ -69,7 +69,7 @@ export default function RegisterPage() {
               JSON.stringify({
                 ...userInfo,
                 email: values.email.trim(),
-                username: values.email.trim()
+                username: values.email.trim(),
               })
             );
           } else {
@@ -79,7 +79,7 @@ export default function RegisterPage() {
               JSON.stringify({
                 email: values.email.trim(),
                 username: values.email.trim(),
-                role: "BUYER"
+                role: "BUYER",
               })
             );
           }

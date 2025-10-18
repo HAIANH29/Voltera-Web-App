@@ -36,7 +36,7 @@ const HeaderAfter = ({ user: userProp }) => {
         return {
           ...stored,
           name: stored.name || stored.username || stored.email || "User",
-          email: stored.email || stored.username || "user@example.com"
+          email: stored.email || stored.username || "user@example.com",
         };
       }
       return { name: "User", email: "user@example.com" };
@@ -89,15 +89,16 @@ const HeaderAfter = ({ user: userProp }) => {
   const handleLogout = async () => {
     try {
       // 1. Get username từ multiple sources
-      let username = currentUser?.username || currentUser?.email || currentUser?.name;
-      
+      let username =
+        currentUser?.username || currentUser?.email || currentUser?.name;
+
       // 2. Nếu không có username trong currentUser, thử decode JWT token
       if (!username || username === "user@example.com") {
         try {
           const accessToken = Cookies.get("accessToken");
           if (accessToken) {
             // Decode JWT payload (base64 decode middle part)
-            const payload = JSON.parse(atob(accessToken.split('.')[1]));
+            const payload = JSON.parse(atob(accessToken.split(".")[1]));
             username = payload.sub || payload.username || payload.email;
             console.log("Username from JWT token:", username);
           }
@@ -105,25 +106,28 @@ const HeaderAfter = ({ user: userProp }) => {
           console.error("Failed to decode JWT token:", tokenError);
         }
       }
-      
+
       console.log("Current user object:", currentUser);
       console.log("Final username for logout:", username);
-      
+
       // 3. Call backend logout API nếu có username hợp lệ
       if (username && username !== "user@example.com" && username !== "User") {
         try {
           await api.post("/auth/logout", null, {
-            params: { username }
+            params: { username },
           });
           console.log("Backend logout successful");
         } catch (apiError) {
-          console.error("Backend logout failed:", apiError.response?.data || apiError.message);
+          console.error(
+            "Backend logout failed:",
+            apiError.response?.data || apiError.message
+          );
           // Continue with client cleanup even if API fails
         }
       } else {
         console.log("No valid username found, skipping backend logout API");
       }
-      
+
       // 4. Clear client-side data
       Cookies.remove("accessToken", { path: "/" });
       Cookies.remove("refreshToken", { path: "/" });
@@ -134,19 +138,19 @@ const HeaderAfter = ({ user: userProp }) => {
       navigate("/");
 
       console.log("Logout completed successfully");
-      
+
       // Tuỳ chọn: phát event để các nơi khác có thể lắng nghe
       // window.dispatchEvent(new Event("auth:logout"));
     } catch (err) {
       console.error("Logout error:", err);
-      
+
       // Vẫn clear client-side data ngay cả khi có lỗi
       Cookies.remove("accessToken", { path: "/" });
       Cookies.remove("refreshToken", { path: "/" });
       localStorage.removeItem("currentUser");
       setShowUserMenu(false);
       navigate("/");
-      
+
       console.log("Logout completed with error, but client cleanup done");
     }
   };
@@ -313,7 +317,7 @@ const HeaderAfter = ({ user: userProp }) => {
                         />
                       </svg>
                       Post Electric
-                    </Link >
+                    </Link>
                   </li>
                 </ul>
               </div>
