@@ -3,7 +3,6 @@ package com.g_wuy.swp391.voltera.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 
@@ -11,7 +10,6 @@ import java.time.Instant;
 
 @Getter
 @Setter
-@NoArgsConstructor
 @Entity
 @Table(name = "\"user\"")
 public class User {
@@ -30,7 +28,7 @@ public class User {
 
     @Size(max = 200)
     @Column(name = "fullname", length = 200)
-    private String fullName;
+    private String fullname;
 
     @Size(max = 150)
     @Column(name = "email", length = 150)
@@ -48,20 +46,13 @@ public class User {
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "createat")
-    private Instant createAt;
+    private Instant createat;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "updateat")
-    private Instant updateAt;
+    private Instant updateat;
 
-    @PrePersist
-    protected void onCreate() {
-        createAt = Instant.now();
-        updateAt = Instant.now();
-    }
+    @Column(name = "avatar", length = Integer.MAX_VALUE)
+    private String avatar;
 
-    @PreUpdate
-    protected void onUpdate() {
-        updateAt = Instant.now();
-    }
 }

@@ -1,31 +1,59 @@
 package com.g_wuy.swp391.voltera.controller;
 
+import com.g_wuy.swp391.voltera.service.JwtService;
 import com.g_wuy.swp391.voltera.service.S3Service;
+import com.g_wuy.swp391.voltera.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/upload")
 public class UploadController {
     @Autowired
     private S3Service s3Service;
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private JwtService jwtService;
 
     @PostMapping("/product")
-    public ResponseEntity<String> uploadProduct(@RequestParam("file") MultipartFile file,
-                                                @RequestParam(value = "folder", defaultValue = "general") String folderName) {
+    public ResponseEntity<List<String>> uploadFiles(
+            @RequestParam("files") MultipartFile[] files,
+            @RequestParam(value = "folder", defaultValue = "general") String folderName) {
+        List<String> urls = new ArrayList<>();
         try {
-            String fileUrl = s3Service.uploadFile(file, folderName);
-            return ResponseEntity.ok(fileUrl);
+            for (MultipartFile file : files) {
+                String url = s3Service.uploadFile(file, folderName);
+                urls.add(url);
+            }
+            return ResponseEntity.ok(urls);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Upload failed: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+    @PostMapping("/avatar")
+    public ResponseEntity<String> uploadAvatar(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestParam("file") MultipartFile file) {
 
+        try {
+            String token = authHeader.substring(7);
+            String username = jwtService.extractUsername(token);
+
+            String avatarUrl = s3Service.uploadFile(file, "avatar");
+
+            userService.updateAvatar(username, avatarUrl);
+
+            return ResponseEntity.ok(avatarUrl);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Upload avatar failed: " + e.getMessage());
+        }
+    }
 }
