@@ -21,7 +21,7 @@ import PostVehicleWizard from "./pages/post/vehicles/PostVehicleWizard";
 import VehicleDetail from "./pages/vehicleDetail/vehicleDetail";
 import ElectricDetail from "./pages/electricDetail/electricDetail";
 import DashboardAdmin from "./pages/dashboardAdmin/dashboardAdmin";
-import Dashboard from "./pages/Dashboard";
+import Dashboard from "./components/Dashboard";
 
 console.log("routes:", routes);
 console.log("postVehicles:", routes.postVehicles);
