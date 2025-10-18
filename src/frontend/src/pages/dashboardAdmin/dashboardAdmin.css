@@ -217,3 +217,226 @@ td {
         color: var(--muted);
     }
 }
+
+/* ==== ACCOUNT APPROVAL ==== */
+.card-subtitle {
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 20px;
+    font-weight: 400;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 14px;
+    color: white;
+}
+
+.username {
+    font-weight: 500;
+    color: var(--ink);
+}
+
+.role-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: capitalize;
+}
+
+.role-badge.buyer {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.role-badge.seller {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.role-badge.admin {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.role-badge.unknown {
+    background: #f3f4f6;
+    color: #6b7280;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.approve-btn {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    font-size: 11px;
+    padding: 6px 12px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    font-weight: 500;
+    cursor: pointer;
+    min-width: 60px;
+    flex-shrink: 0;
+}
+
+.approve-btn:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+.reject-btn {
+    background: #ef4444;
+    color: white;
+    border: none;
+    font-size: 11px;
+    padding: 6px 12px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    font-weight: 500;
+    cursor: pointer;
+    min-width: 50px;
+    flex-shrink: 0;
+}
+
+.reject-btn:hover {
+    background: #dc2626;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+}
+
+/* Status Badge */
+.status-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: capitalize;
+}
+
+.status-badge.pending {
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fde68a;
+}
+
+/* ==== APPROVAL TABLE SPECIFIC STYLES ==== */
+.approval-table th:last-child,
+.approval-table td:last-child {
+    min-width: 140px;
+    width: 140px;
+}
+
+.approval-actions {
+    display: flex;
+    flex-direction: row;
+    gap: 6px;
+    justify-content: flex-start;
+    align-items: center;
+    white-space: nowrap;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.empty-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+
+.empty-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 8px;
+}
+
+.empty-text {
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.badge.warning {
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fde68a;
+    font-weight: 500;
+}
+
+/* Responsive table */
+@media (max-width: 768px) {
+    table {
+        font-size: 12px;
+    }
+    
+    th, td {
+        padding: 12px 8px;
+    }
+    
+    .action-buttons {
+        flex-direction: row;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+    
+    .approve-btn,
+    .reject-btn {
+        font-size: 11px;
+        padding: 6px 12px;
+    }
+}
+
+/* Loading State */
+.loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 60px 20px;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #e5e7eb;
+    border-top: 4px solid var(--accent);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 16px;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.loading-text {
+    color: var(--muted);
+    font-size: 14px;
+}

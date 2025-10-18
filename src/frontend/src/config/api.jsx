@@ -1,14 +1,22 @@
 // src/config/api.jsx
 import axios from "axios";
 
- const api = axios.create({
+const api = axios.create({
   baseURL: import.meta.env.VITE_BACK_END_BASE_URL,
   // withCredentials: true, // chỉ bật nếu backend dùng cookie
 });
 
 // Gắn Bearer token tự động (nếu có)
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("access_token");
+  // Lấy token từ cookies thay vì localStorage
+  const getCookie = (name) => {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(";").shift();
+    return null;
+  };
+
+  const token = getCookie("accessToken");
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
@@ -28,4 +36,3 @@ api.interceptors.response.use(
 );
 console.log("API baseURL =", import.meta.env.VITE_BACK_END_BASE_URL);
 export default api;
-

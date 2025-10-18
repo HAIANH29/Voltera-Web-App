@@ -1,7 +1,9 @@
 package com.g_wuy.swp391.voltera.controller;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -37,7 +39,7 @@ public class UserController {
     @Autowired
     private AccountMapper accountMapper;
 
-    @PutMapping("/api/admin/account/{id}/approved")
+    @PutMapping("/api/v1/admin/account/{id}/approved")
     public ResponseEntity<ApproveResponse> approve(@PathVariable Integer id) {
         Account accountApprove = accountService.approveAccount(id);
         return ResponseEntity.ok(accountMapper.toAccountResponse(accountApprove));
@@ -58,6 +60,15 @@ public class UserController {
         response.put("username", authentication.getName());
         response.put("roles", authentication.getAuthorities());
         return response;
+    }
+
+    @GetMapping("/api/v1/admin/accounts/pending")
+    public ResponseEntity<List<ApproveResponse>> getPendingAccounts() {
+        List<Account> pendingAccounts = accountService.getPendingAccounts();
+        List<ApproveResponse> response = pendingAccounts.stream()
+                .map(accountMapper::toAccountResponse)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(response);
     }
 
 }

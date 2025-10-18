@@ -3,6 +3,8 @@ package com.g_wuy.swp391.voltera.repository;
 import com.g_wuy.swp391.voltera.entity.User;
 import jakarta.transaction.Transactional;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -29,4 +31,7 @@ public interface AccountRepository extends JpaRepository<Account, Integer> {
 
     @Query("SELECT COUNT(a) > 0 FROM Account a WHERE a.username = :username")
     boolean isEmailExist(@Param("username") String username);
+
+    @Query("SELECT a FROM Account a WHERE a.status = 'PENDING' ORDER BY a.createat DESC")
+    List<Account> findPendingAccounts();
 }

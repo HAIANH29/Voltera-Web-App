@@ -2,6 +2,7 @@ package com.g_wuy.swp391.voltera.service;
 
 import jakarta.transaction.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,6 +90,10 @@ public class AccountService {
             throw new BusinessException("Username not found");
         }
         return accountRepository.findByUsername(username);
+    }
+
+    public List<Account> getPendingAccounts() {
+        return accountRepository.findPendingAccounts();
     }
 
 }

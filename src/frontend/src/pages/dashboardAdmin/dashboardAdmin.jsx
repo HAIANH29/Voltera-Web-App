@@ -1,8 +1,12 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
+import api from "../../config/api";
 import "./dashboardAdmin.css";
 
 export default function DashboardAdmin() {
   const [activeTab, setActiveTab] = useState("listings");
+  const [accounts, setAccounts] = useState([]);
+  const [pendingAccounts, setPendingAccounts] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   // --- Mock data ---
   const stats = {
@@ -53,6 +57,82 @@ export default function DashboardAdmin() {
       status: "pending",
     },
   ];
+
+  // Load pending accounts when component mounts or activeTab changes to accounts
+  useEffect(() => {
+    if (activeTab === "accounts") {
+      loadPendingAccounts();
+    }
+  }, [activeTab]);
+
+  const loadPendingAccounts = async () => {
+    setLoading(true);
+    try {
+      // Gọi API backend để lấy danh sách pending accounts
+      const res = await api.get("/admin/accounts/pending");
+      console.log("Pending accounts loaded:", res.data);
+      setPendingAccounts(res.data);
+    } catch (error) {
+      console.error("Error loading pending accounts:", error);
+      const errorMsg =
+        error.response?.data?.message || "Failed to load pending accounts";
+      alert(`Error: ${errorMsg}`);
+
+      // Fallback to empty array if API fails
+      setPendingAccounts([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // --- Account Approval Functions ---
+  const handleApproveAccount = async (accountId, email) => {
+    try {
+      setLoading(true);
+
+      // Gọi API backend để approve account
+      await api.put(`/admin/account/${accountId}/approved`);
+
+      console.log(`Account ${accountId} approved successfully`);
+      alert(`Account ${email} has been approved successfully!`);
+
+      // Remove approved account from list
+      setPendingAccounts((prev) => prev.filter((acc) => acc.id !== accountId));
+    } catch (error) {
+      console.error("Failed to approve account:", error);
+      const errorMsg =
+        error.response?.data?.message || "Failed to approve account";
+      alert(`Error: ${errorMsg}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRejectAccount = async (accountId, email) => {
+    try {
+      setLoading(true);
+
+      // Vì backend chưa có API reject, tạm thời sử dụng mock
+      // Trong production sẽ thay bằng: await api.put(`/admin/account/${accountId}/rejected`);
+
+      console.log(`Rejecting account ${accountId} - ${email}`);
+
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      alert(`Account ${email} has been rejected.`);
+
+      // Remove rejected account from list
+      setPendingAccounts((prev) => prev.filter((acc) => acc.id !== accountId));
+    } catch (error) {
+      console.error("Failed to reject account:", error);
+      const errorMsg =
+        error.response?.data?.message || "Failed to reject account";
+      alert(`Error: ${errorMsg}`);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const disputes = [
     {
@@ -109,7 +189,7 @@ export default function DashboardAdmin() {
 
       {/* --- Tabs --- */}
       <div className="tabs">
-        {["listings", "users", "disputes"].map((tab) => (
+        {["listings", "accounts", "users", "disputes"].map((tab) => (
           <button
             key={tab}
             className={`tab ${activeTab === tab ? "active" : ""}`}
@@ -117,6 +197,8 @@ export default function DashboardAdmin() {
           >
             {tab === "listings"
               ? "Pending Listings"
+              : tab === "accounts"
+              ? "Account Approval"
               : tab === "users"
               ? "Users"
               : "Disputes"}
@@ -170,6 +252,85 @@ export default function DashboardAdmin() {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* --- Account Approval --- */}
+      {activeTab === "accounts" && (
+        <div className="card">
+          <div className="card-title">Pending Account Approvals</div>
+          <div className="card-subtitle">
+            Review and approve new user registrations
+          </div>
+
+          {loading ? (
+            <div className="loading-state">
+              <div className="loading-spinner"></div>
+              <div className="loading-text">Loading pending accounts...</div>
+            </div>
+          ) : pendingAccounts.length === 0 ? (
+            <div className="empty-state">
+              <div className="empty-icon">✅</div>
+              <div className="empty-title">No Pending Accounts</div>
+              <div className="empty-text">
+                All user registrations have been processed.
+              </div>
+            </div>
+          ) : (
+            <table className="approval-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>USERNAME</th>
+                  <th>EMAIL</th>
+                  <th>ROLE</th>
+                  <th>STATUS</th>
+                  <th>ACTIONS</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pendingAccounts.map((account, index) => (
+                  <tr key={account.id}>
+                    <td>A{String(index + 1).padStart(3, '0')}</td>
+                    <td>{account.username}</td>
+                    <td>{account.email}</td>
+                    <td>
+                      <span
+                        className={`role-badge ${account.role?.toLowerCase() || 'unknown'}`}
+                      >
+                        {account.role || 'N/A'}
+                      </span>
+                    </td>
+                    <td>
+                      <span className="status-badge pending">{account.status}</span>
+                    </td>
+                    <td>
+                      <div className="approval-actions">
+                        <button
+                          className="approve-btn"
+                          onClick={() =>
+                            handleApproveAccount(account.id, account.email)
+                          }
+                          title="Approve Account"
+                        >
+                          Approve
+                        </button>
+                        <button
+                          className="reject-btn"
+                          onClick={() =>
+                            handleRejectAccount(account.id, account.email)
+                          }
+                          title="Reject Account"
+                        >
+                          Reject
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       )}
 
