@@ -44,8 +44,8 @@ public class PostController {
     }
 
     @GetMapping("/list/{status}")
-    public List<Post> getAllPost(@PathVariable("status") String status) {
-        return postService.getPostByStatus(status);
+    public List<PostResponse> getAllPost(@PathVariable("status") String status) {
+        return postService.getAllPost(status);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -160,9 +160,4 @@ public class PostController {
         return ResponseEntity.ok(result);
     }
 
-
-    @GetMapping("/{status}")
-    public ResponseEntity<List<Post>> getPendingPosts(@PathVariable("status") String status) {
-        return ResponseEntity.ok(postService.getPostsByStatus(status));
-    }
 }
