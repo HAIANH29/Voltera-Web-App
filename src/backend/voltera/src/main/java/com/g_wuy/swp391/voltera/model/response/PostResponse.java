@@ -17,6 +17,7 @@ public class PostResponse {
     private String status;
     private BatteryDTO battery;
     private VehicleDTO vehicle;
-    private List<String> imageUrls;
     private String location;
+    private String thumbnail;
+    private List<String> imageUrls;
 }
