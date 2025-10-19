@@ -2,14 +2,14 @@ import React, { useState, useEffect } from "react";
 import MiniPost from "../../components/miniPost/miniPost";
 import "./favoritesPage.css";
 
-// Mock data cho xe điện yêu thích
+// Mock data for favorite electric vehicles
 const mockFavoriteVehicles = [
   {
     id: 2,
     image: "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=400",
     productName: "VinFast VF8 Plus",
-    basicInfo: ["Điện", "7 chỗ", "420km"],
-    sellerName: "Trần Thị B",
+    basicInfo: ["Electric", "7 seats", "420km"],
+    sellerName: "Tran Thi B",
     price: 1350000000,
     isNew: false,
     isFavorite: true,
@@ -19,8 +19,8 @@ const mockFavoriteVehicles = [
     id: 5,
     image: "https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=400",
     productName: "Audi e-tron GT",
-    basicInfo: ["Điện", "4 chỗ", "388km"],
-    sellerName: "Hoàng Văn E",
+    basicInfo: ["Electric", "4 seats", "388km"],
+    sellerName: "Hoang Van E",
     price: 4500000000,
     isNew: true,
     isFavorite: true,
@@ -30,8 +30,8 @@ const mockFavoriteVehicles = [
     id: 8,
     image: "https://images.unsplash.com/photo-1554744512-d6c603f27c54?w=400",
     productName: "Mercedes EQS 450+",
-    basicInfo: ["Điện", "5 chỗ", "770km"],
-    sellerName: "Bùi Thị H",
+    basicInfo: ["Electric", "5 seats", "770km"],
+    sellerName: "Bui Thi H",
     price: 5500000000,
     isNew: true,
     isFavorite: true,
@@ -41,8 +41,8 @@ const mockFavoriteVehicles = [
     id: 11,
     image: "https://images.unsplash.com/photo-1619976215249-4d1c3b3e3db4?w=400",
     productName: "Lucid Air Dream",
-    basicInfo: ["Điện", "5 chỗ", "832km"],
-    sellerName: "Trương Văn L",
+    basicInfo: ["Electric", "5 seats", "832km"],
+    sellerName: "Truong Van L",
     price: 7800000000,
     isNew: true,
     isFavorite: true,
@@ -50,14 +50,14 @@ const mockFavoriteVehicles = [
   }
 ];
 
-// Mock data cho pin yêu thích
+// Mock data for favorite batteries
 const mockFavoriteBatteries = [
   {
     id: 101,
     image: "https://images.unsplash.com/photo-1609592045856-c6ed3ac6a7a2?w=400",
-    productName: "Pin Lithium Tesla 75kWh",
-    basicInfo: ["75kWh", "8 năm BH", "Mới 95%"],
-    sellerName: "Công ty ABC",
+    productName: "Tesla Lithium Battery 75kWh",
+    basicInfo: ["75kWh", "8 years warranty", "95% new"],
+    sellerName: "ABC Company",
     price: 450000000,
     isNew: false,
     isFavorite: true,
@@ -66,9 +66,9 @@ const mockFavoriteBatteries = [
   {
     id: 102,
     image: "https://images.unsplash.com/photo-1628618219968-6a65734d6bf8?w=400",
-    productName: "Pin CATL LFP 60kWh",
-    basicInfo: ["60kWh", "10 năm BH", "Mới 98%"],
-    sellerName: "Điện Việt Co.",
+    productName: "CATL LFP Battery 60kWh",
+    basicInfo: ["60kWh", "10 years warranty", "98% new"],
+    sellerName: "Electric Viet Co.",
     price: 320000000,
     isNew: true,
     isFavorite: true,
@@ -77,8 +77,8 @@ const mockFavoriteBatteries = [
   {
     id: 103,
     image: "https://images.unsplash.com/photo-1586339546557-64463a5bb3ca?w=400",
-    productName: "Pin Samsung SDI 85kWh",
-    basicInfo: ["85kWh", "12 năm BH", "Mới 100%"],
+    productName: "Samsung SDI Battery 85kWh",
+    basicInfo: ["85kWh", "12 years warranty", "100% new"],
     sellerName: "Green Energy Ltd",
     price: 680000000,
     isNew: true,
@@ -96,13 +96,13 @@ export default function FavoritesPage() {
   const [activeFilter, setActiveFilter] = useState("all"); // all, vehicles, batteries
 
   useEffect(() => {
-    // Giả lập việc fetch data từ API hoặc localStorage
+    // Simulate fetching data from API or localStorage
     const fetchFavorites = async () => {
       setLoading(true);
-      // Giả lập delay API call
+      // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Kết hợp xe và pin yêu thích
+      // Combine vehicles and batteries favorites
       const allFavorites = [...mockFavoriteVehicles, ...mockFavoriteBatteries];
       setFavorites(allFavorites);
       setLoading(false);
@@ -111,7 +111,7 @@ export default function FavoritesPage() {
     fetchFavorites();
   }, []);
 
-  // Lọc theo category
+  // Filter by category
   const filteredFavorites = favorites.filter(item => {
     if (activeFilter === "all") return true;
     if (activeFilter === "vehicles") return item.category === "vehicle";
@@ -119,18 +119,22 @@ export default function FavoritesPage() {
     return true;
   });
 
-  // Tính toán pagination
+  // Calculate pagination
   const totalPages = Math.ceil(filteredFavorites.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
   const currentFavorites = filteredFavorites.slice(startIndex, endIndex);
 
-  // Reset current page khi đổi filter
+  // Calculate counts for filter tabs
+  const vehiclesCount = favorites.filter(item => item.category === "vehicle").length;
+  const batteriesCount = favorites.filter(item => item.category === "battery").length;
+
+  // Reset current page when filter changes
   useEffect(() => {
     setCurrentPage(1);
   }, [activeFilter]);
 
-  // Xử lý remove favorite
+  // Handle remove favorite
   const handleFavoriteClick = (itemId) => {
     setFavorites(prev =>
       prev.map(item =>
@@ -141,10 +145,10 @@ export default function FavoritesPage() {
     );
   };
 
-  // Xử lý click vào card
+  // Handle card click
   const handleCardClick = (item) => {
     console.log("Clicked favorite item:", item);
-    // Navigate đến trang chi tiết tương ứng
+    // Navigate to corresponding detail page
     if (item.category === "vehicle") {
       // navigate(`/vehicles/${item.id}`);
     } else if (item.category === "battery") {
@@ -152,7 +156,7 @@ export default function FavoritesPage() {
     }
   };
 
-  // Xử lý thay đổi trang
+  // Handle page change
   const handlePageChange = (page) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -244,19 +248,15 @@ export default function FavoritesPage() {
     return pages;
   };
 
-  // Count items by category
-  const vehiclesCount = favorites.filter(item => item.category === "vehicle").length;
-  const batteriesCount = favorites.filter(item => item.category === "battery").length;
-
   if (loading) {
     return (
       <div className="favorites-page">
         <div className="favorites-header">
           <h1>
             <span className="heart-icon">♥</span>
-            Yêu Thích
+            Favorites
           </h1>
-          <p>Danh sách các sản phẩm bạn đã lưu</p>
+          <p>Your saved products list</p>
         </div>
         <div className="loading-grid">
           {Array.from({ length: 8 }).map((_, index) => (
@@ -280,21 +280,21 @@ export default function FavoritesPage() {
         <div className="favorites-header">
           <h1>
             <span className="heart-icon">♥</span>
-            Yêu Thích
+            Favorites
           </h1>
-          <p>Danh sách các sản phẩm bạn đã lưu</p>
+          <p>Your saved products list</p>
         </div>
         
         <div className="empty-favorites">
           <div className="empty-icon">♡</div>
-          <h2>Chưa có sản phẩm yêu thích</h2>
+          <h2>No favorite products yet</h2>
           <p>
-            Bạn chưa lưu sản phẩm nào vào danh sách yêu thích. 
-            Hãy khám phá và thêm những sản phẩm bạn quan tâm!
+            You haven't saved any products to your favorites yet. 
+            Explore and add products you're interested in!
           </p>
           <a href="/vehicles" className="browse-btn">
             <span>🚗</span>
-            Khám phá xe điện
+            Explore Electric Vehicles
           </a>
         </div>
       </div>
@@ -369,7 +369,7 @@ export default function FavoritesPage() {
                 {renderPagination()}
               </div>
               <div className="pagination-info">
-                Hiển thị {startIndex + 1}-{Math.min(endIndex, filteredFavorites.length)} trong tổng số {filteredFavorites.length} sản phẩm yêu thích
+                Showing {startIndex + 1}-{Math.min(endIndex, filteredFavorites.length)} of {filteredFavorites.length} favorite products
               </div>
             </div>
           )}
