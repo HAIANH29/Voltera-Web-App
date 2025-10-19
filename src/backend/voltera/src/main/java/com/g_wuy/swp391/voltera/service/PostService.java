@@ -1,10 +1,6 @@
 package com.g_wuy.swp391.voltera.service;
 
-import com.g_wuy.swp391.voltera.model.request.FilterRequest;
-import jakarta.persistence.criteria.Join;
-import jakarta.persistence.criteria.JoinType;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -13,12 +9,11 @@ import com.g_wuy.swp391.voltera.entity.*;
 import com.g_wuy.swp391.voltera.exception.BusinessException;
 import com.g_wuy.swp391.voltera.mapper.PostMapper;
 import com.g_wuy.swp391.voltera.model.request.PostRequest;
-import com.g_wuy.swp391.voltera.model.request.RejectRequest;
+import com.g_wuy.swp391.voltera.model.request.RejectPostRequest;
 import com.g_wuy.swp391.voltera.model.response.ModerationResponse;
 import com.g_wuy.swp391.voltera.model.response.PostResponse;
 import com.g_wuy.swp391.voltera.model.response.RejectResponse;
 import com.g_wuy.swp391.voltera.repository.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -26,7 +21,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import jakarta.persistence.criteria.Predicate;
 
 @Service
 public class PostService {
@@ -179,7 +173,7 @@ public class PostService {
         return new ModerationResponse(post.getId(), post.getStatus(), null);
     }
 
-    public RejectResponse rejectPost(Integer postId, RejectRequest request) {
+    public RejectResponse rejectPost(Integer postId, RejectPostRequest request) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
         post.setStatus("REJECT");
@@ -278,5 +272,12 @@ public class PostService {
                 minPrice,
                 maxPrice
         );
+    }
+
+    public List<Post> getPostsByStatus(String status) {
+        if (status == null) {
+            return null;
+        }
+        return postRepository.getPostsByStatusIgnoreCase(status);
     }
 }

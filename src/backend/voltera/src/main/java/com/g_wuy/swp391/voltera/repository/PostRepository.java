@@ -124,4 +124,6 @@ public interface PostRepository extends JpaRepository<Post, Integer>, JpaSpecifi
             @Param("minPrice") BigDecimal minPrice,
             @Param("maxPrice") BigDecimal maxPrice
     );
+
+    List<Post> getPostsByStatusIgnoreCase(@Param("status") String status);
 }

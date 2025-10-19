@@ -8,9 +8,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import com.g_wuy.swp391.voltera.entity.Post;
-import com.g_wuy.swp391.voltera.model.request.FilterRequest;
 import com.g_wuy.swp391.voltera.model.request.PostRequest;
-import com.g_wuy.swp391.voltera.model.request.RejectRequest;
+import com.g_wuy.swp391.voltera.model.request.RejectPostRequest;
 import com.g_wuy.swp391.voltera.model.response.ModerationResponse;
 import com.g_wuy.swp391.voltera.model.response.PostResponse;
 import com.g_wuy.swp391.voltera.model.response.RejectResponse;
@@ -58,7 +57,7 @@ public class PostController {
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/reject/{postId}")
     public RejectResponse rejectPost(@PathVariable Integer postId,
-                                     @RequestBody RejectRequest request) {
+                                     @RequestBody RejectPostRequest request) {
         return postService.rejectPost(postId, request);
     }
 
@@ -153,5 +152,11 @@ public class PostController {
         );
 
         return ResponseEntity.ok(result);
+    }
+
+
+    @GetMapping("/{status}")
+    public ResponseEntity<List<Post>> getPendingPosts(@PathVariable("status") String status) {
+        return ResponseEntity.ok(postService.getPostsByStatus(status));
     }
 }
