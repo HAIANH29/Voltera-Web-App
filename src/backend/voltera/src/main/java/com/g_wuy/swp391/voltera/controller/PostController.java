@@ -18,6 +18,7 @@ import com.g_wuy.swp391.voltera.service.JwtService;
 import com.g_wuy.swp391.voltera.service.PostService;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.List;
 
 
@@ -60,10 +61,97 @@ public class PostController {
                                      @RequestBody RejectRequest request) {
         return postService.rejectPost(postId, request);
     }
-    
-    @PostMapping("/filter/vehicle")
-    public ResponseEntity<List<Post>> filterPosts(@RequestBody FilterRequest request) {
-        List<Post> result = postService.filterVehicle(request);
+
+    @GetMapping("/filter/vehicles")
+    public ResponseEntity<List<Post>> filterVehicles(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String address,
+            @RequestParam(required = false) String brand,
+            @RequestParam(required = false) String version,
+            @RequestParam(required = false) String color,
+            @RequestParam(required = false) String origin,
+            @RequestParam(required = false) String style,
+            @RequestParam(required = false) Integer minOdo,
+            @RequestParam(required = false) Integer maxOdo,
+            @RequestParam(required = false) Integer minRange,
+            @RequestParam(required = false) Integer maxRange,
+            @RequestParam(required = false) Boolean bodyInsurance,
+            @RequestParam(required = false) Boolean vehicleInspection,
+            @RequestParam(required = false) BigDecimal minPrice,
+            @RequestParam(required = false) BigDecimal maxPrice,
+            @RequestParam(required = false) Integer minYearManufacture,
+            @RequestParam(required = false) Integer maxYearManufacture,
+            @RequestParam(required = false) Integer numberOfSeat
+    ) {
+        List<Post> result = postService.filterVehicles(
+                keyword,
+                address,
+                brand,
+                version,
+                color,
+                origin,
+                style,
+                minOdo,
+                maxOdo,
+                minRange,
+                maxRange,
+                bodyInsurance,
+                vehicleInspection,
+                minPrice,
+                maxPrice,
+                minYearManufacture,
+                maxYearManufacture,
+                numberOfSeat
+        );
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/filter/batteries")
+    public ResponseEntity<List<Post>> filterBatteries(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String address,
+            @RequestParam(required = false) String batteryType,
+            @RequestParam(required = false) String serialNumber,
+            @RequestParam(required = false) BigDecimal minOriginCapacity,
+            @RequestParam(required = false) BigDecimal maxOriginCapacity,
+            @RequestParam(required = false) BigDecimal minRemainingCapacity,
+            @RequestParam(required = false) BigDecimal maxRemainingCapacity,
+            @RequestParam(required = false) Integer minMileageCovered,
+            @RequestParam(required = false) Integer maxMileageCovered,
+            @RequestParam(required = false) BigDecimal minVoltage,
+            @RequestParam(required = false) BigDecimal maxVoltage,
+            @RequestParam(required = false) Integer minCycleCount,
+            @RequestParam(required = false) Integer maxCycleCount,
+            @RequestParam(required = false) String warranty,
+            @RequestParam(required = false) BigDecimal minWeight,
+            @RequestParam(required = false) BigDecimal maxWeight,
+            @RequestParam(required = false) String lifeCycle,
+            @RequestParam(required = false) BigDecimal minPrice,
+            @RequestParam(required = false) BigDecimal maxPrice
+    ) {
+        List<Post> result = postService.filterBatteries(
+                keyword,
+                address,
+                batteryType,
+                serialNumber,
+                minOriginCapacity,
+                maxOriginCapacity,
+                minRemainingCapacity,
+                maxRemainingCapacity,
+                minMileageCovered,
+                maxMileageCovered,
+                minVoltage,
+                maxVoltage,
+                minCycleCount,
+                maxCycleCount,
+                warranty,
+                minWeight,
+                maxWeight,
+                lifeCycle,
+                minPrice,
+                maxPrice
+        );
+
         return ResponseEntity.ok(result);
     }
 }

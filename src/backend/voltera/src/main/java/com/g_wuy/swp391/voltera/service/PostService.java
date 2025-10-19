@@ -191,102 +191,92 @@ public class PostService {
         return postMapper.toRejectResponse(post, adminUsername, request.getReason());
     }
 
-    public List<Post> filterVehicle(FilterRequest request) {
-        Specification<Post> specification = (root, query, cb) -> {
-            List<Predicate> predicates = new ArrayList<>();
+    public List<Post> filterVehicles(
+            String keyword,
+            String address,
+            String brand,
+            String version,
+            String color,
+            String origin,
+            String style,
+            Integer minOdo,
+            Integer maxOdo,
+            Integer minRange,
+            Integer maxRange,
+            Boolean bodyInsurance,
+            Boolean vehicleInspection,
+            BigDecimal minPrice,
+            BigDecimal maxPrice,
+            Integer minYearManufacture,
+            Integer maxYearManufacture,
+            Integer numberOfSeat) {
 
-            Join<Post, Vehicle> vehicleJoin = root.join("vehicle", JoinType.INNER);
-            Join<Post, User> userJoin = root.join("sellerId", JoinType.INNER);
-
-            // Keyword (model)
-            if (request.getKeyword() != null && !request.getKeyword().isEmpty()) {
-                predicates.add(cb.like(cb.lower(vehicleJoin.get("model")), "%" + request.getKeyword().toLowerCase() + "%"));
-            }
-
-            // Address (from User)
-            if (request.getAddress() != null && !request.getAddress().isEmpty()) {
-                predicates.add(cb.like(cb.lower(userJoin.get("address")), "%" + request.getAddress().toLowerCase() + "%"));
-            }
-
-            // Brand
-            if (request.getBrand() != null && !request.getBrand().isEmpty()) {
-                predicates.add(cb.like(cb.lower(vehicleJoin.get("brand")), "%" + request.getBrand().toLowerCase() + "%"));
-            }
-
-            // Version
-            if (request.getVersion() != null && !request.getVersion().isEmpty()) {
-                predicates.add(cb.like(cb.lower(vehicleJoin.get("version")), "%" + request.getVersion().toLowerCase() + "%"));
-            }
-
-            // Odo
-            if (request.getMinOdo() != null && request.getMinOdo() > 0) {
-                predicates.add(cb.greaterThanOrEqualTo(vehicleJoin.get("odo"), request.getMinOdo()));
-            }
-            if (request.getMaxOdo() != null && request.getMaxOdo() > 0) {
-                predicates.add(cb.lessThanOrEqualTo(vehicleJoin.get("odo"), request.getMaxOdo()));
-            }
-
-            // Range
-            if (request.getMinRange() != null && request.getMinRange() > 0) {
-                predicates.add(cb.greaterThanOrEqualTo(vehicleJoin.get("range"), request.getMinRange()));
-            }
-            if (request.getMaxRange() != null && request.getMaxRange() > 0) {
-                predicates.add(cb.lessThanOrEqualTo(vehicleJoin.get("range"), request.getMaxRange()));
-            }
-
-            // Color
-            if (request.getColor() != null && !request.getColor().isEmpty()) {
-                predicates.add(cb.equal(cb.lower(vehicleJoin.get("color")), request.getColor().toLowerCase()));
-            }
-
-            // Origin
-            if (request.getOrigin() != null && !request.getOrigin().isEmpty()) {
-                predicates.add(cb.like(cb.lower(vehicleJoin.get("origin")), "%" + request.getOrigin().toLowerCase() + "%"));
-            }
-
-            // Style
-            if (request.getStyle() != null && !request.getStyle().isEmpty()) {
-                predicates.add(cb.like(cb.lower(vehicleJoin.get("style")), "%" + request.getStyle().toLowerCase() + "%"));
-            }
-
-            // Body Insurance
-            if (request.getBodyInsurance() != null && request.getBodyInsurance().describeConstable().isEmpty()) {
-                predicates.add(cb.isTrue(vehicleJoin.get("bodyinsurance")));
-            }
-
-            // Vehicle Inspection
-            if (request.getVehicleInspection() != null && request.getVehicleInspection().describeConstable().isEmpty()) {
-                predicates.add(cb.isTrue(vehicleJoin.get("vehicleinspection")));
-            }
-
-            // Price
-            if (request.getMinPrice() != null) {
-                predicates.add(cb.greaterThanOrEqualTo(root.get("price"), request.getMinPrice()));
-            }
-            if (request.getMaxPrice() != null) {
-                predicates.add(cb.lessThanOrEqualTo(root.get("price"), request.getMaxPrice()));
-            }
-
-            // Year Manufacture (int → cần kiểm tra thủ công)
-            if (request.getMinYearManufacture() > 0) {
-                predicates.add(cb.greaterThanOrEqualTo(vehicleJoin.get("yearManufacture"), request.getMinYearManufacture()));
-            }
-            if (request.getMaxYearManufacture() > 0) {
-                predicates.add(cb.lessThanOrEqualTo(vehicleJoin.get("yearManufacture"), request.getMaxYearManufacture()));
-            }
-
-            // Number of Seats
-            if (request.getNumberOfSeat() != null && request.getNumberOfSeat() > 0) {
-                predicates.add(cb.equal(vehicleJoin.get("numberofseat"), request.getNumberOfSeat()));
-            }
-
-            // Chỉ lấy xe AVAILABLE
-            predicates.add(cb.equal(vehicleJoin.get("status"), "AVAILABLE"));
-
-            return cb.and(predicates.toArray(new Predicate[0]));
-        };
-
-        return postRepository.findAll(specification);
+        return postRepository.filterVehicles(
+                keyword,
+                address,
+                brand,
+                version,
+                color,
+                origin,
+                style,
+                minOdo,
+                maxOdo,
+                minRange,
+                maxRange,
+                bodyInsurance,
+                vehicleInspection,
+                minPrice,
+                maxPrice,
+                minYearManufacture,
+                maxYearManufacture,
+                numberOfSeat
+        );
     }
 
+
+    public List<Post> filterBatteries(
+            String keyword,
+            String address,
+            String batteryType,
+            String serialNumber,
+            BigDecimal minOriginCapacity,
+            BigDecimal maxOriginCapacity,
+            BigDecimal minRemainingCapacity,
+            BigDecimal maxRemainingCapacity,
+            Integer minMileageCovered,
+            Integer maxMileageCovered,
+            BigDecimal minVoltage,
+            BigDecimal maxVoltage,
+            Integer minCycleCount,
+            Integer maxCycleCount,
+            String warranty,
+            BigDecimal minWeight,
+            BigDecimal maxWeight,
+            String lifeCycle,
+            BigDecimal minPrice,
+            BigDecimal maxPrice) {
+
+        return postRepository.filterBatteries(
+                keyword,
+                address,
+                batteryType,
+                serialNumber,
+                minOriginCapacity,
+                maxOriginCapacity,
+                minRemainingCapacity,
+                maxRemainingCapacity,
+                minMileageCovered,
+                maxMileageCovered,
+                minVoltage,
+                maxVoltage,
+                minCycleCount,
+                maxCycleCount,
+                warranty,
+                minWeight,
+                maxWeight,
+                lifeCycle,
+                minPrice,
+                maxPrice
+        );
+    }
 }
