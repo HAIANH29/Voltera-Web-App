@@ -34,4 +34,9 @@ public interface AccountRepository extends JpaRepository<Account, Integer> {
 
     @Query("SELECT a FROM Account a WHERE a.status = 'PENDING' ORDER BY a.createat DESC")
     List<Account> findPendingAccounts();
+
+    @Modifying
+    @Transactional
+    @Query("Update Account a SET a.status = 'REJECT' WHERE a.id = :id")
+    int rejectAccountById(@Param("id") Integer id);
 }

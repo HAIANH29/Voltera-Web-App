@@ -81,6 +81,15 @@ public class AccountService {
         return accountRepository.findAccountById(id);
     }
 
+    @Transactional
+    public Account rejectAccount(Integer id) {
+        int rejected = accountRepository.rejectAccountById(id);
+        if (rejected == 0) {
+            throw new BusinessException("Account isn't exist or already rejected");
+        }
+        return accountRepository.findAccountById(id);
+    }
+
     public Account findAccountById(Integer id) {
         return accountRepository.findAccountById(id);
     }

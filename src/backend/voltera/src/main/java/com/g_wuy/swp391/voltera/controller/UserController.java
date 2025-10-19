@@ -46,6 +46,12 @@ public class UserController {
         return ResponseEntity.ok(accountMapper.toAccountResponse(accountApprove));
     }
 
+    @PutMapping("/api/v1/admin/account/{id}/rejected")
+    public ResponseEntity<ApproveResponse> reject(@PathVariable Integer id) {
+        Account accountApprove = accountService.rejectAccount(id);
+        return ResponseEntity.ok(accountMapper.toAccountResponse(accountApprove));
+    }
+
     @GetMapping("/api/v1/users/me/profile")
     public ResponseEntity<ProfileResponse> getUserProfile(Authentication authentication) {
         String username = authentication.getName();
