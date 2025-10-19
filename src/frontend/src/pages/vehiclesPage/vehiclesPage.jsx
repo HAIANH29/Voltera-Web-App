@@ -3,96 +3,250 @@ import MiniPost from "../../components/miniPost/miniPost";
 import Pagination from "../../components/pagination/pagination";
 import "./vehiclesPage.css";
 import { useNavigate } from "react-router-dom";
-import api from "../../config/api";
 
-// API service functions
-const vehicleAPI = {
-  // Lấy tất cả vehicles với status APPROVED
-  getAllVehicles: async () => {
-    try {
-      const response = await api.get('/api/post/list/APPROVED');
-      return response.data || [];
-    } catch (error) {
-      console.error('Error fetching vehicles:', error);
-      throw error;
-    }
+// ===== Mock data (có thể giữ nguyên của bạn) =====
+const mockVehiclesData = [
+  {
+    postID: "VH001",
+    batteryType: "Lithium-ion",
+    brand: "Tesla",
+    model: "Model 3",
+    version: "Standard Range Plus",
+    status: "new",
+    odo: 0,
+    batteryCapacity: "75 kWh",
+    range: "448 km",
+    chargingTime: "8h (AC) / 30min (DC)",
+    color: "Pearl White",
+    numberOfSeat: 5,
+    style: "Sedan",
+    image: "https://images.unsplash.com/photo-1593941707882-a5bac6861d75?w=400",
+    sellerName: "Nguyễn Văn A",
+    price: 1200000000,
+    isFavorite: false,
+    year: 2024,
   },
-
-  // Filter vehicles với parameters
-  filterVehicles: async (filters) => {
-    try {
-      const params = new URLSearchParams();
-      
-      // Add search term
-      if (filters.search) {
-        params.append('search', filters.search);
-      }
-      
-      // Add other filters
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value && key !== 'search') {
-          params.append(key, value);
-        }
-      });
-
-      const response = await api.get(`/api/post/filter?${params.toString()}`);
-      return response.data || [];
-    } catch (error) {
-      console.error('Error filtering vehicles:', error);
-      throw error;
-    }
-  }
-};
-
-// Transform backend data to frontend format
-const transformVehicleData = (post) => {
-  // Safety check for post and vehicle data
-  if (!post || !post.vehicle) {
-    return null;
-  }
-  
-  const vehicle = post.vehicle;
-  const images = vehicle.images || [];
-  
-  return {
-    postID: post.id || post.postid,
-    title: post.title || `${vehicle.brand || ''} ${vehicle.model || ''} ${vehicle.version || ''}`,
-    description: post.description || '',
-    price: post.price || 0,
-    address: post.address || '',
-    createdAt: post.createdAt,
-    status: post.status,
-    
-    // Vehicle specific data
-    brand: vehicle.brand || '',
-    model: vehicle.model || '',
-    version: vehicle.version || '',
-    odo: vehicle.odo || 0,
-    batteryCapacity: vehicle.batteryCapacity || 0,
-    range: vehicle.range || 0,
-    chargingTime: vehicle.chargingTime || 0,
-    color: vehicle.color || '',
-    numberOfSeat: vehicle.numberOfSeat || 5,
-    style: vehicle.style || '',
-    bodyInsurance: vehicle.bodyInsurance || false,
-    vehicleInspection: vehicle.vehicleInspection || false,
-    licensePlate: vehicle.licensePlate || '',
-    origin: vehicle.origin || '',
-    yearManufacture: vehicle.yearManufacture || new Date().getFullYear(),
-    year: vehicle.yearManufacture || vehicle.year || new Date().getFullYear(),
-    
-    // Images
-    images: images.map(img => img.imageUrl || img.url),
-    image: images.length > 0 ? (images[0].imageUrl || images[0].url) : '/default-vehicle.jpg',
-    
-    // Additional UI data
-    sellerName: post.user?.fullName || post.user?.username || 'Unknown Seller',
-    isFavorite: false, // This should come from user's favorites
-    batteryType: 'Lithium-ion', // Default value, adjust if you have this data
-  };
-};
-
-// API data integration - mock data replaced with real backend calls
+  {
+    postID: "VH002",
+    batteryType: "LFP",
+    brand: "VinFast",
+    model: "VF8",
+    version: "Plus",
+    status: "old",
+    odo: 15000,
+    batteryCapacity: "87.7 kWh",
+    range: "420 km",
+    chargingTime: "7h (AC) / 35min (DC)",
+    color: "Ocean Blue",
+    numberOfSeat: 7,
+    style: "SUV",
+    image: "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=400",
+    sellerName: "Trần Thị B",
+    price: 1350000000,
+    isFavorite: true,
+    year: 2022,
+  },
+  {
+    postID: "VH003",
+    batteryType: "Lithium-ion",
+    brand: "BMW",
+    model: "iX3",
+    version: "xDrive30",
+    status: "new",
+    odo: 0,
+    batteryCapacity: "80 kWh",
+    range: "460 km",
+    chargingTime: "7.5h (AC) / 34min (DC)",
+    color: "Mineral Grey",
+    numberOfSeat: 5,
+    style: "SUV",
+    image: "https://images.unsplash.com/photo-1571068316344-75bc76f77890?w=400",
+    sellerName: "Lê Văn C",
+    price: 2100000000,
+    isFavorite: false,
+    year: 2024,
+  },
+  {
+    postID: "VH004",
+    batteryType: "Lithium-ion",
+    brand: "Hyundai",
+    model: "Kona Electric",
+    version: "Premium",
+    status: "old",
+    odo: 25000,
+    batteryCapacity: "64 kWh",
+    range: "305 km",
+    chargingTime: "9.5h (AC) / 47min (DC)",
+    color: "Pulse Red",
+    numberOfSeat: 5,
+    style: "Crossover",
+    image: "https://images.unsplash.com/photo-1617654112656-f5d77f16fc71?w=400",
+    sellerName: "Phạm Thị D",
+    price: 820000000,
+    isFavorite: false,
+    year: 2020,
+  },
+  {
+    postID: "VH005",
+    batteryType: "Lithium-ion",
+    brand: "Audi",
+    model: "e-tron GT",
+    version: "Quattro",
+    status: "new",
+    odo: 0,
+    batteryCapacity: "93.4 kWh",
+    range: "388 km",
+    chargingTime: "5.5h (AC) / 22min (DC)",
+    color: "Daytona Grey",
+    numberOfSeat: 4,
+    style: "Coupe",
+    image: "https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=400",
+    sellerName: "Hoàng Văn E",
+    price: 4500000000,
+    isFavorite: true,
+    year: 2025,
+  },
+  {
+    postID: "VH006",
+    batteryType: "Lithium-ion",
+    brand: "Nissan",
+    model: "Leaf",
+    version: "e+ Tekna",
+    status: "old",
+    odo: 18000,
+    batteryCapacity: "62 kWh",
+    range: "226 km",
+    chargingTime: "11.5h (AC) / 60min (DC)",
+    color: "Gun Metallic",
+    numberOfSeat: 5,
+    style: "Hatchback",
+    image: "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?w=400",
+    sellerName: "Võ Thị F",
+    price: 950000000,
+    isFavorite: false,
+    year: 2021,
+  },
+  {
+    postID: "VH007",
+    batteryType: "Lithium-ion",
+    brand: "Porsche",
+    model: "Taycan",
+    version: "Turbo",
+    status: "old",
+    odo: 8000,
+    batteryCapacity: "93.4 kWh",
+    range: "450 km",
+    chargingTime: "5.5h (AC) / 22min (DC)",
+    color: "Racing Yellow",
+    numberOfSeat: 4,
+    style: "Sedan",
+    image: "https://www.motortrend.com/uploads/2022/12/2023-Porsche-Taycan-GTS-001.jpg",
+    sellerName: "Đặng Văn G",
+    price: 6200000000,
+    isFavorite: false,
+    year: 2023,
+  },
+  {
+    postID: "VH008",
+    batteryType: "Lithium-ion",
+    brand: "Mercedes-Benz",
+    model: "EQS",
+    version: "450+",
+    status: "new",
+    odo: 0,
+    batteryCapacity: "107.8 kWh",
+    range: "770 km",
+    chargingTime: "6h (AC) / 31min (DC)",
+    color: "Obsidian Black",
+    numberOfSeat: 5,
+    style: "Sedan",
+    image: "https://tla-image.azureedge.net/api/v1/image/vehicle/Car/Mercedes-Benz/Mercedes-Benz/2/123889/1256",
+    sellerName: "Bùi Thị H",
+    price: 5500000000,
+    isFavorite: true,
+    year: 2024,
+  },
+  {
+    postID: "VH009",
+    batteryType: "LFP",
+    brand: "VinFast",
+    model: "VF6",
+    version: "Plus",
+    status: "old",
+    odo: 12000,
+    batteryCapacity: "59.6 kWh",
+    range: "380 km",
+    chargingTime: "8.5h (AC) / 40min (DC)",
+    color: "Deep Ocean Blue",
+    numberOfSeat: 5,
+    style: "Crossover",
+    image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400",
+    sellerName: "Ngô Văn I",
+    price: 765000000,
+    isFavorite: false,
+    year: 2022,
+  },
+  {
+    postID: "VH010",
+    batteryType: "Lithium-ion",
+    brand: "Ford",
+    model: "Mustang Mach-E",
+    version: "Extended Range",
+    status: "new",
+    odo: 0,
+    batteryCapacity: "98.8 kWh",
+    range: "491 km",
+    chargingTime: "6.5h (AC) / 38min (DC)",
+    color: "Rapid Red",
+    numberOfSeat: 5,
+    style: "SUV",
+    image: "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?w=400",
+    sellerName: "Đinh Thị K",
+    price: 1650000000,
+    isFavorite: false,
+    year: 2024,
+  },
+  {
+    postID: "VH011",
+    batteryType: "Lithium-ion",
+    brand: "Lucid",
+    model: "Air",
+    version: "Dream Edition",
+    status: "new",
+    odo: 0,
+    batteryCapacity: "118 kWh",
+    range: "832 km",
+    chargingTime: "4.5h (AC) / 20min (DC)",
+    color: "Stellar White",
+    numberOfSeat: 5,
+    style: "Sedan",
+    image: "https://images.unsplash.com/photo-1619976215249-4d1c3b3e3db4?w=400",
+    sellerName: "Trương Văn L",
+    price: 7800000000,
+    isFavorite: true,
+    year: 2025,
+  },
+  {
+    postID: "VH012",
+    batteryType: "Lithium-ion",
+    brand: "Jaguar",
+    model: "I-PACE",
+    version: "HSE",
+    status: "old",
+    odo: 22000,
+    batteryCapacity: "90 kWh",
+    range: "470 km",
+    chargingTime: "7h (AC) / 40min (DC)",
+    color: "Yulong White",
+    numberOfSeat: 5,
+    style: "SUV",
+    image: "https://images.unsplash.com/photo-1571068316344-75bc76f77890?w=400",
+    sellerName: "Lý Thị M",
+    price: 3200000000,
+    isFavorite: false,
+    year: 2021,
+  },
+];
 
 const ITEMS_PER_PAGE = 12;
 
@@ -124,93 +278,77 @@ export default function VehiclesPage() {
   // pagination
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Fetch vehicles on component mount
+  // fake fetch
   useEffect(() => {
-    fetchVehicles();
+    (async () => {
+      setLoading(true);
+      await new Promise((r) => setTimeout(r, 800));
+      setVehicles(mockVehiclesData);
+      setLoading(false);
+    })();
   }, []);
 
-  // Fetch all vehicles
-  const fetchVehicles = async () => {
-    try {
-      setLoading(true);
-      const vehiclesData = await vehicleAPI.getAllVehicles();
-      // Transform and ensure it's an array, filter out null values
-      const transformedData = Array.isArray(vehiclesData) 
-        ? vehiclesData.map(post => transformVehicleData(post)).filter(Boolean)
-        : [];
-      setVehicles(transformedData);
-    } catch (error) {
-      console.error('Error fetching vehicles:', error);
-      setVehicles([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Fetch filtered vehicles when search/filters change
-  useEffect(() => {
-    const hasSearch = appliedSearch.trim();
-    const hasFilters = Object.values(appliedFilters).some(val => val);
-    
-    if (hasSearch || hasFilters) {
-      fetchFilteredVehicles();
-    } else {
-      // Reset to all vehicles if no filters
-      fetchVehicles();
-    }
-  }, [appliedSearch, appliedFilters]);
-
-  // Fetch filtered vehicles
-  const fetchFilteredVehicles = async () => {
-    try {
-      setLoading(true);
-      const filteredData = await vehicleAPI.filterVehicles({
-        search: appliedSearch,
-        ...appliedFilters
-      });
-      // Transform and ensure it's an array, filter out null values
-      const transformedData = Array.isArray(filteredData) 
-        ? filteredData.map(post => transformVehicleData(post)).filter(Boolean)
-        : [];
-      setVehicles(transformedData);
-    } catch (error) {
-      console.error('Error fetching filtered vehicles:', error);
-      setVehicles([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // derive options từ data - ensure vehicles is always an array
-  const vehicles_safe = Array.isArray(vehicles) ? vehicles : [];
-  
+  // derive options từ data
   const brands = useMemo(
-    () => Array.from(new Set(vehicles_safe.map((v) => v.brand).filter(Boolean))).sort(),
-    [vehicles_safe]
+    () => Array.from(new Set(vehicles.map((v) => v.brand))).sort(),
+    [vehicles]
   );
   const models = useMemo(
-    () => Array.from(new Set(vehicles_safe.map((v) => v.model).filter(Boolean))).sort(),
-    [vehicles_safe]
+    () => Array.from(new Set(vehicles.map((v) => v.model))).sort(),
+    [vehicles]
   );
   const colors = useMemo(
-    () => Array.from(new Set(vehicles_safe.map((v) => v.color).filter(Boolean))).sort(),
-    [vehicles_safe]
+    () => Array.from(new Set(vehicles.map((v) => v.color))).sort(),
+    [vehicles]
   );
   const styles = useMemo(
-    () => Array.from(new Set(vehicles_safe.map((v) => v.style).filter(Boolean))).sort(),
-    [vehicles_safe]
+    () => Array.from(new Set(vehicles.map((v) => v.style))).sort(),
+    [vehicles]
   );
   const seats = useMemo(
-    () => Array.from(new Set(vehicles_safe.map((v) => v.numberOfSeat).filter(Boolean))).sort((a, b) => a - b),
-    [vehicles_safe]
+    () => Array.from(new Set(vehicles.map((v) => v.numberOfSeat))).sort((a, b) => a - b),
+    [vehicles]
   );
   const years = useMemo(
-    () => Array.from(new Set(vehicles_safe.map((v) => v.yearManufacture || v.year).filter(Boolean))).sort((a, b) => b - a),
-    [vehicles_safe]
+    () => Array.from(new Set(vehicles.map((v) => v.year).filter(Boolean))).sort((a, b) => b - a),
+    [vehicles]
   );
 
-  // Since filtering is now done by API, just return all vehicles
-  const filtered = useMemo(() => vehicles, [vehicles]);
+  // lọc CHỈ dựa trên applied*
+  const filtered = useMemo(() => {
+    const s = appliedSearch.trim().toLowerCase();
+    const f = appliedFilters;
+    return vehicles.filter((v) => {
+      const matchSearch =
+        !s ||
+        `${v.brand} ${v.model} ${v.version}`.toLowerCase().includes(s) ||
+        (v.sellerName || "").toLowerCase().includes(s);
+
+      const inBrand = !f.brand || v.brand === f.brand;
+      const inModel = !f.model || v.model === f.model;
+      const inColor = !f.color || v.color === f.color;
+      const inStyle = !f.style || v.style === f.style;
+      const inStatus = !f.status || v.status === f.status;
+      const inSeats = !f.seats || String(v.numberOfSeat) === String(f.seats);
+      const inYear = !f.year || String(v.year) === String(f.year);
+
+      const minOK = !f.minPrice || v.price >= Number(f.minPrice);
+      const maxOK = !f.maxPrice || v.price <= Number(f.maxPrice);
+
+      return (
+        matchSearch &&
+        inBrand &&
+        inModel &&
+        inColor &&
+        inStyle &&
+        inStatus &&
+        inSeats &&
+        inYear &&
+        minOK &&
+        maxOK
+      );
+    });
+  }, [vehicles, appliedSearch, appliedFilters]);
 
   // paginate
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE) || 1;
