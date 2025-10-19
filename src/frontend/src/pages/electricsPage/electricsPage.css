@@ -1,243 +1,508 @@
-/* ============ Electrics Page (full-bleed + sticky, khớp vehicles) ============ */
+/* ============ Electrics Page (Modern Design) ============ */
 :root{
-  --bg:#f7f8fa;
-  --card:#fff;
-  --line:#e7ebf0;
-  --ink:#0b0f13;
-  --muted:#6b7280;
-  --accent:#2563eb;
-  --accent-ink:#fff;
-  --soft:#f1f5f9;
-  --radius:16px;
-  --ease:cubic-bezier(.22,.61,.36,1);
+  --bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --bg-light: #f8fafc;
+  --card: #ffffff;
+  --card-hover: #f1f5f9;
+  --line: #e2e8f0;
+  --ink: #1a202c;
+  --muted: #64748b;
+  --accent: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --accent-solid: #667eea;
+  --accent-ink: #ffffff;
+  --soft: #f1f5f9;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --radius: 20px;
+  --radius-small: 12px;
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* PAGE: full-bleed giống vehicles (KHÔNG max-width, KHÔNG margin auto) */
+/* PAGE: Modern full-bleed design */
 .electrics-page{
-  width:100%;
-  max-width:none;
-  margin:0;
-  padding:24px;
-  min-height:100dvh;
-  background:var(--bg);
-  color:var(--ink);
-  overflow:visible; /* để sticky hoạt động */
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 32px;
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--ink);
+  overflow: visible;
+  position: relative;
 }
 
-/* TOPBAR: city select + search + button (giống vehicles) */
-.topbar{
-  display:flex;
-  gap:12px;
-  align-items:center;
-  background:var(--card);
-  border:1px solid var(--line);
-  padding:10px;
-  border-radius:var(--radius);
-  box-shadow:0 1px 1px rgba(0,0,0,.02);
-  margin-bottom:16px;
+.electrics-page::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--bg-light);
+  z-index: -1;
 }
+
+/* TOPBAR: Enhanced modern design */
+.topbar{
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  background: var(--card);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--line);
+  padding: 16px 20px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin-bottom: 24px;
+  transition: all 0.3s var(--ease);
+}
+
+.topbar:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
 .topbar-select,
 .topbar-search{
-  height:38px;
-  border:1px solid var(--line);
-  border-radius:10px;
-  padding:0 12px;
-  background:#fff;
-  outline:none;
+  height: 44px;
+  border: 2px solid var(--line);
+  border-radius: var(--radius-small);
+  padding: 0 16px;
+  background: var(--card);
+  outline: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s var(--ease);
 }
-.topbar-select{ min-width:160px; }
-.topbar-search{ flex:1; }
+
+.topbar-select:focus,
+.topbar-search:focus {
+  border-color: var(--accent-solid);
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  transform: translateY(-1px);
+}
+
+.topbar-select{ min-width: 180px; }
+.topbar-search{ 
+  flex: 1; 
+  font-weight: 400;
+}
+
 .topbar-btn{
-  height:38px;
-  padding:0 16px;
-  border:none;
-  border-radius:10px;
-  background:var(--accent);
-  color:var(--accent-ink);
-  cursor:pointer;
+  height: 44px;
+  padding: 0 24px;
+  border: none;
+  border-radius: var(--radius-small);
+  background: var(--accent);
+  color: var(--accent-ink);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s var(--ease);
+  box-shadow: var(--shadow);
 }
 
-/* HEADER: bỏ gradient, căng trái, giống vehicles */
-.electrics-header{
-  margin:12px 0 18px;
-  text-align:left;
-}
-.electrics-header h1{
-  margin:0 0 4px;
-  font-size:24px;
-  font-weight:800;
-  color:var(--ink);
-  background:none;
-  -webkit-background-clip:initial;
-  -webkit-text-fill-color:initial;
-  background-clip:initial;
-}
-.electrics-header p{
-  margin:0;
-  color:var(--muted);
+.topbar-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
 }
 
-/* LAYOUT: sidebar + grid */
+/* HEADER: Modern gradient design - FORCE OVERRIDE */
+.electrics-page .electrics-header{
+  margin: 16px 0 32px !important;
+  text-align: center !important;
+  position: relative;
+  width: 100%;
+  display: block;
+}
+
+.electrics-page .electrics-header::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 4px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  border-radius: 2px;
+}
+
+.electrics-page .electrics-header h1{
+  margin: 0 0 8px !important;
+  font-size: 32px !important;
+  font-weight: 800 !important;
+  color: #667eea !important;
+  letter-spacing: -0.5px;
+  text-align: center !important;
+  display: block;
+  background: none !important;
+  -webkit-background-clip: initial !important;
+  -webkit-text-fill-color: initial !important;
+  background-clip: initial !important;
+}
+
+.electrics-page .electrics-header p{
+  margin: 0 !important;
+  color: #64748b !important;
+  font-size: 16px !important;
+  font-weight: 500;
+  text-align: center !important;
+  display: block;
+}
+
+/* LAYOUT: Enhanced grid system */
 .layout{
-  display:grid;
-  grid-template-columns:280px 1fr;
-  gap:16px;
-  align-items:start;
-  overflow:visible; /* để sticky hoạt động */
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 24px;
+  align-items: start;
+  overflow: visible;
 }
 
-/* SIDEBAR FILTERS: sticky follow khi scroll */
+/* SIDEBAR FILTERS: Modern glass morphism design */
 .filters{
-  background:var(--card);
-  border:1px solid var(--line);
-  border-radius:var(--radius);
-  padding:16px;
-  position:sticky;
-  top:16px;
-  z-index:5;
-  max-height:calc(100dvh - 32px);
-  overflow:auto;
-  overscroll-behavior:contain;
-  -webkit-overflow-scrolling:touch;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: var(--radius);
+  padding: 24px;
+  position: sticky;
+  top: 24px;
+  z-index: 10;
+  max-height: calc(100dvh - 48px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  box-shadow: var(--shadow-lg);
+  transition: all 0.3s var(--ease);
 }
+
+.filters:hover {
+  background: rgba(255, 255, 255, 0.95);
+  transform: translateY(-2px);
+}
+
 .filters h3{
-  margin:0 0 12px;
-  font-size:18px;
-  font-weight:800;
+  margin: 0 0 20px;
+  font-size: 20px;
+  font-weight: 800;
+  background: var(--accent);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
+
 .filters label{
-  display:block;
-  font-size:13px;
-  color:var(--muted);
-  margin:12px 0 6px;
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 16px 0 8px;
 }
+
 .filters select,
 .filters input{
-  width:100%;
-  height:36px;
-  border:1px solid var(--line);
-  border-radius:10px;
-  padding:0 10px;
-  background:#fff;
-  outline:none;
+  width: 100%;
+  height: 42px;
+  border: 2px solid var(--line);
+  border-radius: var(--radius-small);
+  padding: 0 14px;
+  background: var(--card);
+  outline: none;
+  font-size: 14px;
+  transition: all 0.3s var(--ease);
 }
+
+.filters select:focus,
+.filters input:focus {
+  border-color: var(--accent-solid);
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  transform: translateY(-1px);
+}
+
 .filters .price-row{
-  display:grid;
-  grid-template-columns:1fr auto 1fr;
-  gap:8px;
-  align-items:center;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 12px;
+  align-items: center;
 }
+
 .filter-actions{
-  display:flex;
-  gap:8px;
-  margin-top:14px;
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
 }
+
 .btn-apply{
-  flex:1;
-  height:36px;
-  background:var(--accent);
-  color:#fff;
-  border:none;
-  border-radius:10px;
-  cursor:pointer;
+  flex: 1;
+  height: 42px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  border: none;
+  border-radius: var(--radius-small);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s var(--ease);
+  box-shadow: var(--shadow);
 }
+
+.btn-apply:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
 .btn-reset{
-  height:36px;
-  background:var(--soft);
-  color:var(--ink);
-  border:1px solid var(--line);
-  border-radius:10px;
-  cursor:pointer;
+  height: 42px;
+  padding: 0 16px;
+  background: var(--soft);
+  color: var(--ink);
+  border: 2px solid var(--line);
+  border-radius: var(--radius-small);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s var(--ease);
 }
 
-/* GRID: 4 cột như vehicles */
+.btn-reset:hover {
+  background: var(--card-hover);
+  border-color: var(--accent-solid);
+  transform: translateY(-1px);
+}
+
+/* GRID: Enhanced modern layout */
 .electrics-grid{
-  display:grid;
-  grid-template-columns:repeat(4, minmax(0, 1fr));
-  gap:16px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  padding: 4px;
 }
 
-/* LOADING skeleton: giống vehicles */
+/* LOADING skeleton: Modern shimmer effect */
 .loading-grid{
-  display:grid;
-  grid-template-columns:repeat(4, minmax(0, 1fr));
-  gap:16px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  padding: 4px;
 }
+
 .loading-card{
-  background:var(--card);
-  border:1px solid var(--line);
-  border-radius:var(--radius);
-  overflow:hidden;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  animation: cardFloat 3s ease-in-out infinite;
 }
+
 .loading-image{
-  height:150px;
-  background:linear-gradient(90deg, #f1f5f9, #eaeef4, #f1f5f9);
-  animation:shimmer 1.2s infinite;
-}
-.loading-content{ padding:12px; }
-.loading-line{ height:10px; background:#eef2f7; border-radius:6px; margin-bottom:8px; }
-.loading-line.long{ width:90%; }
-.loading-line.medium{ width:70%; }
-.loading-line.short{ width:40%; }
-@keyframes shimmer{
-  0%{ background-position: -200px 0; }
-  100%{ background-position: calc(200px + 100%) 0; }
+  height: 180px;
+  background: linear-gradient(
+    90deg, 
+    rgba(102, 126, 234, 0.1) 0%, 
+    rgba(118, 75, 162, 0.2) 50%, 
+    rgba(102, 126, 234, 0.1) 100%
+  );
+  background-size: 200% 100%;
+  animation: modernShimmer 2s infinite;
 }
 
-/* EMPTY: giống vehicles */
+.loading-content{ 
+  padding: 16px; 
+}
+
+.loading-line{ 
+  height: 12px; 
+  background: linear-gradient(
+    90deg, 
+    rgba(102, 126, 234, 0.1) 0%, 
+    rgba(118, 75, 162, 0.2) 50%, 
+    rgba(102, 126, 234, 0.1) 100%
+  );
+  background-size: 200% 100%;
+  border-radius: 6px; 
+  margin-bottom: 10px;
+  animation: modernShimmer 2s infinite;
+}
+
+.loading-line.long{ width: 90%; }
+.loading-line.medium{ width: 70%; }
+.loading-line.short{ width: 50%; }
+
+@keyframes modernShimmer{
+  0%{ background-position: -200% 0; }
+  100%{ background-position: 200% 0; }
+}
+
+@keyframes cardFloat{
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-4px); }
+}
+
+/* EMPTY: Enhanced empty state */
 .empty{
-  grid-column:1 / -1;
-  background:#fff;
-  border:1px dashed var(--line);
-  border-radius:var(--radius);
-  padding:32px;
-  text-align:center;
-  color:var(--muted);
+  grid-column: 1 / -1;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  border: 2px dashed var(--accent-solid);
+  border-radius: var(--radius);
+  padding: 48px 32px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 16px;
+  font-weight: 500;
+  box-shadow: var(--shadow);
+  transition: all 0.3s var(--ease);
 }
 
-/* PAGINATION: tái dùng style vehicles */
+.empty:hover {
+  background: rgba(255, 255, 255, 0.95);
+  transform: translateY(-2px);
+}
+
+/* PAGINATION: Modern design */
 .pagination-container{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  margin-top:20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 32px;
+  padding: 20px 0;
 }
-.pagination{ display:flex; gap:6px; }
+
+.pagination{ 
+  display: flex; 
+  gap: 8px; 
+}
+
 .pg-btn{
-  min-width:34px; height:34px;
-  border:1px solid var(--line);
-  border-radius:10px;
-  background:#fff;
-  cursor:pointer;
+  min-width: 40px; 
+  height: 40px;
+  border: 2px solid var(--line);
+  border-radius: var(--radius-small);
+  background: var(--card);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s var(--ease);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-.pg-btn.active{ background:var(--accent); color:#fff; border-color:var(--accent); }
-.pg-nav{ font-weight:700; }
-.pg-ellipsis{ display:inline-flex; align-items:center; padding:0 6px; color:var(--accent); }
-.pagination-info{ color:var(--accent); }
 
-/* SKELETON BOX cho sidebar khi loading */
+.pg-btn:hover {
+  border-color: var(--accent-solid);
+  background: var(--soft);
+  transform: translateY(-1px);
+}
+
+.pg-btn.active{ 
+  background: var(--accent);
+  color: var(--accent-ink); 
+  border-color: var(--accent-solid);
+  box-shadow: var(--shadow);
+}
+
+.pg-nav{ 
+  font-weight: 700; 
+  padding: 0 4px;
+}
+
+.pg-ellipsis{ 
+  display: inline-flex; 
+  align-items: center; 
+  padding: 0 8px; 
+  color: var(--accent-solid);
+  font-weight: 600;
+}
+
+.pagination-info{ 
+  color: var(--accent-solid);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* SKELETON BOX: Enhanced loading state */
 .skeleton-box{
-  height:420px;
-  background:linear-gradient(90deg, #f1f5f9, #eaeef4, #f1f5f9);
-  border-radius:var(--radius);
-  animation:shimmer 1.2s infinite;
+  height: 480px;
+  background: linear-gradient(
+    90deg, 
+    rgba(102, 126, 234, 0.1) 0%, 
+    rgba(118, 75, 162, 0.2) 50%, 
+    rgba(102, 126, 234, 0.1) 100%
+  );
+  background-size: 200% 100%;
+  border-radius: var(--radius);
+  animation: modernShimmer 2s infinite;
+  box-shadow: var(--shadow);
 }
 
-/* RESPONSIVE */
-@media (max-width: 1100px){
+/* RESPONSIVE: Enhanced breakpoints */
+@media (max-width: 1200px){
   .electrics-grid,
-  .loading-grid{ grid-template-columns:repeat(3, 1fr); }
+  .loading-grid{ 
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); 
+  }
+  .layout{ 
+    grid-template-columns: 300px 1fr; 
+  }
 }
+
 @media (max-width: 900px){
-  .layout{ grid-template-columns:1fr; }
-  .filters{ position:static; max-height:none; overflow:visible; }
+  .layout{ 
+    grid-template-columns: 1fr; 
+    gap: 20px;
+  }
+  .filters{ 
+    position: static; 
+    max-height: none; 
+    overflow: visible;
+    margin-bottom: 20px;
+  }
+  .electrics-page {
+    padding: 20px;
+  }
 }
+
 @media (max-width: 640px){
   .electrics-grid,
-  .loading-grid{ grid-template-columns:repeat(2, 1fr); }
-  .topbar{ flex-wrap:wrap; }
+  .loading-grid{ 
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); 
+  }
+  .topbar{ 
+    flex-wrap: wrap; 
+    gap: 12px;
+  }
+  .topbar-select{ 
+    min-width: 140px; 
+  }
+  .electrics-page {
+    padding: 16px;
+  }
+  .electrics-page .electrics-header h1 {
+    font-size: 28px !important;
+    color: #667eea !important;
+    text-align: center !important;
+  }
 }
-@media (max-width: 420px){
+
+@media (max-width: 480px){
   .electrics-grid,
-  .loading-grid{ grid-template-columns:1fr; }
+  .loading-grid{ 
+    grid-template-columns: 1fr; 
+  }
+  .topbar {
+    padding: 12px 16px;
+  }
+  .filters {
+    padding: 16px;
+  }
+  .pagination-container {
+    flex-direction: column;
+    gap: 16px;
+  }
 }
