@@ -9,12 +9,19 @@ import api from "../../config/api"; // ✅ dùng chung instance có interceptors
 
 // ENV
 const BASE_URL = import.meta.env.VITE_BACK_END_BASE_URL;
-const FORCE_MOCK = false; // ✅ sửa tên biến cho khớp
+const LOGIN_PATH = import.meta.env.VITE_LOGIN_PATH;
+const FORCE_MOCK = import.meta.env.VITE_USE_MOCK === "1";
 
 // Token helpers (đang dùng Cookie)
 const setAccessToken = (accessToken) => {
-  if (accessToken)
-    Cookies.set("accessToken", accessToken, { expires: 1, sameSite: "Lax" });
+  if (accessToken) {
+    Cookies.set("accessToken", accessToken, { 
+      expires: 1,
+      sameSite: "None",
+      secure: true,
+      path: "/"
+    });
+  }
 };
 const clearTokens = () => {
   Cookies.remove("accessToken");
@@ -35,8 +42,9 @@ async function loginApiDual({ email, password }) {
   const e = email.trim().toLowerCase();
 
   if (canUseRealApi()) {
-    const res = await api.post("auth/login", {
-      username: e, // 🔁 đổi thành email nếu backend yêu cầu
+    console.debug("[Login] Sending request to", LOGIN_PATH);
+    const res = await api.post(LOGIN_PATH, {
+      username: e,
       password,
     });
     const data = res.data ?? {};

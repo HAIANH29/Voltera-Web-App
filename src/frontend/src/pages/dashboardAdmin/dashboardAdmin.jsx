@@ -1,14 +1,14 @@
-import React, { useMemo, useState, useEffect } from "react";
+// src/pages/admin/DashboardAdmin.jsx
+import React, { useEffect, useState } from "react";
 import api from "../../config/api";
 import "./dashboardAdmin.css";
+import toast from "react-hot-toast";
 
 export default function DashboardAdmin() {
   const [activeTab, setActiveTab] = useState("listings");
-  const [accounts, setAccounts] = useState([]);
-  const [pendingAccounts, setPendingAccounts] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // --- Mock data ---
+  // Stats mock
   const stats = {
     totalUsers: 12547,
     totalListings: 3829,
@@ -19,186 +19,140 @@ export default function DashboardAdmin() {
     revenueGrowth: 18.7,
   };
 
-  const pendingListings = [
-    {
-      id: "L001",
-      title: "2021 Tesla Model 3",
-      seller: "John Smith",
-      price: 52000,
-      status: "pending",
-    },
-    {
-      id: "L002",
-      title: "BMW i4 M50 Battery Pack",
-      seller: "Sarah Johnson",
-      price: 15000,
-      status: "review",
-    },
-    {
-      id: "L003",
-      title: "2020 Audi e-tron GT",
-      seller: "Mike Chen",
-      price: 78000,
-      status: "pending",
-    },
-  ];
+  // Listings (pending)
+  const [pendingListings, setPendingListings] = useState([]);
 
+  // Accounts (pending)
+  const [pendingAccounts, setPendingAccounts] = useState([]);
+
+  // Users mock
   const users = [
-    {
-      id: "U001",
-      name: "Alice Cooper",
-      email: "alice@example.com",
-      status: "active",
-    },
-    {
-      id: "U002",
-      name: "Bob Wilson",
-      email: "bob@example.com",
-      status: "pending",
-    },
+    { id: "U001", name: "Alice Cooper", email: "alice@example.com", status: "active" },
+    { id: "U002", name: "Bob Wilson", email: "bob@example.com", status: "pending" },
   ];
 
-  // Load pending accounts when component mounts or activeTab changes to accounts
   useEffect(() => {
     if (activeTab === "accounts") {
       loadPendingAccounts();
+    } else if (activeTab === "listings") {
+      loadPendingListings();
     }
   }, [activeTab]);
 
+  /* ===================== LISTINGS (ADMIN) ===================== */
+  const loadPendingListings = async () => {
+    setLoading(true);
+    try {
+      // BE: GET /api/post/admin/post/pending
+      const res = await api.get("/api/post/admin/post/pending");
+      const items = Array.isArray(res.data)
+        ? res.data.map((p) => ({
+          id: p.id,
+          title: p.title || "Untitled",
+          price: Number(p.price || 0),
+          status: (p.status || "PENDING").toLowerCase(),
+        }))
+        : [];
+      setPendingListings(items);
+    } catch (error) {
+      console.error("[Admin] Error loading pending listings:", error);
+      setPendingListings([]);
+      toast.error(error?.response?.data?.message || "Failed to load pending listings");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleApproveListing = async (id) => {
+    try {
+      setLoading(true);
+      // BE: PUT /api/post/admin/post/{postId}/approve
+      await api.put(`/api/post/admin/post/${id}/approve`);
+      toast.success(`Listing ${id} approved`);
+      await loadPendingListings();
+    } catch (error) {
+      console.error("[Admin] Approve listing failed:", error);
+      toast.error(error?.response?.data?.message || "Failed to approve listing");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRejectListing = async (id) => {
+    try {
+      setLoading(true);
+      // BE: PUT /api/post/admin/post/{postId}/reject  (body: RejectRequest { reason })
+      const reason = window.prompt("Reject reason?");
+      await api.put(`/api/post/admin/post/${id}/reject`, { reason: reason || "Not specified" });
+      toast.success(`Listing ${id} rejected`);
+      await loadPendingListings();
+    } catch (error) {
+      console.error("[Admin] Reject listing failed:", error);
+      toast.error(error?.response?.data?.message || "Failed to reject listing");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /* ===================== ACCOUNTS (ADMIN) ===================== */
   const loadPendingAccounts = async () => {
     setLoading(true);
     try {
-      // Gọi API backend để lấy danh sách pending accounts
-      const res = await api.get("/admin/accounts/pending");
-      console.log("Pending accounts loaded:", res.data);
-      console.log("Total accounts:", res.data.length);
-      res.data.forEach((account, index) => {
-        console.log(`Account ${index}:`, {
-          accountId: account.accountId,
-          id: account.id,
-          username: account.username,
-          email: account.email,
-          allFields: Object.keys(account),
-        });
-      });
-      setPendingAccounts(res.data);
+      // BE: GET /api/v1/admin/accounts/pending
+      const res = await api.get("/api/v1/admin/accounts/pending");
+      const items = Array.isArray(res.data)
+        ? res.data.map((a) => ({
+          accountId: a.accountId || a.id,
+          username: a.username || "Unknown",
+          email: a.email || "",
+          role: a.role || "USER",
+          status: a.status || "PENDING",
+        }))
+        : [];
+      setPendingAccounts(items);
     } catch (error) {
-      console.error("Error loading pending accounts:", error);
-      const errorMsg =
-        error.response?.data?.message || "Failed to load pending accounts";
-      alert(`Error: ${errorMsg}`);
-
-      // Fallback to empty array if API fails
+      console.error("[Admin] Error loading accounts:", error);
       setPendingAccounts([]);
+      toast.error(error?.response?.data?.message || "Failed to load pending accounts");
     } finally {
       setLoading(false);
     }
   };
 
-  // --- Account Approval Functions ---
   const handleApproveAccount = async (accountId, email) => {
     try {
       setLoading(true);
-
-      // Gọi API backend để approve account
-      await api.put(`/admin/account/${accountId}/approved`);
-
-      console.log(`Account ${accountId} approved successfully`);
-      alert(`Account ${email} has been approved successfully!`);
-
-      // Remove approved account from list
-      setPendingAccounts((prev) =>
-        prev.filter((acc) => acc.accountId !== accountId)
-      );
+      // BE: PUT /api/v1/admin/account/{id}/approved
+      await api.put(`/api/v1/admin/account/${accountId}/approved`);
+      toast.success(`Account ${email} approved`);
+      await loadPendingAccounts();
     } catch (error) {
-      console.error("Failed to approve account:", error);
-      const errorMsg =
-        error.response?.data?.message || "Failed to approve account";
-      alert(`Error: ${errorMsg}`);
+      console.error("[Admin] Approval failed:", error);
+      toast.error(error?.response?.data?.message || "Failed to approve account");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleRejectAccount = async (accountId, email) => {
-    try {
-      setLoading(true);
-
-      // Vì backend chưa có API reject, tạm thời sử dụng mock
-      // Trong production sẽ thay bằng: await api.put(`/admin/account/${accountId}/rejected`);
-
-      console.log(`Rejecting account ${accountId} - ${email}`);
-
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      alert(`Account ${email} has been rejected.`);
-
-      // Remove rejected account from list
-      setPendingAccounts((prev) =>
-        prev.filter((acc) => acc.accountId !== accountId)
-      );
-    } catch (error) {
-      console.error("Failed to reject account:", error);
-      const errorMsg =
-        error.response?.data?.message || "Failed to reject account";
-      alert(`Error: ${errorMsg}`);
-    } finally {
-      setLoading(false);
-    }
+  const handleRejectAccount = async () => {
+    // Backend bạn chưa expose API reject account trong đoạn code đã gửi
+    toast.error("Reject account API is not available on backend.");
   };
 
+  /* ===================== DISPUTES MOCK ===================== */
   const disputes = [
-    {
-      id: "D001",
-      title: "Battery mismatch",
-      buyer: "John",
-      seller: "Jane",
-      amount: 12000,
-      status: "open",
-    },
-    {
-      id: "D002",
-      title: "Delay compensation",
-      buyer: "Mike",
-      seller: "AutoPro",
-      amount: 65000,
-      status: "in_progress",
-    },
+    { id: "D001", title: "Battery mismatch", buyer: "John", seller: "Jane", amount: 12000, status: "open" },
+    { id: "D002", title: "Delay compensation", buyer: "Mike", seller: "AutoPro", amount: 65000, status: "in_progress" },
   ];
-
-  const handleApprove = (id) => alert(`Approved listing ${id}`);
-  const handleReject = (id) => alert(`Rejected listing ${id}`);
 
   return (
     <div className="admin-inner">
       {/* --- Stats --- */}
       <div className="grid-4">
-        <Stat
-          title="Total Users"
-          value={stats.totalUsers}
-          delta={stats.userGrowth}
-          icon="👥"
-        />
-        <Stat
-          title="Total Listings"
-          value={stats.totalListings}
-          delta={stats.listingGrowth}
-          icon="🚗"
-        />
-        <Stat
-          title="Revenue"
-          value={`$${(stats.totalRevenue / 1_000_000).toFixed(1)}M`}
-          delta={stats.revenueGrowth}
-          icon="💵"
-        />
-        <Stat
-          title="Active Disputes"
-          value={stats.activeDisputes}
-          delta={2}
-          icon="⚠️"
-          tone="bad"
-        />
+        <Stat title="Total Users" value={stats.totalUsers} delta={stats.userGrowth} icon="👥" />
+        <Stat title="Total Listings" value={stats.totalListings} delta={stats.listingGrowth} icon="🚗" />
+        <Stat title="Revenue" value={`$${(stats.totalRevenue / 1_000_000).toFixed(1)}M`} delta={stats.revenueGrowth} icon="💵" />
+        <Stat title="Active Disputes" value={stats.activeDisputes} delta={2} icon="⚠️" tone="bad" />
       </div>
 
       {/* --- Tabs --- */}
@@ -209,13 +163,7 @@ export default function DashboardAdmin() {
             className={`tab ${activeTab === tab ? "active" : ""}`}
             onClick={() => setActiveTab(tab)}
           >
-            {tab === "listings"
-              ? "Pending Listings"
-              : tab === "accounts"
-              ? "Account Approval"
-              : tab === "users"
-              ? "Users"
-              : "Disputes"}
+            {tab === "listings" ? "Pending Listings" : tab === "accounts" ? "Account Approval" : tab === "users" ? "Users" : "Disputes"}
           </button>
         ))}
       </div>
@@ -229,7 +177,8 @@ export default function DashboardAdmin() {
               <tr>
                 <th>ID</th>
                 <th>Title</th>
-                <th>Seller</th>
+                {/* Seller có thể không có do @JsonIgnore; tạm ẩn cột */}
+                {/* <th>Seller</th> */}
                 <th>Price</th>
                 <th>Status</th>
                 <th>Actions</th>
@@ -240,30 +189,30 @@ export default function DashboardAdmin() {
                 <tr key={l.id}>
                   <td>{l.id}</td>
                   <td>{l.title}</td>
-                  <td>{l.seller}</td>
-                  <td>${l.price.toLocaleString()}</td>
+                  {/* <td>—</td> */}
+                  <td>${Number(l.price || 0).toLocaleString()}</td>
                   <td>
-                    <span
-                      className={`badge ${
-                        l.status === "pending" ? "secondary" : ""
-                      }`}
-                    >
+                    <span className={`badge ${l.status === "pending" ? "secondary" : ""}`}>
                       {l.status}
                     </span>
                   </td>
                   <td>
-                    <button className="btn" onClick={() => handleApprove(l.id)}>
-                      Approve
+                    <button className="btn" onClick={() => handleApproveListing(l.id)} disabled={loading}>
+                      {loading ? "Processing..." : "Approve"}
                     </button>
-                    <button
-                      className="btn danger"
-                      onClick={() => handleReject(l.id)}
-                    >
-                      Reject
+                    <button className="btn danger" onClick={() => handleRejectListing(l.id)} disabled={loading}>
+                      {loading ? "Processing..." : "Reject"}
                     </button>
                   </td>
                 </tr>
               ))}
+              {pendingListings.length === 0 && (
+                <tr>
+                  <td colSpan={5} style={{ textAlign: "center", padding: 16 }}>
+                    {loading ? "Loading..." : "No pending listings"}
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -273,9 +222,7 @@ export default function DashboardAdmin() {
       {activeTab === "accounts" && (
         <div className="card">
           <div className="card-title">Pending Account Approvals</div>
-          <div className="card-subtitle">
-            Review and approve new user registrations
-          </div>
+          <div className="card-subtitle">Review and approve new user registrations</div>
 
           {loading ? (
             <div className="loading-state">
@@ -286,9 +233,7 @@ export default function DashboardAdmin() {
             <div className="empty-state">
               <div className="empty-icon">✅</div>
               <div className="empty-title">No Pending Accounts</div>
-              <div className="empty-text">
-                All user registrations have been processed.
-              </div>
+              <div className="empty-text">All user registrations have been processed.</div>
             </div>
           ) : (
             <table className="approval-table">
@@ -309,42 +254,31 @@ export default function DashboardAdmin() {
                     <td>{account.username}</td>
                     <td>{account.email}</td>
                     <td>
-                      <span
-                        className={`role-badge ${
-                          account.role?.toLowerCase() || "unknown"
-                        }`}
-                      >
+                      <span className={`role-badge ${account.role?.toLowerCase() || "unknown"}`}>
                         {account.role || "N/A"}
                       </span>
                     </td>
                     <td>
-                      <span className="status-badge pending">
-                        {account.status}
-                      </span>
+                      <span className="status-badge pending">{account.status}</span>
                     </td>
                     <td>
                       <div className="approval-actions">
                         <button
                           className="approve-btn"
-                          onClick={() =>
-                            handleApproveAccount(
-                              account.accountId,
-                              account.email
-                            )
-                          }
+                          onClick={() => handleApproveAccount(account.accountId, account.email)}
                           title="Approve Account"
+                          disabled={loading}
                         >
                           Approve
                         </button>
                         <button
                           className="reject-btn"
-                          onClick={() =>
-                            handleRejectAccount(
-                              account.accountId,
-                              account.email
-                            )
-                          }
+                          onClick={() => {
+                            // BE chưa có endpoint reject account trong code bạn gửi
+                            handleRejectAccount();
+                          }}
                           title="Reject Account"
+                          disabled={loading}
                         >
                           Reject
                         </button>
@@ -378,11 +312,7 @@ export default function DashboardAdmin() {
                   <td>{u.name}</td>
                   <td>{u.email}</td>
                   <td>
-                    <span
-                      className={`badge ${
-                        u.status === "active" ? "success" : "secondary"
-                      }`}
-                    >
+                    <span className={`badge ${u.status === "active" ? "success" : "secondary"}`}>
                       {u.status}
                     </span>
                   </td>
@@ -417,11 +347,7 @@ export default function DashboardAdmin() {
                   <td>{d.seller}</td>
                   <td>${d.amount.toLocaleString()}</td>
                   <td>
-                    <span
-                      className={`badge ${
-                        d.status === "open" ? "danger" : "secondary"
-                      }`}
-                    >
+                    <span className={`badge ${d.status === "open" ? "danger" : "secondary"}`}>
                       {d.status}
                     </span>
                   </td>
