@@ -1,145 +1,85 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import './dashboardBuyer.css';
 
 const DashboardBuyer = () => {
-    const [stats, setStats] = useState({
-        totalOrders: 4,
-        pendingOrders: 2,
-        completedOrders: 2,
-        totalSpent: 20000
+    const [stats] = useState({
+        totalOrders: 12,
+        pendingOrders: 3,
+        completedOrders: 8,
+        totalSpent: 54750
     });
 
-    const [recentOrders, setRecentOrders] = useState([]);
-
-    useEffect(() => {
-        // Fetch buyer statistics
-        fetchBuyerStats();
-        fetchRecentOrders();
-    }, []);
-
-    const fetchBuyerStats = async () => {
-        try {
-            // Replace with actual API call
-            const response = await fetch('/api/buyer/stats');
-            const data = await response.json();
-            setStats(data);
-        } catch (error) {
-            console.error('Error fetching stats:', error);
-        }
-    };
-
-    const fetchRecentOrders = async () => {
-        try {
-            // Replace with actual API call
-            const response = await fetch('/api/buyer/recent-orders');
-            const data = await response.json();
-            setRecentOrders(data);
-        } catch (error) {
-            console.error('Error fetching orders:', error);
-        }
-    };
+    const [recentOrders] = useState([
+        { id: 'ORD-001', date: '2024-10-18', status: 'Delivered', amount: 1250 },
+        { id: 'ORD-002', date: '2024-10-16', status: 'Shipping', amount: 890 },
+        { id: 'ORD-003', date: '2024-10-14', status: 'Processing', amount: 2100 }
+    ]);
 
     return (
         <div className="dashboard-buyer">
-            <div className="dashboard-header">
-                <h1>Buyer Dashboard</h1>
-                <p>Welcome back! Here's your order overview.</p>
-            </div>
-
+            <h1>Welcome to Your Dashboard! 👋</h1>
+            
+            {/* Stats */}
             <div className="stats-grid">
                 <div className="stat-card">
-                    <div className="stat-icon orders">📦</div>
-                    <div className="stat-content">
-                        <h3>{stats.totalOrders}</h3>
-                        <p>Total Orders</p>
-                    </div>
+                    <h3>{stats.totalOrders}</h3>
+                    <p>Total Orders</p>
                 </div>
-
                 <div className="stat-card">
-                    <div className="stat-icon pending">⏳</div>
-                    <div className="stat-content">
-                        <h3>{stats.pendingOrders}</h3>
-                        <p>Pending Orders</p>
-                    </div>
+                    <h3>{stats.pendingOrders}</h3>
+                    <p>Pending Orders</p>
                 </div>
-
                 <div className="stat-card">
-                    <div className="stat-icon completed">✅</div>
-                    <div className="stat-content">
-                        <h3>{stats.completedOrders}</h3>
-                        <p>Completed Orders</p>
-                    </div>
+                    <h3>{stats.completedOrders}</h3>
+                    <p>Completed Orders</p>
                 </div>
-
                 <div className="stat-card">
-                    <div className="stat-icon spent">💰</div>
-                    <div className="stat-content">
-                        <h3>${stats.totalSpent}</h3>
-                        <p>Total Spent</p>
-                    </div>
+                    <h3>${stats.totalSpent.toLocaleString()}</h3>
+                    <p>Total Spent</p>
                 </div>
             </div>
 
-            <div className="dashboard-content">
-                <div className="recent-orders">
-                    <div className="section-header">
-                        <h2>Recent Orders</h2>
-                        <button className="view-all-btn">View All</button>
-                    </div>
-                    
-                    <div className="orders-table">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Order ID</th>
-                                    <th>Date</th>
-                                    <th>Status</th>
-                                    <th>Amount</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {recentOrders.map(order => (
-                                    <tr key={order.id}>
-                                        <td>#{order.id}</td>
-                                        <td>{new Date(order.date).toLocaleDateString()}</td>
-                                        <td>
-                                            <span className={`status ${order.status.toLowerCase()}`}>
-                                                {order.status}
-                                            </span>
-                                        </td>
-                                        <td>${order.amount}</td>
-                                        <td>
-                                            <button className="action-btn view">View</button>
-                                            <button className="action-btn track">Track</button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+            {/* Recent Orders */}
+            <div className="content-section">
+                <div className="section-header">
+                    <h2>Recent Orders</h2>
+                    <Link to="/my-orders">View All</Link>
                 </div>
+                <div className="orders-list">
+                    {recentOrders.map(order => (
+                        <div key={order.id} className="order-item">
+                            <div>
+                                <strong>#{order.id}</strong>
+                                <span className={`status ${order.status.toLowerCase()}`}>
+                                    {order.status}
+                                </span>
+                            </div>
+                            <div>
+                                <span>{order.date}</span>
+                                <strong>${order.amount}</strong>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
 
-                <div className="quick-actions">
-                    <h2>Quick Actions</h2>
-                    <div className="action-buttons">
-                        <button className="action-card">
-                            <span className="action-icon">🛒</span>
-                            <span>Browse Products</span>
-                        </button>
-                        <button className="action-card">
-                            <span className="action-icon">📋</span>
-                            <span>Order History</span>
-                        </button>
-                        <button className="action-card">
-                            <span className="action-icon">👤</span>
-                            <span>Profile Settings</span>
-                        </button>
-                        <button className="action-card">
-                            <span className="action-icon">💬</span>
-                            <span>Support</span>
-                        </button>
-                    </div>
+            {/* Quick Actions */}
+            <div className="content-section">
+                <h2>Quick Actions</h2>
+                <div className="actions-grid">
+                    <Link to="/browse-posts" className="action-item">
+                        🛒 Browse Products
+                    </Link>
+                    <Link to="/favorites" className="action-item">
+                        ❤️ My Favorites
+                    </Link>
+                    <Link to="/my-orders" className="action-item">
+                        📦 Order History
+                    </Link>
+                    <Link to="/buyer/settings" className="action-item">
+                        ⚙️ Settings
+                    </Link>
                 </div>
             </div>
         </div>

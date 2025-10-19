@@ -1,8 +1,8 @@
 /* Form wrapper chuẩn Tesla: hẹp, không card */
 .tesla-login {
   width: 100%;
-  max-width: 360px;
-  /* ← hẹp lại (320–360px) */
+  /* scale up by 1.3×: 360px * 1.3 = 468px */
+  max-width: 468px;
   margin: 0 auto;
   color: #171a20;
 }

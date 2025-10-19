@@ -14,6 +14,7 @@ import PostElectricWizard from "./pages/post/electrics/PostElectricWizard";
 import ForgotPasswordPage from "./pages/forgotpasswordPage/ForgotPasswordPage";
 import MainLayout from "./layout/mainLayout";
 import AdminLayout from "./layout/adminLayout";
+import BuyerLayout from "./layout/buyerLayout";
 import ResetPasswordPage from "./pages/resetPasswordPage/ResetPasswordPage";
 import VerifyEmailPage from "./pages/VerifyEmailPage/VerifyEmailPage";
 import AboutUsPage from "./pages/AboutUsPage/AboutUsPage";
@@ -22,6 +23,7 @@ import PostVehicleWizard from "./pages/post/vehicles/PostVehicleWizard";
 import VehicleDetail from "./pages/vehicleDetail/vehicleDetail";
 import ElectricDetail from "./pages/electricDetail/electricDetail";
 import DashboardAdmin from "./pages/dashboardAdmin/dashboardAdmin";
+import DashboardBuyer from "./pages/dashboardBuyer/dashboardBuyer";
 import Dashboard from "./components/Dashboard";
 
 console.log("routes:", routes);
@@ -188,6 +190,14 @@ function App() {
         <AdminLayout>
           <DashboardAdmin />
         </AdminLayout>
+      ),
+    },
+    {
+      path: routes.dashboardBuyer,
+      element: (
+        <BuyerLayout>
+          <DashboardBuyer />
+        </BuyerLayout>
       ),
     },
 

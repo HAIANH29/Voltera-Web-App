@@ -398,3 +398,154 @@ main, .main-content, .page-content{
 footer{
   margin-top: 24px;
 }
+/* --- Fix: hidden nếu không dùng Tailwind --- */
+.hidden { display: none !important; }
+
+/* --- Lưới ảnh: co giãn, không vỡ --- */
+.photos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+}
+
+/* --- Khung upload/preview ảnh: chiều cao cố định, cover, không tràn --- */
+.v-dropzone {
+  position: relative;
+  height: 220px;                   /* bạn có thể chỉnh 180–260px nếu muốn */
+  border: 1px dashed #E2E8F0;
+  border-radius: 12px;
+  background: #fafafa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;                /* quan trọng: chặn tràn */
+}
+
+/* Khi đã có ảnh, ép ảnh fill khung và crop hợp lý */
+.v-dropzone img {
+  position: absolute;
+  inset: 0;                        /* top/right/bottom/left: 0 */
+  width: 100%;
+  height: 100%;
+  object-fit: cover;               /* giữ tỉ lệ, cắt phần thừa */
+  border-radius: 12px;
+}
+
+/* Nút xoá ảnh (dấu X) */
+.v-chip-remove {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(0,0,0,0.55);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+/* Label trong ô upload (khi chưa có ảnh) */
+.v-dropzone > label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  user-select: none;
+  text-align: center;
+  padding: 10px;
+  color: #475569;
+  font-size: 14px;
+}
+/* Ẩn hoàn toàn input file nếu không dùng Tailwind */
+.hidden { display: none !important; }
+
+/* Lưới ảnh responsive, không vỡ layout */
+.photos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+}
+
+/* Khung upload/preview ảnh */
+.v-dropzone {
+  position: relative;
+  height: 220px;
+  border: 1px dashed #E2E8F0;
+  border-radius: 12px;
+  background: #fafafa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden; /* quan trọng: chặn tràn ảnh */
+}
+
+/* Ảnh cover đầy khung, không méo */
+.v-dropzone img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+/* Nút X remove góc phải */
+.v-chip-remove {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(0,0,0,0.55);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  z-index: 2;
+}
+
+/* Overlay action (Change / Remove) */
+.v-overlay-actions {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  display: flex;
+  gap: 8px;
+  opacity: 0;
+  transition: opacity .15s ease;
+  z-index: 2;
+}
+.v-dropzone:hover .v-overlay-actions { opacity: 1; }
+
+/* Nút mini đẹp gọn */
+.v-btn-mini {
+  padding: 6px 10px;
+  font-size: 12px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.92);
+  border: 1px solid #e2e8f0;
+  cursor: pointer;
+}
+.v-btn-mini:hover { background: #fff; }
+.v-btn-mini.danger { color: #b91c1c; border-color: #fecaca; background: #fff0f0; }
+
+/* Trạng thái chưa có ảnh */
+.v-empty-upload {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  user-select: none;
+  text-align: center;
+  padding: 10px;
+  color: #475569;
+  font-size: 14px;
+}
+
