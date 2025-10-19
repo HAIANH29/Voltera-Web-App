@@ -5,105 +5,97 @@ import * as Yup from "yup";
 import Cookies from "js-cookie";
 import "./LoginPage.css";
 import { useNavigate } from "react-router-dom";
-import api from "../../config/api"; // ✅ dùng chung instance có interceptors
+import api from "../../config/api"; // dùng chung axios instance (baseURL=/api + interceptors)
 
 // ENV
-const BASE_URL = import.meta.env.VITE_BACK_END_BASE_URL;
-const LOGIN_PATH = import.meta.env.VITE_LOGIN_PATH;
-const FORCE_MOCK = import.meta.env.VITE_USE_MOCK === "1";
+const LOGIN_PATH = import.meta.env.VITE_LOGIN_PATH || "/v1/auth/login"; // -> /api/v1/auth/login
+const USE_MOCK = String(import.meta.env.VITE_USE_MOCK || "0") === "1";
 
-// Token helpers (đang dùng Cookie)
-const setAccessToken = (accessToken) => {
-  if (accessToken) {
-    Cookies.set("accessToken", accessToken, { 
-      expires: 1,
-      sameSite: "None",
-      secure: true,
-      path: "/"
-    });
-  }
+// Token helpers (Cookie)
+const setTokens = ({ accessToken, refreshToken }) => {
+  if (accessToken) Cookies.set("accessToken", accessToken, { expires: 1, sameSite: "Lax" });
+  if (refreshToken) Cookies.set("refreshToken", refreshToken, { expires: 7, sameSite: "Lax" });
 };
 const clearTokens = () => {
   Cookies.remove("accessToken");
   Cookies.remove("refreshToken");
 };
 
-const canUseRealApi = () => {
-  if (FORCE_MOCK) return false;
-  if (!BASE_URL || BASE_URL === "/") return false;
-  return true;
-};
-
 async function checkEmailDual(email) {
+  // TODO: nếu có API check email thì gọi tại đây; hiện để true
   return true;
 }
 
-async function loginApiDual({ email, password }) {
+function normalizeRole(data) {
+  // Hỗ trợ nhiều format BE có thể trả về
+  let role =
+    data?.role ??
+    (Array.isArray(data?.roles) && data.roles[0]) ??
+    (Array.isArray(data?.authorities) &&
+      (typeof data.authorities[0] === "string" ? data.authorities[0] : data.authorities[0]?.authority)) ??
+    "USER";
+
+  // Ưu tiên lưu cả raw lẫn normalized (bỏ prefix ROLE_)
+  const roleRaw = String(role);
+  const roleNorm = roleRaw.startsWith("ROLE_") ? roleRaw.slice(5) : roleRaw;
+  return { roleRaw, roleNorm };
+}
+
+async function loginRealApi({ email, password }) {
   const e = email.trim().toLowerCase();
 
-  if (canUseRealApi()) {
-    console.debug("[Login] Sending request to", LOGIN_PATH);
-    const res = await api.post(LOGIN_PATH, {
-      username: e,
-      password,
-    });
-    const data = res.data ?? {};
-    const accessToken = data.token;
-    if (!accessToken) throw new Error("No token returned");
+  // NOTE: Backend của bạn nhận "username". Nếu yêu cầu "email", đổi key bên dưới.
+  const res = await api.post(LOGIN_PATH, {
+    username: e,
+    password,
+  });
 
-    setAccessToken(accessToken);
-    localStorage.setItem(
-      "currentUser",
-      JSON.stringify({
-        userId: data.userId,
-        role: data.role,
-        email: e,
-        username: e,
-      })
-    );
-    return {
-      user: { userId: data.userId, role: data.role, email: e, username: e },
-    };
-  }
+  const data = res.data ?? {};
+  const accessToken = data.token || data.accessToken;
+  const refreshToken = data.refreshToken || null;
+  if (!accessToken) throw new Error("No token returned");
 
-  // MOCK
-  return loginMock({ email: e, password });
+  setTokens({ accessToken, refreshToken });
+
+  const { roleRaw, roleNorm } = normalizeRole(data);
+
+  // Lưu user tối thiểu phục vụ FE
+  const user = {
+    userId: data.userId ?? data.id ?? null,
+    email: e,
+    username: e,
+    role: roleRaw,         // ví dụ: "ROLE_ADMIN" hoặc "ADMIN"
+    roleNorm: roleNorm,    // ví dụ: "ADMIN"
+    name: data.name ?? data.fullName ?? e,
+  };
+  localStorage.setItem("currentUser", JSON.stringify(user));
+  return { user };
 }
 
 function loginMock({ email, password }) {
-  // ... y như cũ của bạn
-  setAccessToken("mock-access-token");
-  localStorage.setItem(
-    "currentUser",
-    JSON.stringify({
-      email,
-      username: email,
-      name: "Mock User",
-      userId: 1,
-      role: "USER",
-    })
-  );
-  return {
-    user: {
-      email,
-      username: email,
-      name: "Mock User",
-      userId: 1,
-      role: "USER",
-    },
+  setTokens({ accessToken: "mock-access-token" });
+  const user = {
+    email,
+    username: email,
+    name: "Mock User",
+    userId: 1,
+    role: "USER",
+    roleNorm: "USER",
   };
+  localStorage.setItem("currentUser", JSON.stringify(user));
+  return { user };
+}
+
+async function loginApiDual({ email, password }) {
+  if (USE_MOCK) return loginMock({ email, password });
+  return loginRealApi({ email, password });
 }
 
 const emailSchema = Yup.object({
-  email: Yup.string()
-    .trim()
-    .email("Invalid email address.")
-    .required("Please enter your email."),
+  email: Yup.string().trim().email("Invalid email address.").required("Please enter your email."),
 });
 const passwordSchema = Yup.object({
-  password: Yup.string()
-    .min(3, "Password must be at least 3 characters.")
-    .required("Please enter your password."),
+  password: Yup.string().min(3, "Password must be at least 3 characters.").required("Please enter your password."),
 });
 
 export default function LoginPage() {
@@ -123,45 +115,26 @@ export default function LoginPage() {
       } catch (err) {
         console.error("Login error:", err.response?.data || err.message);
 
-        const errorMessage =
-          err?.response?.data?.message ||
-          err?.response?.data?.error ||
-          err?.message;
+        const errorMessage = err?.response?.data?.message || err?.response?.data?.error || err?.message;
 
-        if (
-          err?.response?.status === 401 ||
-          /bad credentials/i.test(errorMessage)
-        ) {
-          setFieldError(
-            "password",
-            "Email or password is incorrect. Please check and try again."
-          );
+        if (err?.response?.status === 401 || /bad credentials/i.test(errorMessage)) {
+          setFieldError("password", "Email or password is incorrect. Please check and try again.");
         } else if (/not been approved|PENDING/i.test(errorMessage)) {
-          setFormMsg(
-            "Your account is pending approval. Please wait for admin approval before logging in."
-          );
-        } else if (/account not found/i.test(errorMessage)) {
+          setFormMsg("Your account is pending approval. Please wait for admin approval before logging in.");
+        } else if (/account not found|user not found|no account/i.test(errorMessage)) {
           setFieldError("email", "No account found with this email address.");
         } else {
           setFormMsg(errorMessage || "Login failed. Please try again.");
         }
+        clearTokens();
       } finally {
         setSubmitting(false);
       }
     },
   });
 
-  const {
-    values,
-    errors,
-    touched,
-    handleChange,
-    handleBlur,
-    handleSubmit,
-    isSubmitting,
-    setTouched,
-    validateForm,
-  } = formik;
+  const { values, errors, touched, handleChange, handleBlur, handleSubmit, isSubmitting, setTouched, validateForm } =
+    formik;
 
   const goNext = async () => {
     setFormMsg("");
@@ -195,43 +168,26 @@ export default function LoginPage() {
             id="email"
             name="email"
             type="email"
-            className={`t-input ${
-              touched.email && errors.email ? "t-input-error" : ""
-            }`}
+            className={`t-input ${touched.email && errors.email ? "t-input-error" : ""}`}
             value={values.email}
             onChange={handleChange}
             onBlur={handleBlur}
             autoComplete="email"
           />
-          {touched.email && errors.email && (
-            <div className="t-error">{errors.email}</div>
-          )}
+          {touched.email && errors.email && <div className="t-error">{errors.email}</div>}
 
-          <button
-            type="button"
-            className="t-btn t-btn-primary"
-            onClick={goNext}
-            disabled={checking}
-          >
+          <button type="button" className="t-btn t-btn-primary" onClick={goNext} disabled={checking}>
             {checking ? "Checking..." : "Next"}
           </button>
 
-          <button
-            type="button"
-            className="t-link"
-            onClick={() => navigate("/forgot-password")}
-          >
+          <button type="button" className="t-link" onClick={() => navigate("/forgot-password")}>
             Trouble Signing In?
           </button>
 
           <div className="t-divider">
             <span>Or</span>
           </div>
-          <button
-            type="button"
-            className="t-btn t-btn-ghost"
-            onClick={() => navigate("/register")}
-          >
+          <button type="button" className="t-btn t-btn-ghost" onClick={() => navigate("/register")}>
             Create Account
           </button>
         </>
@@ -247,23 +203,15 @@ export default function LoginPage() {
             id="password"
             name="password"
             type="password"
-            className={`t-input ${
-              touched.password && errors.password ? "t-input-error" : ""
-            }`}
+            className={`t-input ${touched.password && errors.password ? "t-input-error" : ""}`}
             value={values.password}
             onChange={handleChange}
             onBlur={handleBlur}
             autoComplete="current-password"
           />
-          {touched.password && errors.password && (
-            <div className="t-error">{errors.password}</div>
-          )}
+          {touched.password && errors.password && <div className="t-error">{errors.password}</div>}
 
-          <button
-            type="submit"
-            className="t-btn t-btn-primary"
-            disabled={isSubmitting}
-          >
+          <button type="submit" className="t-btn t-btn-primary" disabled={isSubmitting}>
             {isSubmitting ? "Signing in..." : "Sign In"}
           </button>
 

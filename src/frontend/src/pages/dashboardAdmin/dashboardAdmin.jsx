@@ -37,6 +37,7 @@ export default function DashboardAdmin() {
     } else if (activeTab === "listings") {
       loadPendingListings();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
 
   /* ===================== LISTINGS (ADMIN) ===================== */
@@ -44,20 +45,27 @@ export default function DashboardAdmin() {
     setLoading(true);
     try {
       // BE: GET /api/post/admin/post/pending
-      const res = await api.get("/api/post/admin/post/pending");
+      // -> baseURL = /api  => FE gọi "/post/admin/post/pending"
+      const res = await api.get("/post/admin/post/pending");
       const items = Array.isArray(res.data)
         ? res.data.map((p) => ({
-          id: p.id,
-          title: p.title || "Untitled",
-          price: Number(p.price || 0),
-          status: (p.status || "PENDING").toLowerCase(),
-        }))
+            id: p.id,
+            title: p.title || "Untitled",
+            price: Number(p.price || 0),
+            status: (p.status || "PENDING").toLowerCase(),
+          }))
         : [];
       setPendingListings(items);
     } catch (error) {
       console.error("[Admin] Error loading pending listings:", error);
       setPendingListings([]);
-      toast.error(error?.response?.data?.message || "Failed to load pending listings");
+      toast.error(
+        error?.response?.status === 401
+          ? "Please login again."
+          : error?.response?.status === 403
+          ? "Admin role required."
+          : error?.response?.data?.message || "Failed to load pending listings"
+      );
     } finally {
       setLoading(false);
     }
@@ -67,12 +75,19 @@ export default function DashboardAdmin() {
     try {
       setLoading(true);
       // BE: PUT /api/post/admin/post/{postId}/approve
-      await api.put(`/api/post/admin/post/${id}/approve`);
+      // -> baseURL = /api  => FE gọi "/post/admin/post/{id}/approve"
+      await api.put(`/post/admin/post/${id}/approve`);
       toast.success(`Listing ${id} approved`);
       await loadPendingListings();
     } catch (error) {
       console.error("[Admin] Approve listing failed:", error);
-      toast.error(error?.response?.data?.message || "Failed to approve listing");
+      toast.error(
+        error?.response?.status === 401
+          ? "Please login again."
+          : error?.response?.status === 403
+          ? "Admin role required."
+          : error?.response?.data?.message || "Failed to approve listing"
+      );
     } finally {
       setLoading(false);
     }
@@ -81,14 +96,20 @@ export default function DashboardAdmin() {
   const handleRejectListing = async (id) => {
     try {
       setLoading(true);
-      // BE: PUT /api/post/admin/post/{postId}/reject  (body: RejectRequest { reason })
+      // BE: PUT /api/post/admin/post/{postId}/reject (body: RejectPostRequest { reason })
       const reason = window.prompt("Reject reason?");
-      await api.put(`/api/post/admin/post/${id}/reject`, { reason: reason || "Not specified" });
+      await api.put(`/post/admin/post/${id}/reject`, { reason: reason || "Not specified" });
       toast.success(`Listing ${id} rejected`);
       await loadPendingListings();
     } catch (error) {
       console.error("[Admin] Reject listing failed:", error);
-      toast.error(error?.response?.data?.message || "Failed to reject listing");
+      toast.error(
+        error?.response?.status === 401
+          ? "Please login again."
+          : error?.response?.status === 403
+          ? "Admin role required."
+          : error?.response?.data?.message || "Failed to reject listing"
+      );
     } finally {
       setLoading(false);
     }
@@ -99,21 +120,28 @@ export default function DashboardAdmin() {
     setLoading(true);
     try {
       // BE: GET /api/v1/admin/accounts/pending
-      const res = await api.get("/api/v1/admin/accounts/pending");
+      // -> baseURL = /api  => FE gọi "/v1/admin/accounts/pending"
+      const res = await api.get("/v1/admin/accounts/pending");
       const items = Array.isArray(res.data)
         ? res.data.map((a) => ({
-          accountId: a.accountId || a.id,
-          username: a.username || "Unknown",
-          email: a.email || "",
-          role: a.role || "USER",
-          status: a.status || "PENDING",
-        }))
+            accountId: a.accountId || a.id,
+            username: a.username || "Unknown",
+            email: a.email || "",
+            role: a.role || "USER",
+            status: a.status || "PENDING",
+          }))
         : [];
       setPendingAccounts(items);
     } catch (error) {
       console.error("[Admin] Error loading accounts:", error);
       setPendingAccounts([]);
-      toast.error(error?.response?.data?.message || "Failed to load pending accounts");
+      toast.error(
+        error?.response?.status === 401
+          ? "Please login again."
+          : error?.response?.status === 403
+          ? "Admin role required."
+          : error?.response?.data?.message || "Failed to load pending accounts"
+      );
     } finally {
       setLoading(false);
     }
@@ -123,20 +151,44 @@ export default function DashboardAdmin() {
     try {
       setLoading(true);
       // BE: PUT /api/v1/admin/account/{id}/approved
-      await api.put(`/api/v1/admin/account/${accountId}/approved`);
+      // -> baseURL = /api  => FE gọi "/v1/admin/account/{id}/approved"
+      await api.put(`/v1/admin/account/${accountId}/approved`);
       toast.success(`Account ${email} approved`);
       await loadPendingAccounts();
     } catch (error) {
       console.error("[Admin] Approval failed:", error);
-      toast.error(error?.response?.data?.message || "Failed to approve account");
+      toast.error(
+        error?.response?.status === 401
+          ? "Please login again."
+          : error?.response?.status === 403
+          ? "Admin role required."
+          : error?.response?.data?.message || "Failed to approve account"
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  const handleRejectAccount = async () => {
-    // Backend bạn chưa expose API reject account trong đoạn code đã gửi
-    toast.error("Reject account API is not available on backend.");
+  const handleRejectAccount = async (accountId, email) => {
+    try {
+      setLoading(true);
+      // BE: PUT /api/v1/admin/account/{id}/rejected
+      // -> baseURL = /api  => FE gọi "/v1/admin/account/{id}/rejected"
+      await api.put(`/v1/admin/account/${accountId}/rejected`);
+      toast.success(`Account ${email} rejected`);
+      await loadPendingAccounts();
+    } catch (error) {
+      console.error("[Admin] Reject account failed:", error);
+      toast.error(
+        error?.response?.status === 401
+          ? "Please login again."
+          : error?.response?.status === 403
+          ? "Admin role required."
+          : error?.response?.data?.message || "Failed to reject account"
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   /* ===================== DISPUTES MOCK ===================== */
@@ -144,6 +196,13 @@ export default function DashboardAdmin() {
     { id: "D001", title: "Battery mismatch", buyer: "John", seller: "Jane", amount: 12000, status: "open" },
     { id: "D002", title: "Delay compensation", buyer: "Mike", seller: "AutoPro", amount: 65000, status: "in_progress" },
   ];
+
+  const renderStatusBadge = (status) => {
+    const s = (status || "").toLowerCase();
+    const cls =
+      s === "approved" ? "success" : s === "pending" ? "secondary" : s === "rejected" ? "danger" : "secondary";
+    return <span className={`badge ${cls}`}>{s || "pending"}</span>;
+  };
 
   return (
     <div className="admin-inner">
@@ -163,7 +222,13 @@ export default function DashboardAdmin() {
             className={`tab ${activeTab === tab ? "active" : ""}`}
             onClick={() => setActiveTab(tab)}
           >
-            {tab === "listings" ? "Pending Listings" : tab === "accounts" ? "Account Approval" : tab === "users" ? "Users" : "Disputes"}
+            {tab === "listings"
+              ? "Pending Listings"
+              : tab === "accounts"
+              ? "Account Approval"
+              : tab === "users"
+              ? "Users"
+              : "Disputes"}
           </button>
         ))}
       </div>
@@ -191,11 +256,7 @@ export default function DashboardAdmin() {
                   <td>{l.title}</td>
                   {/* <td>—</td> */}
                   <td>${Number(l.price || 0).toLocaleString()}</td>
-                  <td>
-                    <span className={`badge ${l.status === "pending" ? "secondary" : ""}`}>
-                      {l.status}
-                    </span>
-                  </td>
+                  <td>{renderStatusBadge(l.status)}</td>
                   <td>
                     <button className="btn" onClick={() => handleApproveListing(l.id)} disabled={loading}>
                       {loading ? "Processing..." : "Approve"}
@@ -273,10 +334,7 @@ export default function DashboardAdmin() {
                         </button>
                         <button
                           className="reject-btn"
-                          onClick={() => {
-                            // BE chưa có endpoint reject account trong code bạn gửi
-                            handleRejectAccount();
-                          }}
+                          onClick={() => handleRejectAccount(account.accountId, account.email)}
                           title="Reject Account"
                           disabled={loading}
                         >
@@ -312,9 +370,7 @@ export default function DashboardAdmin() {
                   <td>{u.name}</td>
                   <td>{u.email}</td>
                   <td>
-                    <span className={`badge ${u.status === "active" ? "success" : "secondary"}`}>
-                      {u.status}
-                    </span>
+                    <span className={`badge ${u.status === "active" ? "success" : "secondary"}`}>{u.status}</span>
                   </td>
                 </tr>
               ))}
@@ -347,9 +403,7 @@ export default function DashboardAdmin() {
                   <td>{d.seller}</td>
                   <td>${d.amount.toLocaleString()}</td>
                   <td>
-                    <span className={`badge ${d.status === "open" ? "danger" : "secondary"}`}>
-                      {d.status}
-                    </span>
+                    <span className={`badge ${d.status === "open" ? "danger" : "secondary"}`}>{d.status}</span>
                   </td>
                 </tr>
               ))}
