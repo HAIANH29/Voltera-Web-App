@@ -13,7 +13,7 @@ const mockFavoriteVehicles = [
     price: 1350000000,
     isNew: false,
     isFavorite: true,
-    category: "vehicle"
+    category: "vehicle",
   },
   {
     id: 5,
@@ -24,7 +24,7 @@ const mockFavoriteVehicles = [
     price: 4500000000,
     isNew: true,
     isFavorite: true,
-    category: "vehicle"
+    category: "vehicle",
   },
   {
     id: 8,
@@ -35,7 +35,7 @@ const mockFavoriteVehicles = [
     price: 5500000000,
     isNew: true,
     isFavorite: true,
-    category: "vehicle"
+    category: "vehicle",
   },
   {
     id: 11,
@@ -46,8 +46,8 @@ const mockFavoriteVehicles = [
     price: 7800000000,
     isNew: true,
     isFavorite: true,
-    category: "vehicle"
-  }
+    category: "vehicle",
+  },
 ];
 
 // Mock data for favorite batteries
@@ -61,7 +61,7 @@ const mockFavoriteBatteries = [
     price: 450000000,
     isNew: false,
     isFavorite: true,
-    category: "battery"
+    category: "battery",
   },
   {
     id: 102,
@@ -72,7 +72,7 @@ const mockFavoriteBatteries = [
     price: 320000000,
     isNew: true,
     isFavorite: true,
-    category: "battery"
+    category: "battery",
   },
   {
     id: 103,
@@ -83,8 +83,8 @@ const mockFavoriteBatteries = [
     price: 680000000,
     isNew: true,
     isFavorite: true,
-    category: "battery"
-  }
+    category: "battery",
+  },
 ];
 
 const ITEMS_PER_PAGE = 12;
@@ -100,8 +100,8 @@ export default function FavoritesPage() {
     const fetchFavorites = async () => {
       setLoading(true);
       // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       // Combine vehicles and batteries favorites
       const allFavorites = [...mockFavoriteVehicles, ...mockFavoriteBatteries];
       setFavorites(allFavorites);
@@ -112,7 +112,7 @@ export default function FavoritesPage() {
   }, []);
 
   // Filter by category
-  const filteredFavorites = favorites.filter(item => {
+  const filteredFavorites = favorites.filter((item) => {
     if (activeFilter === "all") return true;
     if (activeFilter === "vehicles") return item.category === "vehicle";
     if (activeFilter === "batteries") return item.category === "battery";
@@ -126,8 +126,12 @@ export default function FavoritesPage() {
   const currentFavorites = filteredFavorites.slice(startIndex, endIndex);
 
   // Calculate counts for filter tabs
-  const vehiclesCount = favorites.filter(item => item.category === "vehicle").length;
-  const batteriesCount = favorites.filter(item => item.category === "battery").length;
+  const vehiclesCount = favorites.filter(
+    (item) => item.category === "vehicle"
+  ).length;
+  const batteriesCount = favorites.filter(
+    (item) => item.category === "battery"
+  ).length;
 
   // Reset current page when filter changes
   useEffect(() => {
@@ -136,12 +140,15 @@ export default function FavoritesPage() {
 
   // Handle remove favorite
   const handleFavoriteClick = (itemId) => {
-    setFavorites(prev =>
-      prev.map(item =>
-        item.id === itemId
-          ? { ...item, isFavorite: !item.isFavorite }
-          : item
-      ).filter(item => item.isFavorite) // Remove items that are no longer favorites
+    setFavorites(
+      (prev) =>
+        prev
+          .map((item) =>
+            item.id === itemId
+              ? { ...item, isFavorite: !item.isFavorite }
+              : item
+          )
+          .filter((item) => item.isFavorite) // Remove items that are no longer favorites
     );
   };
 
@@ -159,17 +166,17 @@ export default function FavoritesPage() {
   // Handle page change
   const handlePageChange = (page) => {
     setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   // Render pagination buttons
   const renderPagination = () => {
     const pages = [];
     const maxVisiblePages = 5;
-    
+
     let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
     let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-    
+
     if (endPage - startPage + 1 < maxVisiblePages) {
       startPage = Math.max(1, endPage - maxVisiblePages + 1);
     }
@@ -199,7 +206,11 @@ export default function FavoritesPage() {
         </button>
       );
       if (startPage > 2) {
-        pages.push(<span key="ellipsis1" className="pagination-ellipsis">...</span>);
+        pages.push(
+          <span key="ellipsis1" className="pagination-ellipsis">
+            ...
+          </span>
+        );
       }
     }
 
@@ -208,7 +219,7 @@ export default function FavoritesPage() {
       pages.push(
         <button
           key={i}
-          className={`pagination-btn ${i === currentPage ? 'active' : ''}`}
+          className={`pagination-btn ${i === currentPage ? "active" : ""}`}
           onClick={() => handlePageChange(i)}
         >
           {i}
@@ -219,7 +230,11 @@ export default function FavoritesPage() {
     // Last page
     if (endPage < totalPages) {
       if (endPage < totalPages - 1) {
-        pages.push(<span key="ellipsis2" className="pagination-ellipsis">...</span>);
+        pages.push(
+          <span key="ellipsis2" className="pagination-ellipsis">
+            ...
+          </span>
+        );
       }
       pages.push(
         <button
@@ -284,13 +299,13 @@ export default function FavoritesPage() {
           </h1>
           <p>Your saved products list</p>
         </div>
-        
+
         <div className="empty-favorites">
           <div className="empty-icon">♡</div>
           <h2>No favorite products yet</h2>
           <p>
-            You haven't saved any products to your favorites yet. 
-            Explore and add products you're interested in!
+            You haven't saved any products to your favorites yet. Explore and
+            add products you're interested in!
           </p>
           <a href="/vehicles" className="browse-btn">
             <span>🚗</span>
@@ -310,7 +325,8 @@ export default function FavoritesPage() {
           Favorite
         </h1>
         <p>
-          {favorites.length} product {favorites.length > 1 ? "s" : ""} saved in your favorites
+          {favorites.length} product {favorites.length > 1 ? "s" : ""} saved in
+          your favorites
         </p>
       </div>
 
@@ -323,13 +339,17 @@ export default function FavoritesPage() {
           All ({favorites.length})
         </button>
         <button
-          className={`filter-tab ${activeFilter === "vehicles" ? "active" : ""}`}
+          className={`filter-tab ${
+            activeFilter === "vehicles" ? "active" : ""
+          }`}
           onClick={() => setActiveFilter("vehicles")}
         >
           Vehicle ({vehiclesCount})
         </button>
         <button
-          className={`filter-tab ${activeFilter === "batteries" ? "active" : ""}`}
+          className={`filter-tab ${
+            activeFilter === "batteries" ? "active" : ""
+          }`}
           onClick={() => setActiveFilter("batteries")}
         >
           Battery ({batteriesCount})
@@ -365,11 +385,11 @@ export default function FavoritesPage() {
           {/* Pagination */}
           {totalPages > 1 && (
             <div className="pagination-container">
-              <div className="pagination">
-                {renderPagination()}
-              </div>
+              <div className="pagination">{renderPagination()}</div>
               <div className="pagination-info">
-                Showing {startIndex + 1}-{Math.min(endIndex, filteredFavorites.length)} of {filteredFavorites.length} favorite products
+                Showing {startIndex + 1}-
+                {Math.min(endIndex, filteredFavorites.length)} of{" "}
+                {filteredFavorites.length} favorite products
               </div>
             </div>
           )}

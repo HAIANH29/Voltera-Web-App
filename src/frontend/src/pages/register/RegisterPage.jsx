@@ -53,58 +53,14 @@ export default function RegisterPage() {
         // hỗ trợ cả 2 kiểu response: { ... } hoặc { data: {...} }
         const body = res?.data?.data ?? res?.data ?? {};
 
-        // Nếu BE trả token (ít gặp ở register), tự lưu và cho vào app luôn
-        const accessToken = body.accessToken;
-        const refreshToken = body.refreshToken;
-
-        if (accessToken) {
-          Cookies.set("accessToken", accessToken, { expires: 1 });
-          if (refreshToken)
-            Cookies.set("refreshToken", refreshToken, { expires: 7 });
-          // Nếu có trả kèm user, bạn có thể lưu:
-          if (body.user || body.profile) {
-            const userInfo = body.user || body.profile;
-            localStorage.setItem(
-              "currentUser",
-              JSON.stringify({
-                ...userInfo,
-                email: values.email.trim(),
-                username: values.email.trim(),
-              })
-            );
-          } else {
-            // Fallback: lưu thông tin cơ bản từ form
-            localStorage.setItem(
-              "currentUser",
-              JSON.stringify({
-                email: values.email.trim(),
-                username: values.email.trim(),
-                role: "BUYER",
-              })
-            );
-          }
-          navigate("/", { replace: true });
-          return;
-        }
-
-        // Trường hợp phổ biến: đăng ký xong -> đi login
-        // Kiểm tra status của account
-        if (body.status === "PENDING") {
-          navigate("/login", {
-            replace: true,
-            state: {
-              email: values.email.trim(),
-              justRegistered: true,
-              message:
-                "Registration successful! Your account is pending approval. Please wait for admin approval before logging in.",
-            },
-          });
-        } else {
-          navigate("/login", {
-            replace: true,
-            state: { email: values.email.trim(), justRegistered: true },
-          });
-        }
+        // After successful registration, navigate to OTP verification
+        // Backend automatically sends OTP email after registration
+        navigate("/verify-email", {
+          state: {
+            email: values.email.trim(),
+            purpose: "signup",
+          },
+        });
       } catch (err) {
         console.error("Register error:", err.response?.data || err.message);
 

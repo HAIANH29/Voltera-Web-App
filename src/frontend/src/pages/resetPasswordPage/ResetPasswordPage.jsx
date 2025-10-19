@@ -1,18 +1,29 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import api from "../../config/api";
 import "./ResetPasswordPage.css";
 
 export default function ResetPasswordPage() {
   const { state } = useLocation();
   const navigate = useNavigate();
-  const resetToken = state?.resetToken || "";
+  const email = state?.email || "";
+  const otp = state?.otp || "";
 
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  // Redirect if no email or otp
+  useEffect(() => {
+    if (!email || !otp) {
+      navigate("/forgot-password", { replace: true });
+    }
+  }, [email, otp, navigate]);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (password.length < 6) {
       setError("Password must be at least 6 characters.");
       return;
@@ -21,9 +32,42 @@ export default function ResetPasswordPage() {
       setError("Passwords do not match.");
       return;
     }
-    // TODO: call API reset password with resetToken + password
-    console.log("Reset password:", { resetToken, password });
-    navigate("/login");
+
+    setLoading(true);
+    setError("");
+
+    try {
+      // Call backend API to reset password
+      console.log("Sending password reset request:", {
+        email,
+        otp,
+        newPassword: "***",
+      });
+      await api.post("/otp/forgot/verify", {
+        email,
+        otp,
+        newPassword: password,
+      });
+
+      // Success - navigate to login with success message
+      navigate("/login", {
+        replace: true,
+        state: {
+          message:
+            "Password reset successful! Please log in with your new password.",
+          type: "success",
+        },
+      });
+    } catch (err) {
+      console.error("Password reset failed:", err);
+      const errorMessage =
+        err.response?.data?.message ||
+        err.response?.data ||
+        "Failed to reset password. Please try again.";
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -31,7 +75,10 @@ export default function ResetPasswordPage() {
       <div className="card">
         <h1 className="t-heading">Reset Password</h1>
         <p className="t-sub">
-          Enter your new password for <strong>{state?.email}</strong>
+          Enter your new password for <strong>{email}</strong>
+        </p>
+        <p className="t-hint">
+          Make sure you entered the correct OTP code from your email.
         </p>
 
         <form onSubmit={handleSubmit}>
@@ -46,6 +93,7 @@ export default function ResetPasswordPage() {
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••"
             required
+            disabled={loading}
           />
 
           <label className="t-label" htmlFor="confirm">
@@ -59,6 +107,7 @@ export default function ResetPasswordPage() {
             onChange={(e) => setConfirm(e.target.value)}
             placeholder="••••••"
             required
+            disabled={loading}
           />
 
           {error && <div className="t-error">{error}</div>}
@@ -67,8 +116,23 @@ export default function ResetPasswordPage() {
             type="submit"
             className="t-btn t-btn-primary"
             style={{ marginTop: 16 }}
+            disabled={loading}
           >
-            Update Password
+            {loading ? "Updating..." : "Update Password"}
+          </button>
+
+          <button
+            type="button"
+            className="t-btn t-btn-outline"
+            style={{ marginTop: 12 }}
+            onClick={() =>
+              navigate("/verify-email", {
+                state: { email, purpose: "reset" },
+              })
+            }
+            disabled={loading}
+          >
+            Back to OTP Verification
           </button>
         </form>
       </div>

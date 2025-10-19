@@ -1,10 +1,10 @@
 // src/pages/login/LoginPage.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import Cookies from "js-cookie";
 import "./LoginPage.css";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import api from "../../config/api"; // ✅ dùng chung instance có interceptors
 
 // ENV
@@ -100,9 +100,22 @@ const passwordSchema = Yup.object({
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [step, setStep] = useState(1);
   const [formMsg, setFormMsg] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
   const [checking, setChecking] = useState(false);
+
+  // Handle success messages from other pages (like password reset)
+  useEffect(() => {
+    const message = location.state?.message;
+    const type = location.state?.type;
+    if (message && type === "success") {
+      setSuccessMsg(message);
+      // Clear the state to prevent showing message on refresh
+      navigate(location.pathname, { replace: true });
+    }
+  }, [location.state, navigate, location.pathname]);
 
   const formik = useFormik({
     initialValues: { email: "", password: "" },
@@ -176,6 +189,9 @@ export default function LoginPage() {
   return (
     <div className="tesla-login">
       <h1 className="t-title">Sign In</h1>
+      {!!successMsg && (
+        <div className="t-success t-success-global">{successMsg}</div>
+      )}
       {!!formMsg && <div className="t-error t-error-global">{formMsg}</div>}
 
       {step === 1 && (
@@ -259,9 +275,18 @@ export default function LoginPage() {
             {isSubmitting ? "Signing in..." : "Sign In"}
           </button>
 
-          <button type="button" className="t-link" onClick={() => setStep(1)}>
-            Back
-          </button>
+          <div className="t-links">
+            <button type="button" className="t-link" onClick={() => setStep(1)}>
+              Back
+            </button>
+            <button
+              type="button"
+              className="t-link"
+              onClick={() => navigate("/forgot-password")}
+            >
+              Forgot Password?
+            </button>
+          </div>
         </form>
       )}
     </div>

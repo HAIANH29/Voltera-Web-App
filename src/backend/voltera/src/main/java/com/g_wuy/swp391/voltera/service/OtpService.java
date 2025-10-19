@@ -34,6 +34,14 @@ public class OtpService {
         }
         return false;
     }
+    
+    public boolean validateOtp(String email, String otp) {
+        String key = "OTP:" + email;
+        String value = redisTemplate.opsForValue().get(key);
+
+        return value != null && value.equals(otp);
+    }
+    
     public void resendOtp(String email) {
         generateOtp(email);
     }

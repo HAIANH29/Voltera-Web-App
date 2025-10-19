@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import api from "../../config/api";
 import "./VerifyEmailPage.css";
 
 const CODE_LENGTH = 6;
@@ -91,46 +92,64 @@ export default function VerifyEmailPage() {
     setError("");
 
     try {
-      // TODO: gọi API verify thực tế:
-      // const res = await api.verifyOtp({ email, code: joined, purpose });
-      // Demo giả lập:
-      await new Promise((r) => setTimeout(r, 500));
-      const res = {
-        verified: joined === "123456", // demo: chỉ code 123456 là đúng
-        resetToken: purpose === "reset" ? "rtok_demo_123" : null,
-      };
-
-      if (!res.verified) {
-        setError("The code you entered is incorrect or expired.");
-        setSubmitting(false);
-        // focus lại ô đầu để gõ lại
-        inputsRef.current[0]?.focus();
-        return;
-      }
-
       if (purpose === "signup") {
+        // Register OTP verification
+        await api.post("/otp/verify", {
+          email,
+          otp: joined,
+        });
         navigate("/login", { replace: true });
       } else {
-        // reset password flow
+        // Reset password flow - validate OTP with backend
+        await api.post("/otp/forgot/validate", {
+          email,
+          otp: joined,
+        });
+
+        // OTP is valid, navigate to reset password page
         navigate("/reset-password", {
           replace: true,
-          state: { resetToken: res.resetToken, email },
+          state: { email, otp: joined },
         });
       }
-    } catch (e) {
-      setError("Something went wrong. Please try again.");
+    } catch (err) {
+      console.error("OTP verification failed:", err);
+      const errorMessage =
+        err.response?.data?.message ||
+        err.response?.data ||
+        "The code you entered is incorrect or expired.";
+      setError(errorMessage);
       setSubmitting(false);
+      // focus lại ô đầu để gõ lại
+      inputsRef.current[0]?.focus();
+      // Reset code để người dùng nhập lại
+      setCode(Array(CODE_LENGTH).fill(""));
     }
   }
 
   const resend = async () => {
     if (left > 0) return;
     try {
-      // TODO: await api.sendOtp({ email, purpose })
-      await new Promise((r) => setTimeout(r, 300));
+      if (purpose === "signup") {
+        // Resend register OTP
+        await api.post("/otp/resend", null, {
+          params: { email },
+        });
+      } else {
+        // Resend reset password OTP
+        await api.post("/otp/forgot/request", null, {
+          params: { email },
+        });
+      }
       setLeft(RESEND_SECONDS);
-    } catch (e) {
-      setError("Unable to resend code. Please try again later.");
+      setError(""); // Clear any previous errors
+    } catch (err) {
+      console.error("Failed to resend OTP:", err);
+      const errorMessage =
+        err.response?.data?.message ||
+        err.response?.data ||
+        "Unable to resend code. Please try again later.";
+      setError(errorMessage);
     }
   };
 
@@ -199,8 +218,6 @@ export default function VerifyEmailPage() {
       >
         {left > 0 ? `Resend Code in ${left}s` : "Resend Code"}
       </button>
-
-      
     </div>
   );
 }

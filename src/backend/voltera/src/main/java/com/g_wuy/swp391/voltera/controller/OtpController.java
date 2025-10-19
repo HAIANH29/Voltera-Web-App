@@ -10,7 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/otp")
+@RequestMapping("/api/v1/otp")
+@CrossOrigin(origins = "http://localhost:5173")
 public class OtpController {
     @Autowired
     private OtpService otpService;
@@ -45,6 +46,16 @@ public class OtpController {
         userService.checkEmailExists(email);
         otpService.generateOtp(email);
         return ResponseEntity.ok("OTP for password reset sent to " + email);
+    }
+
+    @PostMapping("/forgot/validate")
+    public ResponseEntity<?> validatePasswordOtp(@RequestBody OtpRequest request) {
+        boolean valid = otpService.validateOtp(request.getEmail(), request.getOtp());
+        if(valid) {
+            return ResponseEntity.ok("OTP validated successfully");
+        } else {
+            return ResponseEntity.badRequest().body("Invalid or expired OTP");
+        }
     }
 
     @PostMapping("/forgot/verify")
