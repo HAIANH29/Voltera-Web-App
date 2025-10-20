@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.g_wuy.swp391.voltera.entity.FavoriteList;
 import com.g_wuy.swp391.voltera.entity.User;
 import com.g_wuy.swp391.voltera.exception.BusinessException;
-import com.g_wuy.swp391.voltera.mapper.FavListMapper;
 import com.g_wuy.swp391.voltera.model.response.FavListResponse;
 import com.g_wuy.swp391.voltera.service.FavoriteService;
 import com.g_wuy.swp391.voltera.service.JwtService;
@@ -33,9 +32,6 @@ public class FavoriteListController {
 
     @Autowired
     private UserService userService;
-
-    @Autowired
-    private FavListMapper favListMapper;
 
     @PostMapping("/add/{postID}")
     public ResponseEntity<FavoriteList> addToList(
@@ -62,7 +58,7 @@ public class FavoriteListController {
             throw new BusinessException("User Not found");
         }
         favoriteService.removeFromFavList(user.getId(), postID);
-        return ResponseEntity.ok("Removed from favorite list");
+        return ResponseEntity.ok("Removed from favorite list successfully!");
     }
 
     @GetMapping
@@ -75,7 +71,7 @@ public class FavoriteListController {
         if (user == null) {
             throw new BusinessException("User Not found");
         }
-        List<FavoriteList> favoriteLists = favoriteService.getFavoritelistsByUserID(user.getId());
-        return ResponseEntity.ok(favListMapper.toDtoList(favoriteLists));
+        List<FavListResponse> favoriteLists = favoriteService.getFavoriteListsByUserId(user.getId());
+        return ResponseEntity.ok(favoriteLists);
     }
 }

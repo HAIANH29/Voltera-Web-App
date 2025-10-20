@@ -1,5 +1,6 @@
 package com.g_wuy.swp391.voltera.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -25,6 +26,7 @@ public class VehicleImage {
     @ManyToOne(fetch = FetchType.LAZY)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "postid")
+    @JsonBackReference
     private Vehicle vehicle;
 
     @NotNull

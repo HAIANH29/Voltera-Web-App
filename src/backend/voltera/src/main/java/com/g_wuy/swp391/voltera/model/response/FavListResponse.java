@@ -6,10 +6,9 @@ import lombok.Data;
 
 @Data
 public class FavListResponse {
-    private Integer id;
     private Integer userId;
     private Integer postId;
     private String postTitle;
     private BigDecimal price;
-    // private String thumbnailUrl;
+    private String thumbnailUrl;
 }

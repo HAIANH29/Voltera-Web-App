@@ -126,4 +126,12 @@ public interface PostRepository extends JpaRepository<Post, Integer>, JpaSpecifi
     );
 
     List<Post> getPostsByStatusIgnoreCase(@Param("status") String status);
+
+    @Query(value = "SELECT vi.ImageURL FROM Vehicle v " +
+            "JOIN Post p ON p.PostID = v.PostID " +
+            "JOIN VehicleImage vi ON vi.PostID = v.PostID " +
+            "WHERE p.PostID = :postId " +
+            "LIMIT 1 ",
+            nativeQuery = true)
+    String getThumbnailUrlByPostId(@Param("postId") int postId);
 }

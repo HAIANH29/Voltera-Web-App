@@ -1,6 +1,7 @@
 package com.g_wuy.swp391.voltera.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.*;
@@ -88,6 +89,7 @@ public class Vehicle {
     private String status;
 
     @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<VehicleImage> images = new ArrayList<>();
 
 
