@@ -274,10 +274,32 @@ public class PostService {
         );
     }
 
-    public List<Post> getPostsByStatus(String status) {
-        if (status == null) {
-            return null;
+    public List<PostResponse> getAllPost(String status) {
+        List<Post> posts = postRepository.getAllPostByStatus(status);
+        List<PostResponse> responses = new ArrayList<>();
+
+        for (Post post : posts) {
+            List<String> allImages = new ArrayList<>();
+            Vehicle vehicle = vehicleRepository.findByPost(post).orElse(null);
+            Battery battery = batteryRepository.findByPost(post).orElse(null);
+
+            if (vehicle != null) {
+                List<String> vImages = vehicleImageRepository.findByVehicle(vehicle)
+                        .stream().map(VehicleImage::getImageUrl).toList();
+                allImages.addAll(vImages);
+            }
+
+            if (battery != null) {
+                List<String> bImages = batteryImageRepository.findByBattery(battery)
+                        .stream().map(BatteryImage::getImageUrl).toList();
+                allImages.addAll(bImages);
+            }
+
+            PostResponse response = postMapper.toPostResponse(post, battery, vehicle, allImages);
+            response.setLocation(post.getSellerId().getAddress());
+            responses.add(response);
         }
-        return postRepository.getPostsByStatusIgnoreCase(status);
+
+        return responses;
     }
 }
