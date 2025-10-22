@@ -29,4 +29,16 @@ export const listingService = {
     const res = await api.post("/post/create", payload); // ✅ /api/post/create
     return res.data;
   },
+
+  // Lấy danh sách vehicles theo status
+  async getVehiclesByStatus(status = "APPROVE") {
+    const res = await api.get(`/post/list/${status}`); // ✅ /api/post/list/APPROVE
+    return res.data;
+  },
+
+  // Lấy vehicle detail theo ID
+  async getVehicleById(id) {
+    const res = await api.get(`/post/${id}`); // ✅ /api/post/{id}
+    return res.data;
+  },
 };

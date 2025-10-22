@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 import api from "../../config/api"; // dùng chung axios instance (baseURL=/api + interceptors)
 
 // ENV
-const LOGIN_PATH = import.meta.env.VITE_LOGIN_PATH || "/v1/auth/login"; // -> /api/v1/auth/login
+const LOGIN_PATH = import.meta.env.VITE_LOGIN_PATH || "/api/v1/auth/login"; // -> /api/v1/auth/login
 const USE_MOCK = String(import.meta.env.VITE_USE_MOCK || "0") === "1";
 
 // Token helpers (Cookie)

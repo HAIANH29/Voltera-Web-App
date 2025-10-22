@@ -46,7 +46,7 @@ export default function DashboardAdmin() {
     try {
       // BE: GET /api/post/admin/post/pending
       // -> baseURL = /api  => FE gọi "/post/admin/post/pending"
-      const res = await api.get("/post/admin/post/pending");
+      const res = await api.get("/api/post/admin/post/pending");
       const items = Array.isArray(res.data)
         ? res.data.map((p) => ({
             id: p.id,
@@ -76,7 +76,7 @@ export default function DashboardAdmin() {
       setLoading(true);
       // BE: PUT /api/post/admin/post/{postId}/approve
       // -> baseURL = /api  => FE gọi "/post/admin/post/{id}/approve"
-      await api.put(`/post/admin/post/${id}/approve`);
+      await api.put(`/api/post/admin/post/${id}/approve`);
       toast.success(`Listing ${id} approved`);
       await loadPendingListings();
     } catch (error) {
@@ -98,7 +98,7 @@ export default function DashboardAdmin() {
       setLoading(true);
       // BE: PUT /api/post/admin/post/{postId}/reject (body: RejectPostRequest { reason })
       const reason = window.prompt("Reject reason?");
-      await api.put(`/post/admin/post/${id}/reject`, { reason: reason || "Not specified" });
+      await api.put(`/api/post/admin/post/${id}/reject`, { reason: reason || "Not specified" });
       toast.success(`Listing ${id} rejected`);
       await loadPendingListings();
     } catch (error) {
@@ -121,7 +121,7 @@ export default function DashboardAdmin() {
     try {
       // BE: GET /api/v1/admin/accounts/pending
       // -> baseURL = /api  => FE gọi "/v1/admin/accounts/pending"
-      const res = await api.get("/v1/admin/accounts/pending");
+      const res = await api.get("/api/v1/admin/accounts/pending");
       const items = Array.isArray(res.data)
         ? res.data.map((a) => ({
             accountId: a.accountId || a.id,
@@ -152,7 +152,7 @@ export default function DashboardAdmin() {
       setLoading(true);
       // BE: PUT /api/v1/admin/account/{id}/approved
       // -> baseURL = /api  => FE gọi "/v1/admin/account/{id}/approved"
-      await api.put(`/v1/admin/account/${accountId}/approved`);
+      await api.put(`/api/v1/admin/account/${accountId}/approved`);
       toast.success(`Account ${email} approved`);
       await loadPendingAccounts();
     } catch (error) {
@@ -174,7 +174,7 @@ export default function DashboardAdmin() {
       setLoading(true);
       // BE: PUT /api/v1/admin/account/{id}/rejected
       // -> baseURL = /api  => FE gọi "/v1/admin/account/{id}/rejected"
-      await api.put(`/v1/admin/account/${accountId}/rejected`);
+      await api.put(`/api/v1/admin/account/${accountId}/rejected`);
       toast.success(`Account ${email} rejected`);
       await loadPendingAccounts();
     } catch (error) {

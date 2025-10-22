@@ -5,6 +5,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { Eye, EyeOff } from "lucide-react";
 import Cookies from "js-cookie";
+import { otpService } from "../../services/otpService.jsx";
 import "./RegisterPage.css";
 
 // axios instance của bạn (đã set baseURL = VITE_BACK_END_BASE_URL, vd: http://localhost:8080/api/v1/)
@@ -87,24 +88,18 @@ export default function RegisterPage() {
           return;
         }
 
-        // Trường hợp phổ biến: đăng ký xong -> đi login
-        // Kiểm tra status của account
-        if (body.status === "PENDING") {
-          navigate("/login", {
-            replace: true,
-            state: {
-              email: values.email.trim(),
-              justRegistered: true,
-              message:
-                "Registration successful! Your account is pending approval. Please wait for admin approval before logging in.",
-            },
-          });
-        } else {
-          navigate("/login", {
-            replace: true,
-            state: { email: values.email.trim(), justRegistered: true },
-          });
-        }
+        // Đăng ký thành công -> gửi OTP để verify email
+        console.log("Registration successful, sending OTP...");
+        await otpService.requestOtp(values.email.trim());
+        console.log("OTP sent successfully");
+        
+        // Chuyển đến trang verify email
+        navigate("/verify-email", { 
+          state: { 
+            email: values.email.trim(), 
+            purpose: "signup" 
+          } 
+        });
       } catch (err) {
         console.error("Register error:", err.response?.data || err.message);
 

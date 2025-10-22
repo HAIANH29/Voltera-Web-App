@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { otpService } from "../../services/otpService.jsx";
 import "./VerifyEmailPage.css";
 
 const CODE_LENGTH = 6;
@@ -91,21 +92,13 @@ export default function VerifyEmailPage() {
     setError("");
 
     try {
-      // TODO: gọi API verify thực tế:
-      // const res = await api.verifyOtp({ email, code: joined, purpose });
-      // Demo giả lập:
-      await new Promise((r) => setTimeout(r, 500));
-      const res = {
-        verified: joined === "123456", // demo: chỉ code 123456 là đúng
-        resetToken: purpose === "reset" ? "rtok_demo_123" : null,
-      };
-
-      if (!res.verified) {
-        setError("The code you entered is incorrect or expired.");
-        setSubmitting(false);
-        // focus lại ô đầu để gõ lại
-        inputsRef.current[0]?.focus();
-        return;
+      if (purpose === "signup") {
+        const res = await otpService.verifyOtp(email, joined);
+        console.log("OTP verify response:", res);
+      } else {
+        // reset password flow - chỉ verify OTP, chưa reset password
+        // Backend sẽ verify OTP trong ResetPasswordPage
+        console.log("OTP verified for reset password");
       }
 
       if (purpose === "signup") {
@@ -114,22 +107,26 @@ export default function VerifyEmailPage() {
         // reset password flow
         navigate("/reset-password", {
           replace: true,
-          state: { resetToken: res.resetToken, email },
+          state: { email, verifiedOtp: joined },
         });
       }
     } catch (e) {
-      setError("Something went wrong. Please try again.");
+      console.error("OTP verification error:", e);
+      setError("The code you entered is incorrect or expired.");
       setSubmitting(false);
+      // focus lại ô đầu để gõ lại
+      inputsRef.current[0]?.focus();
     }
   }
 
   const resend = async () => {
     if (left > 0) return;
     try {
-      // TODO: await api.sendOtp({ email, purpose })
-      await new Promise((r) => setTimeout(r, 300));
+      await otpService.resendOtp(email);
+      console.log("OTP resent successfully");
       setLeft(RESEND_SECONDS);
     } catch (e) {
+      console.error("Resend OTP error:", e);
       setError("Unable to resend code. Please try again later.");
     }
   };

@@ -1,17 +1,20 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { otpService } from "../../services/otpService.jsx";
 import "./ResetPasswordPage.css";
 
 export default function ResetPasswordPage() {
   const { state } = useLocation();
   const navigate = useNavigate();
-  const resetToken = state?.resetToken || "";
+  const email = state?.email || "";
+  const verifiedOtp = state?.verifiedOtp || "";
 
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (password.length < 6) {
       setError("Password must be at least 6 characters.");
@@ -21,9 +24,24 @@ export default function ResetPasswordPage() {
       setError("Passwords do not match.");
       return;
     }
-    // TODO: call API reset password with resetToken + password
-    console.log("Reset password:", { resetToken, password });
-    navigate("/login");
+    
+    setSubmitting(true);
+    setError("");
+    
+    try {
+      await otpService.verifyPasswordResetOtp(email, verifiedOtp, password);
+      console.log("Password reset successfully");
+      navigate("/login", { 
+        replace: true,
+        state: { 
+          message: "Password reset successfully! Please login with your new password." 
+        }
+      });
+    } catch (err) {
+      console.error("Reset password error:", err);
+      setError("Failed to reset password. Please try again.");
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -33,6 +51,8 @@ export default function ResetPasswordPage() {
         <p className="t-sub">
           Enter your new password for <strong>{state?.email}</strong>
         </p>
+
+        {error && <div className="error-message" style={{color: 'red', marginBottom: '16px'}}>{error}</div>}
 
         <form onSubmit={handleSubmit}>
           <label className="t-label" htmlFor="password">
@@ -45,6 +65,7 @@ export default function ResetPasswordPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••"
+            disabled={submitting}
             required
           />
 
