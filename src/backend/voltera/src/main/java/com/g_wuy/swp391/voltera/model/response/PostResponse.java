@@ -19,4 +19,5 @@ public class PostResponse {
     private VehicleDTO vehicle;
     private List<String> imageUrls;
     private String location;
+    private String thumbnail;
 }

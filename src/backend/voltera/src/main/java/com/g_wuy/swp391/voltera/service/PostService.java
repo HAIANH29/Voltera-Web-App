@@ -302,4 +302,66 @@ public class PostService {
 
         return responses;
     }
+    public List<PostResponse> getAllVehiclePosts() {
+        List<Post> posts = postRepository.findAllVehiclePosts();
+        List<PostResponse> responses = new ArrayList<>();
+
+        for (Post post : posts) {
+            Vehicle vehicle = vehicleRepository.findByPost(post).orElse(null);
+            List<String> imageUrls = new ArrayList<>();
+
+            if (vehicle != null) {
+                imageUrls = vehicleImageRepository.findByVehicle(vehicle)
+                        .stream().map(VehicleImage::getImageUrl).toList();
+            }
+
+            PostResponse response = postMapper.toPostResponse(post, null, vehicle, imageUrls);
+            response.setLocation(post.getSellerId().getAddress());
+            responses.add(response);
+        }
+        return responses;
+    }
+
+
+    public List<PostResponse> getAllBatteryPosts() {
+        List<Post> posts = postRepository.findAllBatteryPosts();
+        List<PostResponse> responses = new ArrayList<>();
+
+        for (Post post : posts) {
+            Battery battery = batteryRepository.findByPost(post).orElse(null);
+            List<String> imageUrls = new ArrayList<>();
+
+            if (battery != null) {
+                imageUrls = batteryImageRepository.findByBattery(battery)
+                        .stream().map(BatteryImage::getImageUrl).toList();
+            }
+
+            PostResponse response = postMapper.toPostResponse(post, battery, null, imageUrls);
+            response.setLocation(post.getSellerId().getAddress());
+            responses.add(response);
+        }
+        return responses;
+    }
+    public PostResponse getPostDetail(Integer postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Post not found"));
+
+        Battery battery = batteryRepository.findByPost(post).orElse(null);
+        Vehicle vehicle = vehicleRepository.findByPost(post).orElse(null);
+
+        List<String> imageUrls = new ArrayList<>();
+
+        if (vehicle != null) {
+            imageUrls = vehicleImageRepository.findByVehicle(vehicle)
+                    .stream().map(VehicleImage::getImageUrl).toList();
+        } else if (battery != null) {
+            imageUrls = batteryImageRepository.findByBattery(battery)
+                    .stream().map(BatteryImage::getImageUrl).toList();
+        }
+
+        PostResponse response = postMapper.toPostResponse(post, battery, vehicle, imageUrls);
+        response.setLocation(post.getSellerId().getAddress());
+
+        return response;
+    }
 }
