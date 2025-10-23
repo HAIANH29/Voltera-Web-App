@@ -22,7 +22,7 @@ public class BatteryImage {
     @Column(name = "imageid", nullable = false)
     private Integer id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "postid")
     private Battery battery;

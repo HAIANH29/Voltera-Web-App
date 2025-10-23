@@ -173,7 +173,7 @@ public class PostController {
     }
 
 
-    @GetMapping("/public/detail/{postId}")
+    @GetMapping("/detail/{postId}")
     public ResponseEntity<PostResponse> getPostDetail(@PathVariable Integer postId) {
         PostResponse response = postService.getPostDetail(postId);
         return ResponseEntity.ok(response);

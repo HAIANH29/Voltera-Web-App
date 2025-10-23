@@ -23,7 +23,7 @@ public class VehicleImage {
     @Column(name = "imageid", nullable = false)
     private Integer id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "postid")
     @JsonBackReference
