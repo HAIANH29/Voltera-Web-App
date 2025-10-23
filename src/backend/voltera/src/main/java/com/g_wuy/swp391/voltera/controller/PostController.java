@@ -159,5 +159,23 @@ public class PostController {
 
         return ResponseEntity.ok(result);
     }
+    @GetMapping("/public/vehicles")
+    public ResponseEntity<List<PostResponse>> getAllVehiclePosts() {
+        List<PostResponse> responses = postService.getAllVehiclePosts();
+        return ResponseEntity.ok(responses);
+    }
 
+
+    @GetMapping("/public/batteries")
+    public ResponseEntity<List<PostResponse>> getAllBatteryPosts() {
+        List<PostResponse> responses = postService.getAllBatteryPosts();
+        return ResponseEntity.ok(responses);
+    }
+
+
+    @GetMapping("/detail/{postId}")
+    public ResponseEntity<PostResponse> getPostDetail(@PathVariable Integer postId) {
+        PostResponse response = postService.getPostDetail(postId);
+        return ResponseEntity.ok(response);
+    }
 }

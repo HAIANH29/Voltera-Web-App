@@ -22,7 +22,7 @@ public class Post {
     @Column(name = "postid", nullable = false)
     private Integer id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "sellerid")
     @JsonIgnore
     private User sellerId;
@@ -50,7 +50,8 @@ public class Post {
     @Column(name = "updatedat")
     private Instant updatedAt;
 
-    @OneToOne(mappedBy = "post", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "post", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Vehicle vehicle;
-
+    @OneToOne(mappedBy = "post", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private Battery battery;
 }

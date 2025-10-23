@@ -123,7 +123,12 @@ public interface PostRepository extends JpaRepository<Post, Integer>, JpaSpecifi
             @Param("minPrice") BigDecimal minPrice,
             @Param("maxPrice") BigDecimal maxPrice
     );
+    @Query("SELECT p FROM Post p WHERE p.vehicle IS NOT NULL AND p.status = 'APPROVE'")
+    List<Post> findAllVehiclePosts();
 
+
+    @Query("SELECT p FROM Post p WHERE p.battery IS NOT NULL AND p.status = 'APPROVE'")
+    List<Post> findAllBatteryPosts();
     List<Post> getPostsByStatusIgnoreCase(@Param("status") String status);
 
     @Query(value = "SELECT vi.ImageURL FROM Vehicle v " +

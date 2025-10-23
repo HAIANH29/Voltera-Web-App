@@ -23,20 +23,20 @@ public class PaymentService {
     /**
      * Tạo payment record mới khi khởi tạo giao dịch
      */
-    @Transactional
-    public Payment createPayment(Integer transactionId, String transactionCode,
-                                 BigDecimal amount, String orderInfo) {
-        Payment payment = Payment.builder()
-                .transactionId(transactionId)
-                .transactionCode(transactionCode)
-                .amount(amount)
-                .orderInfo(orderInfo)
-                .paymentMethod("VNPAY")
-                .paymentStatus("PENDING")
-                .build();
-
-        return paymentRepository.save(payment);
-    }
+//    @Transactional
+//    public Payment createPayment(Integer transactionId, String transactionCode,
+//                                 BigDecimal amount, String orderInfo) {
+//        Payment payment = Payment.builder()
+//                .transaction(transactionId)
+//                .transactionCode(transactionCode)
+//                .amount(amount)
+//                .orderInfo(orderInfo)
+//                .paymentMethod("VNPAY")
+//                .paymentStatus("PENDING")
+//                .build();
+//
+//        return paymentRepository.save(payment);
+//    }
 
     /**
      * Cập nhật payment sau khi nhận callback từ VNPay
