@@ -2,12 +2,12 @@ package com.g_wuy.swp391.voltera.controller;
 
 
 
+import com.g_wuy.swp391.voltera.entity.Post;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import com.g_wuy.swp391.voltera.entity.Post;
 import com.g_wuy.swp391.voltera.model.request.PostRequest;
 import com.g_wuy.swp391.voltera.model.request.RejectPostRequest;
 import com.g_wuy.swp391.voltera.model.response.ModerationResponse;

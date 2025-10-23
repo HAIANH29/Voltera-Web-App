@@ -34,7 +34,8 @@ public class SecurityConfig {
                 }) // bật cors
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/auth/**",
-                                "/otp/**").permitAll()
+                                "/otp/**",
+                                "/api/vnpay/**").permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

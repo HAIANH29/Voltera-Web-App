@@ -16,12 +16,11 @@ import java.time.Instant;
 public class Transaction {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "transactionid", nullable = false)
-    private Integer id;
+    @Column(name = "transactionid")
+    private Integer transactionId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "postid")
-    private Post postId;
+    @Column(name = "postid")
+    private Integer postId;
 
     @Column(name = "reportid")
     private Integer reportId;
@@ -36,13 +35,11 @@ public class Transaction {
     @Size(max = 20)
     @ColumnDefault("'PENDING'")
     @Column(name = "transactionstatus", length = 20)
-    private String transactionStatus;
+    private String transactionStatus; // PENDING, PROCESSING, COMPLETED, FAILED, CANCELLED
 
     @Column(name = "price", precision = 12, scale = 2)
     private BigDecimal price;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "contractid")
-    private Contract contractId;
-
+    @Column(name = "contractid")
+    private Integer contractId;
 }

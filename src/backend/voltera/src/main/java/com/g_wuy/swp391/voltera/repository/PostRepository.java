@@ -1,5 +1,6 @@
 package com.g_wuy.swp391.voltera.repository;
 
+import com.g_wuy.swp391.voltera.entity.Post;
 import jakarta.transaction.Transactional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -7,8 +8,6 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-
-import com.g_wuy.swp391.voltera.entity.Post;
 
 import java.math.BigDecimal;
 import java.util.List;
