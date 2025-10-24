@@ -35,7 +35,7 @@ public class Transaction {
     @Column(name = "price", precision = 12, scale = 2)
     private BigDecimal price;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "contractid")
     private Contract contractid;
 

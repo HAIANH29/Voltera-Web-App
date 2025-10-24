@@ -13,10 +13,17 @@ public class WebConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:5173")); // FE React
+
+        // ✅ Cho phép cả frontend, ngrok và VNPay gọi vào
+        config.setAllowedOrigins(List.of(
+                "http://localhost:5173",
+                "https://sandbox.vnpayment.vn",
+                "https://*.ngrok-free.dev"
+        ));
+
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
-        config.setAllowCredentials(true); // cho phép gửi cookie/token
+        config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);

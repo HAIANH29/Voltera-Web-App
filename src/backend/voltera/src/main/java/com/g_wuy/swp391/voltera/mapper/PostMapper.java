@@ -1,9 +1,11 @@
 package com.g_wuy.swp391.voltera.mapper;
 
+import com.g_wuy.swp391.voltera.entity.Post;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.*;
 
 import com.g_wuy.swp391.voltera.entity.Battery;
-import com.g_wuy.swp391.voltera.entity.Post;
 import com.g_wuy.swp391.voltera.entity.Vehicle;
 import com.g_wuy.swp391.voltera.model.response.PostResponse;
 import com.g_wuy.swp391.voltera.model.response.RejectResponse;
