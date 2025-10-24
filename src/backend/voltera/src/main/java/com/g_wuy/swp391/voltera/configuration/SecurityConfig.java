@@ -1,6 +1,7 @@
 package com.g_wuy.swp391.voltera.configuration;
 
 import com.g_wuy.swp391.voltera.component.JwtAuthentificationFilter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -16,8 +17,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private final JwtAuthentificationFilter jwtAuthenticationFilter;
+    @Autowired
+    private JwtAuthentificationFilter jwtAuthenticationFilter;
 
+    @Autowired
+    private WebConfig  webConfig;
     public SecurityConfig(JwtAuthentificationFilter jwtAuthenticationFilter) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
@@ -29,15 +33,19 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(csrf -> csrf.disable())
-                .cors(cors -> {
-                }) // bật cors
+        http
+                .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.configurationSource(webConfig.corsConfigurationSource())) // Spring tự lấy bean CorsConfigurationSource
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/auth/**",
+                        .requestMatchers(
+                                "/api/v1/auth/**",
                                 "/otp/**",
                                 "/api/vnpay/**",
-                                "/api/post/public/**").permitAll()
-                        .anyRequest().authenticated())
+                                "/api/vnpay/**",
+                                "/api/post/public/**"
+                        ).permitAll()
+                        .anyRequest().authenticated()
+                )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

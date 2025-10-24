@@ -8,6 +8,7 @@ import org.hibernate.annotations.ColumnDefault;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 
 @Getter
 @Setter
@@ -49,6 +50,9 @@ public class Post {
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "updatedat")
     private Instant updatedAt;
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
+    private List<Transaction> transactions;
 
     @OneToOne(mappedBy = "post", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Vehicle vehicle;

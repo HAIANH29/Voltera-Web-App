@@ -17,13 +17,15 @@ public class Transaction {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "transactionid")
-    private Integer transactionId;
+    private Integer transactionid;
 
-    @Column(name = "postid")
-    private Integer postId;
+    @ManyToOne
+    @JoinColumn(name = "postid", nullable = false)
+    private Post post;
 
-    @Column(name = "reportid")
-    private Integer reportId;
+    @OneToOne
+    @JoinColumn(name = "reportid")
+    private Report report;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "createat")
@@ -40,6 +42,7 @@ public class Transaction {
     @Column(name = "price", precision = 12, scale = 2)
     private BigDecimal price;
 
-    @Column(name = "contractid")
-    private Integer contractId;
+    @OneToOne
+    @JoinColumn(name = "contractid")
+    private Contract contract;
 }

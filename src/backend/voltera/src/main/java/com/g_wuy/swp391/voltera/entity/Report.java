@@ -29,4 +29,7 @@ public class Report {
     @Column(name = "year")
     private Integer year;
 
+    @OneToOne
+    @JoinColumn(name = "contractId") // FK trỏ đến Contract
+    private Contract contract;
 }

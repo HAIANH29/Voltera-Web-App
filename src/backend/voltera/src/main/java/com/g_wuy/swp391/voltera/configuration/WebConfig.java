@@ -14,13 +14,12 @@ public class WebConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
 
-        // ✅ Cho phép cả frontend, ngrok và VNPay gọi vào
+        // Cho phép frontend, VNPAY và ngrok gọi vào
         config.setAllowedOrigins(List.of(
                 "http://localhost:5173",
                 "https://sandbox.vnpayment.vn",
                 "https://*.ngrok-free.dev"
         ));
-
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);

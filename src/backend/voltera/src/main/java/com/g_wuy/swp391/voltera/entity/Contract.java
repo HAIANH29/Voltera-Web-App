@@ -16,7 +16,7 @@ public class Contract {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "contractid", nullable = false)
-    private Integer id;
+    private Integer contractId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "postid")
@@ -44,4 +44,15 @@ public class Contract {
     @Column(name = "expirationdate")
     private LocalDate expirationDate;
 
+    @Column(name = "sellersigned")
+    private Boolean sellersigned;
+
+    @Column(name = "buyersigned")
+    private Boolean buyersigned;
+
+    @Column(name = "terms", length = Integer.MAX_VALUE)
+    private String terms;
+
+    @OneToOne(mappedBy = "contract", cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional = true)
+    private Report report;
 }

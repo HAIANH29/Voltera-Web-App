@@ -214,4 +214,8 @@ public class UserService {
         account.setPassword(passwordEncoder.encode(newPassword));
         accountRepository.save(account);
     }
+
+    public Integer findUserIdByUsername(String username) {
+        return userRepository.findUserIdByUsername(username);
+    }
 }
