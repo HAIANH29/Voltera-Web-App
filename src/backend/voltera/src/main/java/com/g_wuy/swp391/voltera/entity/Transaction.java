@@ -2,8 +2,7 @@ package com.g_wuy.swp391.voltera.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.math.BigDecimal;
@@ -12,6 +11,9 @@ import java.time.Instant;
 @Getter
 @Setter
 @Entity
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "transaction")
 public class Transaction {
     @Id
@@ -21,28 +23,29 @@ public class Transaction {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "postid")
-    private Post postId;
-
-    @Column(name = "reportid")
-    private Integer reportId;
+    private Post postid;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "createat")
-    private Instant createAt;
+    private Instant createat;
 
     @Column(name = "updateat")
-    private Instant updateAt;
-
-    @Size(max = 20)
-    @ColumnDefault("'PENDING'")
-    @Column(name = "transactionstatus", length = 20)
-    private String transactionStatus;
+    private Instant updateat;
 
     @Column(name = "price", precision = 12, scale = 2)
     private BigDecimal price;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "contractid")
-    private Contract contractId;
+    private Contract contractid;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reportid")
+    private Report reportid;
+
+    @Size(max = 20)
+    @ColumnDefault("'PENDING'")
+    @Column(name = "transactionstatus", length = 20)
+    private String transactionstatus;
 
 }

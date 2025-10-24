@@ -56,7 +56,7 @@ public class PostService {
                 .orElseThrow(() -> new SecurityException("Seller information not found"));
 
 
-        // 🔹 2. Tạo Post
+
         Post post = postRepository.save(Post.builder()
                 .sellerId(seller)
                 .title(dto.getTitle())
@@ -100,7 +100,7 @@ public class PostService {
                     .yearManufacture(dto.getVehicle().getYearmanufacture())
                     .build());
 
-            // 🔹 Lưu URL ảnh xe
+
             if (dto.getVehicleImages() != null && !dto.getVehicleImages().isEmpty()) {
                 for (String url : dto.getVehicleImages()) {
                     vehicleImageRepository.save(VehicleImage.builder()
@@ -113,7 +113,7 @@ public class PostService {
             }
         }
 
-        // 🔹 Nếu là pin
+
         else if (dto.getBattery() != null) {
             Integer typeId = dto.getBattery().getBatteryTypeId().getId();
             if (typeId == null) throw new IllegalArgumentException("Battery type ID is required");

@@ -1,5 +1,6 @@
 package com.g_wuy.swp391.voltera.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -18,30 +19,41 @@ public class Contract {
     @Column(name = "contractid", nullable = false)
     private Integer id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "postid")
-    private Post postId;
+    private Post postid;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "sellerid")
-    private User sellerId;
+    @JsonIgnoreProperties({"contractsBought", "contractsSold"})
+    private User sellerid;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "buyerid")
-    private User buyerId;
+    @JsonIgnoreProperties({"contractsBought", "contractsSold"})
+    private User buyerid;
 
     @Column(name = "contractfile", length = Integer.MAX_VALUE)
-    private String contractFile;
+    private String contractfile;
 
     @Size(max = 20)
     @ColumnDefault("'PENDING'")
     @Column(name = "contractstatus", length = 20)
-    private String contractStatus;
+    private String contractstatus;
 
     @Column(name = "signeddate")
-    private LocalDate signedDate;
+    private LocalDate signeddate;
 
     @Column(name = "expirationdate")
-    private LocalDate expirationDate;
+    private LocalDate expirationdate;
+
+    @Column(name = "sellersigned")
+    private Boolean sellersigned;
+
+    @Column(name = "buyersigned")
+    private Boolean buyersigned;
+
+    @Column(name = "terms", length = Integer.MAX_VALUE)
+    private String terms;
 
 }

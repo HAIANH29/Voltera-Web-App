@@ -1,5 +1,7 @@
 package com.g_wuy.swp391.voltera.controller;
 
+import com.g_wuy.swp391.voltera.model.response.ContractResponse;
+import com.g_wuy.swp391.voltera.service.ContractService;
 import com.g_wuy.swp391.voltera.service.JwtService;
 import com.g_wuy.swp391.voltera.service.S3Service;
 import com.g_wuy.swp391.voltera.service.UserService;
@@ -21,6 +23,8 @@ public class UploadController {
     private UserService userService;
     @Autowired
     private JwtService jwtService;
+    @Autowired
+    private ContractService contractService;
 
     @PostMapping("/product")
     public ResponseEntity<List<String>> uploadFiles(
@@ -55,5 +59,11 @@ public class UploadController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Upload avatar failed: " + e.getMessage());
         }
+    }
+    @PostMapping("/contract/{id}/upload-pdf")
+    public ResponseEntity<ContractResponse> uploadPdf(
+            @PathVariable Integer id,
+            @RequestParam("file") MultipartFile file) {
+        return ResponseEntity.ok(contractService.uploadPdf(id, file));
     }
 }
