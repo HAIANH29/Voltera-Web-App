@@ -13,20 +13,29 @@ public class ContractController {
     @Autowired
     private ContractService contractService;
     @PostMapping("/create")
-    public ResponseEntity<ContractResponse> createContract(@RequestBody ContractRequest request) {
-        return ResponseEntity.ok(contractService.createContract(request));
+    public ResponseEntity<ContractResponse> createContract(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestBody ContractRequest request) {
+        return ResponseEntity.ok(contractService.createContract(request, authHeader));
     }
 
     @PutMapping("/{id}/terms")
-    public ResponseEntity<ContractResponse> updateTerms(@PathVariable Integer id,
+    public ResponseEntity<ContractResponse> updateTerms( @RequestHeader("Authorization") String authHeader,
+            @PathVariable Integer id,
                                                         @RequestParam String newTerms) {
-        return ResponseEntity.ok(contractService.updateTerms(id, newTerms));
+        ContractResponse response = contractService.updateTerms(authHeader, id, newTerms);
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{id}/sign")
-    public ResponseEntity<ContractResponse> signContract(@PathVariable Integer id,
-                                                         @RequestParam Integer userId) {
-        return ResponseEntity.ok(contractService.signContract(id, userId));
+    public ResponseEntity<ContractResponse> signContract( @RequestHeader("Authorization") String authHeader
+            ,@PathVariable Integer id) {
+        ContractResponse response = contractService.signContract(authHeader, id);
+        return ResponseEntity.ok(response);
     }
-
+    @GetMapping("/{id}")
+    public ResponseEntity<ContractResponse> getContract(@PathVariable Integer id) {
+        ContractResponse response = contractService.getContractById(id);
+        return ResponseEntity.ok(response);
+    }
 }

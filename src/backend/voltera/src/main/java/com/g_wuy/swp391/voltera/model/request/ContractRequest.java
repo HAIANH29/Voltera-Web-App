@@ -7,7 +7,5 @@ import lombok.Data;
 @Data
 public class ContractRequest {
     private Integer postId;
-    private Integer buyerId;
-    private Integer sellerId;
     private String terms;
 }
