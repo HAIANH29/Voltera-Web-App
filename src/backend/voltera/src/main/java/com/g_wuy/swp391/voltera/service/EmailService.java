@@ -1,9 +1,14 @@
 package com.g_wuy.swp391.voltera.service;
 
+import com.g_wuy.swp391.voltera.entity.Contract;
+import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class EmailService {
@@ -26,5 +31,33 @@ public class EmailService {
         message.setFrom("voltera.global@gmail.com");
         mailSender.send(message);
         System.out.println("Sent OTP to " + to + ": " + otp);
+    }
+    public void sendContractEmailWithAttachment(Contract contract, MultipartFile file) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+
+            helper.setTo(new String[]{
+                    contract.getBuyerid().getEmail(),
+                    contract.getSellerid().getEmail()
+            });
+            helper.setSubject("Contract Signed - #" + contract.getId());
+            helper.setText("""
+                Dear users,
+
+                Your contract has been signed by both parties.
+                Please find the attached PDF copy for your reference.
+
+                Best regards,
+                Voltera Team
+            """);
+
+            helper.addAttachment("Contract_" + contract.getId() + ".pdf",
+                    new ByteArrayResource(file.getBytes()));
+
+            mailSender.send(message);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to send contract email", e);
+        }
     }
 }

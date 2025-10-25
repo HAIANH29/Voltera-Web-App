@@ -8,7 +8,5 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ContractRepository extends JpaRepository<Transaction, Integer> {
-    @Query("SELECT c FROM Contract c WHERE c.postId.id = :postId AND (c.buyerId.id = :userId OR c.sellerId.id = :userId)")
-    Contract findContractByPostIdAndUserId(@Param("postId") Integer postId,@Param("userId") Integer userId);
+public interface ContractRepository extends JpaRepository<Contract, Integer> {
 }
