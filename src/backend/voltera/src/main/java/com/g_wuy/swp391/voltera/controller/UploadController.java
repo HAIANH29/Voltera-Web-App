@@ -1,10 +1,7 @@
 package com.g_wuy.swp391.voltera.controller;
 
 import com.g_wuy.swp391.voltera.model.response.ContractResponse;
-import com.g_wuy.swp391.voltera.service.ContractService;
-import com.g_wuy.swp391.voltera.service.JwtService;
-import com.g_wuy.swp391.voltera.service.S3Service;
-import com.g_wuy.swp391.voltera.service.UserService;
+import com.g_wuy.swp391.voltera.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +22,8 @@ public class UploadController {
     private JwtService jwtService;
     @Autowired
     private ContractService contractService;
+    @Autowired
+    private ComplaintImageService complaintImageService;
 
     @PostMapping("/product")
     public ResponseEntity<List<String>> uploadFiles(
@@ -65,5 +64,13 @@ public class UploadController {
             @PathVariable Integer id,
             @RequestParam("file") MultipartFile file) {
         return ResponseEntity.ok(contractService.uploadPdf(id, file));
+    }
+
+    @PostMapping("/{complaintId}/images")
+    public ResponseEntity<List<String>> uploadComplaintImages(
+            @PathVariable Integer complaintId,
+            @RequestParam("files") MultipartFile[] files) {
+        List<String> urls = complaintImageService.uploadComplaintImages(complaintId, files);
+        return ResponseEntity.ok(urls);
     }
 }
