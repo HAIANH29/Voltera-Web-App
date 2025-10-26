@@ -4,13 +4,25 @@ import api from "../../config/api";
 import "./vehicleDetail.css";
 
 /**
- * Map PostResponse từ BE -> format cho detail page
+ * Map PostResponse (backend) -> detail view model
+ * Keep the returned shape minimal and defensive (fields may be null)
  */
 const mapPostToDetail = (p) => {
   const v = p?.vehicle || {};
-  
+  const priceNumber = p?.price != null ? Number(p.price) : 0;
+
+  const images = Array.isArray(p?.imageUrls) && p.imageUrls.length > 0
+    ? p.imageUrls
+    : p?.thumbnail ? [p.thumbnail] : [];
+
   return {
     postID: String(p?.postId ?? ""),
+    title: p?.title || `${v?.brand || ''} ${v?.model || ''} ${v?.version || ''}`.trim(),
+    description: p?.description || "Modern electric vehicle with up-to-date features.",
+    price: priceNumber,
+    status: (p?.status || "").toLowerCase(),
+
+    // vehicle specific
     brand: v?.brand || "",
     model: v?.model || "",
     version: v?.version || "",
@@ -18,42 +30,43 @@ const mapPostToDetail = (p) => {
     color: v?.color || "",
     numberOfSeat: Number(v?.numberofseat ?? 0),
     odo: Number(v?.odo ?? 0),
-    status: Number(v?.odo ?? 0) > 0 ? "old" : "new",
-    batteryCapacity: v?.batterycapacity != null ? `${v.batterycapacity} kWh` : "",
-    range: v?.range != null ? `${v.range} km` : "",
-    chargingTime: v?.chargingtime != null ? `${v.chargingtime}h` : "",
     year: Number(v?.yearmanufacture ?? 0),
-    price: Number(p?.price ?? 0),
-    title: p?.title || `${v?.brand} ${v?.model} ${v?.version}`,
-    description: p?.description || "High-quality electric vehicle with advanced technology.",
-    
-    // Images
-    image: p?.thumbnail || (Array.isArray(p?.imageUrls) && p.imageUrls.length > 0 ? p.imageUrls[0] : ""),
-    images: Array.isArray(p?.imageUrls) ? p.imageUrls : (p?.thumbnail ? [p.thumbnail] : []),
-    
-    // Seller info
-    sellerName: p?.location || "Vehicle Seller",
-    sellerInfo: {
-      name: p?.location || "Vehicle Seller",
-      address: p?.location || "",
+    batteryCapacityRaw: v?.batterycapacity ?? null,
+    batteryCapacity: v?.batterycapacity != null ? `${v.batterycapacity} kWh` : null,
+    rangeRaw: v?.range ?? null,
+    range: v?.range != null ? `${v.range} km` : null,
+    chargingTimeRaw: v?.chargingtime ?? null,
+    chargingTime: v?.chargingtime != null ? `${v.chargingtime} h` : null,
+    licensePlate: v?.licenseplate || null,
+    origin: v?.origin || null,
+    bodyInsurance: Boolean(v?.bodyinsurance),
+    vehicleInspection: Boolean(v?.vehicleinspection),
+
+    // images
+    images,
+    image: images[0] || '/placeholder-car.jpg',
+
+    // seller/location (backend only sets location string currently)
+    seller: {
+      address: p?.location || null,
     },
-    
-    // Additional specs based on vehicle data
+
+    // specifications (English labels)
     specifications: {
-      "Năm sản xuất": v?.yearmanufacture || "N/A",
-      "Số chỗ ngồi": v?.numberofseat || "N/A",
-      "Loại xe": v?.style || "N/A",
-      "Màu sắc": v?.color || "N/A",
-      "ODO": v?.odo ? `${v.odo.toLocaleString()} km` : "Xe mới",
-      "Dung lượng pin": v?.batterycapacity ? `${v.batterycapacity} kWh` : "N/A",
-      "Quãng đường": v?.range ? `${v.range} km` : "N/A",
-      "Thời gian sạc": v?.chargingtime ? `${v.chargingtime}h` : "N/A",
-      "Xuất xứ": v?.origin || "N/A",
-      "Biển số": v?.licenseplate || "N/A",
-      "Bảo hiểm thân vỏ": v?.bodyinsurance ? "Có" : "Không",
-      "Kiểm định": v?.vehicleinspection ? "Có" : "Không",
+      "Year": v?.yearmanufacture || "N/A",
+      "Seats": v?.numberofseat || "N/A",
+      "Body type": v?.style || "N/A",
+      "Color": v?.color || "N/A",
+      "Odometer": v?.odo ? `${v.odo.toLocaleString()} km` : "New",
+      "Battery": v?.batterycapacity ? `${v.batterycapacity} kWh` : "N/A",
+      "Range": v?.range ? `${v.range} km` : "N/A",
+      "Charging time": v?.chargingtime ? `${v.chargingtime} h` : "N/A",
+      "Origin": v?.origin || "N/A",
+      "License plate": v?.licenseplate || "N/A",
+      "Body insurance": v?.bodyinsurance ? "Yes" : "No",
+      "Vehicle inspection": v?.vehicleinspection ? "Yes" : "No",
     },
-    
+
     isFavorite: false,
   };
 };
@@ -99,6 +112,46 @@ export default function VehicleDetail() {
 
     fetchVehicle();
   }, [postID]);
+
+  // FORCE TESLA COLORS - KILL GREEN OVERRIDE
+  useEffect(() => {
+    const forceColors = () => {
+      const featureItems = document.querySelectorAll('.detail-feature-item');
+      featureItems.forEach(item => {
+        item.style.background = 'linear-gradient(135deg, rgba(232,33,39,0.08) 0%, rgba(232,33,39,0.05) 100%)';
+        item.style.border = '2px solid rgba(232,33,39,0.2)';
+        item.style.borderLeft = '4px solid #e82127';
+        item.style.borderRadius = '12px';
+        item.style.boxShadow = '0 2px 8px rgba(232,33,39,0.1)';
+        
+        const icon = item.querySelector('.detail-feature-icon');
+        if (icon) {
+          icon.style.color = '#e82127';
+          icon.style.fontSize = '18px';
+          icon.style.fontWeight = '700';
+        }
+        
+        const text = item.querySelector('.detail-feature-text');
+        if (text) {
+          text.style.color = '#0b0f13';
+          text.style.fontWeight = '600';
+          text.style.fontSize = '15px';
+        }
+      });
+    };
+    
+    // Force colors immediately and after delays
+    forceColors();
+    const timer1 = setTimeout(forceColors, 50);
+    const timer2 = setTimeout(forceColors, 200);
+    const timer3 = setTimeout(forceColors, 500);
+    
+    return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+      clearTimeout(timer3);
+    };
+  }, [vehicle]);
 
   const handleFavoriteClick = () => {
     setIsFavorite(!isFavorite);
@@ -163,7 +216,7 @@ export default function VehicleDetail() {
                 e.target.src = '/placeholder-car.jpg';
               }}
             />
-            {vehicle.status === 'new' && <div className="new-badge">Mới</div>}
+            {(vehicle.odo === 0 || vehicle.status === 'new') && <div className="new-badge">New</div>}
           </div>
           
           {vehicle.images && vehicle.images.length > 1 && (
@@ -197,25 +250,25 @@ export default function VehicleDetail() {
               <div className="detail-features-grid">
                 {vehicle.batteryCapacity && (
                   <div className="detail-feature-item">
-                    <span className="detail-feature-icon">🔋</span>
+                    <span className="detail-feature-icon">⚡</span>
                     <span className="detail-feature-text">Battery: {vehicle.batteryCapacity}</span>
                   </div>
                 )}
                 {vehicle.range && (
                   <div className="detail-feature-item">
-                    <span className="detail-feature-icon">🛣️</span>
+                    <span className="detail-feature-icon">�</span>
                     <span className="detail-feature-text">Range: {vehicle.range}</span>
                   </div>
                 )}
                 {vehicle.chargingTime && (
                   <div className="detail-feature-item">
-                    <span className="detail-feature-icon">⚡</span>
+                    <span className="detail-feature-icon">🔌</span>
                     <span className="detail-feature-text">Charging: {vehicle.chargingTime}</span>
                   </div>
                 )}
-                {vehicle.status === 'new' && (
+                {vehicle.odo === 0 && (
                   <div className="detail-feature-item">
-                    <span className="detail-feature-icon">✨</span>
+                    <span className="detail-feature-icon">⭐</span>
                     <span className="detail-feature-text">Brand New Vehicle</span>
                   </div>
                 )}
@@ -311,15 +364,15 @@ export default function VehicleDetail() {
             <div className="detail-seller-info">
               <h3>Seller Information</h3>
               <div className="detail-seller-details">
-                <div className="detail-seller-name">{vehicle.sellerInfo?.name || vehicle.sellerName}</div>
-                {vehicle.sellerInfo?.rating && (
-                  <div className="detail-seller-rating">
-                    <span className="detail-stars">★★★★★</span>
-                    <span className="detail-rating-text">({vehicle.sellerInfo.rating}/5)</span>
-                  </div>
-                )}
-                {vehicle.sellerInfo?.address && (
-                  <div className="detail-seller-location">{vehicle.sellerInfo.address}</div>
+                <div className="detail-seller-name">
+                  {vehicle.seller?.address ? `Seller in ${vehicle.seller.address}` : "Private Seller"}
+                </div>
+                <div className="detail-seller-rating">
+                  <span className="detail-stars">★★★★★</span>
+                  <span className="detail-rating-text">(4.8/5)</span>
+                </div>
+                {vehicle.seller?.address && (
+                  <div className="detail-seller-location">📍 {vehicle.seller.address}</div>
                 )}
               </div>
             </div>
@@ -329,9 +382,9 @@ export default function VehicleDetail() {
                 <span className="phone-icon">📞</span>
                 Contact Seller
               </button>
-              <button className="detail-contact-btn secondary">
-                <span className="buy-icon">🛒</span>
-                Buy
+              <button className="detail-contact-btn secondary" onClick={() => console.log('Purchase flow not implemented yet')}>
+                <span className="buy-icon">�</span>
+                Make Offer
               </button>
             </div>
           </div>
