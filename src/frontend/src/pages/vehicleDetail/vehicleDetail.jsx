@@ -1,59 +1,62 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import api from "../../config/api";
 import "./vehicleDetail.css";
 
-// Mock data for demonstration purposes
-const mockVehiclesData = [
-  {
-    postID: "VH001",
-    batteryType: "Lithium-ion",
-    brand: "Tesla",
-    model: "Model 3",
-    version: "Standard Range Plus",
-    status: "new",
-    odo: 0,
-    batteryCapacity: "75 kWh",
-    range: "448 km",
-    chargingTime: "8h (AC) / 30min (DC)",
-    color: "Pearl White",
-    numberOfSeat: 5,
-    style: "Sedan",
-    image: "https://images.unsplash.com/photo-1593941707882-a5bac6861d75?w=400",
-    sellerName: "Nguyễn Văn A",
-    price: 1200000000,
-    isFavorite: false,
-    description: "Tesla Model 3 là một chiếc sedan điện cao cấp với thiết kế tối giản và công nghệ tiên tiến. Xe được trang bị hệ thống Autopilot và màn hình cảm ứng 15 inch.",
-    features: [
-      "Autopilot",
-      "Màn hình cảm ứng 15 inch",
-      "Sạc siêu nhanh",
-      "Hệ thống âm thanh cao cấp",
-      "Cập nhật OTA",
-      "Sentry Mode"
-    ],
-    specifications: {
-      "Động cơ": "Điện AC đồng bộ",
-      "Công suất": "283 hp",
-      "Mô-men xoắn": "420 Nm",
-      "Tăng tốc 0-100km/h": "5.6 giây",
-      "Tốc độ tối đa": "225 km/h",
-      "Dung tích cốp": "425L",
-      "Trọng lượng": "1,611 kg"
-    },
-    images: [
-      "https://images.unsplash.com/photo-1593941707882-a5bac6861d75?w=800",
-      "https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=800",
-      "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=800"
-    ],
+/**
+ * Map PostResponse từ BE -> format cho detail page
+ */
+const mapPostToDetail = (p) => {
+  const v = p?.vehicle || {};
+  
+  return {
+    postID: String(p?.postId ?? ""),
+    brand: v?.brand || "",
+    model: v?.model || "",
+    version: v?.version || "",
+    style: v?.style || "",
+    color: v?.color || "",
+    numberOfSeat: Number(v?.numberofseat ?? 0),
+    odo: Number(v?.odo ?? 0),
+    status: Number(v?.odo ?? 0) > 0 ? "old" : "new",
+    batteryCapacity: v?.batterycapacity != null ? `${v.batterycapacity} kWh` : "",
+    range: v?.range != null ? `${v.range} km` : "",
+    chargingTime: v?.chargingtime != null ? `${v.chargingtime}h` : "",
+    year: Number(v?.yearmanufacture ?? 0),
+    price: Number(p?.price ?? 0),
+    title: p?.title || `${v?.brand} ${v?.model} ${v?.version}`,
+    description: p?.description || "High-quality electric vehicle with advanced technology.",
+    
+    // Images
+    image: p?.thumbnail || (Array.isArray(p?.imageUrls) && p.imageUrls.length > 0 ? p.imageUrls[0] : ""),
+    images: Array.isArray(p?.imageUrls) ? p.imageUrls : (p?.thumbnail ? [p.thumbnail] : []),
+    
+    // Seller info
+    sellerName: p?.location || "Vehicle Seller",
     sellerInfo: {
-      name: "Nguyễn Văn A",
-      phone: "0901234567",
-      address: "Quận 1, TP.HCM",
-      rating: 4.8,
-      totalSales: 25
-    }
-  },
-];
+      name: p?.location || "Vehicle Seller",
+      address: p?.location || "",
+    },
+    
+    // Additional specs based on vehicle data
+    specifications: {
+      "Năm sản xuất": v?.yearmanufacture || "N/A",
+      "Số chỗ ngồi": v?.numberofseat || "N/A",
+      "Loại xe": v?.style || "N/A",
+      "Màu sắc": v?.color || "N/A",
+      "ODO": v?.odo ? `${v.odo.toLocaleString()} km` : "Xe mới",
+      "Dung lượng pin": v?.batterycapacity ? `${v.batterycapacity} kWh` : "N/A",
+      "Quãng đường": v?.range ? `${v.range} km` : "N/A",
+      "Thời gian sạc": v?.chargingtime ? `${v.chargingtime}h` : "N/A",
+      "Xuất xứ": v?.origin || "N/A",
+      "Biển số": v?.licenseplate || "N/A",
+      "Bảo hiểm thân vỏ": v?.bodyinsurance ? "Có" : "Không",
+      "Kiểm định": v?.vehicleinspection ? "Có" : "Không",
+    },
+    
+    isFavorite: false,
+  };
+};
 
 export default function VehicleDetail() {
   const { postID } = useParams();
@@ -65,17 +68,33 @@ export default function VehicleDetail() {
 
   useEffect(() => {
     const fetchVehicle = async () => {
-      setLoading(true);
-      console.log("📌 postID từ URL:", postID);
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 800));
+      if (!postID) return;
       
-      const foundVehicle = mockVehiclesData.find(v => v.postID === postID);
-      if (foundVehicle) {
-        setVehicle(foundVehicle);
-        setIsFavorite(foundVehicle.isFavorite);
+      setLoading(true);
+      console.log("📌 Fetching vehicle detail for postID:", postID);
+      
+      try {
+        const response = await api.get(`/api/post/detail/${postID}`);
+        const postData = response.data;
+        
+        // Kiểm tra xem post có chứa vehicle không
+        if (!postData?.vehicle) {
+          console.warn("Post không chứa thông tin vehicle");
+          setVehicle(null);
+          return;
+        }
+        
+        const mappedVehicle = mapPostToDetail(postData);
+        setVehicle(mappedVehicle);
+        setIsFavorite(mappedVehicle.isFavorite);
+        
+        console.log("✅ Vehicle detail loaded:", mappedVehicle);
+      } catch (error) {
+        console.error("❌ Failed to fetch vehicle detail:", error);
+        setVehicle(null);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     fetchVehicle();
@@ -172,20 +191,36 @@ export default function VehicleDetail() {
               </div>
             </div>
 
-            {/* Features */}
-            {vehicle.features && (
-              <div className="detail-content-section">
-                <h2>Outstanding Features</h2>
-                <div className="detail-features-grid">
-                  {vehicle.features.map((feature, index) => (
-                    <div key={index} className="detail-feature-item">
-                      <span className="detail-feature-icon">✓</span>
-                      <span className="detail-feature-text">{feature}</span>
-                    </div>
-                  ))}
-                </div>
+            {/* Key Features from vehicle specs */}
+            <div className="detail-content-section">
+              <h2>Key Features</h2>
+              <div className="detail-features-grid">
+                {vehicle.batteryCapacity && (
+                  <div className="detail-feature-item">
+                    <span className="detail-feature-icon">🔋</span>
+                    <span className="detail-feature-text">Battery: {vehicle.batteryCapacity}</span>
+                  </div>
+                )}
+                {vehicle.range && (
+                  <div className="detail-feature-item">
+                    <span className="detail-feature-icon">🛣️</span>
+                    <span className="detail-feature-text">Range: {vehicle.range}</span>
+                  </div>
+                )}
+                {vehicle.chargingTime && (
+                  <div className="detail-feature-item">
+                    <span className="detail-feature-icon">⚡</span>
+                    <span className="detail-feature-text">Charging: {vehicle.chargingTime}</span>
+                  </div>
+                )}
+                {vehicle.status === 'new' && (
+                  <div className="detail-feature-item">
+                    <span className="detail-feature-icon">✨</span>
+                    <span className="detail-feature-text">Brand New Vehicle</span>
+                  </div>
+                )}
               </div>
-            )}
+            </div>
 
             {/* Specifications */}
             {vehicle.specifications && (
@@ -225,36 +260,38 @@ export default function VehicleDetail() {
             <div className="detail-price-note">Price</div>
           </div>
 
-          {/* Key Information */}
+            {/* Key Information */}
           <div className="detail-key-info">
             <div className="detail-info-grid">
-              <div className="detail-info-item">
-                <span className="detail-info-label">Battery Type:</span>
-                <span className="detail-info-value">{vehicle.batteryType}</span>
-              </div>
-              <div className="detail-info-item">
-                <span className="detail-info-label">Battery Capacity:</span>
-                <span className="detail-info-value">{vehicle.batteryCapacity}</span>
-              </div>
-              <div className="detail-info-item">
-                <span className="detail-info-label">Range:</span>
-                <span className="detail-info-value">{vehicle.range}</span>
-              </div>
-              <div className="detail-info-item">
-                <span className="detail-info-label">Charging Time:</span>
-                <span className="detail-info-value">{vehicle.chargingTime}</span>
-              </div>
+              {vehicle.batteryCapacity && (
+                <div className="detail-info-item">
+                  <span className="detail-info-label">Battery Capacity:</span>
+                  <span className="detail-info-value">{vehicle.batteryCapacity}</span>
+                </div>
+              )}
+              {vehicle.range && (
+                <div className="detail-info-item">
+                  <span className="detail-info-label">Range:</span>
+                  <span className="detail-info-value">{vehicle.range}</span>
+                </div>
+              )}
+              {vehicle.chargingTime && (
+                <div className="detail-info-item">
+                  <span className="detail-info-label">Charging Time:</span>
+                  <span className="detail-info-value">{vehicle.chargingTime}</span>
+                </div>
+              )}
               <div className="detail-info-item">
                 <span className="detail-info-label">Number of Seats:</span>
-                <span className="detail-info-value">{vehicle.numberOfSeat}</span>
+                <span className="detail-info-value">{vehicle.numberOfSeat || 'N/A'}</span>
               </div>
               <div className="detail-info-item">
                 <span className="detail-info-label">Style:</span>
-                <span className="detail-info-value">{vehicle.style}</span>
+                <span className="detail-info-value">{vehicle.style || 'N/A'}</span>
               </div>
               <div className="detail-info-item">
                 <span className="detail-info-label">Color:</span>
-                <span className="detail-info-value">{vehicle.color}</span>
+                <span className="detail-info-value">{vehicle.color || 'N/A'}</span>
               </div>
               <div className="detail-info-item">
                 <span className="detail-info-label">ODO:</span>
@@ -262,10 +299,14 @@ export default function VehicleDetail() {
                   {vehicle.odo > 0 ? `${vehicle.odo.toLocaleString()} km` : 'New car'}
                 </span>
               </div>
+              {vehicle.year > 0 && (
+                <div className="detail-info-item">
+                  <span className="detail-info-label">Year:</span>
+                  <span className="detail-info-value">{vehicle.year}</span>
+                </div>
+              )}
             </div>
-          </div>
-
-          {/* Contact Section */}
+          </div>          {/* Contact Section */}
           <div className="detail-contact-section">
             <div className="detail-seller-info">
               <h3>Seller Information</h3>

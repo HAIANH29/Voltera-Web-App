@@ -45,7 +45,6 @@ export default function DashboardAdmin() {
     setLoading(true);
     try {
       // BE: GET /api/post/admin/post/pending
-      // -> baseURL = /api  => FE gọi "/post/admin/post/pending"
       const res = await api.get("/api/post/admin/post/pending");
       const items = Array.isArray(res.data)
         ? res.data.map((p) => ({
@@ -75,7 +74,6 @@ export default function DashboardAdmin() {
     try {
       setLoading(true);
       // BE: PUT /api/post/admin/post/{postId}/approve
-      // -> baseURL = /api  => FE gọi "/post/admin/post/{id}/approve"
       await api.put(`/api/post/admin/post/${id}/approve`);
       toast.success(`Listing ${id} approved`);
       await loadPendingListings();
@@ -258,11 +256,8 @@ export default function DashboardAdmin() {
                   <td>${Number(l.price || 0).toLocaleString()}</td>
                   <td>{renderStatusBadge(l.status)}</td>
                   <td>
-                    <button className="btn" onClick={() => handleApproveListing(l.id)} disabled={loading}>
-                      {loading ? "Processing..." : "Approve"}
-                    </button>
-                    <button className="btn danger" onClick={() => handleRejectListing(l.id)} disabled={loading}>
-                      {loading ? "Processing..." : "Reject"}
+                    <button className="btn primary" onClick={() => handleApproveListing(l.id)} disabled={loading}>
+                      {loading ? "Processing..." : "✓ Approve"}
                     </button>
                   </td>
                 </tr>

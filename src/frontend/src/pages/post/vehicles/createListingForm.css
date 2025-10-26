@@ -549,3 +549,238 @@ footer{
   font-size: 14px;
 }
 
+/* =========================================================
+   LOCATION PICKER SECTION STYLES
+   ========================================================= */
+
+/* Location container - phối hợp với CreateListingForm */
+.location-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Location display area */
+.location-display {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 16px;
+  background: var(--bg);
+  transition: border-color .18s var(--ease), box-shadow .18s var(--ease);
+}
+
+.location-display:hover {
+  border-color: #d6dbe2;
+}
+
+/* Empty state styling */
+.location-empty {
+  text-align: center;
+  padding: 24px;
+  border: 1px dashed #cfd6de;
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, #fff, #fafbfc);
+  color: var(--muted);
+  transition: border-color .2s var(--ease), background .2s var(--ease);
+}
+
+.location-empty:hover {
+  border-color: var(--ink);
+  background: #f8f9fa;
+}
+
+.location-empty-icon,
+.empty-icon {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 12px;
+  color: #cbd5e1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty-icon svg {
+  width: 32px;
+  height: 32px;
+}
+
+/* Selected location preview */
+.location-preview {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: var(--radius-sm);
+  border: 1px solid #e2e8f0;
+}
+
+.location-preview-icon,
+.location-icon {
+  width: 20px;
+  height: 20px;
+  color: var(--accent);
+  margin-top: 2px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.location-preview-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.location-preview-address {
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+.location-preview-coords {
+  font-size: 12px;
+  color: var(--muted);
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+}
+
+/* Action buttons row */
+.location-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.location-actions .v-btn {
+  flex: 1;
+  min-width: 120px;
+}
+
+/* Mobile responsive */
+@media (max-width: 640px) {
+  .location-actions {
+    flex-direction: column;
+  }
+  
+  .location-actions .v-btn {
+    width: 100%;
+  }
+  
+  .location-preview {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .location-preview-icon {
+    margin: 0 auto;
+  }
+}
+
+/* Button icon styling */
+.btn-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  color: inherit;
+}
+
+.change-location-btn,
+.clear-location-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Location picker buttons styling */
+.location-btn {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg);
+  cursor: pointer;
+  transition: all 0.2s var(--ease);
+  text-align: left;
+  width: 100%;
+  font-weight: 500;
+}
+
+.location-btn:hover {
+  border-color: var(--ink);
+  background: #f8f9fa;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(11, 15, 19, 0.08);
+}
+
+.location-btn.primary {
+  border-color: var(--accent);
+  background: rgba(232, 33, 39, 0.04);
+}
+
+.location-btn.primary:hover {
+  background: rgba(232, 33, 39, 0.08);
+  border-color: var(--accent);
+  box-shadow: 0 4px 12px rgba(232, 33, 39, 0.15);
+}
+
+.location-btn.secondary {
+  border-color: var(--ink);
+  background: var(--bg);
+}
+
+.location-btn.secondary:hover {
+  background: var(--ink);
+  color: white;
+}
+
+.btn-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: inherit;
+  margin-bottom: 2px;
+}
+
+.btn-subtitle {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.location-btn:hover .btn-subtitle {
+  color: inherit;
+  opacity: 0.8;
+}
+
+.picker-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+@media (min-width: 640px) {
+  .picker-buttons {
+    flex-direction: row;
+  }
+  
+  .location-btn {
+    flex: 1;
+  }
+}
+
+/* Integration with existing v-card styles */
+.v-card .location-section {
+  margin: 0; /* Reset margins inside cards */
+}
+
+/* Ensure location picker modal opens above other elements */
+.location-picker-modal {
+  z-index: 9999;
+}
+

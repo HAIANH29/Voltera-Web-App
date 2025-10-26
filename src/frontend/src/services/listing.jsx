@@ -9,7 +9,7 @@ export const listingService = {
     form.append("folder", folder);  // ✅ gửi cùng form, KHÔNG query
 
     const res = await api.post(
-      "/upload/product",            // ✅ -> http://localhost:8080/api/upload/product
+      "/api/upload/product",        // ✅ -> http://localhost:8080/api/upload/product
       form,
       {
         headers: { "Content-Type": "multipart/form-data" },
@@ -26,19 +26,20 @@ export const listingService = {
 
   // Tạo post (vehicle)
   async createPost(payload) {
-    const res = await api.post("/post/create", payload); // ✅ /api/post/create
-    return res.data;
-  },
-
-  // Lấy danh sách vehicles theo status
-  async getVehiclesByStatus(status = "APPROVE") {
-    const res = await api.get(`/post/list/${status}`); // ✅ /api/post/list/APPROVE
-    return res.data;
-  },
-
-  // Lấy vehicle detail theo ID
-  async getVehicleById(id) {
-    const res = await api.get(`/post/${id}`); // ✅ /api/post/{id}
-    return res.data;
+    try {
+      console.log("🚀 Creating post with payload:", payload);
+      const res = await api.post("/api/post/create", payload); // ✅ /api/post/create
+      console.log("✅ Post created successfully:", res.data);
+      return res.data;
+    } catch (error) {
+      console.error("❌ Create post failed:", error);
+      console.error("Error details:", {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        headers: error.response?.headers
+      });
+      throw error;
+    }
   },
 };

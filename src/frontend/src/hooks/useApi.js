@@ -1,6 +1,6 @@
 // src/hooks/useApi.js
 import { useEffect, useState } from "react";
-import { api } from "../config/api";
+import api from "../config/api";
 
 export function useApiGet(path, { params = {}, deps = [] } = {}) {
   const [data, setData] = useState(null);
@@ -18,7 +18,7 @@ export function useApiGet(path, { params = {}, deps = [] } = {}) {
     return () => {
       cancelled = true;
     };
-  }, deps); // ví dụ: [path] hoặc [path, ...deps]
+ }, [path, JSON.stringify(params), ...deps]); // ví dụ: [path] hoặc [path, ...deps]
 
   return { data, loading, error };
 }
