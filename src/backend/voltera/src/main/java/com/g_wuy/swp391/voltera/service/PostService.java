@@ -42,7 +42,7 @@ public class PostService {
     @Autowired
     private BatteryImageRepository batteryImageRepository;
 
-    public PostResponse createPost(PostRequest dto, String username) throws IOException {
+    public PostResponse createPost(PostRequest dto, String username) {
 
 
         Account account = accountRepository.findByUsername(username)
@@ -66,7 +66,6 @@ public class PostService {
                 .createdAt(Instant.now())
                 .updatedAt(Instant.now())
                 .build());
-
 
         if (dto.getVehicle() != null && dto.getBattery() != null) {
             throw new IllegalArgumentException("Choose either a vehicle or a battery, not both.");

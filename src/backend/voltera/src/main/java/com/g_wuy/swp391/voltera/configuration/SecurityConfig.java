@@ -41,7 +41,6 @@ public class SecurityConfig {
                                 "/api/v1/auth/**",
                                 "/otp/**",
                                 "/api/vnpay/**",
-                                "/api/vnpay/**",
                                 "/api/post/public/**"
                         ).permitAll()
                         .anyRequest().authenticated()
