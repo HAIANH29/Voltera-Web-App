@@ -25,6 +25,8 @@ import ElectricDetail from "./pages/electricDetail/electricDetail";
 import DashboardAdmin from "./pages/dashboardAdmin/dashboardAdmin";
 import DashboardBuyer from "./pages/dashboardBuyer/dashboardBuyer";
 import Dashboard from "./components/Dashboard";
+import PaymentPage from "./pages/paymentPage/PaymentPage";
+import PaymentCallback from "./pages/paymentPage/PaymentCallback";
 
 console.log("routes:", routes);
 console.log("postVehicles:", routes.postVehicles);
@@ -96,6 +98,22 @@ function App() {
       element: (
         <MainLayout>
           <ElectricDetail />
+        </MainLayout>
+      ),
+    },
+    {
+      path: routes.payment,
+      element: (
+        <MainLayout>
+          <PaymentPage />
+        </MainLayout>
+      ),
+    },
+    {
+      path: routes.paymentCallback,
+      element: (
+        <MainLayout>
+          <PaymentCallback />
         </MainLayout>
       ),
     },
