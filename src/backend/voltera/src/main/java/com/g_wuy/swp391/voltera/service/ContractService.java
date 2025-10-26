@@ -35,17 +35,20 @@ public class ContractService {
     private TransactionRepository transactionRepository;
     @Autowired
     private S3Service s3Service;
+    @Autowired
+    private JwtService jwtService;
+
 
 
     @Transactional
-    public ContractResponse createContract(ContractRequest request) {
+    public ContractResponse createContract(ContractRequest request,String authHeader) {
+        String token = authHeader.substring(7);
+        String username = jwtService.extractUsername(token);
+        User buyer = userRepository.findUserByUsername(username);
+
         Post post = postRepository.findById(request.getPostId())
                 .orElseThrow(() -> new RuntimeException("Post not found"));
-        User buyer = userRepository.findById(request.getBuyerId())
-                .orElseThrow(() -> new RuntimeException("Buyer not found"));
-        User seller = userRepository.findById(request.getSellerId())
-                .orElseThrow(() -> new RuntimeException("Seller not found"));
-
+        User seller = post.getSellerId();
         Contract contract = contractMapper.toEntity(request, post, buyer, seller);
         contract = contractRepository.save(contract);
         return contractMapper.toResponse(contract);
@@ -53,10 +56,20 @@ public class ContractService {
 
 
     @Transactional
-    public ContractResponse updateTerms(Integer id, String newTerms) {
+    public ContractResponse updateTerms(String authHeader,Integer id, String newTerms) {
+        String token = authHeader.substring(7);
+        String username = jwtService.extractUsername(token);
+        User user = userRepository.findUserByUsername(username);
+        if (user == null) throw new RuntimeException("User not found");
+
         Contract contract = contractRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Contract not found"));
 
+
+        if (!user.getId().equals(contract.getBuyerid().getId()) &&
+                !user.getId().equals(contract.getSellerid().getId())) {
+            throw new RuntimeException("You are not allowed to edit this contract");
+        }
         contract.setTerms(newTerms);
         contract.setBuyersigned(false);
         contract.setSellersigned(false);
@@ -68,16 +81,22 @@ public class ContractService {
 
 
     @Transactional
-    public ContractResponse signContract(Integer id, Integer userId) {
+    public ContractResponse signContract(String authHeader,Integer id) {
+        String token = authHeader.substring(7);
+        String username = jwtService.extractUsername(token);
+        User user = userRepository.findUserByUsername(username);
+        if (user == null) throw new RuntimeException("User not found");
+
         Contract contract = contractRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Contract not found"));
-
-        if (contract.getBuyerid().getId().equals(userId)) {
+        // Check vai trò
+        if (user.getId().equals(contract.getBuyerid().getId())) {
             contract.setBuyersigned(true);
-        } else if (contract.getSellerid().getId().equals(userId)) {
+        } else if (user.getId().equals(contract.getSellerid().getId())) {
             contract.setSellersigned(true);
+        } else {
+            throw new RuntimeException("You are not part of this contract");
         }
-
         if (Boolean.TRUE.equals(contract.getBuyersigned()) && Boolean.TRUE.equals(contract.getSellersigned())) {
             contract.setContractstatus("SIGNED");
             contract.setSigneddate(LocalDate.now());
@@ -111,5 +130,11 @@ public class ContractService {
 
         return contractMapper.toResponse(contract);
     }
+    @Transactional
+    public ContractResponse getContractById(Integer id) {
+        Contract contract = contractRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Contract not found"));
 
+        return contractMapper.toResponse(contract);
+    }
 }
