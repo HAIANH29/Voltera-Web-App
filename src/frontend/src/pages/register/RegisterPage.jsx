@@ -46,8 +46,8 @@ export default function RegisterPage() {
 
         console.log("Sending register request:", payload);
 
-        // BE path: /api/v1/auth/register  (baseURL đã là /api/v1/, nên chỉ cần "auth/register")
-        const res = await api.post("auth/register", payload);
+  // BE path: /api/v1/auth/register  (baseURL là http://localhost:8080)
+  const res = await api.post("/api/v1/auth/register", payload);
 
         console.log("Register response:", res.data);
 
