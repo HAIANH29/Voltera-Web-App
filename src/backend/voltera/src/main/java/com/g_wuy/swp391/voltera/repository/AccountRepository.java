@@ -34,6 +34,9 @@ public interface AccountRepository extends JpaRepository<Account, Integer> {
 
     @Query("SELECT a FROM Account a WHERE a.status = 'PENDING' ORDER BY a.createat DESC")
     List<Account> findPendingAccounts();
+    
+    @Query("SELECT a FROM Account a ORDER BY a.createat DESC")
+    List<Account> findAllAccountsOrdered();
 
     @Modifying
     @Transactional

@@ -1,0 +1,988 @@
+/* =========================================================
+   ELECTRIC BATTERY FORM - Professional EV Marketplace Theme
+   Enhanced UX/UI with Tesla-inspired design
+   ========================================================= */
+
+:root {
+  --bg-electric: #ffffff;
+  --card-electric: #ffffff;
+  --muted-electric: #6b7280;
+  --soft-electric: #eef1f5;
+  --line-electric: #e7ebf0;
+  --ink-electric: #0b0f13;
+  --ink-2-electric: #1a1f25;
+  --accent-electric: #667eea;         /* Blue accent for electric */  
+  --accent-dark-electric: #5a67d8;
+  --accent-ink-electric: #fff;
+  --focus-electric: rgba(102, 126, 234, 0.14);
+  --shadow-1-electric: 0 1px 2px rgba(10,13,18,.06);
+  --shadow-2-electric: 0 12px 24px rgba(10,13,18,.08);
+  --radius-sm-electric: 10px;
+  --radius-electric: 14px;
+  --radius-lg-electric: 18px;
+  --ease-electric: cubic-bezier(.22,.61,.36,1);
+  --success-electric: #10b981;
+  --warning-electric: #f59e0b;
+  --danger-electric: #ef4444;
+}
+
+/* =========================================================
+   ELECTRIC FORM BASE STYLES
+   ========================================================= */
+
+.electric-wizard {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Cards */
+.e-card {
+  border-radius: var(--radius-electric);
+  border: 1px solid var(--line-electric);
+  background: var(--card-electric);
+  box-shadow: var(--shadow-1-electric);
+  transition: box-shadow 0.25s var(--ease-electric), transform 0.25s var(--ease-electric);
+}
+
+.e-card:hover {
+  box-shadow: var(--shadow-2-electric);
+  transform: translateY(-1px);
+}
+
+.e-card-header {
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--line-electric);
+  font-size: 15px;
+  letter-spacing: 0.2px;
+  font-weight: 600;
+  display: flex; 
+  align-items: center; 
+  gap: 10px;
+  color: var(--ink-2-electric);
+}
+
+.e-card-content {
+  padding: 22px;
+}
+
+/* Form Elements */
+.e-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-2-electric);
+  margin-bottom: 6px;
+  letter-spacing: 0.2px;
+}
+
+.e-input,
+.e-textarea,
+.e-select {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--line-electric);
+  border-radius: var(--radius-sm-electric);
+  background: var(--bg-electric);
+  font-size: 14px;
+  color: var(--ink-electric);
+  transition: all 0.2s var(--ease-electric);
+  outline: none;
+}
+
+.e-input:focus,
+.e-textarea:focus,
+.e-select:focus {
+  border-color: var(--accent-electric);
+  box-shadow: 0 0 0 3px var(--focus-electric);
+}
+
+.e-input.error,
+.e-textarea.error,
+.e-select.error {
+  border-color: var(--danger-electric);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.14);
+}
+
+.e-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* Grid */
+.e-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+/* Progress Bar */
+.e-progress {
+  background: var(--soft-electric);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.e-progress > div {
+  background: linear-gradient(135deg, var(--accent-electric), var(--accent-dark-electric));
+  height: 8px;
+  transition: width 0.3s var(--ease-electric);
+  border-radius: 999px;
+}
+
+/* Buttons */
+.e-btn {
+  padding: 12px 24px;
+  border-radius: var(--radius-electric);
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s var(--ease-electric);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  border: none;
+}
+
+.e-btn-primary {
+  background: linear-gradient(135deg, var(--accent-electric), var(--accent-dark-electric));
+  color: var(--accent-ink-electric);
+  box-shadow: var(--shadow-1-electric);
+}
+
+.e-btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-2-electric);
+}
+
+.e-btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.e-btn-outline {
+  background: transparent;
+  color: var(--ink-2-electric);
+  border: 1px solid var(--line-electric);
+}
+
+.e-btn-outline:hover {
+  background: var(--soft-electric);
+}
+
+/* Icons */
+.e-left-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  color: var(--muted-electric);
+  pointer-events: none;
+}
+
+/* =========================================================
+   PHOTO UPLOAD ENHANCEMENTS
+   ========================================================= */
+
+.photos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.photo-slot {
+  position: relative;
+}
+
+.e-dropzone.improved {
+  position: relative;
+  border-radius: var(--radius-lg-electric);
+  transition: all 0.3s var(--ease-electric);
+  overflow: hidden;
+}
+
+.e-dropzone.improved:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.12);
+}
+
+.e-empty-upload.enhanced {
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  border: 2px dashed var(--line-electric);
+  border-radius: var(--radius-lg-electric);
+  background: var(--bg-electric);
+  cursor: pointer;
+  transition: all 0.3s var(--ease-electric);
+  padding: 24px;
+}
+
+.e-empty-upload.enhanced:hover {
+  border-color: var(--accent-electric);
+  background: rgba(102, 126, 234, 0.02);
+  transform: scale(1.02);
+}
+
+.upload-icon-container {
+  padding: 16px;
+  border-radius: 50%;
+  background: var(--soft-electric);
+  transition: all 0.3s var(--ease-electric);
+}
+
+.e-empty-upload.enhanced:hover .upload-icon-container {
+  background: rgba(102, 126, 234, 0.1);
+  color: var(--accent-electric);
+}
+
+.upload-text {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.upload-main {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-2-electric);
+}
+
+.upload-sub {
+  font-size: 12px;
+  color: var(--muted-electric);
+}
+
+.uploaded-image {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  cursor: pointer;
+  transition: all 0.3s var(--ease-electric);
+  border-radius: var(--radius-lg-electric);
+}
+
+.uploaded-image:hover {
+  transform: scale(1.05);
+}
+
+.e-overlay-actions {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  gap: 8px;
+  opacity: 0;
+  transition: opacity 0.3s var(--ease-electric);
+}
+
+.e-dropzone:hover .e-overlay-actions {
+  opacity: 1;
+}
+
+.e-btn-mini {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s var(--ease-electric);
+}
+
+.e-btn-mini.primary {
+  background: var(--accent-electric);
+  color: white;
+}
+
+.e-btn-mini.danger {
+  background: var(--danger-electric);
+  color: white;
+}
+
+.e-chip-remove {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s var(--ease-electric);
+}
+
+.e-chip-remove:hover {
+  background: var(--danger-electric);
+  transform: scale(1.1);
+}
+
+.upload-success-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: var(--success-electric);
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.upload-progress-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-lg-electric);
+}
+
+.upload-progress-content {
+  text-align: center;
+  padding: 20px;
+  max-width: 200px;
+}
+
+.upload-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--soft-electric);
+  border-top: 3px solid var(--accent-electric);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 12px auto;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.upload-progress-text {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: var(--ink-2-electric);
+}
+
+/* =========================================================
+   LOCATION PICKER STYLES
+   ========================================================= */
+
+.location-picker-empty {
+  border: 2px dashed var(--line-electric);
+  border-radius: var(--radius-lg-electric);
+  padding: 32px;
+  text-align: center;
+  background: var(--soft-electric);
+}
+
+.empty-state {
+  margin-bottom: 24px;
+}
+
+.empty-icon {
+  color: var(--muted-electric);
+  margin-bottom: 16px;
+}
+
+.empty-state h4 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink-2-electric);
+  margin-bottom: 8px;
+}
+
+.empty-state p {
+  color: var(--muted-electric);
+  font-size: 14px;
+}
+
+.picker-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+@media (min-width: 640px) {
+  .picker-buttons {
+    flex-direction: row;
+  }
+}
+
+.location-btn {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  border: 1px solid var(--line-electric);
+  border-radius: var(--radius-electric);
+  background: var(--bg-electric);
+  cursor: pointer;
+  transition: all 0.2s var(--ease-electric);
+  text-align: left;
+  width: 100%;
+  font-weight: 500;
+}
+
+.location-btn:hover {
+  border-color: var(--accent-electric);
+  background: rgba(102, 126, 234, 0.04);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+}
+
+.location-btn.primary {
+  border-color: var(--accent-electric);
+  background: rgba(102, 126, 234, 0.04);
+}
+
+.location-btn.secondary {
+  border-color: var(--ink-electric);
+  background: var(--bg-electric);
+}
+
+.location-btn.secondary:hover {
+  background: var(--ink-electric);
+  color: white;
+}
+
+.btn-icon {
+  flex-shrink: 0;
+}
+
+.btn-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: inherit;
+  margin-bottom: 2px;
+}
+
+.btn-subtitle {
+  font-size: 13px;
+  color: var(--muted-electric);
+  font-weight: 400;
+}
+
+.location-selected {
+  border: 1px solid var(--accent-electric);
+  border-radius: var(--radius-lg-electric);
+  background: rgba(102, 126, 234, 0.04);
+  overflow: hidden;
+}
+
+.location-preview {
+  padding: 16px 20px;
+}
+
+.location-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.location-icon {
+  color: var(--accent-electric);
+}
+
+.location-details {
+  flex: 1;
+}
+
+.location-address {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-2-electric);
+  margin-bottom: 2px;
+}
+
+.location-coords {
+  font-size: 12px;
+  color: var(--muted-electric);
+}
+
+.status-badge {
+  background: var(--success-electric);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.location-actions {
+  display: flex;
+  gap: 8px;
+  padding: 12px 20px;
+  background: rgba(102, 126, 234, 0.02);
+  border-top: 1px solid rgba(102, 126, 234, 0.1);
+}
+
+.change-location-btn,
+.clear-location-btn {
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s var(--ease-electric);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border: none;
+}
+
+.change-location-btn {
+  background: var(--accent-electric);
+  color: white;
+}
+
+.clear-location-btn {
+  background: transparent;
+  color: var(--muted-electric);
+}
+
+.clear-location-btn:hover {
+  color: var(--danger-electric);
+}
+
+/* =========================================================
+   STEP 4 - REVIEW & CONFIRMATION STYLES
+   ========================================================= */
+
+.pricing-section {
+  border-bottom: 1px solid var(--line-electric);
+  padding-bottom: 32px;
+}
+
+.review-summary {
+  margin-bottom: 32px;
+}
+
+.battery-summary .summary-header,
+.listing-preview .preview-header {
+  border-bottom: 2px solid var(--line-electric);
+  padding-bottom: 12px;
+  margin-bottom: 20px;
+}
+
+.summary-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: var(--soft-electric);
+  border-radius: var(--radius-sm-electric);
+  transition: all 0.2s var(--ease-electric);
+}
+
+.summary-item:hover {
+  background: rgba(102, 126, 234, 0.04);
+  transform: translateX(2px);
+}
+
+.summary-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted-electric);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.summary-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-2-electric);
+  text-align: right;
+}
+
+.summary-value.price {
+  color: var(--accent-electric);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.preview-card {
+  border: 1px solid var(--line-electric);
+  border-radius: var(--radius-lg-electric);
+  overflow: hidden;
+  background: var(--card-electric);
+  box-shadow: var(--shadow-1-electric);
+  transition: all 0.3s var(--ease-electric);
+}
+
+.preview-card:hover {
+  box-shadow: var(--shadow-2-electric);
+  transform: translateY(-2px);
+}
+
+.preview-image {
+  position: relative;
+}
+
+.photo-count-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(11, 15, 19, 0.8);
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 6px;
+  backdrop-filter: blur(4px);
+}
+
+.preview-content {
+  padding: 16px;
+}
+
+.preview-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink-2-electric);
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+
+.preview-price {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--accent-electric);
+  margin-bottom: 12px;
+}
+
+.preview-description {
+  font-size: 13px;
+  color: var(--muted-electric);
+  line-height: 1.4;
+}
+
+.preview-placeholder {
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--soft-electric);
+  border-radius: var(--radius-lg-electric);
+  border: 2px dashed var(--line-electric);
+}
+
+.confirmation-divider {
+  display: flex;
+  align-items: center;
+  margin: 48px 0;
+  gap: 16px;
+}
+
+.divider-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--line-electric), transparent);
+}
+
+.divider-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted-electric);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 0 16px;
+  background: var(--bg-electric);
+}
+
+.confirmation-section {
+  padding: 32px;
+  background: linear-gradient(135deg, var(--bg-electric) 0%, var(--soft-electric) 100%);
+  border-radius: var(--radius-lg-electric);
+  border: 1px solid var(--line-electric);
+}
+
+.confirmation-intro {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.confirmation-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--ink-electric);
+  margin-bottom: 8px;
+}
+
+.confirmation-subtitle {
+  font-size: 14px;
+  color: var(--muted-electric);
+  line-height: 1.5;
+}
+
+.confirmation-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.confirmation-item {
+  background: var(--card-electric);
+  border: 1px solid var(--line-electric);
+  border-radius: var(--radius-electric);
+  padding: 20px;
+  transition: all 0.3s var(--ease-electric);
+}
+
+.confirmation-item:hover {
+  border-color: var(--accent-electric);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.08);
+  transform: translateY(-1px);
+}
+
+.confirmation-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  cursor: pointer;
+}
+
+.checkbox-input {
+  display: none;
+}
+
+.checkbox-custom {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--line-electric);
+  border-radius: 6px;
+  background: var(--bg-electric);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s var(--ease-electric);
+}
+
+.checkbox-input:checked + .checkbox-custom {
+  background: var(--accent-electric);
+  border-color: var(--accent-electric);
+  transform: scale(1.1);
+}
+
+.checkbox-checkmark {
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+  opacity: 0;
+  transition: opacity 0.2s var(--ease-electric);
+}
+
+.checkbox-input:checked + .checkbox-custom .checkbox-checkmark {
+  opacity: 1;
+}
+
+.checkbox-content {
+  flex: 1;
+}
+
+.checkbox-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink-2-electric);
+  margin-bottom: 4px;
+}
+
+.checkbox-description {
+  font-size: 13px;
+  color: var(--muted-electric);
+  line-height: 1.4;
+}
+
+.terms-link {
+  color: var(--accent-electric);
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.2s var(--ease-electric);
+}
+
+.terms-link:hover {
+  text-decoration: underline;
+  color: var(--accent-dark-electric);
+}
+
+.submission-status {
+  padding: 24px;
+  border-radius: var(--radius-electric);
+  border: 1px solid var(--line-electric);
+}
+
+.status-ready,
+.status-pending {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.status-ready {
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  border-color: var(--success-electric);
+}
+
+.status-pending {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-color: var(--warning-electric);
+}
+
+.status-icon {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.status-icon.ready {
+  background: var(--success-electric);
+  color: white;
+}
+
+.status-icon.pending {
+  background: var(--warning-electric);
+  color: white;
+}
+
+.status-text {
+  flex: 1;
+}
+
+.status-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.status-ready .status-title {
+  color: #065f46;
+}
+
+.status-pending .status-title {
+  color: #92400e;
+}
+
+.status-description {
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.status-ready .status-description {
+  color: #047857;
+}
+
+.status-pending .status-description {
+  color: #a16207;
+}
+
+/* =========================================================
+   RESPONSIVE DESIGN
+   ========================================================= */
+
+@media (max-width: 768px) {
+  .electric-wizard {
+    padding: 16px;
+  }
+  
+  .e-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .photos-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .confirmation-section {
+    padding: 24px 16px;
+  }
+  
+  .confirmation-checklist {
+    gap: 20px;
+  }
+  
+  .confirmation-item {
+    padding: 16px;
+  }
+  
+  .checkbox-custom {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .status-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+  }
+  
+  .picker-buttons {
+    flex-direction: column;
+  }
+  
+  .location-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .e-card-content {
+    padding: 16px;
+  }
+  
+  .e-grid {
+    gap: 12px;
+  }
+  
+  .photos-grid {
+    gap: 12px;
+  }
+  
+  .uploaded-image {
+    height: 140px;
+  }
+  
+  .e-empty-upload.enhanced {
+    min-height: 140px;
+    padding: 16px;
+  }
+}

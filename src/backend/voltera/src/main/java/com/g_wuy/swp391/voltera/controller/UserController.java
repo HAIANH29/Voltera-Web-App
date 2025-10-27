@@ -85,8 +85,33 @@ public class UserController {
 
     @GetMapping("/api/v1/admin/accounts/pending")
     public ResponseEntity<List<ApproveResponse>> getPendingAccounts() {
+        System.out.println("🔍 [DEBUG] Getting pending accounts...");
         List<Account> pendingAccounts = accountService.getPendingAccounts();
+        System.out.println("📊 [DEBUG] Found " + pendingAccounts.size() + " pending accounts");
+        
+        for (Account acc : pendingAccounts) {
+            System.out.println("👤 [DEBUG] Account: " + acc.getUsername() + " | Status: " + acc.getStatus());
+        }
+        
         List<ApproveResponse> response = pendingAccounts.stream()
+                .map(accountMapper::toAccountResponse)
+                .collect(Collectors.toList());
+        System.out.println("✅ [DEBUG] Returning " + response.size() + " responses");
+        return ResponseEntity.ok(response);
+    }
+
+    // Debug endpoint to check all accounts
+    @GetMapping("/api/v1/admin/accounts/all")
+    public ResponseEntity<List<ApproveResponse>> getAllAccounts() {
+        System.out.println("🔍 Admin requesting ALL accounts for debug...");
+        List<Account> allAccounts = accountService.getAllAccounts();
+        System.out.println("📊 Found " + allAccounts.size() + " total accounts");
+        
+        for (Account acc : allAccounts) {
+            System.out.println("👤 Account: " + acc.getUsername() + " | Status: " + acc.getStatus() + " | Role: " + acc.getRole());
+        }
+        
+        List<ApproveResponse> response = allAccounts.stream()
                 .map(accountMapper::toAccountResponse)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(response);
