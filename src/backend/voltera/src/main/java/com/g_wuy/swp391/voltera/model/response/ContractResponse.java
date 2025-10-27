@@ -22,4 +22,5 @@ public class ContractResponse {
     private String contractStatus;
     private LocalDate signedDate;
     private String contractFile;
+    private String transactionStatus;
 }

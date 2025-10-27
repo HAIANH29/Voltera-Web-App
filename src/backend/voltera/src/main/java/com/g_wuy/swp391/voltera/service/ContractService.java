@@ -5,19 +5,23 @@ import com.g_wuy.swp391.voltera.entity.Post;
 import com.g_wuy.swp391.voltera.entity.Transaction;
 import com.g_wuy.swp391.voltera.entity.User;
 import com.g_wuy.swp391.voltera.mapper.ContractMapper;
+import com.g_wuy.swp391.voltera.mapper.TransactionMapper;
 import com.g_wuy.swp391.voltera.model.request.ContractRequest;
 import com.g_wuy.swp391.voltera.model.response.ContractResponse;
+import com.g_wuy.swp391.voltera.model.response.TransactionResponse;
 import com.g_wuy.swp391.voltera.repository.ContractRepository;
 import com.g_wuy.swp391.voltera.repository.PostRepository;
 import com.g_wuy.swp391.voltera.repository.TransactionRepository;
 import com.g_wuy.swp391.voltera.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 public class ContractService {
@@ -36,60 +40,35 @@ public class ContractService {
     @Autowired
     private S3Service s3Service;
     @Autowired
-    private JwtService jwtService;
-
-
+    private TransactionMapper transactionMapper;
 
     @Transactional
-    public ContractResponse createContract(ContractRequest request,String authHeader) {
-        String token = authHeader.substring(7);
-        String username = jwtService.extractUsername(token);
+    public ContractResponse createContract(ContractRequest request,String username) {
+
         User buyer = userRepository.findUserByUsername(username);
 
         Post post = postRepository.findById(request.getPostId())
                 .orElseThrow(() -> new RuntimeException("Post not found"));
         User seller = post.getSellerId();
         Contract contract = contractMapper.toEntity(request, post, buyer, seller);
+        contract.setExpirationdate(LocalDate.now().plusDays(7));
         contract = contractRepository.save(contract);
         return contractMapper.toResponse(contract);
     }
 
 
-    @Transactional
-    public ContractResponse updateTerms(String authHeader,Integer id, String newTerms) {
-        String token = authHeader.substring(7);
-        String username = jwtService.extractUsername(token);
-        User user = userRepository.findUserByUsername(username);
-        if (user == null) throw new RuntimeException("User not found");
 
-        Contract contract = contractRepository.findById(id)
+    @Transactional
+    public ContractResponse signContract(String username, Integer contractId) {
+        User user = userRepository.findUserByUsername(username);
+        Contract contract = contractRepository.findById(contractId)
                 .orElseThrow(() -> new RuntimeException("Contract not found"));
 
-
-        if (!user.getId().equals(contract.getBuyerid().getId()) &&
-                !user.getId().equals(contract.getSellerid().getId())) {
-            throw new RuntimeException("You are not allowed to edit this contract");
+        if (contract.getExpirationdate() != null && contract.getExpirationdate().isBefore(LocalDate.now())) {
+            contract.setContractstatus("CANCEL");
+            contractRepository.save(contract);
+            throw new RuntimeException("This contract has expired and cannot be signed");
         }
-        contract.setTerms(newTerms);
-        contract.setBuyersigned(false);
-        contract.setSellersigned(false);
-        contract.setContractstatus("UPDATED");
-
-        contractRepository.save(contract);
-        return contractMapper.toResponse(contract);
-    }
-
-
-    @Transactional
-    public ContractResponse signContract(String authHeader,Integer id) {
-        String token = authHeader.substring(7);
-        String username = jwtService.extractUsername(token);
-        User user = userRepository.findUserByUsername(username);
-        if (user == null) throw new RuntimeException("User not found");
-
-        Contract contract = contractRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Contract not found"));
-        // Check vai trò
         if (user.getId().equals(contract.getBuyerid().getId())) {
             contract.setBuyersigned(true);
         } else if (user.getId().equals(contract.getSellerid().getId())) {
@@ -97,18 +76,19 @@ public class ContractService {
         } else {
             throw new RuntimeException("You are not part of this contract");
         }
+
         if (Boolean.TRUE.equals(contract.getBuyersigned()) && Boolean.TRUE.equals(contract.getSellersigned())) {
             contract.setContractstatus("SIGNED");
             contract.setSigneddate(LocalDate.now());
-            contract.setExpirationdate(LocalDate.now().plusMonths(12));
 
             Transaction tx = Transaction.builder()
                     .post(contract.getPostid())
                     .contractid(contract)
-                    .transactionStatus("PAID")
+                    .transactionStatus("PENDING")
                     .price(contract.getPostid().getPrice())
                     .createAt(Instant.now())
                     .build();
+
             transactionRepository.save(tx);
         }
 
@@ -116,6 +96,47 @@ public class ContractService {
         return contractMapper.toResponse(contract);
     }
 
+
+    @Transactional
+    public ContractResponse cancelContract(String username, Integer contractId) {
+        User user = userRepository.findUserByUsername(username);
+        Contract contract = contractRepository.findById(contractId)
+                .orElseThrow(() -> new RuntimeException("Contract not found"));
+
+        if (!contract.getBuyerid().getId().equals(user.getId()) &&
+                !contract.getSellerid().getId().equals(user.getId())) {
+            throw new RuntimeException("You cannot cancel this contract");
+        }
+
+        if ("SIGNED".equals(contract.getContractstatus())) {
+            throw new RuntimeException("Cannot cancel a signed contract");
+        }
+
+        contract.setContractstatus("CANCEL");
+        contractRepository.save(contract);
+        return contractMapper.toResponse(contract);
+    }
+    @Scheduled(cron = "0 0 0 * * ?")
+    @Transactional
+    public void autoCancelExpiredContracts() {
+        List<Contract> expiredContracts = contractRepository
+                .findByContractstatusAndExpirationdateBefore("PENDING", LocalDate.now());
+
+        for (Contract contract : expiredContracts) {
+            boolean buyerSigned = Boolean.TRUE.equals(contract.getBuyersigned());
+            boolean sellerSigned = Boolean.TRUE.equals(contract.getSellersigned());
+
+
+            if (!(buyerSigned && sellerSigned)) {
+                contract.setContractstatus("CANCEL");
+                contractRepository.save(contract);
+            }
+        }
+
+        if (!expiredContracts.isEmpty()) {
+            System.out.println("Auto-cancelled " + expiredContracts.size() + " expired contracts.");
+        }
+    }
 
     @Transactional
     public ContractResponse uploadPdf(Integer id, MultipartFile file) {
@@ -131,10 +152,30 @@ public class ContractService {
         return contractMapper.toResponse(contract);
     }
     @Transactional
-    public ContractResponse getContractById(Integer id) {
-        Contract contract = contractRepository.findById(id)
+    public ContractResponse getContractById(Integer contractId,String username) {
+        User user = userRepository.findUserByUsername(username);
+        Contract contract = contractRepository.findById(contractId)
                 .orElseThrow(() -> new RuntimeException("Contract not found"));
+        if (!contract.getBuyerid().getId().equals(user.getId()) &&
+                !contract.getSellerid().getId().equals(user.getId())) {
+            throw new RuntimeException("Access denied to this contract");
+        }
+
 
         return contractMapper.toResponse(contract);
+    }
+    public List<ContractResponse> getContractsForUser(String username) {
+        return contractRepository.findActiveContractsByUser(username)
+                .stream()
+                .map(contractMapper::toResponse)
+                .toList();
+    }
+
+
+    public List<TransactionResponse> getTransactionsForUser(String username) {
+        return transactionRepository.findTransactionsByUser(username)
+                .stream()
+                .map(transactionMapper::toResponse)
+                .toList();
     }
 }
