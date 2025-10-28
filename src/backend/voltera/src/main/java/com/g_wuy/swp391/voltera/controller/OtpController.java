@@ -12,6 +12,11 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/otp")
 public class OtpController {
+    @PostMapping("/forgot/reset")
+    public ResponseEntity<?> resetPassword(@RequestBody PasswordResetRequest request) {
+        userService.updatePassword(request.getEmail(), request.getNewPassword());
+        return ResponseEntity.ok("Password reset successfully");
+    }
     @Autowired
     private OtpService otpService;
     @Autowired
