@@ -24,6 +24,7 @@ import PostVehicleWizard from "./pages/post/vehicles/PostVehicleWizard";
 import VehicleDetail from "./pages/vehicleDetail/vehicleDetail";
 import ElectricDetail from "./pages/electricDetail/electricDetail";
 import DashboardAdmin from "./pages/dashboardAdmin/dashboardAdmin";
+import DashboardSeller from "./pages/dashboardSeller/dashboardSeller";
 import DashboardBuyer from "./pages/dashboardBuyer/dashboardBuyer";
 import Dashboard from "./components/Dashboard";
 import PaymentPage from "./pages/paymentPage/PaymentPage";
@@ -209,6 +210,14 @@ function App() {
         <MainLayout>
           <Dashboard />
         </MainLayout>
+      ),
+    },
+    {
+      path: routes.dashboardSeller,
+      element: (
+        <SellerLayout>
+          <DashboardSeller />
+        </SellerLayout>
       ),
     },
     {
