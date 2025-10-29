@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../../config/api";
+import Cookies from "../../utils/cookies";
+import { routes } from "../../routes";
 import "./vehicleDetail.css";
 
 /**
@@ -166,7 +168,7 @@ export default function VehicleDetail() {
   };
 
   const handlePurchase = () => {
-    // Check if user is logged in - sử dụng cùng pattern như headerAfter
+    // Check if user is logged in
     const token = Cookies.get("accessToken");
     if (!token) {
       alert("Vui lòng đăng nhập để mua xe.");
@@ -175,7 +177,7 @@ export default function VehicleDetail() {
     }
 
     // Navigate to contract page with postId
-    navigate(`/contract/post/${postID}`);
+    navigate(routes.contractDetail.replace(":postId", postID));
   };
 
   const handleCreateContract = () => {
@@ -193,22 +195,14 @@ export default function VehicleDetail() {
       return;
     }
 
-    // Debug: Log vehicle data before showing modal
-    console.log("🔍 Vehicle data being passed to modal:", vehicle);
+    // Debug: Log vehicle data
+    console.log("🔍 Vehicle data:", vehicle);
     console.log("🔍 Vehicle brand:", vehicle.brand);
     console.log("🔍 Vehicle model:", vehicle.model);
     console.log("🔍 Vehicle price:", vehicle.price);
 
-    // Show contract preview modal
-    setShowContractPreview(true);
-  };
-
-  const handleContractCreated = (contractData) => {
-    setShowContractPreview(false);
-    // Navigate to contract page to view the created contract
-    if (contractData?.contractId) {
-      navigate(`/contract?contractId=${contractData.contractId}`);
-    }
+    // Navigate to contract page to create contract
+    navigate(`/contract?postId=${postID}&action=create`);
   };
 
   const formatPrice = (price) => {

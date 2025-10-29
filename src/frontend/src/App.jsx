@@ -1,4 +1,3 @@
-import ContractPage from "./pages/contractPage/ContractPage";
 import "./App.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { routes } from "./routes/index.jsx"; // ✅ sửa lại đường dẫn import CHÍNH XÁC
@@ -39,7 +38,7 @@ console.log("postVehicles:", routes.postVehicles);
 function App() {
   const router = createBrowserRouter([
     {
-      path: routes.contract,
+      path: routes.contractDetail,
       element: (
         <MainLayout>
           <ContractPage />
@@ -127,14 +126,6 @@ function App() {
       element: (
         <MainLayout>
           <PaymentCallback />
-        </MainLayout>
-      ),
-    },
-    {
-      path: routes.contract,
-      element: (
-        <MainLayout>
-          <ContractPage />
         </MainLayout>
       ),
     },

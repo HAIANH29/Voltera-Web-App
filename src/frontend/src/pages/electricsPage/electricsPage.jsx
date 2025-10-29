@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import MiniPost from "../../components/miniPost/miniPost";
 import Pagination from "../../components/pagination/pagination";
@@ -15,16 +15,16 @@ const ElectricsPage = () => {
   
   const itemsPerPage = 12;
 
-  // Fetch batteries từ API
+  // Fetch batteries with comprehensive error handling
   useEffect(() => {
     const fetchBatteries = async () => {
       try {
         setLoading(true);
-        console.log("📋 Fetching batteries from API...");
+        console.log("� Fetching batteries from API...");
         
         const response = await api.get('/api/post/public/batteries');
         
-        console.log("📋 API Response:", response.data);
+        console.log("✅ Battery API Response:", response.data);
         
         if (response.data && Array.isArray(response.data)) {
           const mappedData = response.data.map(post => {
@@ -73,8 +73,13 @@ const ElectricsPage = () => {
           setBatteries(mappedData);
           console.log("✅ Batteries loaded:", mappedData.length);
         } else {
-          console.log("⚠️ No battery data found, using test data");
-          // Add test data if no real data
+          console.warn("⚠️ No battery data received from API");
+          setBatteries([]);
+        }
+      } catch (error) {
+        console.error("❌ Error fetching batteries:", error);
+        // Only show test data in development
+        if (process.env.NODE_ENV === 'development') {
           const testData = [
             {
               postID: "test-1",
@@ -108,45 +113,9 @@ const ElectricsPage = () => {
             }
           ];
           setBatteries(testData);
+        } else {
+          setBatteries([]);
         }
-      } catch (error) {
-        console.error("❌ Failed to fetch batteries:", error);
-        console.log("🔧 Using test data due to API error");
-        // Use test data on error
-        const errorFallbackData = [
-          {
-            postID: "test-1",
-            image: "https://via.placeholder.com/400x300/667eea/ffffff?text=Tesla+Battery",
-            productName: "Tesla Model S Battery Pack",
-            basicInfo: ["Lithium-ion", "100kWh", "400V", "172 cycles"],
-            sellerName: "Tesla Parts Dealer", 
-            price: 15000,
-            isNew: true,
-            isFavorite: false
-          },
-          {
-            postID: "test-2", 
-            image: "https://via.placeholder.com/400x300/10b981/ffffff?text=BMW+Battery",
-            productName: "BMW i3 Battery Pack",
-            basicInfo: ["Li-ion", "42kWh", "350V", "256 cycles"],
-            sellerName: "BMW Certified",
-            price: 8500,
-            isNew: false,
-            isFavorite: false
-          },
-          {
-            postID: "test-3",
-            image: "https://via.placeholder.com/400x300/f59e0b/ffffff?text=Nissan+Battery",
-            productName: "Nissan Leaf Battery", 
-            basicInfo: ["Li-ion", "62kWh", "350V", "68 cycles"],
-            sellerName: "Green Auto Parts",
-            price: 12000,
-            isNew: true,
-            isFavorite: false
-          }
-        ];
-        setBatteries(errorFallbackData);
-        console.log("🧪 Test data loaded with prices:", [15000, 8500, 12000]);
       } finally {
         setLoading(false);
       }
@@ -155,25 +124,36 @@ const ElectricsPage = () => {
     fetchBatteries();
   }, []);
 
-  // Filter batteries
-  const filteredBatteries = batteries.filter(battery =>
-    battery.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    battery.basicInfo.some(info => info.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  // Optimized filtering with useMemo for performance
+  const filteredBatteries = useMemo(() => {
+    if (!searchTerm.trim()) return batteries;
+    
+    const searchLower = searchTerm.toLowerCase();
+    return batteries.filter(battery =>
+      battery.productName?.toLowerCase().includes(searchLower) ||
+      battery.basicInfo?.some(info => info?.toLowerCase().includes(searchLower)) ||
+      battery.sellerName?.toLowerCase().includes(searchLower)
+    );
+  }, [batteries, searchTerm]);
 
-  // Pagination
-  const totalPages = Math.ceil(filteredBatteries.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentBatteries = filteredBatteries.slice(startIndex, startIndex + itemsPerPage);
+  // Optimized pagination calculations
+  const paginationData = useMemo(() => {
+    const totalPages = Math.ceil(filteredBatteries.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const currentBatteries = filteredBatteries.slice(startIndex, startIndex + itemsPerPage);
+    
+    return { totalPages, startIndex, currentBatteries };
+  }, [filteredBatteries, currentPage, itemsPerPage]);
 
-  const handlePageChange = (page) => {
+  const handlePageChange = useCallback((page) => {
     setCurrentPage(page);
+    // Smooth scroll to top on page change
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  }, []);
 
-  const handleBatteryClick = (battery) => {
+  const handleBatteryClick = useCallback((battery) => {
     navigate(`/electrics/${battery.postID}`);
-  };
+  }, [navigate]);
 
   const formatPrice = (price) => {
     if (!price || price === null || price === undefined) return "Contact for Price";
@@ -331,7 +311,7 @@ const ElectricsPage = () => {
           {/* Main Content Grid */}
           <main className="grid-container">
             <div className="grid">
-              {currentBatteries.map((battery) => (
+              {paginationData.currentBatteries.map((battery) => (
                 <MiniPost
                   key={battery.postID}
                   image={battery.image}
@@ -346,7 +326,7 @@ const ElectricsPage = () => {
                 />
               ))}
 
-              {currentBatteries.length === 0 && (
+              {paginationData.currentBatteries.length === 0 && (
                 <div className="empty-state">
                   <div className="empty-icon">
                     <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
@@ -362,15 +342,15 @@ const ElectricsPage = () => {
             </div>
 
             {/* Pagination */}
-            {totalPages > 1 && (
+            {paginationData.totalPages > 1 && (
               <div className="pagination-container">
                 <Pagination
                   currentPage={currentPage}
-                  totalPages={totalPages}
+                  totalPages={paginationData.totalPages}
                   onPageChange={handlePageChange}
                 />
                 <div className="pagination-info">
-                  Showing {startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredBatteries.length)} of {filteredBatteries.length} batteries
+                  Showing {paginationData.startIndex + 1}-{Math.min(paginationData.startIndex + itemsPerPage, filteredBatteries.length)} of {filteredBatteries.length} batteries
                 </div>
               </div>
             )}

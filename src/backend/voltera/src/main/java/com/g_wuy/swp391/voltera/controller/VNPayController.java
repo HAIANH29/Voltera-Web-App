@@ -30,10 +30,28 @@ public class VNPayController {
     }
 
     @GetMapping("/return/{postId}")
-    public ResponseEntity<String> handleReturn(
+    public void handleReturn(
             @RequestParam Map<String, String> params,
-            @PathVariable("postId") Integer postId) {
-        String result = vnPayService.handleReturn(params, postId);
-        return ResponseEntity.ok(result);
+            @PathVariable("postId") Integer postId,
+            jakarta.servlet.http.HttpServletResponse response) throws java.io.IOException {
+        
+        // Process payment first
+        vnPayService.handleReturn(params, postId);
+        
+        // Build frontend callback URL with params
+        StringBuilder frontendUrl = new StringBuilder("http://localhost:5173/payment/callback");
+        frontendUrl.append("?");
+        
+        for (Map.Entry<String, String> entry : params.entrySet()) {
+            frontendUrl.append(entry.getKey()).append("=").append(entry.getValue()).append("&");
+        }
+        
+        // Remove trailing &
+        if (frontendUrl.toString().endsWith("&")) {
+            frontendUrl.setLength(frontendUrl.length() - 1);
+        }
+        
+        // Redirect to frontend
+        response.sendRedirect(frontendUrl.toString());
     }
 }

@@ -58,25 +58,29 @@ public class VNPayService {
             vnp_Params.put("vnp_Locale", "vn");
             vnp_Params.put("vnp_ReturnUrl", returnUrlWithPostId);
             vnp_Params.put("vnp_IpAddr", vnp_IpAddr);
+            
+            // Support multiple payment methods including MoMo via VNPay
+            // Empty bankCode allows user to choose payment method on VNPay page
+            vnp_Params.put("vnp_BankCode", "");
 
             String createDate = LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
             vnp_Params.put("vnp_CreateDate", createDate);
 
-            StringBuilder hashData = new StringBuilder();
+            // Fix signature generation - use VNPay standard method
+            String vnp_SecureHash = vnPayConfig.hashAllFields(vnp_Params);
+            log.info("🔐 Generated SecureHash: {}", vnp_SecureHash);
+            log.info("📋 VNPay params: {}", vnp_Params);
+            
             StringBuilder query = new StringBuilder();
             for (Map.Entry<String, String> entry : vnp_Params.entrySet()) {
-                if (hashData.length() > 0) hashData.append('&');
-                hashData.append(entry.getKey()).append('=')
-                        .append(URLEncoder.encode(entry.getValue(), StandardCharsets.US_ASCII));
-
-                query.append(URLEncoder.encode(entry.getKey(), StandardCharsets.US_ASCII))
+                query.append(URLEncoder.encode(entry.getKey(), StandardCharsets.UTF_8))
                         .append('=')
-                        .append(URLEncoder.encode(entry.getValue(), StandardCharsets.US_ASCII))
+                        .append(URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8))
                         .append('&');
             }
 
-            String vnp_SecureHash = vnPayConfig.hmacSHA512(vnPayConfig.getSecretKey(), hashData.toString());
             String paymentUrl = vnPayConfig.getVnpPayUrl() + "?" + query + "vnp_SecureHash=" + vnp_SecureHash;
+            log.info("💳 Final payment URL: {}", paymentUrl);
 
             return VNPayResponse.builder()
                     .code("00")
