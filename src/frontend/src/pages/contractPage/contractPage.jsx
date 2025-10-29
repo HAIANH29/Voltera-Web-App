@@ -1,142 +1,218 @@
-import React, { useState, useEffect } from "react";
-import { useParams, useSearchParams, useNavigate, Link } from "react-router-dom";
-import ContractPreview from "../../components/contract/contractPreview";
+import React, { useEffect, useState } from "react";
 import api from "../../config/api";
-import Cookies from "js-cookie";
-import "./contractPage.css";
+import "./ContractPage.css";
+
+// Icon SVGs (tương tự dashboardAdmin)
+const ContractIcon = () => (
+  <svg
+    width="22"
+    height="22"
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+  >
+    <rect x="4" y="4" width="16" height="16" rx="4" strokeWidth="2" />
+    <path d="M8 8h8M8 12h8M8 16h4" strokeWidth="2" />
+  </svg>
+);
 
 export default function ContractPage() {
-  const { postId } = useParams();
-  const [searchParams] = useSearchParams();
-  const contractId = searchParams.get('contractId');
-  const navigate = useNavigate();
-  const [existingContractId, setExistingContractId] = useState(null);
+  const [contracts, setContracts] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [showCreate, setShowCreate] = useState(false);
+  const [form, setForm] = useState({
+    vehicleId: "",
+    buyerId: "",
+    sellerId: "",
+    price: "",
+  });
+  const [actionLoading, setActionLoading] = useState(false);
 
-  // Lấy token từ cookies như trong headerAfter
-  const token = Cookies.get("accessToken");
-
-  // Check if there's already a contract between current user and post owner
-  useEffect(() => {
-    if (postId && !contractId) {
-      checkExistingContract();
-    }
-  }, [postId, contractId]);
-
-  const checkExistingContract = async () => {
+  // Fetch contract list
+  const fetchContracts = async () => {
+    setLoading(true);
+    setError("");
     try {
-      setLoading(true);
-      // Get all contracts for current user
-      const res = await api.get(
-        "/api/contract/list"
-      );
-      
-      // Find contract for this specific post (you might need to add postId to ContractResponse)
-      // For now, we'll let the user create a new contract or handle this in backend
-      console.log("Existing contracts:", res.data);
+      const res = await api.get("/api/contracts/my");
+      setContracts(res.data);
     } catch (err) {
-      console.error("Error checking existing contracts:", err);
-    } finally {
-      setLoading(false);
+      setError("Failed to load contracts");
     }
+    setLoading(false);
   };
 
-  // Check authentication
   useEffect(() => {
-    if (!token) {
-      alert("Vui lòng đăng nhập để truy cập trang này.");
-      navigate("/login");
-    }
-  }, [token, navigate]);
+    fetchContracts();
+  }, []);
 
-  if (!token) {
-    return null;
-  }
+  // Create new contract
+  const handleCreate = async (e) => {
+    e.preventDefault();
+    setActionLoading(true);
+    setError("");
+    try {
+      await api.post("/api/contracts", form);
+      setShowCreate(false);
+      setForm({ vehicleId: "", buyerId: "", sellerId: "", price: "" });
+      fetchContracts();
+    } catch (err) {
+      setError("Failed to create contract");
+    }
+    setActionLoading(false);
+  };
+
+  // Sign contract
+  const handleSign = async (id) => {
+    setActionLoading(true);
+    setError("");
+    try {
+      await api.post(`/api/contracts/${id}/sign`);
+      fetchContracts();
+    } catch (err) {
+      setError("Failed to sign contract");
+    }
+    setActionLoading(false);
+  };
+
+  // Cancel contract
+  const handleCancel = async (id) => {
+    setActionLoading(true);
+    setError("");
+    try {
+      await api.post(`/api/contracts/${id}/cancel`);
+      fetchContracts();
+    } catch (err) {
+      setError("Failed to cancel contract");
+    }
+    setActionLoading(false);
+  };
 
   return (
-    <div className="contract-page">
-      <div className="contract-page-container">
-        {/* Breadcrumb */}
-        <div className="contract-breadcrumb">
-          <Link to="/">Trang chủ</Link>
-          <span className="contract-breadcrumb-separator">›</span>
-          {postId ? (
-            <>
-              <Link to="/vehicles">Xe điện</Link>
-              <span className="contract-breadcrumb-separator">›</span>
-              <Link to={`/vehicles/${postId}`}>Bài đăng #{postId}</Link>
-              <span className="contract-breadcrumb-separator">›</span>
-              <span>Hợp đồng</span>
-            </>
-          ) : (
-            <>
-              <Link to="/contracts">Hợp đồng</Link>
-              <span className="contract-breadcrumb-separator">›</span>
-              <span>Chi tiết #{contractId}</span>
-            </>
-          )}
-        </div>
-
-        {/* Page Header */}
-        <div className="contract-page-header">
-          <h1 className="contract-page-title">
-            {contractId 
-              ? `Hợp đồng #${contractId}` 
-              : `Hợp đồng mua xe - Bài đăng #${postId}`
-            }
-          </h1>
-          <p className="contract-page-description">
-            {contractId 
-              ? "Xem chi tiết và thực hiện các thao tác với hợp đồng mua bán xe điện" 
-              : "Tạo và ký hợp đồng mua bán xe điện thông qua hệ thống Voltera"
-            }
-          </p>
-        </div>
-
-        {/* Progress Steps */}
-        {!contractId && (
-          <div className="contract-progress">
-            <h3 className="contract-progress-title">Quy trình tạo hợp đồng</h3>
-            <div className="contract-progress-steps">
-              <div className="contract-progress-step completed">
-                <div className="contract-progress-step-icon">1</div>
-                <span className="contract-progress-step-label">Chọn xe</span>
-                <div className="contract-progress-line"></div>
-              </div>
-              <div className="contract-progress-step active">
-                <div className="contract-progress-step-icon">2</div>
-                <span className="contract-progress-step-label">Tạo hợp đồng</span>
-                <div className="contract-progress-line"></div>
-              </div>
-              <div className="contract-progress-step pending">
-                <div className="contract-progress-step-icon">3</div>
-                <span className="contract-progress-step-label">Ký hợp đồng</span>
-                <div className="contract-progress-line"></div>
-              </div>
-              <div className="contract-progress-step pending">
-                <div className="contract-progress-step-icon">4</div>
-                <span className="contract-progress-step-label">Hoàn tất</span>
-              </div>
+    <div className="contract-inner">
+      <div className="contract-header">
+        <ContractIcon />
+        <h2>Contract Management</h2>
+        <button className="btn" onClick={() => setShowCreate(!showCreate)}>
+          {showCreate ? "Close" : "Create New Contract"}
+        </button>
+      </div>
+      {error && <div className="error-msg">{error}</div>}
+      {showCreate && (
+        <form className="contract-form card" onSubmit={handleCreate}>
+          <h3>Create New Contract</h3>
+          <div className="form-row">
+            <label>Vehicle (ID):</label>
+            <input
+              required
+              value={form.vehicleId}
+              onChange={(e) => setForm({ ...form, vehicleId: e.target.value })}
+            />
+          </div>
+          <div className="form-row">
+            <label>Buyer (ID):</label>
+            <input
+              required
+              value={form.buyerId}
+              onChange={(e) => setForm({ ...form, buyerId: e.target.value })}
+            />
+          </div>
+          <div className="form-row">
+            <label>Seller (ID):</label>
+            <input
+              required
+              value={form.sellerId}
+              onChange={(e) => setForm({ ...form, sellerId: e.target.value })}
+            />
+          </div>
+          <div className="form-row">
+            <label>Price:</label>
+            <input
+              required
+              type="number"
+              value={form.price}
+              onChange={(e) => setForm({ ...form, price: e.target.value })}
+            />
+          </div>
+          <button className="btn" type="submit" disabled={actionLoading}>
+            Create Contract
+          </button>
+        </form>
+      )}
+      <div className="card contract-list">
+        <h3>Your Contracts</h3>
+        {loading ? (
+          <div className="loading-state">
+            <div className="loading-spinner" />
+            <div className="loading-text">Loading...</div>
+          </div>
+        ) : contracts.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-icon">📄</div>
+            <div className="empty-title">No contracts found</div>
+            <div className="empty-text">
+              You have not created or received any purchase contracts.
             </div>
           </div>
+        ) : (
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Vehicle</th>
+                <th>Buyer</th>
+                <th>Seller</th>
+                <th>Price</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {contracts.map((contract) => (
+                <tr key={contract.id}>
+                  <td>{contract.id}</td>
+                  <td>{contract.vehicleId}</td>
+                  <td>{contract.buyerId}</td>
+                  <td>{contract.sellerId}</td>
+                  <td>{contract.price}</td>
+                  <td>
+                    <span
+                      className={`badge ${
+                        contract.status === "SIGNED"
+                          ? "success"
+                          : contract.status === "CANCELLED"
+                          ? "danger"
+                          : "secondary"
+                      }`}
+                    >
+                      {contract.status}
+                    </span>
+                  </td>
+                  <td className="action-buttons">
+                    {contract.status === "PENDING" && (
+                      <>
+                        <button
+                          className="btn"
+                          disabled={actionLoading}
+                          onClick={() => handleSign(contract.id)}
+                        >
+                          Sign
+                        </button>
+                        <button
+                          className="btn danger"
+                          disabled={actionLoading}
+                          onClick={() => handleCancel(contract.id)}
+                        >
+                          Cancel
+                        </button>
+                      </>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         )}
-        
-        {/* Main Content */}
-        <div className="contract-page-content">
-          {loading ? (
-            <div className="contract-page-loading">
-              <div>
-                <div className="contract-loading-spinner"></div>
-                <div className="contract-loading-text">Đang tải thông tin hợp đồng...</div>
-              </div>
-            </div>
-          ) : (
-            <ContractPreview 
-              postId={postId ? parseInt(postId) : null} 
-              contractId={contractId ? parseInt(contractId) : existingContractId}
-            />
-          )}
-        </div>
       </div>
     </div>
   );
