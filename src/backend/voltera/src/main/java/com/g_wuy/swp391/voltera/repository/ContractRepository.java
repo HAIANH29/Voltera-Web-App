@@ -1,7 +1,6 @@
 package com.g_wuy.swp391.voltera.repository;
 
 import com.g_wuy.swp391.voltera.entity.Contract;
-import com.g_wuy.swp391.voltera.entity.Transaction;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -21,5 +20,4 @@ public interface ContractRepository extends JpaRepository<Contract, Integer> {
 """)
     List<Contract> findActiveContractsByUser(@Param("username") String username);
     List<Contract> findByContractstatusAndExpirationdateBefore(String status, LocalDate date);
-
 }

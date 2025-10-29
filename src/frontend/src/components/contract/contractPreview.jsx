@@ -151,7 +151,6 @@ export default function ContractPreview({ postId, contractId }) {
       console.log("✅ Template found, processing DOCX...");
       const buffer = await fileRes.arrayBuffer();
       console.log("📦 Buffer size:", buffer.byteLength);
-      
       const zip = new PizZip(buffer);
       const doc = new Docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
 
