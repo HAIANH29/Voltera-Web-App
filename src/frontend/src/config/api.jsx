@@ -27,6 +27,8 @@ api.interceptors.response.use(
   (err) => {
     if (err?.response?.status === 401) {
       localStorage.removeItem("access_token");
+      document.cookie = "accessToken=; Max-Age=0; path=/; SameSite=Lax";
+     document.cookie = "refreshToken=; Max-Age=0; path=/; SameSite=Lax";
       // Optional: lưu URL hiện tại để quay lại sau đăng nhập
       const here = window.location.pathname + window.location.search;
       window.location.href = `/login?redirect=${encodeURIComponent(here)}`;

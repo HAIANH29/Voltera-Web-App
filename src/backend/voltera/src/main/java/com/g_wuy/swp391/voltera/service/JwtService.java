@@ -26,7 +26,7 @@ public class JwtService {
     public String generateToken(UserDetails userDetails) {
         String role = userDetails.getAuthorities().iterator().next().getAuthority(); // lấy role đầu tiên
         return Jwts.builder()
-                .setSubject(userDetails.getUsername()) // subject = username
+                .setSubject(userDetails.getUsername())
                 .claim("role", role)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
@@ -63,7 +63,6 @@ public class JwtService {
                 .parseClaimsJws(token)
                 .getBody();
     }
-
     public boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }

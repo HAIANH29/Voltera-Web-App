@@ -1,362 +1,247 @@
+// src/pages/vehiclesPage/vehiclesPage.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import MiniPost from "../../components/miniPost/miniPost";
 import Pagination from "../../components/pagination/pagination";
 import "./vehiclesPage.css";
 import { useNavigate } from "react-router-dom";
+import api from "../../config/api";
 
-// ===== Mock data (có thể giữ nguyên của bạn) =====
-const mockVehiclesData = [
-  {
-    postID: "VH001",
-    batteryType: "Lithium-ion",
-    brand: "Tesla",
-    model: "Model 3",
-    version: "Standard Range Plus",
-    status: "new",
-    odo: 0,
-    batteryCapacity: "75 kWh",
-    range: "448 km",
-    chargingTime: "8h (AC) / 30min (DC)",
-    color: "Pearl White",
-    numberOfSeat: 5,
-    style: "Sedan",
-    image: "https://images.unsplash.com/photo-1593941707882-a5bac6861d75?w=400",
-    sellerName: "Nguyễn Văn A",
-    price: 1200000000,
-    isFavorite: false,
-    year: 2024,
-  },
-  {
-    postID: "VH002",
-    batteryType: "LFP",
-    brand: "VinFast",
-    model: "VF8",
-    version: "Plus",
-    status: "old",
-    odo: 15000,
-    batteryCapacity: "87.7 kWh",
-    range: "420 km",
-    chargingTime: "7h (AC) / 35min (DC)",
-    color: "Ocean Blue",
-    numberOfSeat: 7,
-    style: "SUV",
-    image: "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=400",
-    sellerName: "Trần Thị B",
-    price: 1350000000,
-    isFavorite: true,
-    year: 2022,
-  },
-  {
-    postID: "VH003",
-    batteryType: "Lithium-ion",
-    brand: "BMW",
-    model: "iX3",
-    version: "xDrive30",
-    status: "new",
-    odo: 0,
-    batteryCapacity: "80 kWh",
-    range: "460 km",
-    chargingTime: "7.5h (AC) / 34min (DC)",
-    color: "Mineral Grey",
-    numberOfSeat: 5,
-    style: "SUV",
-    image: "https://images.unsplash.com/photo-1571068316344-75bc76f77890?w=400",
-    sellerName: "Lê Văn C",
-    price: 2100000000,
-    isFavorite: false,
-    year: 2024,
-  },
-  {
-    postID: "VH004",
-    batteryType: "Lithium-ion",
-    brand: "Hyundai",
-    model: "Kona Electric",
-    version: "Premium",
-    status: "old",
-    odo: 25000,
-    batteryCapacity: "64 kWh",
-    range: "305 km",
-    chargingTime: "9.5h (AC) / 47min (DC)",
-    color: "Pulse Red",
-    numberOfSeat: 5,
-    style: "Crossover",
-    image: "https://images.unsplash.com/photo-1617654112656-f5d77f16fc71?w=400",
-    sellerName: "Phạm Thị D",
-    price: 820000000,
-    isFavorite: false,
-    year: 2020,
-  },
-  {
-    postID: "VH005",
-    batteryType: "Lithium-ion",
-    brand: "Audi",
-    model: "e-tron GT",
-    version: "Quattro",
-    status: "new",
-    odo: 0,
-    batteryCapacity: "93.4 kWh",
-    range: "388 km",
-    chargingTime: "5.5h (AC) / 22min (DC)",
-    color: "Daytona Grey",
-    numberOfSeat: 4,
-    style: "Coupe",
-    image: "https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=400",
-    sellerName: "Hoàng Văn E",
-    price: 4500000000,
-    isFavorite: true,
-    year: 2025,
-  },
-  {
-    postID: "VH006",
-    batteryType: "Lithium-ion",
-    brand: "Nissan",
-    model: "Leaf",
-    version: "e+ Tekna",
-    status: "old",
-    odo: 18000,
-    batteryCapacity: "62 kWh",
-    range: "226 km",
-    chargingTime: "11.5h (AC) / 60min (DC)",
-    color: "Gun Metallic",
-    numberOfSeat: 5,
-    style: "Hatchback",
-    image: "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?w=400",
-    sellerName: "Võ Thị F",
-    price: 950000000,
-    isFavorite: false,
-    year: 2021,
-  },
-  {
-    postID: "VH007",
-    batteryType: "Lithium-ion",
-    brand: "Porsche",
-    model: "Taycan",
-    version: "Turbo",
-    status: "old",
-    odo: 8000,
-    batteryCapacity: "93.4 kWh",
-    range: "450 km",
-    chargingTime: "5.5h (AC) / 22min (DC)",
-    color: "Racing Yellow",
-    numberOfSeat: 4,
-    style: "Sedan",
-    image: "https://www.motortrend.com/uploads/2022/12/2023-Porsche-Taycan-GTS-001.jpg",
-    sellerName: "Đặng Văn G",
-    price: 6200000000,
-    isFavorite: false,
-    year: 2023,
-  },
-  {
-    postID: "VH008",
-    batteryType: "Lithium-ion",
-    brand: "Mercedes-Benz",
-    model: "EQS",
-    version: "450+",
-    status: "new",
-    odo: 0,
-    batteryCapacity: "107.8 kWh",
-    range: "770 km",
-    chargingTime: "6h (AC) / 31min (DC)",
-    color: "Obsidian Black",
-    numberOfSeat: 5,
-    style: "Sedan",
-    image: "https://tla-image.azureedge.net/api/v1/image/vehicle/Car/Mercedes-Benz/Mercedes-Benz/2/123889/1256",
-    sellerName: "Bùi Thị H",
-    price: 5500000000,
-    isFavorite: true,
-    year: 2024,
-  },
-  {
-    postID: "VH009",
-    batteryType: "LFP",
-    brand: "VinFast",
-    model: "VF6",
-    version: "Plus",
-    status: "old",
-    odo: 12000,
-    batteryCapacity: "59.6 kWh",
-    range: "380 km",
-    chargingTime: "8.5h (AC) / 40min (DC)",
-    color: "Deep Ocean Blue",
-    numberOfSeat: 5,
-    style: "Crossover",
-    image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400",
-    sellerName: "Ngô Văn I",
-    price: 765000000,
-    isFavorite: false,
-    year: 2022,
-  },
-  {
-    postID: "VH010",
-    batteryType: "Lithium-ion",
-    brand: "Ford",
-    model: "Mustang Mach-E",
-    version: "Extended Range",
-    status: "new",
-    odo: 0,
-    batteryCapacity: "98.8 kWh",
-    range: "491 km",
-    chargingTime: "6.5h (AC) / 38min (DC)",
-    color: "Rapid Red",
-    numberOfSeat: 5,
-    style: "SUV",
-    image: "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?w=400",
-    sellerName: "Đinh Thị K",
-    price: 1650000000,
-    isFavorite: false,
-    year: 2024,
-  },
-  {
-    postID: "VH011",
-    batteryType: "Lithium-ion",
-    brand: "Lucid",
-    model: "Air",
-    version: "Dream Edition",
-    status: "new",
-    odo: 0,
-    batteryCapacity: "118 kWh",
-    range: "832 km",
-    chargingTime: "4.5h (AC) / 20min (DC)",
-    color: "Stellar White",
-    numberOfSeat: 5,
-    style: "Sedan",
-    image: "https://images.unsplash.com/photo-1619976215249-4d1c3b3e3db4?w=400",
-    sellerName: "Trương Văn L",
-    price: 7800000000,
-    isFavorite: true,
-    year: 2025,
-  },
-  {
-    postID: "VH012",
-    batteryType: "Lithium-ion",
-    brand: "Jaguar",
-    model: "I-PACE",
-    version: "HSE",
-    status: "old",
-    odo: 22000,
-    batteryCapacity: "90 kWh",
-    range: "470 km",
-    chargingTime: "7h (AC) / 40min (DC)",
-    color: "Yulong White",
-    numberOfSeat: 5,
-    style: "SUV",
-    image: "https://images.unsplash.com/photo-1571068316344-75bc76f77890?w=400",
-    sellerName: "Lý Thị M",
-    price: 3200000000,
-    isFavorite: false,
-    year: 2021,
-  },
-];
-
+/** Số thẻ mỗi trang */
 const ITEMS_PER_PAGE = 12;
 
+/** State bộ lọc ban đầu (dựa trên backend fields) */
 const initialFilters = {
   brand: "",
   model: "",
-  color: "",
+  version: "",
+  color: "", 
   style: "",
-  status: "", // new | old
-  seats: "", // 4 | 5 | 7 ...
+  origin: "",
+  status: "", // "new" | "old" (derived from odo)
+  seats: "", // numberofseat
   minPrice: "",
   maxPrice: "",
-  year: "",
+  year: "", // yearmanufacture
+  minOdo: "",
+  maxOdo: "",
+  minRange: "",
+  maxRange: "",
+  minBatteryCapacity: "",
+  bodyInsurance: "", // "true" | "false" | ""
+  vehicleInspection: "", // "true" | "false" | ""
+};
+
+/**
+ * Map 1 PostResponse từ BE -> cấu trúc card MiniPost
+ * - PostResponse chứa: postId, title, description, price, vehicle, imageUrls, location, thumbnail
+ */
+const mapPostToCard = (p) => {
+  const v = p?.vehicle || {}; // VehicleDTO từ BE
+
+  // Ưu tiên thumbnail, sau đó imageUrls
+  const firstImg = p?.thumbnail || (Array.isArray(p?.imageUrls) && p.imageUrls.length > 0 ? p.imageUrls[0] : "");
+
+  return {
+    // id bài đăng
+    postID: String(p?.postId ?? ""),
+
+    // thông tin hiển thị của xe
+    brand: v?.brand || "",
+    model: v?.model || "",
+    version: v?.version || "",
+    style: v?.style || "",
+    color: v?.color || "",
+    origin: v?.origin || "",
+
+    // số chỗ và odo - field name khác nhau trong DTO
+    numberOfSeat: Number(v?.numberofseat ?? 0),
+    odo: Number(v?.odo ?? 0),
+    status: Number(v?.odo ?? 0) > 0 ? "old" : "new",
+
+    // các thông số kỹ thuật - field name khác nhau trong DTO
+    batteryCapacityRaw: Number(v?.batterycapacity ?? 0),
+    batteryCapacity: v?.batterycapacity != null ? `${v.batterycapacity} kWh` : "",
+    rangeRaw: Number(v?.range ?? 0),  
+    range: v?.range != null ? `${v.range} km` : "",
+    chargingTime: v?.chargingtime != null ? `${v.chargingtime} h` : "",
+    year: Number(v?.yearmanufacture ?? 0),
+    
+    // insurance & inspection
+    bodyInsurance: Boolean(v?.bodyinsurance),
+    vehicleInspection: Boolean(v?.vehicleinspection),
+
+    // ảnh & người bán
+    image: firstImg,
+    sellerName: p?.location || "", // location chứa thông tin seller
+
+    // giá post (top-level)
+    price: Number(p?.price ?? 0),
+
+    // FE state
+    isFavorite: false,
+  };
 };
 
 export default function VehiclesPage() {
-  // data + loading
-  const [vehicles, setVehicles] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // ===================== STATE CHÍNH =====================
+  const [vehicles, setVehicles] = useState([]);  // danh sách xe đã map
+  const [loading, setLoading] = useState(true);  // trạng thái loading
   const navigate = useNavigate();
 
-  // ======= TÁCH DRAFT vs APPLIED =======
+  // Tách input tìm kiếm/bộ lọc (draft) và bộ lọc áp dụng (applied)
   const [draftSearch, setDraftSearch] = useState("");
   const [appliedSearch, setAppliedSearch] = useState("");
 
   const [draftFilters, setDraftFilters] = useState(initialFilters);
   const [appliedFilters, setAppliedFilters] = useState(initialFilters);
 
-  // pagination
+  // Phân trang
   const [currentPage, setCurrentPage] = useState(1);
 
-  // fake fetch
+  // ===================== FETCH API TỪ BE =====================
   useEffect(() => {
     (async () => {
-      setLoading(true);
-      await new Promise((r) => setTimeout(r, 800));
-      setVehicles(mockVehiclesData);
-      setLoading(false);
+      try {
+        setLoading(true);
+
+        // Sử dụng endpoint chuyên cho vehicles đã được approved
+        const res = await api.get("/api/post/public/vehicles");
+
+        // BE trả list PostResponse chỉ chứa vehicles
+        const items = Array.isArray(res.data) ? res.data : [];
+
+        console.log("[VehiclesPage] Loaded", items.length, "vehicle posts");
+
+        const mapped = items.map(mapPostToCard);
+        setVehicles(mapped);
+      } catch (e) {
+        console.error("Load vehicles failed:", e);
+        console.log("STATUS =", e?.response?.status);
+        console.log("DATA   =", e?.response?.data);
+        setVehicles([]);
+      } finally {
+        setLoading(false);
+      }
     })();
   }, []);
 
-  // derive options từ data
+  // ===================== OPTIONS CHO BỘ LỌC (derive từ data) =====================
   const brands = useMemo(
     () => Array.from(new Set(vehicles.map((v) => v.brand))).sort(),
     [vehicles]
   );
   const models = useMemo(
-    () => Array.from(new Set(vehicles.map((v) => v.model))).sort(),
+    () => Array.from(new Set(vehicles.map((v) => v.model))).filter(Boolean).sort(),
+    [vehicles]
+  );
+  const versions = useMemo(
+    () => Array.from(new Set(vehicles.map((v) => v.version))).filter(Boolean).sort(),
     [vehicles]
   );
   const colors = useMemo(
-    () => Array.from(new Set(vehicles.map((v) => v.color))).sort(),
+    () => Array.from(new Set(vehicles.map((v) => v.color))).filter(Boolean).sort(),
     [vehicles]
   );
   const styles = useMemo(
-    () => Array.from(new Set(vehicles.map((v) => v.style))).sort(),
+    () => Array.from(new Set(vehicles.map((v) => v.style))).filter(Boolean).sort(),
+    [vehicles]
+  );
+  const origins = useMemo(
+    () => Array.from(new Set(vehicles.map((v) => v.origin))).filter(Boolean).sort(),
     [vehicles]
   );
   const seats = useMemo(
-    () => Array.from(new Set(vehicles.map((v) => v.numberOfSeat))).sort((a, b) => a - b),
+    () =>
+      Array.from(new Set(vehicles.map((v) => v.numberOfSeat))).filter(Boolean).sort(
+        (a, b) => a - b
+      ),
     [vehicles]
   );
   const years = useMemo(
-    () => Array.from(new Set(vehicles.map((v) => v.year).filter(Boolean))).sort((a, b) => b - a),
+    () =>
+      Array.from(
+        new Set(vehicles.map((v) => v.year).filter(Boolean))
+      ).sort((a, b) => b - a),
     [vehicles]
   );
 
-  // lọc CHỈ dựa trên applied*
+  // ===================== LỌC THEO APPLIED =====================
   const filtered = useMemo(() => {
     const s = appliedSearch.trim().toLowerCase();
     const f = appliedFilters;
+
     return vehicles.filter((v) => {
+      // tìm kiếm toàn văn đơn giản
       const matchSearch =
         !s ||
         `${v.brand} ${v.model} ${v.version}`.toLowerCase().includes(s) ||
         (v.sellerName || "").toLowerCase().includes(s);
 
+      // từng điều kiện đơn
       const inBrand = !f.brand || v.brand === f.brand;
       const inModel = !f.model || v.model === f.model;
+      const inVersion = !f.version || v.version === f.version;
       const inColor = !f.color || v.color === f.color;
       const inStyle = !f.style || v.style === f.style;
+      const inOrigin = !f.origin || v.origin === f.origin;
       const inStatus = !f.status || v.status === f.status;
       const inSeats = !f.seats || String(v.numberOfSeat) === String(f.seats);
       const inYear = !f.year || String(v.year) === String(f.year);
 
-      const minOK = !f.minPrice || v.price >= Number(f.minPrice);
-      const maxOK = !f.maxPrice || v.price <= Number(f.maxPrice);
+      // insurance & inspection filters
+      const inBodyInsurance = !f.bodyInsurance || 
+        (f.bodyInsurance === "true" && v.bodyInsurance) || 
+        (f.bodyInsurance === "false" && !v.bodyInsurance);
+      const inVehicleInspection = !f.vehicleInspection || 
+        (f.vehicleInspection === "true" && v.vehicleInspection) || 
+        (f.vehicleInspection === "false" && !v.vehicleInspection);
+
+      // khoảng giá
+      const minPriceOK = !f.minPrice || v.price >= Number(f.minPrice);
+      const maxPriceOK = !f.maxPrice || v.price <= Number(f.maxPrice);
+      
+      // khoảng odo
+      const minOdoOK = !f.minOdo || v.odo >= Number(f.minOdo);
+      const maxOdoOK = !f.maxOdo || v.odo <= Number(f.maxOdo);
+      
+      // khoảng range
+      const minRangeOK = !f.minRange || v.rangeRaw >= Number(f.minRange);
+      const maxRangeOK = !f.maxRange || v.rangeRaw <= Number(f.maxRange);
+      
+      // min battery capacity
+      const minBatteryOK = !f.minBatteryCapacity || v.batteryCapacityRaw >= Number(f.minBatteryCapacity);
 
       return (
         matchSearch &&
         inBrand &&
         inModel &&
+        inVersion &&
         inColor &&
         inStyle &&
+        inOrigin &&
         inStatus &&
         inSeats &&
         inYear &&
-        minOK &&
-        maxOK
+        inBodyInsurance &&
+        inVehicleInspection &&
+        minPriceOK &&
+        maxPriceOK &&
+        minOdoOK &&
+        maxOdoOK &&
+        minRangeOK &&
+        maxRangeOK &&
+        minBatteryOK
       );
     });
   }, [vehicles, appliedSearch, appliedFilters]);
 
-  // paginate
+  // ===================== PHÂN TRANG =====================
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE) || 1;
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
   const currentVehicles = filtered.slice(startIndex, endIndex);
 
-  // actions
+  // ===================== HANDLERS UI =====================
   const handleFavoriteClick = (postID) => {
     setVehicles((prev) =>
       prev.map((v) =>
@@ -366,8 +251,8 @@ export default function VehiclesPage() {
   };
 
   const handleCardClick = (vehicle) => {
-    // TODO: navigate(`/vehicles/${vehicle.postID}`)
-    console.log("Clicked vehicle:", vehicle.postID);
+    console.log("Navigating to vehicle detail:", vehicle.postID);
+    navigate(`/vehicles/${vehicle.postID}`);
   };
 
   const handlePageChange = (page) => {
@@ -382,22 +267,24 @@ export default function VehiclesPage() {
     setAppliedSearch("");
     setCurrentPage(1);
   };
+  
 
+  // ===================== FORMAT HIỂN THỊ =====================
   const formatBasicInfo = (v) => [
-    `${v.batteryType}`,
+    v.batteryCapacity || "Điện",
     `${v.numberOfSeat} chỗ`,
-    `${v.range}`,
+    v.range || "",
     v.odo > 0 ? `${v.odo.toLocaleString()} km` : "Mới",
-  ];
-  const formatProductName = (v) => `${v.brand} ${v.model} ${v.version}`;
+  ].filter(Boolean); // Loại bỏ các giá trị rỗng
+  
+  const formatProductName = (v) => `${v.brand} ${v.model} ${v.version}`.trim();
 
-  // ====== UI ======
+  // ===================== RENDER =====================
   if (loading) {
     return (
       <div className="vehicles-page">
         <div className="vehicles-header">
           <h1>Electric Vehicles</h1>
-          <p>Explore modern electric vehicle models</p>
         </div>
         <div className="layout">
           <aside className="filters skeleton-box" />
@@ -419,232 +306,625 @@ export default function VehiclesPage() {
   }
 
   return (
-    <div className="vehicles-page">
-      {/* Top search bar */}
-      <div className="topbar">
-        <select className="topbar-select" defaultValue="">
-          <option value="">— All cities —</option>
-          <option>Hà Nội</option>
-          <option>TP. HCM</option>
-          <option>Đà Nẵng</option>
-        </select>
-
-        {/* SEARCH điều khiển bằng draftSearch */}
-        <input
-          className="topbar-search"
-          placeholder="Search by Brand, Model, Seller…"
-          value={draftSearch}
-          onChange={(e) => setDraftSearch(e.target.value)}
-        />
-        <button
-          className="topbar-btn"
-          onClick={() => {
-            setAppliedSearch(draftSearch);
-            setCurrentPage(1);
-          }}
-        >
-          Search
-        </button>
-      </div>
-
-      <div className="vehicles-header">
-        <h1>Electric Vehicles</h1>
-        <p>
-          Showing {filtered.length} result{filtered.length !== 1 ? "s" : ""}
-          {filtered.length !== vehicles.length ? ` (from ${vehicles.length})` : ""}
-        </p>
-      </div>
-
-      <div className="layout">
-        {/* Sidebar filters */}
-        <aside className="filters">
-          <h3>Filter Electric Cars</h3>
-
-          <label>Brand</label>
-          <select
-            value={draftFilters.brand}
-            onChange={(e) =>
-              setDraftFilters({ ...draftFilters, brand: e.target.value, model: "" })
-            }
-          >
-            <option value="">— All —</option>
-            {brands.map((b) => (
-              <option key={b} value={b}>
-                {b}
-              </option>
-            ))}
+    <div className="vehicles-page modern-enhanced">
+      {/* Enhanced Top Search Bar */}
+      <div className="enhanced-topbar">
+        <div className="topbar-content">
+          <select className="location-select" defaultValue="">
+            <option value="">All Cities</option>
+            <option>Hà Nội</option>
+            <option>TP. HCM</option>
+            <option>Đà Nẵng</option>
           </select>
 
-          <label>Model</label>
-          <select
-            value={draftFilters.model}
-            onChange={(e) =>
-              setDraftFilters({ ...draftFilters, model: e.target.value })
-            }
+          <div className="search-input-group">
+            <svg className="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="11" cy="11" r="8"/>
+              <path d="m21 21-4.35-4.35"/>
+            </svg>
+            <input
+              className="search-input"
+              placeholder="Search by Brand, Model, Seller..."
+              value={draftSearch}
+              onChange={(e) => setDraftSearch(e.target.value)}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  setAppliedSearch(draftSearch);
+                  setCurrentPage(1);
+                }
+              }}
+            />
+          </div>
+          
+          <button
+            className="search-btn"
+            onClick={() => {
+              setAppliedSearch(draftSearch);
+              setCurrentPage(1);
+            }}
           >
-            <option value="">— All —</option>
-            {models
-              .filter((m) =>
-                !draftFilters.brand ||
-                vehicles.some((v) => v.brand === draftFilters.brand && v.model === m)
-              )
-              .map((m) => (
-                <option key={m} value={m}>
-                  {m}
+            Search
+          </button>
+        </div>
+      </div>
+
+      {/* Enhanced Header */}
+      <div className="enhanced-header">
+        <h1>Premium Electric Vehicles</h1>
+        <p>Discover the future of sustainable transportation</p>
+      </div>
+
+      {/* Results Header */}
+      <div className="results-header">
+        <div className="results-info">
+          <h2>Electric Vehicles Collection</h2>
+          <p className="results-count">
+            {filtered.length} vehicle{filtered.length !== 1 ? "s" : ""} available
+            {filtered.length !== vehicles.length && (
+              <span className="filter-indicator"> (filtered from {vehicles.length})</span>
+            )}
+            {appliedSearch && <span className="search-term"> for "{appliedSearch}"</span>}
+          </p>
+        </div>
+        
+        <div className="view-controls">
+          <button className="view-btn active">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <rect x="3" y="3" width="7" height="7"/>
+              <rect x="14" y="3" width="7" height="7"/>
+              <rect x="14" y="14" width="7" height="7"/>
+              <rect x="3" y="14" width="7" height="7"/>
+            </svg>
+            Grid
+          </button>
+        </div>
+      </div>
+
+      <div className="layout enhanced-layout">
+        {/* Enhanced Sidebar filters */}
+        <aside className="filters modern-filters">
+          <div className="filters-header">
+            <h3>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46"/>
+              </svg>
+              Advanced Filters
+            </h3>
+            <button className="clear-filters" onClick={resetFilters}>
+              Clear All
+            </button>
+          </div>
+
+          <div className="filter-group">
+            <label className="filter-label">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M19 14c0-1.1-.9-2-2-2h-1l-1-6H9L8 12H7c-1.1 0-2 .9-2 2v4c0 .6.4 1 1 1h1c.6 0 1-.4 1-1v-1h8v1c0 .6.4 1 1 1h1c.6 0 1-.4 1-1v-4z"/>
+                <circle cx="7.5" cy="16.5" r="2.5"/>
+                <circle cx="16.5" cy="16.5" r="2.5"/>
+              </svg>
+              Brand
+            </label>
+            <select
+              className="filter-select"
+              value={draftFilters.brand}
+              onChange={(e) =>
+                setDraftFilters({ ...draftFilters, brand: e.target.value, model: "" })
+              }
+            >
+              <option value="">All Brands</option>
+              {brands.map((b) => (
+                <option key={b} value={b}>
+                  {b}
                 </option>
               ))}
-          </select>
+            </select>
+          </div>
 
-          <label>Color</label>
-          <select
-            value={draftFilters.color}
-            onChange={(e) =>
-              setDraftFilters({ ...draftFilters, color: e.target.value })
-            }
-          >
-            <option value="">— All —</option>
-            {colors.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
+          <div className="filter-group">
+            <label className="filter-label">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>
+              </svg>
+              Model
+            </label>
+            <select
+              className="filter-select"
+              value={draftFilters.model}
+              onChange={(e) =>
+                setDraftFilters({ ...draftFilters, model: e.target.value, version: "" })
+              }
+            >
+              <option value="">All Models</option>
+              {models
+                .filter(
+                  (m) =>
+                    !draftFilters.brand ||
+                    vehicles.some((v) => v.brand === draftFilters.brand && v.model === m)
+                )
+                .map((m) => (
+                  <option key={m} value={m}>
+                    {m}
+                  </option>
+                ))}
+            </select>
+          </div>
 
-          <label>Style</label>
-          <select
-            value={draftFilters.style}
-            onChange={(e) =>
-              setDraftFilters({ ...draftFilters, style: e.target.value })
-            }
-          >
-            <option value="">— All —</option>
-            {styles.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
+          <div className="filter-group">
+            <label className="filter-label">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 2L2 7v10c0 5.55 3.84 10 9 11 5.16-1 9-5.45 9-11V7l-10-5z"/>
+              </svg>
+              Version
+            </label>
+            <select
+              className="filter-select"
+              value={draftFilters.version}
+              onChange={(e) =>
+                setDraftFilters({ ...draftFilters, version: e.target.value })
+              }
+            >
+              <option value="">All Versions</option>
+              {versions
+                .filter(
+                  (v) =>
+                    (!draftFilters.brand || vehicles.some((vehicle) => vehicle.brand === draftFilters.brand && vehicle.version === v)) &&
+                    (!draftFilters.model || vehicles.some((vehicle) => vehicle.model === draftFilters.model && vehicle.version === v))
+                )
+                .map((v) => (
+                  <option key={v} value={v}>
+                    {v}
+                  </option>
+                ))}
+            </select>
+          </div>
 
-          <label>Status</label>
-          <select
-            value={draftFilters.status}
-            onChange={(e) =>
-              setDraftFilters({ ...draftFilters, status: e.target.value })
-            }
-          >
-            <option value="">— All —</option>
-            <option value="new">New</option>
-            <option value="old">Used</option>
-          </select>
+          <div className="filter-group">
+            <label className="filter-label">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 6v6l4 2"/>
+              </svg>
+              Status
+            </label>
+            <div className="status-buttons">
+              <button 
+                className={`status-btn ${draftFilters.status === '' ? 'active' : ''}`}
+                onClick={() => setDraftFilters({ ...draftFilters, status: '' })}
+              >
+                All
+              </button>
+              <button 
+                className={`status-btn ${draftFilters.status === 'new' ? 'active' : ''}`}
+                onClick={() => setDraftFilters({ ...draftFilters, status: 'new' })}
+              >
+                New
+              </button>
+              <button 
+                className={`status-btn ${draftFilters.status === 'old' ? 'active' : ''}`}
+                onClick={() => setDraftFilters({ ...draftFilters, status: 'old' })}
+              >
+                Used
+              </button>
+            </div>
+          </div>
 
-          <label>Seats</label>
-          <select
-            value={draftFilters.seats}
-            onChange={(e) =>
-              setDraftFilters({ ...draftFilters, seats: e.target.value })
-            }
-          >
-            <option value="">— All —</option>
-            {seats.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
+          <div className="filter-group">
+            <label className="filter-label">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+              Seats
+            </label>
+            <div className="seats-grid">
+              <button 
+                className={`seat-btn ${draftFilters.seats === '' ? 'active' : ''}`}
+                onClick={() => setDraftFilters({ ...draftFilters, seats: '' })}
+              >
+                All
+              </button>
+              {seats.map((s) => (
+                <button 
+                  key={s}
+                  className={`seat-btn ${draftFilters.seats === String(s) ? 'active' : ''}`}
+                  onClick={() => setDraftFilters({ ...draftFilters, seats: String(s) })}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
 
-          <label>Price range (VND)</label>
-          <div className="price-row">
+          <div className="filter-row">
+            <div className="filter-group half-width">
+              <label className="filter-label">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="3"/>
+                  <path d="M12 1v6m0 6v6"/>
+                </svg>
+                Color
+              </label>
+              <select
+                className="filter-select"
+                value={draftFilters.color}
+                onChange={(e) =>
+                  setDraftFilters({ ...draftFilters, color: e.target.value })
+                }
+              >
+                <option value="">All Colors</option>
+                {colors.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="filter-group half-width">
+              <label className="filter-label">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M19 14c0-1.1-.9-2-2-2h-1l-1-6H9L8 12H7c-1.1 0-2 .9-2 2v4c0 .6.4 1 1 1h1c.6 0 1-.4 1-1v-1h8v1c0 .6.4 1 1 1h1c.6 0 1-.4 1-1v-4z"/>
+                </svg>
+                Style
+              </label>
+              <select
+                className="filter-select"
+                value={draftFilters.style}
+                onChange={(e) =>
+                  setDraftFilters({ ...draftFilters, style: e.target.value })
+                }
+              >
+                <option value="">All Styles</option>
+                {styles.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="filter-group">
+            <label className="filter-label">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+              Origin
+            </label>
+            <select
+              className="filter-select"
+              value={draftFilters.origin}
+              onChange={(e) =>
+                setDraftFilters({ ...draftFilters, origin: e.target.value })
+              }
+            >
+              <option value="">All Origins</option>
+              {origins.map((o) => (
+                <option key={o} value={o}>
+                  {o}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="filter-group">
+            <label className="filter-label">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="12" y1="1" x2="12" y2="23"/>
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+              </svg>
+              Price Range (VND)
+            </label>
+            <div className="price-inputs">
+              <div className="price-input-group">
+                <input
+                  type="number"
+                  placeholder="Min price"
+                  value={draftFilters.minPrice}
+                  onChange={(e) =>
+                    setDraftFilters({ ...draftFilters, minPrice: e.target.value })
+                  }
+                />
+              </div>
+              <span className="price-separator">to</span>
+              <div className="price-input-group">
+                <input
+                  type="number"
+                  placeholder="Max price"
+                  value={draftFilters.maxPrice}
+                  onChange={(e) =>
+                    setDraftFilters({ ...draftFilters, maxPrice: e.target.value })
+                  }
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="filter-group">
+            <label className="filter-label">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+              Year of Manufacture
+            </label>
+            <select
+              className="filter-select"
+              value={draftFilters.year}
+              onChange={(e) =>
+                setDraftFilters({ ...draftFilters, year: e.target.value })
+              }
+            >
+              <option value="">All Years</option>
+              {years.map((y) => (
+                <option key={y} value={y}>
+                  {y}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="filter-group">
+            <label className="filter-label">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 2v4"/>
+                <path d="M16 6l-4 6-4-6"/>
+                <path d="M8 18l4-6 4 6"/>
+                <path d="M12 18v4"/>
+              </svg>
+              Odometer Range (km)
+            </label>
+            <div className="range-inputs">
+              <input
+                type="number"
+                placeholder="Min ODO"
+                value={draftFilters.minOdo}
+                onChange={(e) =>
+                  setDraftFilters({ ...draftFilters, minOdo: e.target.value })
+                }
+                className="range-input"
+              />
+              <span className="range-separator">-</span>
+              <input
+                type="number"
+                placeholder="Max ODO"
+                value={draftFilters.maxOdo}
+                onChange={(e) =>
+                  setDraftFilters({ ...draftFilters, maxOdo: e.target.value })
+                }
+                className="range-input"
+              />
+            </div>
+          </div>
+
+          <div className="filter-group">
+            <label className="filter-label">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+              </svg>
+              Electric Range (km)
+            </label>
+            <div className="range-inputs">
+              <input
+                type="number"
+                placeholder="Min Range"
+                value={draftFilters.minRange}
+                onChange={(e) =>
+                  setDraftFilters({ ...draftFilters, minRange: e.target.value })
+                }
+                className="range-input"
+              />
+              <span className="range-separator">-</span>
+              <input
+                type="number"
+                placeholder="Max Range"
+                value={draftFilters.maxRange}
+                onChange={(e) =>
+                  setDraftFilters({ ...draftFilters, maxRange: e.target.value })
+                }
+                className="range-input"
+              />
+            </div>
+          </div>
+
+          <div className="filter-group">
+            <label className="filter-label">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="1" y="6" width="18" height="12" rx="2" ry="2"/>
+                <path d="m22 10-2-2v8l2-2"/>
+              </svg>
+              Min Battery Capacity (kWh)
+            </label>
             <input
               type="number"
-              placeholder="Min"
-              value={draftFilters.minPrice}
+              placeholder="e.g. 50"
+              value={draftFilters.minBatteryCapacity}
               onChange={(e) =>
-                setDraftFilters({ ...draftFilters, minPrice: e.target.value })
+                setDraftFilters({ ...draftFilters, minBatteryCapacity: e.target.value })
               }
-            />
-            <span>—</span>
-            <input
-              type="number"
-              placeholder="Max"
-              value={draftFilters.maxPrice}
-              onChange={(e) =>
-                setDraftFilters({ ...draftFilters, maxPrice: e.target.value })
-              }
+              className="filter-select"
             />
           </div>
 
-          <label>Year of Manufacture</label>
-          <select
-            value={draftFilters.year}
-            onChange={(e) =>
-              setDraftFilters({ ...draftFilters, year: e.target.value })
-            }
-          >
-            <option value="">— All —</option>
-            {years.map((y) => (
-              <option key={y} value={y}>
-                {y}
-              </option>
-            ))}
-          </select>
+          <div className="filter-group">
+            <label className="filter-label">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M9 12l2 2 4-4"/>
+                <path d="M21 12c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1z"/>
+                <circle cx="12" cy="12" r="10"/>
+              </svg>
+              Insurance & Inspection
+            </label>
+            <div className="checkbox-group">
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={draftFilters.bodyInsurance === "true"}
+                  onChange={(e) =>
+                    setDraftFilters({ 
+                      ...draftFilters, 
+                      bodyInsurance: e.target.checked ? "true" : "" 
+                    })
+                  }
+                />
+                Body Insurance
+              </label>
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={draftFilters.vehicleInspection === "true"}
+                  onChange={(e) =>
+                    setDraftFilters({ 
+                      ...draftFilters, 
+                      vehicleInspection: e.target.checked ? "true" : "" 
+                    })
+                  }
+                />
+                Vehicle Inspection
+              </label>
+            </div>
+          </div>
 
           <div className="filter-actions">
             <button
-              className="btn-apply"
+              className="apply-filters-btn"
               onClick={() => {
                 setAppliedFilters(draftFilters);
                 setAppliedSearch(draftSearch);
                 setCurrentPage(1);
               }}
             >
-              Apply Filter
-            </button>
-            <button className="btn-reset" onClick={resetFilters}>
-              Reset
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="20,6 9,17 4,12"/>
+              </svg>
+              Apply Filters
             </button>
           </div>
         </aside>
 
-        {/* Cards grid */}
-        <div className="vehicles-grid">
-          {currentVehicles.map((v) => (
-            <MiniPost
-              key={v.postID}
-              image={v.image}
-              productName={formatProductName(v)}
-              basicInfo={formatBasicInfo(v)}
-              sellerName={v.sellerName}
-              price={v.price}
-              isNew={v.status === "new"}
-              isFavorite={v.isFavorite}
-              onFavoriteClick={() => handleFavoriteClick(v.postID)}
-              onClick={() => handleCardClick(v)}
-            />
-          ))}
+        {/* Enhanced Vehicles Grid */}
+        <div className="vehicles-content">
+          <div className="sort-bar">
+            <div className="sort-info">
+              <span className="showing-text">
+                Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1}-{Math.min(currentPage * ITEMS_PER_PAGE, filtered.length)} of {filtered.length}
+              </span>
+            </div>
+            <div className="sort-controls">
+              <label>Sort by:</label>
+              <select className="sort-select">
+                <option value="newest">Newest First</option>
+                <option value="price-low">Price: Low to High</option>
+                <option value="price-high">Price: High to Low</option>
+                <option value="year-new">Year: Newest</option>
+                <option value="year-old">Year: Oldest</option>
+              </select>
+            </div>
+          </div>
 
-          {!currentVehicles.length && (
-            <div className="empty">Không tìm thấy xe phù hợp. Hãy điều chỉnh bộ lọc.</div>
-          )}
+          <div className="vehicles-grid enhanced-grid">
+            {currentVehicles.map((v) => (
+              <div key={v.postID} className="enhanced-vehicle-card">
+                <MiniPost
+                  image={v.image}
+                  productName={formatProductName(v)}
+                  basicInfo={formatBasicInfo(v)}
+                  sellerName={v.sellerName}
+                  price={v.price}
+                  isNew={v.status === "new"}
+                  isFavorite={v.isFavorite}
+                  onFavoriteClick={() => handleFavoriteClick(v.postID)}
+                  onClick={() => handleCardClick(v)}
+                />
+                {v.status === "new" && <div className="new-badge">NEW</div>}
+                {v.isFavorite && <div className="favorite-indicator">♥</div>}
+              </div>
+            ))}
+
+            {!currentVehicles.length && (
+              <div className="empty-state">
+                <div className="empty-icon">
+                  <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
+                    <path d="M19 14c0-1.1-.9-2-2-2h-1l-1-6H9L8 12H7c-1.1 0-2 .9-2 2v4c0 .6.4 1 1 1h1c.6 0 1-.4 1-1v-1h8v1c0 .6.4 1 1 1h1c.6 0 1-.4 1-1v-4z"/>
+                    <circle cx="7.5" cy="16.5" r="2.5"/>
+                    <circle cx="16.5" cy="16.5" r="2.5"/>
+                  </svg>
+                </div>
+                <h3>No vehicles found</h3>
+                <p className="empty-message">
+                  {vehicles.length === 0
+                    ? "No approved vehicle listings available at the moment"
+                    : "Try adjusting your search criteria or filters"}
+                </p>
+                {(appliedSearch || Object.values(appliedFilters).some(v => v)) && (
+                  <button className="reset-btn" onClick={resetFilters}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                      <path d="M21 3v5h-5"/>
+                      <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+                      <path d="M3 21v-5h5"/>
+                    </svg>
+                    Clear All Filters
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Pagination */}
-      {filtered.length > 0 && (
-        <div className="pagination-container">
-          <div className="pagination">
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={handlePageChange}
-            />
-          </div>
-          <div className="pagination-info">
-            {`Showing ${startIndex + 1}-${Math.min(endIndex, filtered.length)} of ${
-              filtered.length
-            } vehicles`}
+      {/* Enhanced Pagination */}
+      {filtered.length > 0 && totalPages > 1 && (
+        <div className="pagination-section">
+          <div className="pagination-wrapper">
+            <div className="pagination-info">
+              <span>
+                Page {currentPage} of {totalPages} 
+                <span className="total-items">({filtered.length} total vehicles)</span>
+              </span>
+            </div>
+            <div className="pagination enhanced-pagination">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+              />
+            </div>
+            <div className="pagination-jump">
+              <span>Go to page:</span>
+              <input 
+                type="number" 
+                min="1" 
+                max={totalPages}
+                value={currentPage}
+                onChange={(e) => {
+                  const page = Math.min(Math.max(1, parseInt(e.target.value) || 1), totalPages);
+                  handlePageChange(page);
+                }}
+                className="page-input"
+              />
+            </div>
           </div>
         </div>
       )}
+
+      {/* Back to Top Button */}
+      <button 
+        className="back-to-top"
+        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        style={{ 
+          display: currentPage > 1 ? 'flex' : 'none' 
+        }}
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M18 15l-6-6-6 6"/>
+        </svg>
+      </button>
     </div>
   );
 }

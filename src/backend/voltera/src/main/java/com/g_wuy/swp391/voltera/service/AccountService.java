@@ -104,5 +104,9 @@ public class AccountService {
     public List<Account> getPendingAccounts() {
         return accountRepository.findPendingAccounts();
     }
+    
+    public List<Account> getAllAccounts() {
+        return accountRepository.findAllAccountsOrdered();
+    }
 
 }

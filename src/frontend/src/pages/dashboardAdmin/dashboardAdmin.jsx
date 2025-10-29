@@ -1,431 +1,983 @@
-// src/pages/admin/DashboardAdmin.jsx
+// ⚡ MODERN ADMIN DASHBOARD - ALL-IN-ONE FILE ⚡
 import React, { useEffect, useState } from "react";
 import api from "../../config/api";
-import "./dashboardAdmin.css";
+import "./modernDashboard.css";
 import toast from "react-hot-toast";
 
+// 🎨 Modern SVG Icons
+const Icons = {
+  Dashboard: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5a2 2 0 012-2h4a2 2 0 012 2v3H8V5z" /></svg>,
+  Users: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" /></svg>,
+  Posts: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14-4H9m4 8H9m8 4H9m-4-8h.01M5 16h.01" /></svg>,
+  Accounts: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>,
+  Analytics: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>,
+  Search: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>,
+  Bell: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5-5-5h5z" /></svg>,
+  Settings: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>,
+  ChevronUp: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>,
+  ChevronDown: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>,
+  Eye: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>,
+  Check: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>,
+  X: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>,
+  Electric: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>,
+  Car: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 6H4L2 4v4l15 1v4c0 1-1 2-2 2H5c-1 0-2-1-2-2v-4" /></svg>
+};
+
 export default function DashboardAdmin() {
-  const [activeTab, setActiveTab] = useState("listings");
+  // 📊 States
+  const [activeSection, setActiveSection] = useState("overview");
   const [loading, setLoading] = useState(false);
-
-  // Stats mock
-  const stats = {
-    totalUsers: 12547,
-    totalListings: 3829,
-    totalRevenue: 2847593,
-    activeDisputes: 7,
-    userGrowth: 12.5,
-    listingGrowth: 8.3,
-    revenueGrowth: 18.7,
-  };
-
-  // Listings (pending)
+  const [stats, setStats] = useState({ totalPosts: 0, pendingPosts: 0, totalUsers: 0, pendingAccounts: 0 });
   const [pendingListings, setPendingListings] = useState([]);
-
-  // Accounts (pending)
   const [pendingAccounts, setPendingAccounts] = useState([]);
+  const [allUsers, setAllUsers] = useState([]);
+  const [filteredUsers, setFilteredUsers] = useState([]);
+  const [selectedRole, setSelectedRole] = useState('ALL');
+  const [selectedPost, setSelectedPost] = useState(null);
+  const [postDetail, setPostDetail] = useState(null);
+  const [loadingDetail, setLoadingDetail] = useState(false);
 
-  // Users mock
-  const users = [
-    { id: "U001", name: "Alice Cooper", email: "alice@example.com", status: "active" },
-    { id: "U002", name: "Bob Wilson", email: "bob@example.com", status: "pending" },
+  // 🔗 Navigation Configuration
+  const navigationItems = [
+    { section: "main", title: "Main", items: [
+      { id: "overview", label: "Overview", icon: Icons.Dashboard },
+      { id: "analytics", label: "Analytics", icon: Icons.Analytics },
+    ]},
+    { section: "management", title: "Management", items: [
+      { id: "listings", label: "Listings", icon: Icons.Posts, badge: pendingListings.length },
+      { id: "accounts", label: "Accounts", icon: Icons.Accounts, badge: pendingAccounts.length },
+      { id: "users", label: "Users", icon: Icons.Users },
+    ]},
+    { section: "system", title: "System", items: [
+      { id: "settings", label: "Settings", icon: Icons.Settings },
+    ]}
   ];
 
+  // 🚀 Load Data Effects
+  useEffect(() => { 
+    loadDashboardData(); 
+    // 🧪 Test admin auth with a simple call
+    testAdminAuth();
+  }, []);
+
+  const testAdminAuth = async () => {
+    try {
+      console.log("🧪 Testing admin auth...");
+      const response = await api.get("/api/v1/admin/accounts/all");
+      console.log("✅ Admin auth works! User count:", response.data?.length);
+    } catch (error) {
+      console.log("❌ Admin auth failed:", error.response?.status, error.response?.data);
+    }
+  };
   useEffect(() => {
-    if (activeTab === "accounts") {
-      loadPendingAccounts();
-    } else if (activeTab === "listings") {
-      loadPendingListings();
+    switch (activeSection) {
+      case "listings": loadPendingListings(); break;
+      case "accounts": loadPendingAccounts(); break;
+      case "users": loadAllUsers(); break;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab]);
+  }, [activeSection]);
 
-  /* ===================== LISTINGS (ADMIN) ===================== */
+  // 📈 API Functions
+  const loadDashboardData = async () => {
+    try {
+      setLoading(true);
+      
+      // 🔍 Debug authentication
+      const getCookie = (name) => {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(";").shift();
+        return null;
+      };
+      
+      const token = getCookie("accessToken");
+      console.log("🔐 Admin token exists:", !!token);
+      console.log("🔐 Token preview:", token ? token.substring(0, 20) + "..." : "No token");
+      
+      const [postsRes, accountsRes] = await Promise.all([
+        api.get("/api/post/admin/pending"),
+        api.get("/api/v1/admin/accounts/pending")
+      ]);
+      
+      console.log("✅ API calls successful!");
+      setStats({
+        totalPosts: postsRes.data?.length || 0,
+        pendingPosts: postsRes.data?.filter(p => p.status === 'PENDING').length || 0,
+        totalUsers: accountsRes.data?.length || 0,
+        pendingAccounts: accountsRes.data?.length || 0
+      });
+    } catch (error) {
+      console.error("❌ API Error:", error.response?.status, error.response?.data);
+      // 🔧 Mock data for testing UI
+      setStats({
+        totalPosts: 25,
+        pendingPosts: 8,
+        totalUsers: 1250,
+        pendingAccounts: 3
+      });
+      toast.error(`API Error ${error.response?.status}: ${error.response?.data?.message || 'Check admin permissions'}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const loadPendingListings = async () => {
-    setLoading(true);
-    try {
-      // BE: GET /api/post/admin/post/pending
-      // -> baseURL = /api  => FE gọi "/post/admin/post/pending"
-      const res = await api.get("/api/post/admin/post/pending");
-      const items = Array.isArray(res.data)
-        ? res.data.map((p) => ({
-            id: p.id,
-            title: p.title || "Untitled",
-            price: Number(p.price || 0),
-            status: (p.status || "PENDING").toLowerCase(),
-          }))
-        : [];
-      setPendingListings(items);
-    } catch (error) {
-      console.error("[Admin] Error loading pending listings:", error);
-      setPendingListings([]);
-      toast.error(
-        error?.response?.status === 401
-          ? "Please login again."
-          : error?.response?.status === 403
-          ? "Admin role required."
-          : error?.response?.data?.message || "Failed to load pending listings"
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleApproveListing = async (id) => {
     try {
       setLoading(true);
-      // BE: PUT /api/post/admin/post/{postId}/approve
-      // -> baseURL = /api  => FE gọi "/post/admin/post/{id}/approve"
-      await api.put(`/api/post/admin/post/${id}/approve`);
-      toast.success(`Listing ${id} approved`);
-      await loadPendingListings();
+      const response = await api.get("/api/post/admin/pending");
+      if (response.data && Array.isArray(response.data)) {
+        setPendingListings(response.data);
+      }
     } catch (error) {
-      console.error("[Admin] Approve listing failed:", error);
-      toast.error(
-        error?.response?.status === 401
-          ? "Please login again."
-          : error?.response?.status === 403
-          ? "Admin role required."
-          : error?.response?.data?.message || "Failed to approve listing"
-      );
+      console.error("⚠️ API Error (need ADMIN login):", error.response?.status);
+      // 🔧 Mock data for testing UI
+      setPendingListings([
+        {
+          id: 1,
+          title: "Tesla Model 3 Performance",
+          type: "electric",
+          price: 55000,
+          sellerName: "John Doe",
+          createdAt: new Date().toISOString(),
+          description: "Low mileage electric vehicle in excellent condition",
+          images: ["https://via.placeholder.com/300x200?text=Tesla"]
+        },
+        {
+          id: 2,  
+          title: "BMW X5 2023",
+          type: "vehicle", 
+          price: 75000,
+          sellerName: "Jane Smith",
+          createdAt: new Date().toISOString(),
+          description: "Luxury SUV with premium features",
+          images: ["https://via.placeholder.com/300x200?text=BMW"]
+        },
+        {
+          id: 3,
+          title: "Nissan Leaf Electric",
+          type: "electric",
+          price: 32000,
+          sellerName: "Mike Johnson", 
+          createdAt: new Date().toISOString(),
+          description: "Eco-friendly electric car perfect for city driving",
+          images: ["https://via.placeholder.com/300x200?text=Nissan"]
+        }
+      ]);
+      toast.error("Need ADMIN login. Using mock data for UI testing.");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleRejectListing = async (id) => {
-    try {
-      setLoading(true);
-      // BE: PUT /api/post/admin/post/{postId}/reject (body: RejectPostRequest { reason })
-      const reason = window.prompt("Reject reason?");
-      await api.put(`/api/post/admin/post/${id}/reject`, { reason: reason || "Not specified" });
-      toast.success(`Listing ${id} rejected`);
-      await loadPendingListings();
-    } catch (error) {
-      console.error("[Admin] Reject listing failed:", error);
-      toast.error(
-        error?.response?.status === 401
-          ? "Please login again."
-          : error?.response?.status === 403
-          ? "Admin role required."
-          : error?.response?.data?.message || "Failed to reject listing"
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  /* ===================== ACCOUNTS (ADMIN) ===================== */
   const loadPendingAccounts = async () => {
-    setLoading(true);
     try {
-      // BE: GET /api/v1/admin/accounts/pending
-      // -> baseURL = /api  => FE gọi "/v1/admin/accounts/pending"
-      const res = await api.get("/api/v1/admin/accounts/pending");
-      const items = Array.isArray(res.data)
-        ? res.data.map((a) => ({
-            accountId: a.accountId || a.id,
-            username: a.username || "Unknown",
-            email: a.email || "",
-            role: a.role || "USER",
-            status: a.status || "PENDING",
-          }))
-        : [];
-      setPendingAccounts(items);
+      setLoading(true);
+      const response = await api.get("/api/v1/admin/accounts/pending");
+      if (response.data && Array.isArray(response.data)) {
+        setPendingAccounts(response.data);
+      }
     } catch (error) {
-      console.error("[Admin] Error loading accounts:", error);
-      setPendingAccounts([]);
+      console.error("⚠️ API Error (need ADMIN login):", error.response?.status);
+      // 🔧 Mock data for testing UI
+      setPendingAccounts([
+        {
+          id: 1,
+          accountId: 1,
+          username: "newuser1",
+          email: "newuser1@example.com",
+          role: "USER",
+          createdAt: new Date().toISOString()
+        },
+        {
+          id: 2,
+          accountId: 2, 
+          username: "seller2",
+          email: "seller2@example.com",
+          role: "SELLER",
+          createdAt: new Date().toISOString()
+        },
+        {
+          id: 3,
+          accountId: 3,
+          username: "admin3", 
+          email: "admin3@example.com",
+          role: "ADMIN",
+          createdAt: new Date().toISOString()
+        }
+      ]);
+      toast.error("Need ADMIN login. Using mock data for UI testing.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadAllUsers = async () => {
+    try {
+      setLoading(true);
+      console.log("[DEBUG] Loading all users from API...");
+      const response = await api.get("/api/v1/admin/accounts/all");
+      console.log("[DEBUG] All users response:", response.data);
+      
+      if (response.data && Array.isArray(response.data)) {
+        // Load ALL users (not just approved) and show their actual roles
+        const allUsers = response.data.map(user => ({
+          accountId: user.accountId || user.id,
+          username: user.username || "Unknown",
+          email: user.email || "",
+          role: user.role || "USER",
+          status: user.status || "UNKNOWN",
+          createdAt: user.createdAt || user.createat || new Date().toISOString()
+        }));
+        
+        console.log("[DEBUG] Mapped users:", allUsers);
+        console.log("[DEBUG] Role distribution:", {
+          ADMIN: allUsers.filter(u => u.role === 'ADMIN').length,
+          SELLER: allUsers.filter(u => u.role === 'SELLER').length,
+          USER: allUsers.filter(u => u.role === 'USER').length,
+          OTHER: allUsers.filter(u => !['ADMIN', 'SELLER', 'USER'].includes(u.role)).length
+        });
+        
+        setAllUsers(allUsers);
+        setFilteredUsers(allUsers);
+        toast.success(`Loaded ${allUsers.length} users (${allUsers.filter(u => u.status === 'APPROVED').length} approved)`);
+      }
+    } catch (error) {
+      console.error("Error loading users:", error);
+      console.error("Error response:", error.response?.data);
+      // 🔧 Mock data with diverse roles for testing
+      const mockUsers = [
+        { accountId: 1, username: "admin_main", email: "admin@voltera.com", role: "ADMIN", status: "APPROVED", createdAt: "2024-01-01" },
+        { accountId: 2, username: "seller_tesla", email: "tesla@voltera.com", role: "SELLER", status: "APPROVED", createdAt: "2024-01-15" },
+        { accountId: 3, username: "seller_byd", email: "byd@voltera.com", role: "SELLER", status: "APPROVED", createdAt: "2024-01-20" },
+        { accountId: 4, username: "buyer_john", email: "john@gmail.com", role: "USER", status: "APPROVED", createdAt: "2024-01-25" },
+        { accountId: 5, username: "buyer_jane", email: "jane@gmail.com", role: "USER", status: "APPROVED", createdAt: "2024-02-01" },
+        { accountId: 6, username: "seller_vf", email: "vf@voltera.com", role: "SELLER", status: "PENDING", createdAt: "2024-02-05" },
+        { accountId: 7, username: "buyer_mike", email: "mike@yahoo.com", role: "USER", status: "PENDING", createdAt: "2024-02-10" }
+      ];
+      setAllUsers(mockUsers);
+      setFilteredUsers(mockUsers);
+      toast.error(`API Error: ${error.response?.status || 'Unknown'}. Using mock data.`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRoleFilter = (role) => {
+    setSelectedRole(role);
+    if (role === 'ALL') {
+      setFilteredUsers(allUsers);
+    } else {
+      const filtered = allUsers.filter(user => user.role === role);
+      setFilteredUsers(filtered);
+    }
+  };
+
+  // ✅ Action Handlers
+  const handleApprovePost = async (postId) => {
+    try {
+      setLoading(true);
+      console.log("[DEBUG] Approving post:", postId);
+      await api.put(`/api/post/admin/${postId}/approve`);
+      toast.success("Post approved");
+      await loadPendingListings();
+      await loadDashboardData();
+    } catch (error) {
+      console.error("Error approving post:", error);
+      console.error("Error details:", error.response?.data);
       toast.error(
         error?.response?.status === 401
           ? "Please login again."
           : error?.response?.status === 403
           ? "Admin role required."
-          : error?.response?.data?.message || "Failed to load pending accounts"
+          : error?.response?.data?.message || "Failed to approve post"
       );
     } finally {
       setLoading(false);
     }
   };
 
-  const handleApproveAccount = async (accountId, email) => {
+  const handleRejectPost = async (postId) => {
     try {
       setLoading(true);
-      // BE: PUT /api/v1/admin/account/{id}/approved
-      // -> baseURL = /api  => FE gọi "/v1/admin/account/{id}/approved"
+      const reason = window.prompt("Please provide a reason for rejection:") || "Not specified";
+      console.log("[DEBUG] Rejecting post:", postId, "with reason:", reason);
+      await api.put(`/api/post/admin/${postId}/reject`, { reason });
+      toast.success("Post rejected");
+      await loadPendingListings();
+      await loadDashboardData();
+    } catch (error) {
+      console.error("Error rejecting post:", error);
+      console.error("Error details:", error.response?.data);
+      toast.error(
+        error?.response?.status === 401
+          ? "Please login again."
+          : error?.response?.status === 403
+          ? "Admin role required."
+          : error?.response?.data?.message || "Failed to reject post"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleApproveAccount = async (accountId) => {
+    try {
+      setLoading(true);
       await api.put(`/api/v1/admin/account/${accountId}/approved`);
-      toast.success(`Account ${email} approved`);
+      toast.success("Account approved successfully");
       await loadPendingAccounts();
+      await loadDashboardData();
     } catch (error) {
-      console.error("[Admin] Approval failed:", error);
-      toast.error(
-        error?.response?.status === 401
-          ? "Please login again."
-          : error?.response?.status === 403
-          ? "Admin role required."
-          : error?.response?.data?.message || "Failed to approve account"
-      );
+      console.error("Error approving account:", error);
+      toast.error("Failed to approve account");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleRejectAccount = async (accountId, email) => {
+  const handleRejectAccount = async (accountId) => {
     try {
       setLoading(true);
-      // BE: PUT /api/v1/admin/account/{id}/rejected
-      // -> baseURL = /api  => FE gọi "/v1/admin/account/{id}/rejected"
       await api.put(`/api/v1/admin/account/${accountId}/rejected`);
-      toast.success(`Account ${email} rejected`);
+      toast.success("Account rejected");
       await loadPendingAccounts();
+      await loadDashboardData();
     } catch (error) {
-      console.error("[Admin] Reject account failed:", error);
-      toast.error(
-        error?.response?.status === 401
-          ? "Please login again."
-          : error?.response?.status === 403
-          ? "Admin role required."
-          : error?.response?.data?.message || "Failed to reject account"
-      );
+      console.error("Error rejecting account:", error);
+      toast.error("Failed to reject account");
     } finally {
       setLoading(false);
     }
   };
 
-  /* ===================== DISPUTES MOCK ===================== */
-  const disputes = [
-    { id: "D001", title: "Battery mismatch", buyer: "John", seller: "Jane", amount: 12000, status: "open" },
-    { id: "D002", title: "Delay compensation", buyer: "Mike", seller: "AutoPro", amount: 65000, status: "in_progress" },
-  ];
-
-  const renderStatusBadge = (status) => {
-    const s = (status || "").toLowerCase();
-    const cls =
-      s === "approved" ? "success" : s === "pending" ? "secondary" : s === "rejected" ? "danger" : "secondary";
-    return <span className={`badge ${cls}`}>{s || "pending"}</span>;
+  /* ===================== POST DETAIL ===================== */
+  const loadPostDetail = async (postId) => {
+    setLoadingDetail(true);
+    try {
+      const res = await api.get(`/api/post/detail/${postId}`);
+      console.log("[DEBUG] Post detail data:", res.data);
+      console.log("[DEBUG] Vehicle data:", res.data?.vehicle);
+      console.log("[DEBUG] Battery data:", res.data?.battery);
+      setPostDetail(res.data);
+    } catch (error) {
+      console.error("[Admin] Error loading post detail:", error);
+      toast.error("Failed to load post details");
+      setPostDetail(null);
+    } finally {
+      setLoadingDetail(false);
+    }
   };
 
+  const handleViewPost = async (post) => {
+    setSelectedPost(post);
+    await loadPostDetail(post.id);
+  };
+
+  // 🎨 RENDER UI
   return (
-    <div className="admin-inner">
-      {/* --- Stats --- */}
-      <div className="grid-4">
-        <Stat title="Total Users" value={stats.totalUsers} delta={stats.userGrowth} icon="👥" />
-        <Stat title="Total Listings" value={stats.totalListings} delta={stats.listingGrowth} icon="🚗" />
-        <Stat title="Revenue" value={`$${(stats.totalRevenue / 1_000_000).toFixed(1)}M`} delta={stats.revenueGrowth} icon="💵" />
-        <Stat title="Active Disputes" value={stats.activeDisputes} delta={2} icon="⚠️" tone="bad" />
-      </div>
-
-      {/* --- Tabs --- */}
-      <div className="tabs">
-        {["listings", "accounts", "users", "disputes"].map((tab) => (
-          <button
-            key={tab}
-            className={`tab ${activeTab === tab ? "active" : ""}`}
-            onClick={() => setActiveTab(tab)}
-          >
-            {tab === "listings"
-              ? "Pending Listings"
-              : tab === "accounts"
-              ? "Account Approval"
-              : tab === "users"
-              ? "Users"
-              : "Disputes"}
-          </button>
-        ))}
-      </div>
-
-      {/* --- Listings --- */}
-      {activeTab === "listings" && (
-        <div className="card">
-          <div className="card-title">Pending Listings</div>
-          <table>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Title</th>
-                {/* Seller có thể không có do @JsonIgnore; tạm ẩn cột */}
-                {/* <th>Seller</th> */}
-                <th>Price</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {pendingListings.map((l) => (
-                <tr key={l.id}>
-                  <td>{l.id}</td>
-                  <td>{l.title}</td>
-                  {/* <td>—</td> */}
-                  <td>${Number(l.price || 0).toLocaleString()}</td>
-                  <td>{renderStatusBadge(l.status)}</td>
-                  <td>
-                    <button className="btn" onClick={() => handleApproveListing(l.id)} disabled={loading}>
-                      {loading ? "Processing..." : "Approve"}
-                    </button>
-                    <button className="btn danger" onClick={() => handleRejectListing(l.id)} disabled={loading}>
-                      {loading ? "Processing..." : "Reject"}
-                    </button>
-                  </td>
-                </tr>
-              ))}
-              {pendingListings.length === 0 && (
-                <tr>
-                  <td colSpan={5} style={{ textAlign: "center", padding: 16 }}>
-                    {loading ? "Loading..." : "No pending listings"}
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+    <div className="modern-admin-dashboard">
+      {/* 📱 Sidebar */}
+      <div className="sidebar">
+        <div className="sidebar-header">
+          <div className="sidebar-logo">
+            <div className="sidebar-logo-icon">V</div>
+            <span>Voltera Admin</span>
+          </div>
         </div>
-      )}
-
-      {/* --- Account Approval --- */}
-      {activeTab === "accounts" && (
-        <div className="card">
-          <div className="card-title">Pending Account Approvals</div>
-          <div className="card-subtitle">Review and approve new user registrations</div>
-
-          {loading ? (
-            <div className="loading-state">
-              <div className="loading-spinner"></div>
-              <div className="loading-text">Loading pending accounts...</div>
+        <nav className="sidebar-nav">
+          {navigationItems.map(section => (
+            <div key={section.section} className="sidebar-section">
+              <div className="sidebar-section-title">{section.title}</div>
+              {section.items.map(item => (
+                <div
+                  key={item.id}
+                  className={`sidebar-nav-item ${activeSection === item.id ? 'active' : ''}`}
+                  onClick={() => setActiveSection(item.id)}
+                >
+                  <item.icon />
+                  <span>{item.label}</span>
+                  {item.badge > 0 && <span className="sidebar-nav-badge">{item.badge}</span>}
+                </div>
+              ))}
             </div>
-          ) : pendingAccounts.length === 0 ? (
-            <div className="empty-state">
-              <div className="empty-icon">✅</div>
-              <div className="empty-title">No Pending Accounts</div>
-              <div className="empty-text">All user registrations have been processed.</div>
+          ))}
+        </nav>
+      </div>
+
+      {/* 💻 Main Content */}
+      <div className="main-content">
+        {/* 🔝 Topbar */}
+        <div className="topbar">
+          <div className="topbar-left">
+            <h1 className="topbar-title">
+              {navigationItems.flatMap(section => section.items).find(item => item.id === activeSection)?.label || "Dashboard"}
+            </h1>
+            <div className="topbar-breadcrumb">Admin Panel / {activeSection}</div>
+          </div>
+          <div className="topbar-right">
+            <div className="topbar-search">
+              <Icons.Search />
+              <input type="text" placeholder="Search..." />
             </div>
-          ) : (
-            <table className="approval-table">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>USERNAME</th>
-                  <th>EMAIL</th>
-                  <th>ROLE</th>
-                  <th>STATUS</th>
-                  <th>ACTIONS</th>
-                </tr>
-              </thead>
-              <tbody>
-                {pendingAccounts.map((account, index) => (
-                  <tr key={account.accountId}>
-                    <td>A{String(index + 1).padStart(3, "0")}</td>
-                    <td>{account.username}</td>
-                    <td>{account.email}</td>
-                    <td>
-                      <span className={`role-badge ${account.role?.toLowerCase() || "unknown"}`}>
-                        {account.role || "N/A"}
-                      </span>
-                    </td>
-                    <td>
-                      <span className="status-badge pending">{account.status}</span>
-                    </td>
-                    <td>
-                      <div className="approval-actions">
-                        <button
-                          className="approve-btn"
-                          onClick={() => handleApproveAccount(account.accountId, account.email)}
-                          title="Approve Account"
-                          disabled={loading}
-                        >
-                          Approve
-                        </button>
-                        <button
-                          className="reject-btn"
-                          onClick={() => handleRejectAccount(account.accountId, account.email)}
-                          title="Reject Account"
-                          disabled={loading}
-                        >
-                          Reject
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div className="topbar-actions">
+              <button className="topbar-btn">
+                <Icons.Bell />
+                <span className="topbar-btn-badge">3</span>
+              </button>
+              <div className="topbar-profile">
+                <div className="topbar-avatar">A</div>
+                <div className="topbar-profile-info">
+                  <div className="topbar-profile-name">Admin</div>
+                  <div className="topbar-profile-role">Administrator</div>
+                </div>
+                <Icons.ChevronDown />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 📊 Dashboard Content */}
+        <div className="dashboard-content">
+          {/* 📈 Overview Section */}
+          {activeSection === "overview" && (
+            <div className="fade-in">
+              <div className="dashboard-stats">
+                <div className="stat-card">
+                  <div className="stat-card-header">
+                    <div className="stat-card-title">Total Posts</div>
+                    <div className="stat-card-icon blue"><Icons.Posts /></div>
+                  </div>
+                  <div className="stat-card-value">{stats.totalPosts}</div>
+                  <div className="stat-card-change positive"><Icons.ChevronUp /><span>+12.5%</span></div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-card-header">
+                    <div className="stat-card-title">Pending Posts</div>
+                    <div className="stat-card-icon orange"><Icons.Analytics /></div>
+                  </div>
+                  <div className="stat-card-value">{stats.pendingPosts}</div>
+                  <div className="stat-card-change positive"><Icons.ChevronUp /><span>+8.3%</span></div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-card-header">
+                    <div className="stat-card-title">Total Users</div>
+                    <div className="stat-card-icon green"><Icons.Users /></div>
+                  </div>
+                  <div className="stat-card-value">{stats.totalUsers}</div>
+                  <div className="stat-card-change positive"><Icons.ChevronUp /><span>+18.7%</span></div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-card-header">
+                    <div className="stat-card-title">Pending Accounts</div>
+                    <div className="stat-card-icon purple"><Icons.Accounts /></div>
+                  </div>
+                  <div className="stat-card-value">{stats.pendingAccounts}</div>
+                  <div className="stat-card-change negative"><Icons.ChevronDown /><span>-2.1%</span></div>
+                </div>
+              </div>
+
+              <div className="content-grid">
+                <div className="content-card">
+                  <div className="content-card-header">
+                    <div>
+                      <div className="content-card-title">Quick Actions</div>
+                      <div className="content-card-subtitle">Commonly used admin functions</div>
+                    </div>
+                  </div>
+                  <div className="content-card-body">
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+                      <button className="modern-btn primary" onClick={() => setActiveSection("listings")}>
+                        <Icons.Posts />Review Posts ({stats.pendingPosts})
+                      </button>
+                      <button className="modern-btn secondary" onClick={() => setActiveSection("accounts")}>
+                        <Icons.Accounts />Review Accounts ({stats.pendingAccounts})
+                      </button>
+                      <button className="modern-btn success" onClick={() => setActiveSection("users")}>
+                        <Icons.Users />Manage Users
+                      </button>
+                      <button className="modern-btn secondary" onClick={() => setActiveSection("analytics")}>
+                        <Icons.Analytics />View Analytics
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div className="content-card">
+                  <div className="content-card-header">
+                    <div>
+                      <div className="content-card-title">Recent Activity</div>
+                      <div className="content-card-subtitle">Latest system activities</div>
+                    </div>
+                  </div>
+                  <div className="content-card-body">
+                    <div className="empty-state">
+                      <div className="empty-state-icon">📊</div>
+                      <div className="empty-state-title">Activity Feed</div>
+                      <div className="empty-state-text">Recent admin activities will appear here</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 📝 Listings Section */}
+          {activeSection === "listings" && (
+            <div className="fade-in">
+              <div className="content-card">
+                <div className="content-card-header">
+                  <div>
+                    <div className="content-card-title">Pending Listings ({pendingListings.length})</div>
+                    <div className="content-card-subtitle">Review and approve/reject pending posts</div>
+                  </div>
+                </div>
+                <div className="content-card-body">
+                  {loading ? (
+                    <div style={{ textAlign: 'center', padding: '2rem' }}>
+                      <div className="loading-spinner"></div>
+                    </div>
+                  ) : pendingListings.length === 0 ? (
+                    <div className="empty-state">
+                      <div className="empty-state-icon">📝</div>
+                      <div className="empty-state-title">No Pending Listings</div>
+                      <div className="empty-state-text">All listings have been reviewed</div>
+                    </div>
+                  ) : (
+                    <table className="modern-table">
+                      <thead>
+                        <tr>
+                          <th>ID</th><th>Title</th><th>Type</th><th>Price</th><th>Created</th><th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {pendingListings.map((post, index) => (
+                          <tr key={post.id}>
+                            <td>#{String(index + 1).padStart(3, '0')}</td>
+                            <td>{post.title || 'Untitled'}</td>
+                            <td>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                {post.type === 'electric' ? <Icons.Electric /> : <Icons.Car />}
+                                <span className={`modern-badge ${post.type === 'electric' ? 'info' : 'success'}`}>
+                                  {post.type || 'Vehicle'}
+                                </span>
+                              </div>
+                            </td>
+                            <td>${post.price?.toLocaleString() || 'N/A'}</td>
+                            <td>{new Date(post.createdAt).toLocaleDateString()}</td>
+                            <td>
+                              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                <button className="modern-btn primary" onClick={() => handleViewPost(post)}>
+                                  <Icons.Eye />
+                                </button>
+                                <button className="modern-btn success" onClick={() => handleApprovePost(post.id)}>
+                                  <Icons.Check />
+                                </button>
+                                <button className="modern-btn danger" onClick={() => handleRejectPost(post.id)}>
+                                  <Icons.X />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 👥 Accounts Section */}
+          {activeSection === "accounts" && (
+            <div className="fade-in">
+              <div className="content-card">
+                <div className="content-card-header">
+                  <div>
+                    <div className="content-card-title">Pending Accounts ({pendingAccounts.length})</div>
+                    <div className="content-card-subtitle">Review and approve/reject pending account registrations</div>
+                  </div>
+                </div>
+                <div className="content-card-body">
+                  {loading ? (
+                    <div style={{ textAlign: 'center', padding: '2rem' }}>
+                      <div className="loading-spinner"></div>
+                    </div>
+                  ) : pendingAccounts.length === 0 ? (
+                    <div className="empty-state">
+                      <div className="empty-state-icon">👥</div>
+                      <div className="empty-state-title">No Pending Accounts</div>
+                      <div className="empty-state-text">All account registrations have been reviewed</div>
+                    </div>
+                  ) : (
+                    <table className="modern-table">
+                      <thead>
+                        <tr>
+                          <th>ID</th><th>Username</th><th>Email</th><th>Role</th><th>Registered</th><th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {pendingAccounts.map((account, index) => (
+                          <tr key={account.accountId || account.id}>
+                            <td>#{String(index + 1).padStart(3, '0')}</td>
+                            <td>{account.username || 'Unknown'}</td>
+                            <td>{account.email || 'N/A'}</td>
+                            <td>
+                              <span className={`modern-badge ${account.role === 'ADMIN' ? 'danger' : account.role === 'SELLER' ? 'warning' : 'info'}`}>
+                                {account.role || 'USER'}
+                              </span>
+                            </td>
+                            <td>{account.createdAt ? new Date(account.createdAt).toLocaleDateString() : 'N/A'}</td>
+                            <td>
+                              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                <button className="modern-btn success" onClick={() => handleApproveAccount(account.accountId || account.id)}>
+                                  <Icons.Check />Approve
+                                </button>
+                                <button className="modern-btn danger" onClick={() => handleRejectAccount(account.accountId || account.id)}>
+                                  <Icons.X />Reject
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 🙋 Users Section */}
+          {activeSection === "users" && (
+            <div className="fade-in">
+              <div className="content-card">
+                <div className="content-card-header">
+                  <div>
+                    <div className="content-card-title">Users Management ({filteredUsers.length})</div>
+                    <div className="content-card-subtitle">Manage approved user accounts</div>
+                  </div>
+                </div>
+                <div className="content-card-body">
+                  <div className="filter-tabs">
+                    {['ALL', 'ADMIN', 'USER', 'SELLER'].map(role => (
+                      <button
+                        key={role}
+                        onClick={() => handleRoleFilter(role)}
+                        className={`filter-tab ${selectedRole === role ? 'active' : ''}`}
+                      >
+                        {role === 'ALL' ? `All (${allUsers.length})` : `${role} (${allUsers.filter(u => u.role === role).length})`}
+                      </button>
+                    ))}
+                  </div>
+                  {loading ? (
+                    <div style={{ textAlign: 'center', padding: '2rem' }}>
+                      <div className="loading-spinner"></div>
+                    </div>
+                  ) : filteredUsers.length === 0 ? (
+                    <div className="empty-state">
+                      <div className="empty-state-icon">👥</div>
+                      <div className="empty-state-title">No Users Found</div>
+                      <div className="empty-state-text">No users match the selected filter criteria</div>
+                    </div>
+                  ) : (
+                    <table className="modern-table">
+                      <thead>
+                        <tr>
+                          <th>ID</th><th>Username</th><th>Email</th><th>Role</th><th>Status</th><th>Joined</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredUsers.map((user, index) => (
+                          <tr key={user.accountId}>
+                            <td>#{String(index + 1).padStart(3, '0')}</td>
+                            <td>{user.username}</td>
+                            <td>{user.email}</td>
+                            <td>
+                              <span className={`modern-badge ${user.role === 'ADMIN' ? 'danger' : user.role === 'SELLER' ? 'warning' : 'info'}`}>
+                                {user.role}
+                              </span>
+                            </td>
+                            <td><span className="modern-badge success">{user.status}</span></td>
+                            <td>{user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 📊 Analytics & Settings - Empty States */}
+          {activeSection === "analytics" && (
+            <div className="fade-in">
+              <div className="content-card">
+                <div className="content-card-header">
+                  <div>
+                    <div className="content-card-title">Analytics Dashboard</div>
+                    <div className="content-card-subtitle">System performance and user metrics</div>
+                  </div>
+                </div>
+                <div className="content-card-body">
+                  <div className="empty-state">
+                    <div className="empty-state-icon">📊</div>
+                    <div className="empty-state-title">Analytics Coming Soon</div>
+                    <div className="empty-state-text">Advanced analytics and reporting features will be available here</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeSection === "settings" && (
+            <div className="fade-in">
+              <div className="content-card">
+                <div className="content-card-header">
+                  <div>
+                    <div className="content-card-title">System Settings</div>
+                    <div className="content-card-subtitle">Configure system preferences and options</div>
+                  </div>
+                </div>
+                <div className="content-card-body">
+                  <div className="empty-state">
+                    <div className="empty-state-icon">⚙️</div>
+                    <div className="empty-state-title">Settings Panel</div>
+                    <div className="empty-state-text">System configuration options will be available here</div>
+                  </div>
+                </div>
+              </div>
+            </div>
           )}
         </div>
-      )}
+      </div>
 
-      {/* --- Users --- */}
-      {activeTab === "users" && (
-        <div className="card">
-          <div className="card-title">Users</div>
-          <table>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((u) => (
-                <tr key={u.id}>
-                  <td>{u.id}</td>
-                  <td>{u.name}</td>
-                  <td>{u.email}</td>
-                  <td>
-                    <span className={`badge ${u.status === "active" ? "success" : "secondary"}`}>{u.status}</span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {/* 🔍 Enhanced Post Detail Modal */}
+      {selectedPost && (
+        <div className="modal-overlay" onClick={() => { setSelectedPost(null); setPostDetail(null); }}>
+          <div className="modal-content enhanced-modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>📋 Post Review & Approval</h3>
+              <button onClick={() => { setSelectedPost(null); setPostDetail(null); }}><Icons.X /></button>
+            </div>
+            <div className="modal-body enhanced-modal-body">
+              {loadingDetail ? (
+                <div className="loading-state">
+                  <div className="loading-spinner"></div>
+                  <div className="loading-text">Loading detailed information...</div>
+                </div>
+              ) : (
+                <>
+                  {/* Basic Info */}
+                  <div className="detail-section">
+                    <h4 className="section-title">📝 Basic Information</h4>
+                    <div className="detail-grid">
+                      <div className="detail-item">
+                        <strong>Title:</strong>
+                        <span>{postDetail?.title || selectedPost.title}</span>
+                      </div>
+                      <div className="detail-item">
+                        <strong>Type:</strong>
+                        <span className={`type-badge ${postDetail?.vehicle ? 'vehicle' : postDetail?.battery ? 'battery' : 'unknown'}`}>
+                          {postDetail?.vehicle ? '🚗 Vehicle' : postDetail?.battery ? '🔋 Battery' : '❓ Unknown'}
+                        </span>
+                      </div>
+                      <div className="detail-item">
+                        <strong>Price:</strong>
+                        <span className="price-highlight">${postDetail?.price?.toLocaleString() || selectedPost.price?.toLocaleString()}</span>
+                      </div>
+                      <div className="detail-item">
+                        <strong>Status:</strong>
+                        <span className={`status-badge ${(postDetail?.status || selectedPost.status)?.toLowerCase()}`}>
+                          {postDetail?.status || selectedPost.status}
+                        </span>
+                      </div>
+                      <div className="detail-item">
+                        <strong>Location:</strong>
+                        <span>{postDetail?.location || selectedPost?.location || 'Not specified'}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Description */}
+                  <div className="detail-section">
+                    <h4 className="section-title">📄 Description</h4>
+                    <div className="description-content">
+                      {postDetail?.description || selectedPost.description || 'No description provided'}
+                    </div>
+                  </div>
+
+                  {/* Vehicle/Battery Specific Details */}
+                  {postDetail?.vehicle && (
+                    <div className="detail-section">
+                      <h4 className="section-title">🚗 Vehicle Details</h4>
+                      <div className="detail-grid">
+                        <div className="detail-item">
+                          <strong>Brand:</strong>
+                          <span>{postDetail.vehicle.brand || 'N/A'}</span>
+                        </div>
+                        <div className="detail-item">
+                          <strong>Version:</strong>
+                          <span>{postDetail.vehicle.version || 'N/A'}</span>
+                        </div>
+                        <div className="detail-item">
+                          <strong>Year:</strong>
+                          <span>{postDetail.vehicle.yearmanufacture || 'N/A'}</span>
+                        </div>
+                        <div className="detail-item">
+                          <strong>Odometer:</strong>
+                          <span>{postDetail.vehicle.odo ? `${postDetail.vehicle.odo.toLocaleString()} km` : 'N/A'}</span>
+                        </div>
+                        <div className="detail-item">
+                          <strong>Range:</strong>
+                          <span>{postDetail.vehicle.range ? `${postDetail.vehicle.range} km` : 'N/A'}</span>
+                        </div>
+                        <div className="detail-item">
+                          <strong>Color:</strong>
+                          <span>{postDetail.vehicle.color || 'N/A'}</span>
+                        </div>
+                        <div className="detail-item">
+                          <strong>Origin:</strong>
+                          <span>{postDetail.vehicle.origin || 'N/A'}</span>
+                        </div>
+                        <div className="detail-item">
+                          <strong>Style:</strong>
+                          <span>{postDetail.vehicle.style || 'N/A'}</span>
+                        </div>
+                        <div className="detail-item">
+                          <strong>Seats:</strong>
+                          <span>{postDetail.vehicle.numberofseat || 'N/A'}</span>
+                        </div>
+                        <div className="detail-item">
+                          <strong>Insurance:</strong>
+                          <span className={postDetail.vehicle.bodyinsurance ? 'status-active' : 'status-inactive'}>
+                            {postDetail.vehicle.bodyinsurance ? '✅ Yes' : '❌ No'}
+                          </span>
+                        </div>
+                        <div className="detail-item">
+                          <strong>Inspection:</strong>
+                          <span className={postDetail.vehicle.vehicleinspection ? 'status-active' : 'status-inactive'}>
+                            {postDetail.vehicle.vehicleinspection ? '✅ Yes' : '❌ No'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {postDetail?.battery && (
+                    <div className="detail-section">
+                      <h4 className="section-title">🔋 Battery Details</h4>
+                      <div className="detail-grid">
+                        <div className="detail-item">
+                          <strong>Type:</strong>
+                          <span>{postDetail.battery.batteryTypeId?.name || postDetail.battery.batteryTypeId || 'N/A'}</span>
+                        </div>
+                        <div className="detail-item">
+                          <strong>Serial Number:</strong>
+                          <span>{postDetail.battery.serialNumber || 'N/A'}</span>
+                        </div>
+                        <div className="detail-item">
+                          <strong>Original Capacity:</strong>
+                          <span>{postDetail.battery.originCapacity ? `${postDetail.battery.originCapacity} kWh` : 'N/A'}</span>
+                        </div>
+                        <div className="detail-item">
+                          <strong>Remaining Capacity:</strong>
+                          <span>{postDetail.battery.remainingCapacity ? `${postDetail.battery.remainingCapacity} kWh` : 'N/A'}</span>
+                        </div>
+                        <div className="detail-item">
+                          <strong>Voltage:</strong>
+                          <span>{postDetail.battery.voltage ? `${postDetail.battery.voltage}V` : 'N/A'}</span>
+                        </div>
+                        <div className="detail-item">
+                          <strong>Cycle Count:</strong>
+                          <span>{postDetail.battery.cycleCount || 'N/A'}</span>
+                        </div>
+                        <div className="detail-item">
+                          <strong>Mileage Covered:</strong>
+                          <span>{postDetail.battery.mileageCovered ? `${postDetail.battery.mileageCovered.toLocaleString()} km` : 'N/A'}</span>
+                        </div>
+                        <div className="detail-item">
+                          <strong>Weight:</strong>
+                          <span>{postDetail.battery.weight ? `${postDetail.battery.weight} kg` : 'N/A'}</span>
+                        </div>
+                        <div className="detail-item">
+                          <strong>Life Cycle:</strong>
+                          <span>{postDetail.battery.lifeCycle || 'N/A'}</span>
+                        </div>
+                        <div className="detail-item">
+                          <strong>Warranty:</strong>
+                          <span>{postDetail.battery.warranty || 'N/A'}</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Images */}
+                  {postDetail?.imageUrls && postDetail.imageUrls.length > 0 && (
+                    <div className="detail-section">
+                      <h4 className="section-title">🖼️ Images ({postDetail.imageUrls.length})</h4>
+                      <div className="image-gallery">
+                        {postDetail.imageUrls.map((img, idx) => (
+                          <div key={idx} className="image-item">
+                            <img
+                              src={img}
+                              alt={`Post image ${idx + 1}`}
+                              onClick={() => window.open(img, '_blank')}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Admin Review Section */}
+                  <div className="detail-section admin-review">
+                    <h4 className="section-title">⚡ Admin Review</h4>
+                    <div className="review-checklist">
+                      <div className="checklist-item">
+                        <input type="checkbox" id="content" />
+                        <label htmlFor="content">Content is appropriate and complete</label>
+                      </div>
+                      <div className="checklist-item">
+                        <input type="checkbox" id="images" />
+                        <label htmlFor="images">Images are clear and relevant</label>
+                      </div>
+                      <div className="checklist-item">
+                        <input type="checkbox" id="price" />
+                        <label htmlFor="price">Price seems reasonable</label>
+                      </div>
+                      <div className="checklist-item">
+                        <input type="checkbox" id="info" />
+                        <label htmlFor="info">Technical information is complete</label>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+            <div className="modal-footer enhanced-footer">
+              <button 
+                className="modern-btn secondary" 
+                onClick={() => { setSelectedPost(null); setPostDetail(null); }}>
+                Close
+              </button>
+              <button 
+                className="modern-btn danger" 
+                onClick={() => { handleRejectPost(selectedPost.id); setSelectedPost(null); setPostDetail(null); }}
+                disabled={loadingDetail}
+              >
+                <Icons.X />Reject
+              </button>
+              <button 
+                className="modern-btn success" 
+                onClick={() => { handleApprovePost(selectedPost.id); setSelectedPost(null); setPostDetail(null); }}
+                disabled={loadingDetail}
+              >
+                <Icons.Check />Approve
+              </button>
+            </div>
+          </div>
         </div>
       )}
-
-      {/* --- Disputes --- */}
-      {activeTab === "disputes" && (
-        <div className="card">
-          <div className="card-title">Active Disputes</div>
-          <table>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Title</th>
-                <th>Buyer</th>
-                <th>Seller</th>
-                <th>Amount</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {disputes.map((d) => (
-                <tr key={d.id}>
-                  <td>{d.id}</td>
-                  <td>{d.title}</td>
-                  <td>{d.buyer}</td>
-                  <td>{d.seller}</td>
-                  <td>${d.amount.toLocaleString()}</td>
-                  <td>
-                    <span className={`badge ${d.status === "open" ? "danger" : "secondary"}`}>{d.status}</span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function Stat({ title, value, delta, icon, tone = "good" }) {
-  return (
-    <div className="card stat">
-      <div className="card-title small">
-        {title}
-        <span className="emoji">{icon}</span>
-      </div>
-      <div className="stat-value">{value}</div>
-      <div className={`delta ${tone === "bad" ? "bad" : "good"}`}>
-        {tone === "bad" ? `${delta} new` : `+${delta}%`}
-      </div>
     </div>
   );
 }

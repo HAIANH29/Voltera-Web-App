@@ -549,3 +549,763 @@ footer{
   font-size: 14px;
 }
 
+/* =========================================================
+   LOCATION PICKER SECTION STYLES
+   ========================================================= */
+
+/* Location container - phối hợp với CreateListingForm */
+.location-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Location display area */
+.location-display {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 16px;
+  background: var(--bg);
+  transition: border-color .18s var(--ease), box-shadow .18s var(--ease);
+}
+
+.location-display:hover {
+  border-color: #d6dbe2;
+}
+
+/* Empty state styling */
+.location-empty {
+  text-align: center;
+  padding: 24px;
+  border: 1px dashed #cfd6de;
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, #fff, #fafbfc);
+  color: var(--muted);
+  transition: border-color .2s var(--ease), background .2s var(--ease);
+}
+
+.location-empty:hover {
+  border-color: var(--ink);
+  background: #f8f9fa;
+}
+
+.location-empty-icon,
+.empty-icon {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 12px;
+  color: #cbd5e1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty-icon svg {
+  width: 32px;
+  height: 32px;
+}
+
+/* Selected location preview */
+.location-preview {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: var(--radius-sm);
+  border: 1px solid #e2e8f0;
+}
+
+.location-preview-icon,
+.location-icon {
+  width: 20px;
+  height: 20px;
+  color: var(--accent);
+  margin-top: 2px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.location-preview-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.location-preview-address {
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+.location-preview-coords {
+  font-size: 12px;
+  color: var(--muted);
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+}
+
+/* Action buttons row */
+.location-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.location-actions .v-btn {
+  flex: 1;
+  min-width: 120px;
+}
+
+/* Mobile responsive */
+@media (max-width: 640px) {
+  .location-actions {
+    flex-direction: column;
+  }
+  
+  .location-actions .v-btn {
+    width: 100%;
+  }
+  
+  .location-preview {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .location-preview-icon {
+    margin: 0 auto;
+  }
+}
+
+/* Button icon styling */
+.btn-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  color: inherit;
+}
+
+.change-location-btn,
+.clear-location-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Location picker buttons styling */
+.location-btn {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg);
+  cursor: pointer;
+  transition: all 0.2s var(--ease);
+  text-align: left;
+  width: 100%;
+  font-weight: 500;
+}
+
+.location-btn:hover {
+  border-color: var(--ink);
+  background: #f8f9fa;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(11, 15, 19, 0.08);
+}
+
+.location-btn.primary {
+  border-color: var(--accent);
+  background: rgba(232, 33, 39, 0.04);
+}
+
+.location-btn.primary:hover {
+  background: rgba(232, 33, 39, 0.08);
+  border-color: var(--accent);
+  box-shadow: 0 4px 12px rgba(232, 33, 39, 0.15);
+}
+
+.location-btn.secondary {
+  border-color: var(--ink);
+  background: var(--bg);
+}
+
+.location-btn.secondary:hover {
+  background: var(--ink);
+  color: white;
+}
+
+.btn-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: inherit;
+  margin-bottom: 2px;
+}
+
+.btn-subtitle {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.location-btn:hover .btn-subtitle {
+  color: inherit;
+  opacity: 0.8;
+}
+
+.picker-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+@media (min-width: 640px) {
+  .picker-buttons {
+    flex-direction: row;
+  }
+  
+  .location-btn {
+    flex: 1;
+  }
+}
+
+/* Integration with existing v-card styles */
+.v-card .location-section {
+  margin: 0; /* Reset margins inside cards */
+}
+
+/* Ensure location picker modal opens above other elements */
+.location-picker-modal {
+  z-index: 9999;
+}
+
+/* =========================================================
+   ENHANCED STEP 3 - PHOTO UPLOAD UX/UI IMPROVEMENTS
+   ========================================================= */
+
+.photo-slot {
+  position: relative;
+}
+
+.v-dropzone.improved {
+  position: relative;
+  border-radius: var(--radius-lg);
+  transition: all 0.3s var(--ease);
+  overflow: hidden;
+}
+
+.v-dropzone.improved:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(11, 15, 19, 0.12);
+}
+
+.v-empty-upload.enhanced {
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  border: 2px dashed var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--bg);
+  cursor: pointer;
+  transition: all 0.3s var(--ease);
+  padding: 24px;
+}
+
+.v-empty-upload.enhanced:hover {
+  border-color: var(--accent);
+  background: rgba(232, 33, 39, 0.02);
+  transform: scale(1.02);
+}
+
+.upload-icon-container {
+  padding: 16px;
+  border-radius: 50%;
+  background: var(--soft);
+  transition: all 0.3s var(--ease);
+}
+
+.v-empty-upload.enhanced:hover .upload-icon-container {
+  background: rgba(232, 33, 39, 0.1);
+  color: var(--accent);
+}
+
+.upload-text {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.upload-main {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+
+.upload-sub {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.upload-hint {
+  font-size: 11px;
+  color: var(--muted);
+  padding: 4px 8px;
+  background: var(--soft);
+  border-radius: 4px;
+  max-width: 140px;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.uploaded-image {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  cursor: pointer;
+  transition: all 0.3s var(--ease);
+  border-radius: var(--radius-lg);
+}
+
+.uploaded-image:hover {
+  transform: scale(1.05);
+}
+
+.upload-success-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: #10b981;
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.upload-progress-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-lg);
+}
+
+.upload-progress-content {
+  text-align: center;
+  padding: 20px;
+  max-width: 200px;
+}
+
+.upload-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--soft);
+  border-top: 3px solid var(--accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 12px auto;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.upload-progress-text {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+/* =========================================================
+   ENHANCED STEP 4 - REVIEW & CONFIRMATION UX/UI IMPROVEMENTS
+   ========================================================= */
+
+.review-summary {
+  margin-bottom: 32px;
+}
+
+.vehicle-summary .summary-header,
+.listing-preview .preview-header {
+  border-bottom: 2px solid var(--line);
+  padding-bottom: 12px;
+  margin-bottom: 20px;
+}
+
+.summary-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: var(--soft);
+  border-radius: var(--radius-sm);
+  transition: all 0.2s var(--ease);
+}
+
+.summary-item:hover {
+  background: rgba(232, 33, 39, 0.04);
+  transform: translateX(2px);
+}
+
+.summary-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.summary-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-2);
+  text-align: right;
+}
+
+.summary-value.price {
+  color: var(--accent);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.preview-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--card);
+  box-shadow: var(--shadow-1);
+  transition: all 0.3s var(--ease);
+}
+
+.preview-card:hover {
+  box-shadow: var(--shadow-2);
+  transform: translateY(-2px);
+}
+
+.preview-image {
+  position: relative;
+}
+
+.photo-count-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(11, 15, 19, 0.8);
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 6px;
+  backdrop-filter: blur(4px);
+}
+
+.preview-content {
+  padding: 16px;
+}
+
+.preview-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink-2);
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+
+.preview-price {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+
+.preview-description {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.preview-placeholder {
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--soft);
+  border-radius: var(--radius-lg);
+  border: 2px dashed var(--line);
+}
+
+.confirmation-divider {
+  display: flex;
+  align-items: center;
+  margin: 48px 0;
+  gap: 16px;
+}
+
+.divider-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--line), transparent);
+}
+
+.divider-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 0 16px;
+  background: var(--bg);
+}
+
+.confirmation-section {
+  padding: 32px;
+  background: linear-gradient(135deg, var(--bg) 0%, var(--soft) 100%);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line);
+}
+
+.confirmation-intro {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.confirmation-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+
+.confirmation-subtitle {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.confirmation-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.confirmation-item {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 20px;
+  transition: all 0.3s var(--ease);
+}
+
+.confirmation-item:hover {
+  border-color: var(--accent);
+  box-shadow: 0 4px 12px rgba(232, 33, 39, 0.08);
+  transform: translateY(-1px);
+}
+
+.confirmation-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  cursor: pointer;
+}
+
+.checkbox-input {
+  display: none;
+}
+
+.checkbox-custom {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--line);
+  border-radius: 6px;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s var(--ease);
+}
+
+.checkbox-input:checked + .checkbox-custom {
+  background: var(--accent);
+  border-color: var(--accent);
+  transform: scale(1.1);
+}
+
+.checkbox-checkmark {
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+  opacity: 0;
+  transition: opacity 0.2s var(--ease);
+}
+
+.checkbox-input:checked + .checkbox-custom .checkbox-checkmark {
+  opacity: 1;
+}
+
+.checkbox-content {
+  flex: 1;
+}
+
+.checkbox-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink-2);
+  margin-bottom: 4px;
+}
+
+.checkbox-description {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.terms-link {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.2s var(--ease);
+}
+
+.terms-link:hover {
+  text-decoration: underline;
+  color: var(--ink-2);
+}
+
+.submission-status {
+  padding: 24px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+}
+
+.status-ready,
+.status-pending {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.status-ready {
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  border-color: #10b981;
+}
+
+.status-pending {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-color: #f59e0b;
+}
+
+.status-icon {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.status-icon.ready {
+  background: #10b981;
+  color: white;
+}
+
+.status-icon.pending {
+  background: #f59e0b;
+  color: white;
+}
+
+.status-text {
+  flex: 1;
+}
+
+.status-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.status-ready .status-title {
+  color: #065f46;
+}
+
+.status-pending .status-title {
+  color: #92400e;
+}
+
+.status-description {
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.status-ready .status-description {
+  color: #047857;
+}
+
+.status-pending .status-description {
+  color: #a16207;
+}
+
+/* Mobile Responsive Improvements */
+@media (max-width: 768px) {
+  .confirmation-section {
+    padding: 24px 16px;
+  }
+  
+  .confirmation-checklist {
+    gap: 20px;
+  }
+  
+  .confirmation-item {
+    padding: 16px;
+  }
+  
+  .checkbox-custom {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .status-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+  }
+  
+  .summary-grid {
+    gap: 12px;
+  }
+  
+  .summary-item {
+    padding: 10px 12px;
+  }
+}
+

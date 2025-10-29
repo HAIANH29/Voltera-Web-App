@@ -8,6 +8,7 @@ import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Getter
 @Setter
@@ -55,5 +56,6 @@ public class Contract {
 
     @Column(name = "terms", length = Integer.MAX_VALUE)
     private String terms;
-
+    @OneToMany(mappedBy = "contractid", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private List<Transaction> transactions;
 }

@@ -43,29 +43,33 @@ public class PostController {
         return ResponseEntity.ok(response);
     }
 
+
+
     @GetMapping("/list/{status}")
     public List<PostResponse> getAllPost(@PathVariable("status") String status) {
         return postService.getAllPost(status);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping("/admin/post/{postId}/approve")
+    @PutMapping("/admin/{postId}/approve")
     public ModerationResponse approvePost(@PathVariable Integer postId) {
         return postService.approvePost(postId);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping("/admin/post/{postId}/reject")
+    @PutMapping("/admin/{postId}/reject")
     public RejectResponse rejectPost(@PathVariable Integer postId,
                                      @RequestBody RejectPostRequest request) {
         return postService.rejectPost(postId, request);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/admin/post/pending")
+    @GetMapping("/admin/pending")
     public ResponseEntity<List<Post>> getPendingPosts() {
         return ResponseEntity.ok(postService.getPostByStatus("PENDING"));
     }
+
+
 
     @GetMapping("/filter/vehicles")
     public ResponseEntity<List<Post>> filterVehicles(

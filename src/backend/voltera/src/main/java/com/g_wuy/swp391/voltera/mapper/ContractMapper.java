@@ -2,6 +2,7 @@ package com.g_wuy.swp391.voltera.mapper;
 
 import com.g_wuy.swp391.voltera.entity.Contract;
 import com.g_wuy.swp391.voltera.entity.Post;
+import com.g_wuy.swp391.voltera.entity.Transaction;
 import com.g_wuy.swp391.voltera.entity.User;
 import com.g_wuy.swp391.voltera.model.request.ContractRequest;
 import com.g_wuy.swp391.voltera.model.response.ContractResponse;
@@ -12,10 +13,9 @@ import org.mapstruct.Mapping;
 public interface ContractMapper {
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "postid", source = "post")       // SỬA Ở ĐÂY
-    @Mapping(target = "buyerid", source = "buyer")     // SỬA Ở ĐÂY
-    @Mapping(target = "sellerid", source = "seller")   // SỬA Ở ĐÂY
-    @Mapping(target = "terms", source = "request.terms")
+    @Mapping(target = "postid", source = "post")
+    @Mapping(target = "buyerid", source = "buyer")
+    @Mapping(target = "sellerid", source = "seller")
     @Mapping(target = "contractstatus", constant = "PENDING")
     @Mapping(target = "buyersigned", constant = "false")
     @Mapping(target = "sellersigned", constant = "false")
@@ -30,5 +30,7 @@ public interface ContractMapper {
     @Mapping(source = "contractstatus", target = "contractStatus")
     @Mapping(source = "signeddate", target = "signedDate")
     @Mapping(source = "contractfile", target = "contractFile")
+    @Mapping(target = "transactionStatus", ignore = true)
     ContractResponse toResponse(Contract contract);
+
 }
