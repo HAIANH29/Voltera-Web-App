@@ -21,19 +21,20 @@ public class VNPayController {
     @Autowired
     private VNPayService vnPayService;
 
-    @PostMapping("/create-payment")
+    @PostMapping("/create-payment/{transactionId}")
     public ResponseEntity<VNPayResponse> createPayment(
             @RequestBody VNPayRequest request,
-            HttpServletRequest httpRequest) {
-        VNPayResponse response = vnPayService.createPayment(request, httpRequest);
+            HttpServletRequest httpRequest,
+            @PathVariable("transactionId") Integer transactionId) {
+        VNPayResponse response = vnPayService.createPayment(request, httpRequest, transactionId);
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/return/{postId}")
+    @GetMapping("/return/{transactionId}")
     public ResponseEntity<String> handleReturn(
             @RequestParam Map<String, String> params,
-            @PathVariable("postId") Integer postId) {
-        String result = vnPayService.handleReturn(params, postId);
+            @PathVariable("transactionId") Integer transactionId) {
+        String result = vnPayService.handleReturn(params, transactionId);
         return ResponseEntity.ok(result);
     }
 }
