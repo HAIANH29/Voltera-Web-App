@@ -1,3 +1,4 @@
+import ContractPage from "./pages/contractPage/ContractPage";
 import "./App.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { routes } from "./routes/index.jsx"; // ✅ sửa lại đường dẫn import CHÍNH XÁC
@@ -15,6 +16,7 @@ import ForgotPasswordPage from "./pages/forgotpasswordPage/ForgotPasswordPage";
 import MainLayout from "./layout/mainLayout";
 import AdminLayout from "./layout/adminLayout";
 import BuyerLayout from "./layout/buyerLayout";
+import SellerLayout from "./layout/sellerLayout";
 import ResetPasswordPage from "./pages/resetPasswordPage/ResetPasswordPage";
 import VerifyEmailPage from "./pages/VerifyEmailPage/VerifyEmailPage";
 import AboutUsPage from "./pages/AboutUsPage/AboutUsPage";
@@ -23,6 +25,7 @@ import PostVehicleWizard from "./pages/post/vehicles/PostVehicleWizard";
 import VehicleDetail from "./pages/vehicleDetail/vehicleDetail";
 import ElectricDetail from "./pages/electricDetail/electricDetail";
 import DashboardAdmin from "./pages/dashboardAdmin/dashboardAdmin";
+import DashboardSeller from "./pages/dashboardSeller/dashboardSeller";
 import DashboardBuyer from "./pages/dashboardBuyer/dashboardBuyer";
 import Dashboard from "./components/Dashboard";
 import PaymentPage from "./pages/paymentPage/PaymentPage";
@@ -35,6 +38,14 @@ console.log("postVehicles:", routes.postVehicles);
 
 function App() {
   const router = createBrowserRouter([
+    {
+      path: routes.contract,
+      element: (
+        <MainLayout>
+          <ContractPage />
+        </MainLayout>
+      ),
+    },
     {
       path: routes.home,
       element: (
@@ -226,6 +237,14 @@ function App() {
         <MainLayout>
           <Dashboard />
         </MainLayout>
+      ),
+    },
+    {
+      path: routes.dashboardSeller,
+      element: (
+        <SellerLayout>
+          <DashboardSeller />
+        </SellerLayout>
       ),
     },
     {

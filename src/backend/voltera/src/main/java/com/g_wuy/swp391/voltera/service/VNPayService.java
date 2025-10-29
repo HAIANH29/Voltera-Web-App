@@ -2,9 +2,7 @@ package com.g_wuy.swp391.voltera.service;
 
 import com.g_wuy.swp391.voltera.configuration.VNPayConfiguration;
 import com.g_wuy.swp391.voltera.entity.Payment;
-import com.g_wuy.swp391.voltera.entity.Post;
 import com.g_wuy.swp391.voltera.entity.Transaction;
-import com.g_wuy.swp391.voltera.exception.BusinessException;
 import com.g_wuy.swp391.voltera.model.request.VNPayRequest;
 import com.g_wuy.swp391.voltera.model.response.VNPayResponse;
 import com.g_wuy.swp391.voltera.repository.PaymentRepository;
@@ -38,10 +36,15 @@ public class VNPayService {
     @Autowired
     private PaymentRepository paymentRepository;
 
+    @Autowired
+    private PostRepository postRepository;
+
     public VNPayResponse createPayment(VNPayRequest request, HttpServletRequest httpRequest) {
         try {
-            String vnp_TxnRef = String.valueOf(System.currentTimeMillis()); // mã giao dịch unique
-            String vnp_IpAddr = httpRequest.getRemoteAddr();
+            String vnp_TxnRef = VNPayConfiguration.getRandomNumber(8);
+            String vnp_IpAddr = VNPayConfiguration.getIpAddress(httpRequest);
+
+            String returnUrlWithPostId = vnPayConfig.getVnpReturnUrl() + "/" + request.getPostId();
 
             Map<String, String> vnp_Params = new TreeMap<>();
             vnp_Params.put("vnp_Version", vnPayConfig.getVnpVersion());
@@ -53,7 +56,7 @@ public class VNPayService {
             vnp_Params.put("vnp_OrderInfo", request.getOrderInfo());
             vnp_Params.put("vnp_OrderType", "other");
             vnp_Params.put("vnp_Locale", "vn");
-            vnp_Params.put("vnp_ReturnUrl", vnPayConfig.getVnpReturnUrl());
+            vnp_Params.put("vnp_ReturnUrl", returnUrlWithPostId);
             vnp_Params.put("vnp_IpAddr", vnp_IpAddr);
 
             String createDate = LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
@@ -63,9 +66,13 @@ public class VNPayService {
             StringBuilder query = new StringBuilder();
             for (Map.Entry<String, String> entry : vnp_Params.entrySet()) {
                 if (hashData.length() > 0) hashData.append('&');
-                hashData.append(entry.getKey()).append('=').append(URLEncoder.encode(entry.getValue(), StandardCharsets.US_ASCII));
+                hashData.append(entry.getKey()).append('=')
+                        .append(URLEncoder.encode(entry.getValue(), StandardCharsets.US_ASCII));
+
                 query.append(URLEncoder.encode(entry.getKey(), StandardCharsets.US_ASCII))
-                        .append('=').append(URLEncoder.encode(entry.getValue(), StandardCharsets.US_ASCII)).append('&');
+                        .append('=')
+                        .append(URLEncoder.encode(entry.getValue(), StandardCharsets.US_ASCII))
+                        .append('&');
             }
 
             String vnp_SecureHash = vnPayConfig.hmacSHA512(vnPayConfig.getSecretKey(), hashData.toString());
@@ -85,7 +92,8 @@ public class VNPayService {
         }
     }
 
-    public String handleReturn(Map<String, String> params) {
+
+    public String handleReturn(Map<String, String> params, Integer postId) {
         try {
             String vnpSecureHash = params.get("vnp_SecureHash");
             params.remove("vnp_SecureHash");
@@ -98,35 +106,60 @@ public class VNPayService {
                 return "Lỗi xác minh chữ ký!";
             }
 
+            Payment payment = new Payment();
+            Transaction transaction = new Transaction();
             if ("00".equals(params.get("vnp_ResponseCode"))) {
                 BigDecimal amount = new BigDecimal(params.get("vnp_Amount")).divide(BigDecimal.valueOf(100));
 
-                Transaction transaction = new Transaction();
                 transaction.setPrice(amount);
+                transaction.setPost(postRepository.findById(postId).get());
                 transaction.setCreateAt(Instant.now());
                 transaction.setUpdateAt(Instant.now());
-                transaction.setTransactionStatus("COMPLETED");
+                transaction.setTransactionStatus("DONE");
                 transactionRepository.save(transaction);
 
-                Payment payment = Payment.builder()
-                        .transaction(transaction)
-                        .paymentMethod("VNPAY")
-                        .paymentStatus("COMPLETED")
-                        .transactionCode(params.get("vnp_TxnRef"))
-                        .paymentDate(LocalDateTime.now())
-                        .vnpTransactionNo(params.get("vnp_TransactionNo"))
-                        .vnpBankCode(params.get("vnp_BankCode"))
-                        .vnpBankTranNo(params.get("vnp_BankTranNo"))
-                        .vnpCardType(params.get("vnp_CardType"))
-                        .vnpPayDate(params.get("vnp_PayDate"))
-                        .vnpResponseCode(params.get("vnp_ResponseCode"))
-                        .amount(amount)
-                        .orderInfo(params.get("vnp_OrderInfo"))
-                        .build();
+
+                payment.setTransaction(transaction);
+                payment.setPaymentMethod("VNPAY");
+                payment.setPaymentStatus("COMPLETED");
+                payment.setTransactionCode(params.get("vnp_TxnRef"));
+                payment.setPaymentDate(LocalDateTime.now());
+                payment.setVnpTransactionNo(params.get("vnp_TransactionNo"));
+                payment.setVnpBankCode(params.get("vnp_BankCode"));
+                payment.setVnpBankTranNo(params.get("vnp_BankTranNo"));
+                payment.setVnpCardType(params.get("vnp_CardType"));
+                payment.setVnpPayDate(params.get("vnp_PayDate"));
+                payment.setVnpResponseCode(params.get("vnp_ResponseCode"));
+                payment.setAmount(amount);
+                payment.setOrderInfo(params.get("vnp_OrderInfo"));
                 paymentRepository.save(payment);
 
                 return "Giao dịch thành công!";
             } else {
+                BigDecimal amount = new BigDecimal(params.get("vnp_Amount")).divide(BigDecimal.valueOf(100));
+
+                transaction.setPrice(amount);
+                transaction.setPost(postRepository.findById(postId).get());
+                transaction.setCreateAt(Instant.now());
+                transaction.setUpdateAt(Instant.now());
+                transaction.setTransactionStatus("FAILED");
+                transactionRepository.save(transaction);
+
+
+                payment.setTransaction(transaction);
+                payment.setPaymentMethod("VNPAY");
+                payment.setPaymentStatus("FAILED");
+                payment.setTransactionCode(params.get("vnp_TxnRef"));
+                payment.setPaymentDate(LocalDateTime.now());
+                payment.setVnpTransactionNo(params.get("vnp_TransactionNo"));
+                payment.setVnpBankCode(params.get("vnp_BankCode"));
+                payment.setVnpBankTranNo(params.get("vnp_BankTranNo"));
+                payment.setVnpCardType(params.get("vnp_CardType"));
+                payment.setVnpPayDate(params.get("vnp_PayDate"));
+                payment.setVnpResponseCode(params.get("vnp_ResponseCode"));
+                payment.setAmount(amount);
+                payment.setOrderInfo(params.get("vnp_OrderInfo"));
+                paymentRepository.save(payment);
                 return "Giao dịch thất bại, mã lỗi: " + params.get("vnp_ResponseCode");
             }
         } catch (Exception e) {

@@ -34,4 +34,5 @@ export const routes = {
   adminSettings: "/admin/settings",
   adminProfile: "/admin/profile",
   adminAccount: "/admin/account",
+  contract: "/contract",
 };

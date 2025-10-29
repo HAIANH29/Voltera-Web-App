@@ -2,19 +2,27 @@
 import api from "../config/api.jsx";
 
 export const otpService = {
+  // Đổi mật khẩu sau khi đã xác thực OTP
+  async resetPassword(email, newPassword) {
+    const res = await api.post("/otp/forgot/reset", {
+      email,
+      newPassword,
+    });
+    return res.data;
+  },
   // Gửi OTP cho đăng ký
   async requestOtp(email) {
     const res = await api.post("/otp/request", null, {
-      params: { email }
+      params: { email },
     });
     return res.data;
   },
 
-  // Verify OTP cho đăng ký  
+  // Verify OTP cho đăng ký
   async verifyOtp(email, otp) {
     const res = await api.post("/otp/verify", {
       email,
-      otp
+      otp,
     });
     return res.data;
   },
@@ -22,7 +30,7 @@ export const otpService = {
   // Resend OTP
   async resendOtp(email) {
     const res = await api.post("/otp/resend", null, {
-      params: { email }
+      params: { email },
     });
     return res.data;
   },
@@ -30,7 +38,7 @@ export const otpService = {
   // Gửi OTP cho forgot password
   async requestPasswordResetOtp(email) {
     const res = await api.post("/otp/forgot/request", null, {
-      params: { email }
+      params: { email },
     });
     return res.data;
   },
@@ -40,8 +48,8 @@ export const otpService = {
     const res = await api.post("/otp/forgot/verify", {
       email,
       otp,
-      newPassword
+      newPassword,
     });
     return res.data;
-  }
+  },
 };

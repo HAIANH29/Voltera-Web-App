@@ -11,24 +11,43 @@
 }
 
 :root{
+  /* Voltera Brand Colors - matching HomePage */
+  --primary: #667eea;
+  --primary-dark: #5a6fd8;
+  --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --secondary: #0f172a;
+  --accent: #10b981;
+  --accent-2: #3b82f6;
+  --success: #10b981;
+  
+  /* Background System */
   --bg: #ffffff;
   --card: #ffffff;
-  --surface: #fafbfc;
-  --muted: #6b7280;
-  --soft: #eef1f5;
-  --line: #e7ebf0;
-  --ink: #0b0f13;            /* near-black */
-  --ink-2: #1a1f25;
-  --accent: #e82127;         /* Tesla red */
-  --accent-ink: #fff;
-  --accent-weak: rgba(232,33,39,0.08);
-  --focus: rgba(16,24,40,.14);
-  --shadow-1: 0 1px 2px rgba(10,13,18,.06);
-  --shadow-2: 0 12px 24px rgba(10,13,18,.08);
-  --shadow-3: 0 24px 48px rgba(10,13,18,.12);
-  --radius-sm: 10px;
-  --radius: 14px;
-  --radius-lg: 18px;
+  --surface: #f8fafc;
+  --bg-secondary: #f8fafc;
+  
+  /* Text System */
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
+  --muted: #94a3b8;
+  --ink: #0f172a;
+  --ink-2: #1e293b;
+  
+  /* UI Elements */
+  --line: #e2e8f0;
+  --border: #e2e8f0;
+  --accent-weak: rgba(102, 126, 234, 0.08);
+  --focus: rgba(102, 126, 234, 0.14);
+  
+  /* Shadows */
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-2: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-3: 0 10px 15px rgba(0, 0, 0, 0.1);
+  
+  /* Border Radius */
+  --radius-sm: 8px;
+  --radius: 12px;
+  --radius-lg: 16px;
   --ease: cubic-bezier(.22,.61,.36,1);
   --spring: cubic-bezier(.34,1.56,.64,1);
 }
@@ -199,17 +218,26 @@
 
 /* Main Container */
 .detail-main-container {
-  display: grid;
-  grid-template-columns: 1fr 400px;
+  display: flex;
+  flex-direction: row;
   gap: 40px;
   margin-bottom: 48px;
   animation: slideInFromBottom 0.8s var(--ease) backwards;
   animation-delay: 0.2s;
 }
 
+@media (max-width: 1024px) {
+  .detail-main-container {
+    flex-direction: column;
+    gap: 24px;
+  }
+}
+
 /* Images Section */
 .detail-images-tabs {
   position: relative;
+  flex: 1;
+  min-width: 0;
   animation: slideInFromLeft 0.8s var(--ease) backwards;
   animation-delay: 0.3s;
 }
@@ -303,12 +331,26 @@
   gap: 12px;
   overflow-x: auto;
   padding: 8px 0;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent) var(--surface);
 }
 
 .detail-image-thumbnails::-webkit-scrollbar {
-  display: none;
+  height: 6px;
+}
+
+.detail-image-thumbnails::-webkit-scrollbar-track {
+  background: var(--surface);
+  border-radius: 3px;
+}
+
+.detail-image-thumbnails::-webkit-scrollbar-thumb {
+  background: var(--accent);
+  border-radius: 3px;
+}
+
+.detail-image-thumbnails::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-weak);
 }
 
 .thumbnail {
@@ -381,6 +423,8 @@
   animation-delay: 0.4s;
   backdrop-filter: blur(10px);
   transition: all 0.3s var(--ease);
+  flex: 0 0 400px;
+  min-width: 350px;
 }
 
 .detail-info-section:hover {
@@ -524,7 +568,7 @@
 .detail-price {
   font-size: 36px;
   font-weight: 800;
-  background: linear-gradient(135deg, var(--accent) 0%, #c41e24 100%);
+  background: var(--primary-gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -651,11 +695,12 @@
 }
 
 .detail-contact-btn.primary {
-  background: var(--accent);
-  color: var(--accent-ink);
+  background: var(--primary-gradient);
+  color: white;
   position: relative;
   overflow: hidden;
-  box-shadow: var(--shadow-1);
+  box-shadow: var(--shadow-2);
+  border: 1px solid var(--primary);
 }
 
 .detail-contact-btn.primary::before {
@@ -673,9 +718,9 @@
 }
 
 .detail-contact-btn.primary:hover {
-  background: linear-gradient(135deg, #c41e24 0%, #a01b20 100%);
+  background: linear-gradient(135deg, var(--primary-dark) 0%, #6366f1 100%);
   transform: translateY(-2px);
-  box-shadow: var(--shadow-2);
+  box-shadow: var(--shadow-3);
 }
 
 .detail-contact-btn.primary:hover::before {
@@ -689,8 +734,8 @@
 
 .detail-contact-btn.secondary {
   background: transparent;
-  color: var(--text);
-  border: 1px solid rgba(10,13,18,0.06);
+  color: var(--primary);
+  border: 1px solid var(--primary);
 }
 
 .detail-contact-btn.secondary:hover {
@@ -849,13 +894,10 @@
     padding: 16px;
   }
   
-  .detail-main-container {
-    grid-template-columns: 1fr;
-    gap: 24px;
-  }
-  
   .detail-info-section {
     position: static;
+    flex: none;
+    min-width: auto;
   }
 }
 
@@ -1102,4 +1144,89 @@ div[class*="detail-feature-text"],
 @keyframes float {
   0%, 100% { transform: translateY(0px); }
   50% { transform: translateY(-2px); }
+}
+
+/* VOLTERA Custom Icons */
+.voltera-icon {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
+  position: relative;
+  vertical-align: middle;
+}
+
+.voltera-icon::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: currentColor;
+  border-radius: 2px;
+}
+
+/* Heart Icon */
+.heart-icon::before {
+  clip-path: path('M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z');
+  background: var(--accent);
+}
+
+.heart-icon.filled::before {
+  background: var(--accent);
+  opacity: 1;
+}
+
+/* Phone Icon */
+.phone-icon::before {
+  clip-path: path('M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z');
+  background: var(--accent);
+}
+
+/* Offer Icon */
+.offer-icon::before {
+  clip-path: path('M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58.55 0 1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41 0-.55-.23-1.06-.59-1.42zM5.5 7C4.67 7 4 6.33 4 5.5S4.67 4 5.5 4 7 4.67 7 5.5 6.33 7 5.5 7z');
+  background: var(--primary);
+}
+
+/* Location Icon */
+.location-icon::before {
+  clip-path: path('M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z');
+  background: var(--muted);
+}
+
+/* Electric bolt icon for charging */
+.bolt-icon::before {
+  clip-path: path('M11 21h-1l1-7H7.5c-.88 0-.33-.75-.31-.78C8.48 10.94 10.42 7.54 13.01 3h1l-1 7h3.51c.4 0 .62.19.4.66C12.97 17.55 11 21 11 21z');
+  background: var(--accent);
+}
+
+/* Button icon sizing */
+.detail-contact-btn .voltera-icon {
+  width: 18px;
+  height: 18px;
+  margin-right: 6px;
+}
+
+.detail-favorite-btn .voltera-icon {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+}
+
+/* Vehicle Info under Images */
+.detail-vehicle-info {
+  margin-top: 24px;
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 24px;
+  border: 1px solid var(--line);
+}
+
+.detail-vehicle-info h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
 }

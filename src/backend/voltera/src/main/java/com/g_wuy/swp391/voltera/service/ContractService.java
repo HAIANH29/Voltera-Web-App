@@ -41,6 +41,8 @@ public class ContractService {
     private S3Service s3Service;
     @Autowired
     private TransactionMapper transactionMapper;
+    @Autowired
+    private JwtService jwtService;
 
     @Transactional
     public ContractResponse createContract(ContractRequest request,String username) {

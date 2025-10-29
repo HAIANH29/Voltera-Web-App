@@ -19,24 +19,34 @@ import java.time.Instant;
 public class ComplaintReply {
     @Id
     @Column(name = "replyid", nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "complaintid")
-    private Complaint complaintId;
+    private Complaint complaintId;//
 
     @ManyToOne(fetch = FetchType.LAZY)
     @OnDelete(action = OnDeleteAction.SET_NULL)
     @JoinColumn(name = "senderid")
-    private User senderId;
+    private User senderId;//
 
     @NotNull
     @Column(name = "message", nullable = false, length = Integer.MAX_VALUE)
-    private String message;
+    private String message;//
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "createdat")
-    private Instant createdAt;
+    private Instant createdAt;//
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @OnDelete(action = OnDeleteAction.SET_NULL)
+    @JoinColumn(name = "receiverid")
+    private User receiverId;//
+
+    @ColumnDefault("CURRENT_TIMESTAMP")
+    @Column(name = "resolveat")
+    private Instant resolveAt;//
 
 }

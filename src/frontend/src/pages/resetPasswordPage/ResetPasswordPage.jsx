@@ -7,7 +7,6 @@ export default function ResetPasswordPage() {
   const { state } = useLocation();
   const navigate = useNavigate();
   const email = state?.email || "";
-  const verifiedOtp = state?.verifiedOtp || "";
 
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -24,18 +23,20 @@ export default function ResetPasswordPage() {
       setError("Passwords do not match.");
       return;
     }
-    
+
     setSubmitting(true);
     setError("");
-    
+
     try {
-      await otpService.verifyPasswordResetOtp(email, verifiedOtp, password);
+      // Gọi API đổi mật khẩu chỉ với email và mật khẩu mới
+      await otpService.resetPassword(email, password);
       console.log("Password reset successfully");
-      navigate("/login", { 
+      navigate("/login", {
         replace: true,
-        state: { 
-          message: "Password reset successfully! Please login with your new password." 
-        }
+        state: {
+          message:
+            "Password reset successfully! Please login with your new password.",
+        },
       });
     } catch (err) {
       console.error("Reset password error:", err);
@@ -52,7 +53,14 @@ export default function ResetPasswordPage() {
           Enter your new password for <strong>{state?.email}</strong>
         </p>
 
-        {error && <div className="error-message" style={{color: 'red', marginBottom: '16px'}}>{error}</div>}
+        {error && (
+          <div
+            className="error-message"
+            style={{ color: "red", marginBottom: "16px" }}
+          >
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit}>
           <label className="t-label" htmlFor="password">
