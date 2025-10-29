@@ -22,6 +22,9 @@ export const routes = {
   electricDetail: "/electrics/:postID",
   payment: "/payment",
   paymentCallback: "/payment/callback",
+  contract: "/contract/post/:postId",
+  contractView: "/contract",
+  contracts: "/contracts",
 
   // Admin routes
   adminUsers: "/admin/users",

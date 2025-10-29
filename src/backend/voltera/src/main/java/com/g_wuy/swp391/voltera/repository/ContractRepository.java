@@ -17,7 +17,7 @@ public interface ContractRepository extends JpaRepository<Contract, Integer> {
     WHERE 
         (c.buyerid.id IN (SELECT a.user.id FROM Account a WHERE a.username = :username)
          OR c.sellerid.id IN (SELECT a.user.id FROM Account a WHERE a.username = :username))
-        AND c.contractstatus <> 'CANCEL'
+        AND c.contractstatus <> 'CANCELLED'
 """)
     List<Contract> findActiveContractsByUser(@Param("username") String username);
     List<Contract> findByContractstatusAndExpirationdateBefore(String status, LocalDate date);

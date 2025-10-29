@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import Cookies from "js-cookie";
 import api from "../../config/api";
+import ContractInfoPreview from "../../components/contractInfoPreview/ContractInfoPreview";
 import "./vehicleDetail.css";
 
 /**
@@ -78,6 +80,7 @@ export default function VehicleDetail() {
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [showContractPreview, setShowContractPreview] = useState(false);
 
   useEffect(() => {
     const fetchVehicle = async () => {
@@ -160,6 +163,52 @@ export default function VehicleDetail() {
   const handleContactSeller = () => {
     if (vehicle?.sellerInfo?.phone) {
       window.open(`tel:${vehicle.sellerInfo.phone}`);
+    }
+  };
+
+  const handlePurchase = () => {
+    // Check if user is logged in - sử dụng cùng pattern như headerAfter
+    const token = Cookies.get("accessToken");
+    if (!token) {
+      alert("Vui lòng đăng nhập để mua xe.");
+      navigate("/login");
+      return;
+    }
+
+    // Navigate to contract page with postId
+    navigate(`/contract/post/${postID}`);
+  };
+
+  const handleCreateContract = () => {
+    // Check if user is logged in
+    const token = Cookies.get("accessToken");
+    if (!token) {
+      alert("Vui lòng đăng nhập để tạo hợp đồng.");
+      navigate("/login");
+      return;
+    }
+
+    // Check if vehicle data is available
+    if (!vehicle) {
+      alert("Thông tin xe chưa được tải. Vui lòng thử lại.");
+      return;
+    }
+
+    // Debug: Log vehicle data before showing modal
+    console.log("🔍 Vehicle data being passed to modal:", vehicle);
+    console.log("🔍 Vehicle brand:", vehicle.brand);
+    console.log("🔍 Vehicle model:", vehicle.model);
+    console.log("🔍 Vehicle price:", vehicle.price);
+
+    // Show contract preview modal
+    setShowContractPreview(true);
+  };
+
+  const handleContractCreated = (contractData) => {
+    setShowContractPreview(false);
+    // Navigate to contract page to view the created contract
+    if (contractData?.contractId) {
+      navigate(`/contract?contractId=${contractData.contractId}`);
     }
   };
 
@@ -378,18 +427,53 @@ export default function VehicleDetail() {
             </div>
 
             <div className="detail-contact-buttons">
-              <button className="detail-contact-btn primary" onClick={handleContactSeller}>
+              <button className="detail-contact-btn secondary" onClick={handleContactSeller}>
                 <span className="phone-icon">📞</span>
                 Contact Seller
               </button>
-              <button className="detail-contact-btn secondary" onClick={() => console.log('Purchase flow not implemented yet')}>
-                <span className="buy-icon">�</span>
-                Make Offer
+              <button className="detail-contact-btn primary" onClick={handleCreateContract}>
+                <span className="contract-icon">📋</span>
+                Tạo hợp đồng
+              </button>
+              <button className="detail-contact-btn success" onClick={handlePurchase}>
+                <span className="buy-icon">🚗</span>
+                Buy Now
               </button>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Contract Info Preview Modal */}
+      <ContractInfoPreview
+        postId={postID}
+        vehicleData={vehicle}
+        show={showContractPreview}
+        onCreateContract={handleContractCreated}
+        onCancel={() => setShowContractPreview(false)}
+      />
+
+      {/* Debug Info - Temporary */}
+      {showContractPreview && (
+        <div style={{ 
+          position: 'fixed', 
+          top: 0, 
+          left: 0, 
+          background: 'white', 
+          padding: '10px', 
+          zIndex: 10000,
+          fontSize: '12px',
+          maxWidth: '300px',
+          border: '2px solid red'
+        }}>
+          <strong>DEBUG: Vehicle Data in vehicleDetail</strong><br/>
+          Brand: {vehicle?.brand || 'undefined'}<br/>
+          Model: {vehicle?.model || 'undefined'}<br/>
+          Price: {vehicle?.price || 'undefined'}<br/>
+          PostID: {vehicle?.postID || 'undefined'}<br/>
+          Keys: {vehicle ? Object.keys(vehicle).slice(0, 10).join(', ') : 'no vehicle'}
+        </div>
+      )}
 
     </div>
   );

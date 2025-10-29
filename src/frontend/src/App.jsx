@@ -27,6 +27,8 @@ import DashboardBuyer from "./pages/dashboardBuyer/dashboardBuyer";
 import Dashboard from "./components/Dashboard";
 import PaymentPage from "./pages/paymentPage/PaymentPage";
 import PaymentCallback from "./pages/paymentPage/PaymentCallback";
+import ContractPage from "./pages/contractPage/contractPage";
+import ContractsPage from "./pages/contractsPage/contractsPage";
 
 console.log("routes:", routes);
 console.log("postVehicles:", routes.postVehicles);
@@ -114,6 +116,30 @@ function App() {
       element: (
         <MainLayout>
           <PaymentCallback />
+        </MainLayout>
+      ),
+    },
+    {
+      path: routes.contract,
+      element: (
+        <MainLayout>
+          <ContractPage />
+        </MainLayout>
+      ),
+    },
+    {
+      path: routes.contractView,
+      element: (
+        <MainLayout>
+          <ContractPage />
+        </MainLayout>
+      ),
+    },
+    {
+      path: routes.contracts,
+      element: (
+        <MainLayout>
+          <ContractsPage />
         </MainLayout>
       ),
     },
