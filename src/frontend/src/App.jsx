@@ -16,6 +16,7 @@ import ForgotPasswordPage from "./pages/forgotpasswordPage/ForgotPasswordPage";
 import MainLayout from "./layout/mainLayout";
 import AdminLayout from "./layout/adminLayout";
 import BuyerLayout from "./layout/buyerLayout";
+import SellerLayout from "./layout/sellerLayout";
 import ResetPasswordPage from "./pages/resetPasswordPage/ResetPasswordPage";
 import VerifyEmailPage from "./pages/VerifyEmailPage/VerifyEmailPage";
 import AboutUsPage from "./pages/AboutUsPage/AboutUsPage";
