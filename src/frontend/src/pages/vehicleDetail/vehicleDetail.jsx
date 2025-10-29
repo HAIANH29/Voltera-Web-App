@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import Cookies from "js-cookie";
 import api from "../../config/api";
-import ContractInfoPreview from "../../components/contractInfoPreview/ContractInfoPreview";
 import "./vehicleDetail.css";
 
 /**
@@ -80,7 +78,6 @@ export default function VehicleDetail() {
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
-  const [showContractPreview, setShowContractPreview] = useState(false);
 
   useEffect(() => {
     const fetchVehicle = async () => {
@@ -443,37 +440,6 @@ export default function VehicleDetail() {
           </div>
         </div>
       </div>
-
-      {/* Contract Info Preview Modal */}
-      <ContractInfoPreview
-        postId={postID}
-        vehicleData={vehicle}
-        show={showContractPreview}
-        onCreateContract={handleContractCreated}
-        onCancel={() => setShowContractPreview(false)}
-      />
-
-      {/* Debug Info - Temporary */}
-      {showContractPreview && (
-        <div style={{ 
-          position: 'fixed', 
-          top: 0, 
-          left: 0, 
-          background: 'white', 
-          padding: '10px', 
-          zIndex: 10000,
-          fontSize: '12px',
-          maxWidth: '300px',
-          border: '2px solid red'
-        }}>
-          <strong>DEBUG: Vehicle Data in vehicleDetail</strong><br/>
-          Brand: {vehicle?.brand || 'undefined'}<br/>
-          Model: {vehicle?.model || 'undefined'}<br/>
-          Price: {vehicle?.price || 'undefined'}<br/>
-          PostID: {vehicle?.postID || 'undefined'}<br/>
-          Keys: {vehicle ? Object.keys(vehicle).slice(0, 10).join(', ') : 'no vehicle'}
-        </div>
-      )}
 
     </div>
   );
