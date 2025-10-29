@@ -29,9 +29,11 @@ public class VNPayController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/return")
-    public ResponseEntity<String> handleReturn(@RequestParam Map<String, String> params) {
-        String result = vnPayService.handleReturn(params);
+    @GetMapping("/return/{postId}")
+    public ResponseEntity<String> handleReturn(
+            @RequestParam Map<String, String> params,
+            @PathVariable("postId") Integer postId) {
+        String result = vnPayService.handleReturn(params, postId);
         return ResponseEntity.ok(result);
     }
 }

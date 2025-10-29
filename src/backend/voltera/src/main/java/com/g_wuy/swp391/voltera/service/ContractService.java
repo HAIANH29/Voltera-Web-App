@@ -57,14 +57,10 @@ public class ContractService {
 
     @Transactional
     public ContractResponse updateTerms(String authHeader,Integer id, String newTerms) {
-        String token = authHeader.substring(7);
-        String username = jwtService.extractUsername(token);
-        User user = userRepository.findUserByUsername(username);
-        if (user == null) throw new RuntimeException("User not found");
+        User user = findUserByToken(authHeader);
 
         Contract contract = contractRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Contract not found"));
-
 
         if (!user.getId().equals(contract.getBuyerid().getId()) &&
                 !user.getId().equals(contract.getSellerid().getId())) {
@@ -82,11 +78,7 @@ public class ContractService {
 
     @Transactional
     public ContractResponse signContract(String authHeader,Integer id) {
-        String token = authHeader.substring(7);
-        String username = jwtService.extractUsername(token);
-        User user = userRepository.findUserByUsername(username);
-        if (user == null) throw new RuntimeException("User not found");
-
+        User user = findUserByToken(authHeader);
         Contract contract = contractRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Contract not found"));
         // Check vai trò
@@ -136,5 +128,13 @@ public class ContractService {
                 .orElseThrow(() -> new RuntimeException("Contract not found"));
 
         return contractMapper.toResponse(contract);
+    }
+
+    public User findUserByToken(String authHeader) {
+        String token = authHeader.substring(7);
+        String username = jwtService.extractUsername(token);
+        User user = userRepository.findUserByUsername(username);
+        if (user == null) throw new RuntimeException("User not found");
+        return user;
     }
 }

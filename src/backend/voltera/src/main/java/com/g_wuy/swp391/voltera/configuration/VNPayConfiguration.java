@@ -77,7 +77,7 @@ public class VNPayConfiguration {
         return hmacSHA512(secretKey, sb.toString());
     }
 
-    public String getRandomNumber(int len) {
+    public static String getRandomNumber(int len) {
         Random rnd = new Random();
         String chars = "0123456789";
         StringBuilder sb = new StringBuilder(len);

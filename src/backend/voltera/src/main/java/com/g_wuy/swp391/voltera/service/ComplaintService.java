@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestHeader;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,7 +45,7 @@ public class ComplaintService {
         Complaint complaint = complaintMapper.toComplaint(request);
         complaint.setSenderId(sender);
         complaint.setStatus("PENDING");
-        complaint.setCreateAt(Instant.now());
+        complaint.setCreateAt(LocalDateTime.now());
         complaintRepository.save(complaint);
         return complaint;
     }
