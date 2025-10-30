@@ -1,4 +1,3 @@
-import ContractPage from "./pages/contractPage/ContractPage";
 import "./App.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { routes } from "./routes/index.jsx"; // ✅ sửa lại đường dẫn import CHÍNH XÁC
@@ -30,6 +29,8 @@ import DashboardBuyer from "./pages/dashboardBuyer/dashboardBuyer";
 import Dashboard from "./components/Dashboard";
 import PaymentPage from "./pages/paymentPage/PaymentPage";
 import PaymentCallback from "./pages/paymentPage/PaymentCallback";
+import ContractPage from "./pages/contractPage/contractPage";
+import ContractsPage from "./pages/contractsPage/contractsPage";
 
 console.log("routes:", routes);
 console.log("postVehicles:", routes.postVehicles);
@@ -37,7 +38,7 @@ console.log("postVehicles:", routes.postVehicles);
 function App() {
   const router = createBrowserRouter([
     {
-      path: routes.contract,
+      path: routes.contractDetail,
       element: (
         <MainLayout>
           <ContractPage />
@@ -125,6 +126,22 @@ function App() {
       element: (
         <MainLayout>
           <PaymentCallback />
+        </MainLayout>
+      ),
+    },
+    {
+      path: routes.contractView,
+      element: (
+        <MainLayout>
+          <ContractPage />
+        </MainLayout>
+      ),
+    },
+    {
+      path: routes.contracts,
+      element: (
+        <MainLayout>
+          <ContractsPage />
         </MainLayout>
       ),
     },

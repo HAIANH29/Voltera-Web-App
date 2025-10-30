@@ -1,705 +1,364 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import MiniPost from "../../components/miniPost/miniPost";
 import Pagination from "../../components/pagination/pagination";
+import "../../components/pagination/pagination.css";
+import api from "../../config/api";
 import "./electricsPage.css";
 
-// Mock data cho pin điện (giữ nguyên của bạn)
-const mockElectricsData = [
-  {
-    id: 1,
-    image: "https://images.unsplash.com/photo-1558618047-3c8c6c8b1c0e?w=400",
-    productName: "Tesla Model S Battery Pack",
-    basicInfo: ["Li-ion", "85kWh", "8000 cycles"],
-    sellerName: "Tesla Service Center",
-    price: 450000000,
-    isNew: true,
-    isFavorite: false,
-    batteryDetails: {
-      batteryType: "Lithium-ion",
-      serialNumber: "TSL-85-2023-001",
-      originalCapacity: "85kWh",
-      remainingCapacity: "82kWh",
-      mileageCovered: "15000km",
-      voltage: "400V",
-      cycleCount: 245,
-      warranty: "8 năm",
-      weight: "540kg",
-      lifeCycle: "8000 cycles"
-    }
-  },
-  {
-    id: 2,
-    image: "https://images.unsplash.com/photo-1620935235621-9b2ac3086999?w=400",
-    productName: "VinFast VF8 Battery Module",
-    basicInfo: ["LFP", "87.7kWh", "6000 cycles"],
-    sellerName: "VinFast Official",
-    price: 380000000,
-    isNew: false,
-    isFavorite: true,
-    batteryDetails: {
-      batteryType: "LiFePO4",
-      serialNumber: "VF8-87-2023-012",
-      originalCapacity: "87.7kWh",
-      remainingCapacity: "84.2kWh",
-      mileageCovered: "28000km",
-      voltage: "355V",
-      cycleCount: 456,
-      warranty: "10 năm",
-      weight: "485kg",
-      lifeCycle: "6000 cycles"
-    }
-  },
-  {
-    id: 3,
-    image: "https://images.unsplash.com/photo-1593941707882-a5bac6861d75?w=400",
-    productName: "BMW iX3 Battery Pack",
-    basicInfo: ["NCM", "80kWh", "2500 cycles"],
-    sellerName: "BMW Service",
-    price: 520000000,
-    isNew: true,
-    isFavorite: false,
-    batteryDetails: {
-      batteryType: "NCM (Nickel Cobalt Manganese)",
-      serialNumber: "BMW-IX3-80-024",
-      originalCapacity: "80kWh",
-      remainingCapacity: "79.1kWh",
-      mileageCovered: "8500km",
-      voltage: "400V",
-      cycleCount: 128,
-      warranty: "8 năm",
-      weight: "510kg",
-      lifeCycle: "2500 cycles"
-    }
-  },
-  {
-    id: 4,
-    image: "https://images.unsplash.com/photo-1564866657315-503d0c136fc3?w=400",
-    productName: "Hyundai Kona Electric Battery",
-    basicInfo: ["Li-ion", "64kWh", "3000 cycles"],
-    sellerName: "Hyundai Motors",
-    price: 320000000,
-    isNew: false,
-    isFavorite: false,
-    batteryDetails: {
-      batteryType: "Lithium-ion Polymer",
-      serialNumber: "HYU-KE-64-089",
-      originalCapacity: "64kWh",
-      remainingCapacity: "58.9kWh",
-      mileageCovered: "45000km",
-      voltage: "356V",
-      cycleCount: 782,
-      warranty: "8 năm",
-      weight: "457kg",
-      lifeCycle: "3000 cycles"
-    }
-  },
-  {
-    id: 5,
-    image: "https://images.unsplash.com/photo-1609630875171-b1321377ee65?w=400",
-    productName: "Audi e-tron GT Battery",
-    basicInfo: ["Li-ion", "93.4kWh", "2800 cycles"],
-    sellerName: "Audi Center Vietnam",
-    price: 680000000,
-    isNew: true,
-    isFavorite: true,
-    batteryDetails: {
-      batteryType: "Lithium-ion",
-      serialNumber: "AUD-GT-93-156",
-      originalCapacity: "93.4kWh",
-      remainingCapacity: "91.8kWh",
-      mileageCovered: "12000km",
-      voltage: "800V",
-      cycleCount: 198,
-      warranty: "8 năm",
-      weight: "630kg",
-      lifeCycle: "2800 cycles"
-    }
-  },
-  {
-    id: 6,
-    image: "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=400",
-    productName: "Mercedes EQS Battery Pack",
-    basicInfo: ["NCM", "107.8kWh", "3200 cycles"],
-    sellerName: "Mercedes-Benz Vietnam",
-    price: 750000000,
-    isNew: false,
-    isFavorite: false,
-    batteryDetails: {
-      batteryType: "NCM811",
-      serialNumber: "MER-EQS-107-203",
-      originalCapacity: "107.8kWh",
-      remainingCapacity: "103.2kWh",
-      mileageCovered: "22000km",
-      voltage: "400V",
-      cycleCount: 365,
-      warranty: "10 năm",
-      weight: "695kg",
-      lifeCycle: "3200 cycles"
-    }
-  },
-  {
-    id: 7,
-    image: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400",
-    productName: "Porsche Taycan Battery",
-    basicInfo: ["Li-ion", "93.4kWh", "2600 cycles"],
-    sellerName: "Porsche Center",
-    price: 850000000,
-    isNew: true,
-    isFavorite: false,
-    batteryDetails: {
-      batteryType: "Lithium-ion",
-      serialNumber: "POR-TAY-93-078",
-      originalCapacity: "93.4kWh",
-      remainingCapacity: "92.1kWh",
-      mileageCovered: "9800km",
-      voltage: "800V",
-      cycleCount: 156,
-      warranty: "8 năm",
-      weight: "625kg",
-      lifeCycle: "2600 cycles"
-    }
-  },
-  {
-    id: 8,
-    image: "https://images.unsplash.com/photo-1617654112368-307921291f42?w=400",
-    productName: "Nissan Leaf Battery Module",
-    basicInfo: ["Li-Mn", "62kWh", "2200 cycles"],
-    sellerName: "Nissan Vietnam",
-    price: 280000000,
-    isNew: false,
-    isFavorite: true,
-    batteryDetails: {
-      batteryType: "Lithium Manganese Oxide",
-      serialNumber: "NIS-LEF-62-445",
-      originalCapacity: "62kWh",
-      remainingCapacity: "54.8kWh",
-      mileageCovered: "68000km",
-      voltage: "360V",
-      cycleCount: 1245,
-      warranty: "8 năm",
-      weight: "303kg",
-      lifeCycle: "2200 cycles"
-    }
-  },
-  {
-    id: 9,
-    image: "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=400",
-    productName: "Jaguar I-PACE Battery",
-    basicInfo: ["Li-ion", "90kWh", "2400 cycles"],
-    sellerName: "Jaguar Land Rover",
-    price: 580000000,
-    isNew: false,
-    isFavorite: false,
-    batteryDetails: {
-      batteryType: "Lithium-ion Pouch",
-      serialNumber: "JAG-IPC-90-321",
-      originalCapacity: "90kWh",
-      remainingCapacity: "86.7kWh",
-      mileageCovered: "31000km",
-      voltage: "400V",
-      cycleCount: 523,
-      warranty: "8 năm",
-      weight: "606kg",
-      lifeCycle: "2400 cycles"
-    }
-  },
-  {
-    id: 10,
-    image: "https://images.unsplash.com/photo-1544829099-b9a0c5303bea?w=400",
-    productName: "Volvo XC40 Recharge Battery",
-    basicInfo: ["NCM", "78kWh", "2800 cycles"],
-    sellerName: "Volvo Cars Vietnam",
-    price: 420000000,
-    isNew: true,
-    isFavorite: false,
-    batteryDetails: {
-      batteryType: "NCM622",
-      serialNumber: "VOL-XC40-78-167",
-      originalCapacity: "78kWh",
-      remainingCapacity: "76.2kWh",
-      mileageCovered: "16500km",
-      voltage: "400V",
-      cycleCount: 287,
-      warranty: "8 năm",
-      weight: "520kg",
-      lifeCycle: "2800 cycles"
-    }
-  },
-  {
-    id: 11,
-    image: "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?w=400",
-    productName: "Kia EV6 Battery Pack",
-    basicInfo: ["NCM", "77.4kWh", "3000 cycles"],
-    sellerName: "Kia Motors Vietnam",
-    price: 390000000,
-    isNew: false,
-    isFavorite: true,
-    batteryDetails: {
-      batteryType: "NCM811",
-      serialNumber: "KIA-EV6-77-254",
-      originalCapacity: "77.4kWh",
-      remainingCapacity: "73.1kWh",
-      mileageCovered: "35000km",
-      voltage: "800V",
-      cycleCount: 612,
-      warranty: "10 năm",
-      weight: "477kg",
-      lifeCycle: "3000 cycles"
-    }
-  },
-  {
-    id: 12,
-    image: "https://images.unsplash.com/photo-1554744512-d6c603f27c54?w=400",
-    productName: "Ford Mustang Mach-E Battery",
-    basicInfo: ["NCM", "88kWh", "2700 cycles"],
-    sellerName: "Ford Vietnam",
-    price: 490000000,
-    isNew: true,
-    isFavorite: false,
-    batteryDetails: {
-      batteryType: "NCM811",
-      serialNumber: "FOR-MCE-88-132",
-      originalCapacity: "88kWh",
-      remainingCapacity: "85.6kWh",
-      mileageCovered: "19000km",
-      voltage: "400V",
-      cycleCount: 334,
-      warranty: "8 năm",
-      weight: "580kg",
-      lifeCycle: "2700 cycles"
-    }
-  },
-  {
-    id: 13,
-    image: "https://images.unsplash.com/photo-1554744512-d6c603f27c54?w=400",
-    productName: "Ford Mustang Mach-E Battery",
-    basicInfo: ["NCM", "88kWh", "2700 cycles"],
-    sellerName: "Ford Vietnam",
-    price: 490000000,
-    isNew: true,
-    isFavorite: false,
-    batteryDetails: {
-      batteryType: "NCM811",
-      serialNumber: "FOR-MCE-88-132",
-      originalCapacity: "88kWh",
-      remainingCapacity: "85.6kWh",
-      mileageCovered: "19000km",
-      voltage: "400V",
-      cycleCount: 334,
-      warranty: "8 năm",
-      weight: "580kg",
-      lifeCycle: "2700 cycles"
-    }
-  },
-  {
-    id: 14,
-    image: "https://images.unsplash.com/photo-1554744512-d6c603f27c54?w=400",
-    productName: "Ford Mustang Mach-E Battery",
-    basicInfo: ["NCM", "88kWh", "2700 cycles"],
-    sellerName: "Ford Vietnam",
-    price: 490000000,
-    isNew: true,
-    isFavorite: false,
-    batteryDetails: {
-      batteryType: "NCM811",
-      serialNumber: "FOR-MCE-88-132",
-      originalCapacity: "88kWh",
-      remainingCapacity: "85.6kWh",
-      mileageCovered: "19000km",
-      voltage: "400V",
-      cycleCount: 334,
-      warranty: "8 năm",
-      weight: "580kg",
-      lifeCycle: "2700 cycles"
-    }
-  },
-];
-
-const ITEMS_PER_PAGE = 12;
-
-// Helpers parse số từ chuỗi như "85kWh", "400V", "15000km"
-const parseNumber = (text) => {
-  if (!text && text !== 0) return NaN;
-  if (typeof text === "number") return text;
-  const m = String(text).match(/[\d.]+/);
-  return m ? Number(m[0]) : NaN;
-};
-
-// ====================================
-//            COMPONENT
-// ====================================
-export default function ElectricsPage() {
+const ElectricsPage = () => {
+  const navigate = useNavigate();
   const [batteries, setBatteries] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  // TÁCH DRAFT vs APPLIED (giống trang Vehicles)
-  const initialFilters = {
-    type: "",          // batteryDetails.batteryType
-    isNew: "",         // "", "new", "used"
-    minPrice: "",
-    maxPrice: "",
-    minCapacity: "",   // kWh từ originalCapacity
-    maxCapacity: "",
-    minVoltage: "",
-    maxVoltage: "",
-    minCycles: "",
-    maxCycles: "",
-    seller: "",        // exact sellerName
-  };
-
-  const [draftSearch, setDraftSearch] = useState("");     // search theo productName/sellerName
-  const [appliedSearch, setAppliedSearch] = useState("");
-
-  const [draftFilters, setDraftFilters] = useState(initialFilters);
-  const [appliedFilters, setAppliedFilters] = useState(initialFilters);
-
-  // pagination
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
+  
+  const itemsPerPage = 12;
 
-  // Fetch giả lập
+  // Fetch batteries with comprehensive error handling
   useEffect(() => {
-    (async () => {
-      setLoading(true);
-      await new Promise((r) => setTimeout(r, 800));
-      setBatteries(mockElectricsData);
-      setLoading(false);
-    })();
+    const fetchBatteries = async () => {
+      try {
+        setLoading(true);
+        console.log("� Fetching batteries from API...");
+        
+        const response = await api.get('/api/post/public/batteries');
+        
+        console.log("✅ Battery API Response:", response.data);
+        
+        if (response.data && Array.isArray(response.data)) {
+          const mappedData = response.data.map(post => {
+            // Handle price conversion more carefully
+            let processedPrice = 0;
+            if (post.price !== null && post.price !== undefined) {
+              if (typeof post.price === 'string') {
+                processedPrice = parseFloat(post.price.replace(/[^\d.]/g, '')) || 0;
+              } else {
+                processedPrice = Number(post.price) || 0;
+              }
+            }
+            
+            return {
+              postID: String(post.postId || ""),
+              image: post.thumbnail || (post.imageUrls && post.imageUrls[0]) || "https://via.placeholder.com/400x300/667eea/ffffff?text=Battery+Pack",
+              productName: post.title || `${post.battery?.batteryTypeId?.typename || 'Battery'} Pack`,
+              basicInfo: [
+                post.battery?.batteryTypeId?.typename || 'Li-ion',
+                post.battery?.originCapacity ? `${post.battery.originCapacity}kWh` : 'N/A',
+                post.battery?.voltage ? `${post.battery.voltage}V` : 'N/A',
+                post.battery?.cycleCount ? `${post.battery.cycleCount} cycles` : 'N/A'
+              ],
+              sellerName: post.location || "Battery Seller",
+              price: processedPrice,
+              isNew: (post.battery?.cycleCount || 0) < 100, // Consider low cycle count as "new"
+            isFavorite: false,
+            // Additional battery info for detail view
+            batteryDetails: {
+              serialNumber: post.battery?.serialNumber,
+              originCapacity: post.battery?.originCapacity,
+              remainingCapacity: post.battery?.remainingCapacity,
+              mileageCovered: post.battery?.mileageCovered,
+              voltage: post.battery?.voltage,
+              cycleCount: post.battery?.cycleCount,
+              warranty: post.battery?.warranty,
+              weight: post.battery?.weight,
+              lifeCycle: post.battery?.lifeCycle,
+              batteryType: post.battery?.batteryTypeId?.typename,
+              technical: post.battery?.batteryTypeId?.technical,
+              description: post.battery?.batteryTypeId?.description
+            }
+          };
+          });
+          
+          setBatteries(mappedData);
+          console.log("✅ Batteries loaded:", mappedData.length);
+        } else {
+          console.warn("⚠️ No battery data received from API");
+          setBatteries([]);
+        }
+      } catch (error) {
+        console.error("❌ Error fetching batteries:", error);
+        // Only show test data in development
+        if (process.env.NODE_ENV === 'development') {
+          const testData = [
+            {
+              postID: "test-1",
+              image: "https://via.placeholder.com/400x300/667eea/ffffff?text=Tesla+Battery",
+              productName: "Tesla Model S Battery Pack",
+              basicInfo: ["Lithium-ion", "100kWh", "400V", "172 cycles"],
+              sellerName: "Tesla Parts Dealer",
+              price: 15000,
+              isNew: true,
+              isFavorite: false
+            },
+            {
+              postID: "test-2", 
+              image: "https://via.placeholder.com/400x300/10b981/ffffff?text=BMW+Battery",
+              productName: "BMW i3 Battery Pack",
+              basicInfo: ["Li-ion", "42kWh", "350V"],
+              sellerName: "BMW Certified",
+              price: 8500,
+              isNew: false,
+              isFavorite: false
+            },
+            {
+              postID: "test-3",
+              image: "https://via.placeholder.com/400x300/f59e0b/ffffff?text=Nissan+Battery",
+              productName: "Nissan Leaf Battery",
+              basicInfo: ["Li-ion", "62kWh", "350V"],
+              sellerName: "Green Auto Parts",
+              price: 12000,
+              isNew: true,
+              isFavorite: false
+            }
+          ];
+          setBatteries(testData);
+        } else {
+          setBatteries([]);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBatteries();
   }, []);
 
-  // OPTIONS cho select
-  const types = useMemo(
-    () =>
-      Array.from(
-        new Set(
-          batteries
-            .map((b) => b.batteryDetails?.batteryType)
-            .filter(Boolean)
-        )
-      ).sort(),
-    [batteries]
-  );
-
-  const sellers = useMemo(
-    () =>
-      Array.from(new Set(batteries.map((b) => b.sellerName).filter(Boolean))).sort(),
-    [batteries]
-  );
-
-  // FILTER chỉ dựa trên APPLIED
-  const filtered = useMemo(() => {
-    const s = appliedSearch.trim().toLowerCase();
-    const f = appliedFilters;
-
-    return batteries.filter((b) => {
-      const name = (b.productName || "").toLowerCase();
-      const seller = (b.sellerName || "").toLowerCase();
-      const type = b.batteryDetails?.batteryType || "";
-
-      const capacity = parseNumber(b.batteryDetails?.originalCapacity); // kWh
-      const voltage = parseNumber(b.batteryDetails?.voltage);           // V
-      const cycles = Number(b.batteryDetails?.cycleCount ?? NaN);
-
-      const matchSearch = !s || name.includes(s) || seller.includes(s);
-      const matchType = !f.type || type === f.type;
-
-      const matchIsNew =
-        !f.isNew ||
-        (f.isNew === "new" && b.isNew === true) ||
-        (f.isNew === "used" && b.isNew === false);
-
-      const priceOKMin = !f.minPrice || b.price >= Number(f.minPrice);
-      const priceOKMax = !f.maxPrice || b.price <= Number(f.maxPrice);
-
-      const capOKMin = !f.minCapacity || (!isNaN(capacity) && capacity >= Number(f.minCapacity));
-      const capOKMax = !f.maxCapacity || (!isNaN(capacity) && capacity <= Number(f.maxCapacity));
-
-      const voltOKMin = !f.minVoltage || (!isNaN(voltage) && voltage >= Number(f.minVoltage));
-      const voltOKMax = !f.maxVoltage || (!isNaN(voltage) && voltage <= Number(f.maxVoltage));
-
-      const cyclesOKMin = !f.minCycles || (!isNaN(cycles) && cycles >= Number(f.minCycles));
-      const cyclesOKMax = !f.maxCycles || (!isNaN(cycles) && cycles <= Number(f.maxCycles));
-
-      const sellerOK = !f.seller || b.sellerName === f.seller;
-
-      return (
-        matchSearch &&
-        matchType &&
-        matchIsNew &&
-        priceOKMin &&
-        priceOKMax &&
-        capOKMin &&
-        capOKMax &&
-        voltOKMin &&
-        voltOKMax &&
-        cyclesOKMin &&
-        cyclesOKMax &&
-        sellerOK
-      );
-    });
-  }, [batteries, appliedSearch, appliedFilters]);
-
-  // Pagination dựa trên filtered
-  const totalPages = Math.ceil((filtered.length || 0) / ITEMS_PER_PAGE) || 1;
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const endIndex = startIndex + ITEMS_PER_PAGE;
-  const currentBatteries = filtered.slice(startIndex, endIndex);
-
-  // Favorite
-  const handleFavoriteClick = (batteryId) => {
-    setBatteries((prev) =>
-      prev.map((b) => (b.id === batteryId ? { ...b, isFavorite: !b.isFavorite } : b))
+  // Optimized filtering with useMemo for performance
+  const filteredBatteries = useMemo(() => {
+    if (!searchTerm.trim()) return batteries;
+    
+    const searchLower = searchTerm.toLowerCase();
+    return batteries.filter(battery =>
+      battery.productName?.toLowerCase().includes(searchLower) ||
+      battery.basicInfo?.some(info => info?.toLowerCase().includes(searchLower)) ||
+      battery.sellerName?.toLowerCase().includes(searchLower)
     );
-  };
+  }, [batteries, searchTerm]);
 
-  // Card click
-  const handleCardClick = (battery) => {
-    console.log("Clicked battery:", battery.id);
-  };
+  // Optimized pagination calculations
+  const paginationData = useMemo(() => {
+    const totalPages = Math.ceil(filteredBatteries.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const currentBatteries = filteredBatteries.slice(startIndex, startIndex + itemsPerPage);
+    
+    return { totalPages, startIndex, currentBatteries };
+  }, [filteredBatteries, currentPage, itemsPerPage]);
 
-  // Page change
-  const handlePageChange = (page) => {
+  const handlePageChange = useCallback((page) => {
     setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    // Smooth scroll to top on page change
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  const handleBatteryClick = useCallback((battery) => {
+    navigate(`/electrics/${battery.postID}`);
+  }, [navigate]);
+
+  const formatPrice = (price) => {
+    if (!price || price === null || price === undefined) return "Contact for Price";
+    
+    let numPrice;
+    if (typeof price === 'string') {
+      // Remove any non-numeric characters except decimal point
+      const cleanPrice = price.replace(/[^\d.]/g, '');
+      numPrice = parseFloat(cleanPrice);
+    } else {
+      numPrice = Number(price);
+    }
+    
+    if (isNaN(numPrice) || numPrice === 0) return "Contact for Price";
+    
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(numPrice);
   };
 
-  // Reset cả draft & applied
-  const resetFilters = () => {
-    setDraftFilters(initialFilters);
-    setDraftSearch("");
-    setAppliedFilters(initialFilters);
-    setAppliedSearch("");
-    setCurrentPage(1);
-  };
-
- if (loading) {
   return (
-    <div className="electrics-page">
-      <div className="electrics-header">
-        <h1>EV Batteries</h1>
-        <p>Explore high-quality EV battery packs and modules</p>
+    <div className="electrics-page modern-enhanced">
+      {/* Enhanced Top Search Bar */}
+      <div className="enhanced-topbar">
+        <div className="topbar-content">
+          <select className="location-select" defaultValue="">
+            <option value="">All Cities</option>
+            <option>Hà Nội</option>
+            <option>TP. HCM</option>
+            <option>Đà Nẵng</option>
+          </select>
+
+          <div className="search-input-group">
+            <svg className="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="11" cy="11" r="8"/>
+              <path d="m21 21-4.35-4.35"/>
+            </svg>
+            <input
+              className="search-input"
+              placeholder="Search by Battery Type, Capacity..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  // Trigger search on Enter
+                }
+              }}
+            />
+          </div>
+          
+          <button className="search-btn" onClick={() => {}}>
+            Search
+          </button>
+        </div>
       </div>
 
-      <div className="layout">
-        {/* Sidebar skeleton để khung giống vehicles */}
-        <aside className="filters skeleton-box" />
+      {/* Compact Header */}
+      <div className="compact-header">
+        <h1>Electric Batteries</h1>
+        <p>Quality batteries for electric vehicles</p>
+      </div>
 
-        {/* Grid skeleton 12 items */}
-        <div className="electrics-grid">
-          {Array.from({ length: 12 }).map((_, idx) => (
-            <div key={idx} className="loading-card">
-              <div className="loading-image" />
-              <div className="loading-content">
-                <div className="loading-line long" />
-                <div className="loading-line medium" />
-                <div className="loading-line short" />
+      {/* Loading State */}
+      {loading && (
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <p>Loading batteries...</p>
+        </div>
+      )}
+
+      {/* Results Header */}
+      {!loading && (
+        <div className="results-header">
+          <div className="results-info">
+            <h2>Electric Battery Collection</h2>
+            <p className="results-count">
+              {filteredBatteries.length} batter{filteredBatteries.length !== 1 ? "ies" : "y"} available
+              {filteredBatteries.length !== batteries.length && (
+                <span className="filter-indicator"> (filtered from {batteries.length})</span>
+              )}
+              {searchTerm && <span className="search-term"> for "{searchTerm}"</span>}
+            </p>
+          </div>
+          
+          <div className="view-controls">
+            <button className="view-btn active">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <rect x="3" y="3" width="7" height="7"/>
+                <rect x="14" y="3" width="7" height="7"/>
+                <rect x="14" y="14" width="7" height="7"/>
+                <rect x="3" y="14" width="7" height="7"/>
+              </svg>
+              Grid
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Main Layout */}
+      {!loading && (
+        <div className="layout enhanced-layout">
+          {/* Sidebar Filters */}
+          <aside className="filters modern-filters">
+            <div className="filters-header">
+              <h3>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46"/>
+                </svg>
+                Battery Filters
+              </h3>
+              <button className="clear-filters" onClick={() => setSearchTerm("")}>
+                Clear All
+              </button>
+            </div>
+
+            <div className="filter-group">
+              <label className="filter-label">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z"/>
+                </svg>
+                Battery Type
+              </label>
+              <select className="filter-select">
+                <option value="">All Types</option>
+                <option value="Lithium-ion">Lithium-ion</option>
+                <option value="LiFePO4">LiFePO4</option>
+                <option value="NiMH">NiMH</option>
+              </select>
+            </div>
+
+            <div className="filter-group">
+              <label className="filter-label">Capacity Range (kWh)</label>
+              <div className="range-group">
+                <input type="number" placeholder="Min kWh" className="range-input" />
+                <span className="range-separator">to</span>
+                <input type="number" placeholder="Max kWh" className="range-input" />
               </div>
             </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
 
+            <div className="filter-group">
+              <label className="filter-label">Price Range ($)</label>
+              <div className="range-group">
+                <input type="number" placeholder="Min Price" className="range-input" />
+                <span className="range-separator">to</span>
+                <input type="number" placeholder="Max Price" className="range-input" />
+              </div>
+            </div>
 
-  return (
-    <div className="electrics-page">
-      {/* Top bar: Search + quick summary */}
-      <div className="topbar">
-  <select className="topbar-select" defaultValue="">
-    <option value="">— All cities —</option>
-    <option>Hà Nội</option>
-    <option>TP. HCM</option>
-    <option>Đà Nẵng</option>
-  </select>
+            <button className="apply-filters-btn">Apply Filters</button>
+          </aside>
 
-  <input
-    className="topbar-search"
-    placeholder="Search by product or seller…"
-    value={draftSearch}
-    onChange={(e) => setDraftSearch(e.target.value)}
-  />
-  <button
-    className="topbar-btn"
-    onClick={() => {
-      setAppliedSearch(draftSearch);
-      setCurrentPage(1);
-    }}
-  >
-    Search
-  </button>
-</div>
+          {/* Main Content Grid */}
+          <main className="grid-container">
+            <div className="grid">
+              {paginationData.currentBatteries.map((battery) => (
+                <MiniPost
+                  key={battery.postID}
+                  image={battery.image}
+                  productName={battery.productName}
+                  basicInfo={battery.basicInfo}
+                  sellerName={battery.sellerName}
+                  price={formatPrice(battery.price)}
+                  isNew={battery.isNew}
+                  isFavorite={battery.isFavorite}
+                  onFavoriteClick={() => {}}
+                  onClick={() => handleBatteryClick(battery)}
+                />
+              ))}
 
-   <div className="electrics-header">
-  <h1>EV Batteries</h1>
-  <p>Explore high-quality EV battery packs and modules</p>
-</div>
+              {paginationData.currentBatteries.length === 0 && (
+                <div className="empty-state">
+                  <div className="empty-icon">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
+                      <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                      <line x1="3" y1="6" x2="21" y2="6"/>
+                      <path d="M16 10a4 4 0 0 1-8 0"/>
+                    </svg>
+                  </div>
+                  <h3>No batteries found</h3>
+                  <p>Try adjusting your search or filter criteria</p>
+                </div>
+              )}
+            </div>
 
-      <div className="layout">
-        {/* Sidebar Filters (dùng draft*) */}
-        <aside className="filters">
-          <h3>Filter Batteries</h3>
-
-          <label>Type</label>
-          <select
-            value={draftFilters.type}
-            onChange={(e) => setDraftFilters({ ...draftFilters, type: e.target.value })}
-          >
-            <option value="">— All —</option>
-            {types.map((t) => (
-              <option key={t} value={t}>
-                {t}
-              </option>
-            ))}
-          </select>
-
-          <label>Condition</label>
-          <select
-            value={draftFilters.isNew}
-            onChange={(e) => setDraftFilters({ ...draftFilters, isNew: e.target.value })}
-          >
-            <option value="">— All —</option>
-            <option value="new">New</option>
-            <option value="used">Used</option>
-          </select>
-
-          <label>Seller</label>
-          <select
-            value={draftFilters.seller}
-            onChange={(e) => setDraftFilters({ ...draftFilters, seller: e.target.value })}
-          >
-            <option value="">— All —</option>
-            {sellers.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
-
-          <label>Price range (VND)</label>
-          <div className="price-row">
-            <input
-              type="number"
-              placeholder="Min"
-              value={draftFilters.minPrice}
-              onChange={(e) => setDraftFilters({ ...draftFilters, minPrice: e.target.value })}
-            />
-            <span>—</span>
-            <input
-              type="number"
-              placeholder="Max"
-              value={draftFilters.maxPrice}
-              onChange={(e) => setDraftFilters({ ...draftFilters, maxPrice: e.target.value })}
-            />
-          </div>
-
-          <label>Capacity (kWh)</label>
-          <div className="price-row">
-            <input
-              type="number"
-              placeholder="Min"
-              value={draftFilters.minCapacity}
-              onChange={(e) => setDraftFilters({ ...draftFilters, minCapacity: e.target.value })}
-            />
-            <span>—</span>
-            <input
-              type="number"
-              placeholder="Max"
-              value={draftFilters.maxCapacity}
-              onChange={(e) => setDraftFilters({ ...draftFilters, maxCapacity: e.target.value })}
-            />
-          </div>
-
-          <label>Voltage (V)</label>
-          <div className="price-row">
-            <input
-              type="number"
-              placeholder="Min"
-              value={draftFilters.minVoltage}
-              onChange={(e) => setDraftFilters({ ...draftFilters, minVoltage: e.target.value })}
-            />
-            <span>—</span>
-            <input
-              type="number"
-              placeholder="Max"
-              value={draftFilters.maxVoltage}
-              onChange={(e) => setDraftFilters({ ...draftFilters, maxVoltage: e.target.value })}
-            />
-          </div>
-
-          <label>Cycle count</label>
-          <div className="price-row">
-            <input
-              type="number"
-              placeholder="Min"
-              value={draftFilters.minCycles}
-              onChange={(e) => setDraftFilters({ ...draftFilters, minCycles: e.target.value })}
-            />
-            <span>—</span>
-            <input
-              type="number"
-              placeholder="Max"
-              value={draftFilters.maxCycles}
-              onChange={(e) => setDraftFilters({ ...draftFilters, maxCycles: e.target.value })}
-            />
-          </div>
-
-          <div className="filter-actions">
-            <button
-              className="btn-apply"
-              onClick={() => {
-                setAppliedFilters(draftFilters);
-                setAppliedSearch(draftSearch);
-                setCurrentPage(1);
-              }}
-            >
-              Apply Filter
-            </button>
-            <button className="btn-reset" onClick={resetFilters}>
-              Reset
-            </button>
-          </div>
-        </aside>
-
-        {/* Grid */}
-        <div className="electrics-grid">
-          {currentBatteries.map((battery) => (
-            <MiniPost
-              key={battery.id}
-              image={battery.image}
-              productName={battery.productName}
-              basicInfo={battery.basicInfo}
-              sellerName={battery.sellerName}
-              price={battery.price}
-              isNew={battery.isNew}
-              isFavorite={battery.isFavorite}
-              onFavoriteClick={() => handleFavoriteClick(battery.id)}
-              onClick={() => handleCardClick(battery)}
-            />
-          ))}
-
-          {!currentBatteries.length && (
-            <div className="empty">No batteries found. Try adjusting the filters.</div>
-          )}
-        </div>
-      </div>
-
-      {/* Pagination */}
-      {filtered.length > 0 && (
-        <div className="pagination-container">
-          <div className="pagination">
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={handlePageChange}
-            />
-          </div>
-          <div className="pagination-info">
-           {`Showing ${startIndex + 1}-${Math.min(endIndex, filtered.length)} of ${filtered.length} batteries`}
-
-          </div>
+            {/* Pagination */}
+            {paginationData.totalPages > 1 && (
+              <div className="pagination-container">
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={paginationData.totalPages}
+                  onPageChange={handlePageChange}
+                />
+                <div className="pagination-info">
+                  Showing {paginationData.startIndex + 1}-{Math.min(paginationData.startIndex + itemsPerPage, filteredBatteries.length)} of {filteredBatteries.length} batteries
+                </div>
+              </div>
+            )}
+          </main>
         </div>
       )}
     </div>
   );
-}
+};
+
+export default ElectricsPage;

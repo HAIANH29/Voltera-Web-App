@@ -78,6 +78,8 @@ export default function ContractInfoPreview({
       setCreating(true);
       setError("");
 
+      console.log("🔄 Creating contract for post:", postId);
+
       // 1. Create contract
       const contractResponse = await api.post(
         "/api/contract/create",
@@ -88,6 +90,8 @@ export default function ContractInfoPreview({
 
       if (contractResponse.data?.contractId) {
         // 2. Auto-sign contract as buyer
+        console.log("🔄 Auto-signing contract as buyer...");
+        
         const signResponse = await api.put(
           `/api/contract/${contractResponse.data.contractId}/sign`
         );
@@ -126,6 +130,10 @@ export default function ContractInfoPreview({
     );
   }
 
+  // Debug: Log received data
+  console.log("🔍 ContractInfoPreview received vehicleData:", vehicleData);
+  console.log("🔍 ContractInfoPreview received postId:", postId);
+
   // Sử dụng vehicleData được truyền từ vehicleDetail
   const vehicle = vehicleData || {};
   
@@ -137,11 +145,15 @@ export default function ContractInfoPreview({
     phone: "Liên hệ qua hệ thống"
   };
 
+  // Debug: Log processed data
+  console.log("🔍 Processed vehicle data:", vehicle);
+  console.log("🔍 Processed seller data:", sellerData);
+
   return (
     <div className="contract-preview-overlay" onClick={onCancel}>
       <div className="contract-preview-modal" onClick={(e) => e.stopPropagation()}>
         <div className="contract-preview-header">
-          <h2>Thông tin hợp đồng mua bán xe</h2>
+          <h2>📋 Thông tin hợp đồng mua bán xe</h2>
           <button className="modal-close" onClick={onCancel}>✕</button>
         </div>
 
@@ -153,10 +165,31 @@ export default function ContractInfoPreview({
           )}
 
           <div className="contract-sections">
+            {/* Debug Info - Temporary */}
+            <div className="contract-section">
+              <div className="section-header">
+                <h3>🔍 Debug Info (Temporary)</h3>
+              </div>
+              <div className="section-content">
+                <div className="info-row">
+                  <span className="label">Raw Vehicle Data:</span>
+                  <span className="value" style={{ fontSize: '12px', wordBreak: 'break-all' }}>
+                    {JSON.stringify(vehicle)}
+                  </span>
+                </div>
+                <div className="info-row">
+                  <span className="label">Vehicle Keys:</span>
+                  <span className="value">
+                    {Object.keys(vehicle).join(', ')}
+                  </span>
+                </div>
+              </div>
+            </div>
+
             {/* Vehicle Information */}
             <div className="contract-section">
               <div className="section-header">
-                <h3>Thông tin xe</h3>
+                <h3>🚗 Thông tin xe</h3>
               </div>
               <div className="section-content">
                 <div className="info-row">
@@ -294,7 +327,7 @@ export default function ContractInfoPreview({
               </>
             ) : (
               <>
-                Tạo hợp đồng & Ký
+                ✍️ Tạo hợp đồng & Ký
               </>
             )}
           </button>

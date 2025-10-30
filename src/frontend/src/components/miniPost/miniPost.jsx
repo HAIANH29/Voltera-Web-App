@@ -12,7 +12,10 @@ export default function MiniPost({
   onFavoriteClick,
   onClick,
 }) {
-  const priceFmt = new Intl.NumberFormat("vi-VN").format(price);
+  // Use the pre-formatted price string if it's already formatted, otherwise format as VND
+  const priceFmt = typeof price === 'string' && price.includes('$') 
+    ? price 
+    : new Intl.NumberFormat("vi-VN").format(price);
 
   return (
     <article className="mini-card" onClick={onClick} role="button" tabIndex={0}>
@@ -44,7 +47,9 @@ export default function MiniPost({
 
         <div className="mini-meta">
           <span className="seller" title={sellerName}>{sellerName}</span>
-          <span className="price">{priceFmt} ₫</span>
+          <span className="price">
+            {typeof price === 'string' && price.includes('$') ? priceFmt : `${priceFmt} ₫`}
+          </span>
         </div>
       </div>
     </article>

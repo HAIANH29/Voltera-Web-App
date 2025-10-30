@@ -135,6 +135,7 @@ export default function ContractPreview({ postId, contractId }) {
       setLoading(true);
 
       // 2️⃣ Lấy template từ public/templates
+      console.log("🔍 Fetching DOCX template...");
       const fileRes = await fetch("/templates/contract/VehicleContract.docx");
       
       console.log("📄 Template response status:", fileRes.status);
@@ -147,7 +148,9 @@ export default function ContractPreview({ postId, contractId }) {
         return;
       }
 
+      console.log("✅ Template found, processing DOCX...");
       const buffer = await fileRes.arrayBuffer();
+      console.log("📦 Buffer size:", buffer.byteLength);
       const zip = new PizZip(buffer);
       const doc = new Docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
 
@@ -177,10 +180,14 @@ export default function ContractPreview({ postId, contractId }) {
         date: new Date().toLocaleDateString("vi-VN"),
       };
 
+      console.log("🎯 Render data for contract:", renderData);
+
       // 4️⃣ Render dữ liệu
+      console.log("🔄 Rendering template with data...");
       doc.render(renderData);
 
       // 5️⃣ Xuất file
+      console.log("📦 Generating DOCX blob...");
       const blob = doc.getZip().generate({
         type: "blob",
         mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -419,10 +426,10 @@ BÊN MUA (Ký tên): ${contractData.signedByBuyer ? "✅ Đã ký" : "❌ Chưa 
                       <span>Trạng thái hiện tại:</span>
                       <ul>
                         <li className={contractData.signedBySeller ? 'completed' : 'pending'}>
-                          {contractData.signedBySeller ? '✅' : '⏳'} Người bán
+                          {contractData.signedBySeller ? '✅' : '⏳'} Người bán đã ký
                         </li>
                         <li className={contractData.signedByBuyer ? 'completed' : 'pending'}>
-                          {contractData.signedByBuyer ? '✅' : '⏳'} Người mua
+                          {contractData.signedByBuyer ? '✅' : '⏳'} Người mua đã ký
                         </li>
                       </ul>
                     </div>
@@ -466,9 +473,16 @@ BÊN MUA (Ký tên): ${contractData.signedByBuyer ? "✅ Đã ký" : "❌ Chưa 
               )}
 
               {/* Cancel Contract Button */}
-              {contractData.contractStatus === 'PENDING' && (
+              {(() => {
+                console.log("🔍 [Render] Contract status:", contractData.contractStatus);
+                console.log("🔍 [Render] Should show cancel button:", contractData.contractStatus === 'PENDING');
+                console.log("🔍 [Render] Contract data:", contractData);
+                return contractData.contractStatus === 'PENDING';
+              })() && (
                 <button
                   onClick={() => {
+                    console.log("🖱️ [Click] Cancel button clicked");
+                    console.log("🖱️ [Click] isCanceling state:", isCanceling);
                     if (window.confirm("Bạn có chắc muốn hủy hợp đồng này? Thao tác này không thể hoàn tác.")) {
                       console.log("✅ [Confirm] User confirmed cancel");
                       cancelContract();
@@ -478,11 +492,21 @@ BÊN MUA (Ký tên): ${contractData.signedByBuyer ? "✅ Đã ký" : "❌ Chưa 
                   }}
                   disabled={isCanceling}
                   className="contract-btn danger"
+                  style={{border: '2px solid red'}} // Debug style
                 >
                   {isCanceling && <div className="contract-btn-spinner"></div>}
                   {isCanceling ? "Đang hủy..." : "❌ Hủy hợp đồng"}
                 </button>
               )}
+
+              {/* Debug info */}
+              <div style={{background: '#f0f0f0', padding: '10px', margin: '10px 0', fontSize: '12px'}}>
+                <strong>Debug Info:</strong><br/>
+                Contract Status: {contractData.contractStatus}<br/>
+                Is Canceling: {isCanceling.toString()}<br/>
+                Token: {token ? "✅ Present" : "❌ Missing"}<br/>
+                Contract ID: {contractData.contractId}
+              </div>
             </div>
           </>
         ) : (

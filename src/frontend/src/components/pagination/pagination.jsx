@@ -86,7 +86,11 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
     );
   }
 
-  return pages;
+  return (
+    <div className="pagination">
+      {pages}
+    </div>
+  );
 };
 
 export default Pagination;

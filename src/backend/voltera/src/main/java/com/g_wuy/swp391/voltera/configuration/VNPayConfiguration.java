@@ -61,16 +61,16 @@ public class VNPayConfiguration {
         Collections.sort(fieldNames);
         StringBuilder sb = new StringBuilder();
 
-        for (int i = 0; i < fieldNames.size(); i++) {
-            String key = fieldNames.get(i);
+        boolean first = true;
+        for (String key : fieldNames) {
             String value = fields.get(key);
             if (value != null && !value.isEmpty()) {
-                sb.append(key)
-                        .append("=")
-                        .append(URLEncoder.encode(value, StandardCharsets.US_ASCII));
-                if (i < fieldNames.size() - 1) {
+                if (!first) {
                     sb.append("&");
                 }
+                // VNPay requires no URL encoding in hash data
+                sb.append(key).append("=").append(value);
+                first = false;
             }
         }
 

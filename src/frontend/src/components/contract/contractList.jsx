@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import api from "../../config/api";
+import axios from "axios";
 import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
 
@@ -18,7 +18,10 @@ export default function ContractList() {
   const fetchContracts = async () => {
     try {
       setLoading(true);
-      const res = await api.get("/api/contract/list");
+      const res = await axios.get(
+        "http://localhost:8080/api/contract/list",
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       setContracts(res.data);
     } catch (err) {
       console.error("Error fetching contracts:", err);
@@ -133,7 +136,7 @@ export default function ContractList() {
                     onClick={() => handleViewContract(contract.contractId)}
                     className="contract-btn secondary"
                   >
-                    Xem chi tiết
+                    👁️ Xem chi tiết
                   </button>
                 </div>
               </div>

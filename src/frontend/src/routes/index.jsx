@@ -22,6 +22,9 @@ export const routes = {
   electricDetail: "/electrics/:postID",
   payment: "/payment",
   paymentCallback: "/payment/callback",
+  contractDetail: "/contract/post/:postId",
+  contractView: "/contract",
+  contracts: "/contracts",
 
   // Admin routes
   adminUsers: "/admin/users",
@@ -31,5 +34,4 @@ export const routes = {
   adminSettings: "/admin/settings",
   adminProfile: "/admin/profile",
   adminAccount: "/admin/account",
-  contract: "/contract",
 };

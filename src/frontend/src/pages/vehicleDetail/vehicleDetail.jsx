@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../../config/api";
+import Cookies from "../../utils/cookies";
+import { routes } from "../../routes";
 import "./vehicleDetail.css";
 
 /**
@@ -163,6 +165,44 @@ export default function VehicleDetail() {
     if (vehicle?.sellerInfo?.phone) {
       window.open(`tel:${vehicle.sellerInfo.phone}`);
     }
+  };
+
+  const handlePurchase = () => {
+    // Check if user is logged in
+    const token = Cookies.get("accessToken");
+    if (!token) {
+      alert("Vui lòng đăng nhập để mua xe.");
+      navigate("/login");
+      return;
+    }
+
+    // Navigate to contract page with postId
+    navigate(routes.contractDetail.replace(":postId", postID));
+  };
+
+  const handleCreateContract = () => {
+    // Check if user is logged in
+    const token = Cookies.get("accessToken");
+    if (!token) {
+      alert("Vui lòng đăng nhập để tạo hợp đồng.");
+      navigate("/login");
+      return;
+    }
+
+    // Check if vehicle data is available
+    if (!vehicle) {
+      alert("Thông tin xe chưa được tải. Vui lòng thử lại.");
+      return;
+    }
+
+    // Debug: Log vehicle data
+    console.log("🔍 Vehicle data:", vehicle);
+    console.log("🔍 Vehicle brand:", vehicle.brand);
+    console.log("🔍 Vehicle model:", vehicle.model);
+    console.log("🔍 Vehicle price:", vehicle.price);
+
+    // Navigate to contract page to create contract
+    navigate(`/contract?postId=${postID}&action=create`);
   };
 
   const formatPrice = (price) => {
@@ -365,13 +405,17 @@ export default function VehicleDetail() {
             </div>
 
             <div className="detail-contact-buttons">
-              <button className="detail-contact-btn primary" onClick={handleContactSeller}>
-                <span className="voltera-icon phone-icon"></span>
+              <button className="detail-contact-btn secondary" onClick={handleContactSeller}>
+                <span className="phone-icon">📞</span>
                 Contact Seller
               </button>
-              <button className="detail-contact-btn secondary" onClick={() => console.log('Purchase flow not implemented yet')}>
-                <span className="voltera-icon offer-icon"></span>
-                Make Offer
+              <button className="detail-contact-btn primary" onClick={handleCreateContract}>
+                <span className="contract-icon">📋</span>
+                Tạo hợp đồng
+              </button>
+              <button className="detail-contact-btn success" onClick={handlePurchase}>
+                <span className="buy-icon">🚗</span>
+                Buy Now
               </button>
             </div>
           </div>
