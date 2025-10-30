@@ -18,12 +18,13 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.TreeMap;
 
-@Slf4j
 @Service
 @Transactional
+@Slf4j
 public class VNPayService {
 
     @Autowired
@@ -35,7 +36,7 @@ public class VNPayService {
     @Autowired
     private PaymentRepository paymentRepository;
 
-    public VNPayResponse createPayment(VNPayRequest request, HttpServletRequest httpRequest, Integer transactionId) {
+    public VNPayResponse createPayment(VNPayRequest request, HttpServletRequest httpRequest, String transactionId) {
         try {
             String vnp_TxnRef = VNPayConfiguration.getRandomNumber(8);
             String vnp_IpAddr = VNPayConfiguration.getIpAddress(httpRequest);
@@ -55,10 +56,10 @@ public class VNPayService {
             vnp_Params.put("vnp_ReturnUrl", returnUrlWithTxn);
             vnp_Params.put("vnp_IpAddr", vnp_IpAddr);
 
-            String createDate = LocalDateTime.now()
-                    .format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+            String createDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
             vnp_Params.put("vnp_CreateDate", createDate);
 
+            // Build hash và query string
             StringBuilder hashData = new StringBuilder();
             StringBuilder query = new StringBuilder();
             for (Map.Entry<String, String> entry : vnp_Params.entrySet()) {
@@ -96,7 +97,6 @@ public class VNPayService {
             params.remove("vnp_SecureHashType");
 
             String signValue = vnPayConfig.hashAllFields(params);
-
             if (!signValue.equalsIgnoreCase(vnpSecureHash)) {
                 log.error("Invalid checksum. Expected {}, got {}", vnpSecureHash, signValue);
                 return "Lỗi xác minh chữ ký!";
@@ -126,16 +126,15 @@ public class VNPayService {
             if ("00".equals(params.get("vnp_ResponseCode"))) {
                 transaction.setTransactionStatus("DONE");
                 payment.setPaymentStatus("COMPLETED");
-                paymentRepository.save(payment);
-                transactionRepository.save(transaction);
-                return "Giao dịch thành công!";
             } else {
                 transaction.setTransactionStatus("FAILED");
                 payment.setPaymentStatus("FAILED");
-                paymentRepository.save(payment);
-                transactionRepository.save(transaction);
-                return "Giao dịch thất bại, mã lỗi: " + params.get("vnp_ResponseCode");
             }
+
+            paymentRepository.save(payment);
+            transactionRepository.save(transaction);
+
+            return "Giao dịch " + transaction.getTransactionStatus().toLowerCase() + "!";
         } catch (Exception e) {
             log.error("Error handling VNPay return", e);
             return "Lỗi xử lý callback: " + e.getMessage();

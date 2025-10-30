@@ -2,8 +2,6 @@ package com.g_wuy.swp391.voltera.controller;
 
 import com.g_wuy.swp391.voltera.model.request.VNPayRequest;
 import com.g_wuy.swp391.voltera.model.response.VNPayResponse;
-import com.g_wuy.swp391.voltera.service.JwtService;
-import com.g_wuy.swp391.voltera.service.UserService;
 import com.g_wuy.swp391.voltera.service.VNPayService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +23,7 @@ public class VNPayController {
     public ResponseEntity<VNPayResponse> createPayment(
             @RequestBody VNPayRequest request,
             HttpServletRequest httpRequest,
-            @PathVariable("transactionId") Integer transactionId) {
+            @PathVariable("transactionId") String transactionId) {
         VNPayResponse response = vnPayService.createPayment(request, httpRequest, transactionId);
         return ResponseEntity.ok(response);
     }
