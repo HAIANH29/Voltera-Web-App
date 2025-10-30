@@ -1,77 +1,141 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import api from "../../config/api";
 import Cookies from "js-cookie";
 import "./ContractInfoPreview.css";
 
 export default function ContractInfoPreview({ 
   postId, 
-  vehicleData,  // Nhận vehicleData từ vehicleDetail
+  vehicleData,  // Optional - nhận vehicleData từ vehicleDetail hoặc fetch từ API
   onCreateContract,
   onCancel,
   show 
 }) {
   const [buyerData, setBuyerData] = useState(null);
+  const [postData, setPostData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [creating, setCreating] = useState(false);
 
   const token = Cookies.get("accessToken");
 
+  // Function để lấy thông tin buyer từ token
+  const getBuyerInfo = () => {
+    const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
+    
+    if (token) {
+      try {
+        const tokenPayload = JSON.parse(atob(token.split('.')[1]));
+        const payload = tokenPayload.payload || tokenPayload;
+        
+        return {
+          fullName: payload.fullName || payload.name || currentUser?.fullName || "Người mua",
+          username: payload.username || payload.sub || currentUser?.username || "Người dùng hiện tại",
+          email: payload.email || currentUser?.email || "Không rõ",
+          phone: payload.phone || "Không rõ"
+        };
+      } catch (tokenError) {
+        console.error("Error decoding token:", tokenError);
+      }
+    }
+
+    return {
+      fullName: currentUser?.fullName || currentUser?.name || currentUser?.username || "Người mua",
+      username: currentUser?.username || currentUser?.email || "Người dùng hiện tại",
+      email: currentUser?.email || "Không rõ",
+      phone: currentUser?.phone || "Không rõ"
+    };
+  };
+
+  // Preload buyer data ngay khi component mount
+  useEffect(() => {
+    if (token) {
+      const currentUser = getBuyerInfo();
+      setBuyerData(currentUser);
+    }
+  }, [token]);
+
   useEffect(() => {
     if (show) {
-      fetchBuyerData();
+      // Tối ưu: Nếu có vehicleData thì load ngay lập tức
+      if (vehicleData) {
+        setLoading(false);
+        const currentUser = getBuyerInfo();
+        setBuyerData(currentUser);
+        
+        setPostData({
+          postId: vehicleData.postID,
+          title: vehicleData.title,
+          price: vehicleData.price,
+          vehicle: {
+            brand: vehicleData.brand,
+            model: vehicleData.model,
+            version: vehicleData.version,
+            yearmanufacture: vehicleData.year,
+            color: vehicleData.color,
+            odo: vehicleData.odo,
+            batterycapacity: vehicleData.batteryCapacityRaw,
+            range: vehicleData.rangeRaw,
+            numberofseat: vehicleData.numberOfSeat
+          },
+          location: vehicleData.seller?.address,
+          user: {
+            fullName: "Người bán",
+            username: "seller",
+            email: "seller@example.com", 
+            phone: "Liên hệ qua hệ thống"
+          }
+        });
+      } else {
+        fetchAllData();
+      }
     }
-  }, [show]);
+  }, [show, postId, vehicleData]);
 
-  const fetchBuyerData = async () => {
+  const fetchAllData = async () => {
     try {
       setLoading(true);
       setError("");
 
-      // Lấy thông tin người mua từ localStorage trước, sau đó từ token
-      let currentUser = null;
-      
-      // 1. Thử lấy từ localStorage (như trong headerAfter)
-      try {
-        const stored = localStorage.getItem("currentUser");
-        if (stored) {
-          currentUser = JSON.parse(stored);
-        }
-      } catch (err) {
-        console.error("Error parsing localStorage currentUser:", err);
-      }
-
-      // 2. Nếu không có trong localStorage, decode từ token
-      if (!currentUser && token) {
+      // Chỉ fetch từ API nếu không có vehicleData
+      if (postId) {
+        console.log("🔄 Fetching post data for postID:", postId);
+        
+        // Thêm timeout để tránh load quá lâu
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+        
         try {
-          const payload = JSON.parse(atob(token.split(".")[1]));
-          console.log("Token payload:", payload);
-          currentUser = {
-            name: payload.fullName || payload.name || payload.sub || "Người mua",
-            username: payload.sub || payload.username || "Người dùng hiện tại",
-            email: payload.email || "Không rõ",
-            phone: payload.phone || "Không rõ"
-          };
-        } catch (tokenError) {
-          console.error("Error decoding token:", tokenError);
+          const postResponse = await api.get(`/api/post/detail/${postId}`, {
+            signal: controller.signal
+          });
+          clearTimeout(timeoutId);
+          
+          setPostData(postResponse.data);
+          console.log("✅ Post data loaded:", postResponse.data);
+          
+          // Lấy thông tin người mua từ token
+          const currentUser = getBuyerInfo();
+          setBuyerData(currentUser);
+        } catch (apiError) {
+          clearTimeout(timeoutId);
+          if (apiError.name === 'AbortError') {
+            throw new Error("Tải thông tin quá lâu, vui lòng thử lại");
+          }
+          throw apiError;
         }
+      } else {
+        throw new Error("Không có thông tin post để tải");
       }
-
-      // 3. Set buyer data với thông tin đã lấy được
-      setBuyerData({
-        fullName: currentUser?.name || currentUser?.username || "Người mua",
-        username: currentUser?.username || currentUser?.email || "Người dùng hiện tại",
-        email: currentUser?.email || "Không rõ",
-        phone: currentUser?.phone || "Không rõ"
-      });
 
     } catch (err) {
-      console.error("Error fetching buyer data:", err);
-      setError(err.message || "Có lỗi xảy ra khi tải thông tin người mua");
+      console.error("❌ Error fetching contract data:", err);
+      setError(err.response?.data?.message || err.message || "Có lỗi xảy ra khi tải thông tin");
     } finally {
       setLoading(false);
     }
   };
+
+
 
   const handleCreateAndSign = async () => {
     try {
@@ -116,38 +180,54 @@ export default function ContractInfoPreview({
 
   if (!show) return null;
 
-  // Kiểm tra nếu vehicleData chưa có hoặc đang loading
-  if (loading || !vehicleData) {
+  // Chỉ hiển thị loading khi không có dữ liệu xe hoặc người mua
+  if (loading && (!vehicleData || !buyerData)) {
     return (
       <div className="contract-preview-overlay">
         <div className="contract-preview-modal">
           <div className="contract-preview-loading">
-            <div className="loading-spinner"></div>
-            <p>Đang tải thông tin hợp đồng...</p>
+            <div 
+              className="loading-spinner"
+              style={{
+                width: '40px',
+                height: '40px',
+                border: '4px solid #f3f4f6',
+                borderTop: '4px solid #3b82f6',
+                borderRadius: '50%',
+                animation: 'spin 1s linear infinite'
+              }}
+            ></div>
+            <p style={{marginTop: '16px', color: '#6b7280'}}>
+              {buyerData ? "Đang tải thông tin xe..." : vehicleData ? "Đang chuẩn bị thông tin..." : "Đang khởi tạo hợp đồng..."}
+            </p>
+            <div style={{fontSize: '12px', color: '#9ca3af', marginTop: '8px'}}>
+              Vui lòng đợi trong giây lát
+            </div>
           </div>
         </div>
+        <style>
+          {`
+            @keyframes spin {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
+          `}
+        </style>
       </div>
     );
   }
 
-  // Debug: Log received data
-  console.log("🔍 ContractInfoPreview received vehicleData:", vehicleData);
-  console.log("🔍 ContractInfoPreview received postId:", postId);
-
-  // Sử dụng vehicleData được truyền từ vehicleDetail
-  const vehicle = vehicleData || {};
+  // Sử dụng postData đã fetch
+  const vehicle = postData.vehicle || {};
   
-  // Tạo seller data từ vehicleData
+  // Tạo seller data từ postData
   const sellerData = {
-    fullName: vehicle.seller?.address ? `Người bán tại ${vehicle.seller.address}` : "Người bán",
-    username: `Seller - Post #${vehicle.postID || postId}`,
-    email: "Liên hệ qua hệ thống", 
-    phone: "Liên hệ qua hệ thống"
+    fullName: postData.user?.fullName || `Người bán tại ${postData.location || 'Không rõ'}`,
+    username: postData.user?.username || `Seller - Post #${postId}`,
+    email: postData.user?.email || "Liên hệ qua hệ thống", 
+    phone: postData.user?.phone || "Liên hệ qua hệ thống",
+    address: postData.location || "Không rõ địa chỉ"
   };
-
-  // Debug: Log processed data
-  console.log("🔍 Processed vehicle data:", vehicle);
-  console.log("🔍 Processed seller data:", sellerData);
 
   return (
     <div className="contract-preview-overlay" onClick={onCancel}>
@@ -165,27 +245,6 @@ export default function ContractInfoPreview({
           )}
 
           <div className="contract-sections">
-            {/* Debug Info - Temporary */}
-            <div className="contract-section">
-              <div className="section-header">
-                <h3>🔍 Debug Info (Temporary)</h3>
-              </div>
-              <div className="section-content">
-                <div className="info-row">
-                  <span className="label">Raw Vehicle Data:</span>
-                  <span className="value" style={{ fontSize: '12px', wordBreak: 'break-all' }}>
-                    {JSON.stringify(vehicle)}
-                  </span>
-                </div>
-                <div className="info-row">
-                  <span className="label">Vehicle Keys:</span>
-                  <span className="value">
-                    {Object.keys(vehicle).join(', ')}
-                  </span>
-                </div>
-              </div>
-            </div>
-
             {/* Vehicle Information */}
             <div className="contract-section">
               <div className="section-header">
@@ -195,7 +254,7 @@ export default function ContractInfoPreview({
                 <div className="info-row">
                   <span className="label">Tiêu đề:</span>
                   <span className="value">
-                    {vehicle.title || 
+                    {postData.title || 
                      (vehicle.brand && vehicle.model ? 
                       `${vehicle.brand} ${vehicle.model} ${vehicle.version || ''}`.trim() : 
                       "Thông tin xe")}
@@ -215,7 +274,7 @@ export default function ContractInfoPreview({
                 </div>
                 <div className="info-row">
                   <span className="label">Năm sản xuất:</span>
-                  <span className="value">{vehicle.year || "N/A"}</span>
+                  <span className="value">{vehicle.yearmanufacture || "N/A"}</span>
                 </div>
                 <div className="info-row">
                   <span className="label">Màu sắc:</span>
@@ -223,19 +282,27 @@ export default function ContractInfoPreview({
                 </div>
                 <div className="info-row">
                   <span className="label">Số km đã đi:</span>
-                  <span className="value">{vehicle.odo ? `${vehicle.odo.toLocaleString()} km` : "Xe mới"}</span>
+                  <span className="value">{vehicle.odo ? `${Number(vehicle.odo).toLocaleString()} km` : "Xe mới"}</span>
                 </div>
                 <div className="info-row">
                   <span className="label">Dung lượng pin:</span>
-                  <span className="value">{vehicle.batteryCapacity || "N/A"}</span>
+                  <span className="value">{vehicle.batterycapacity ? `${vehicle.batterycapacity} kWh` : "N/A"}</span>
                 </div>
                 <div className="info-row">
                   <span className="label">Phạm vi hoạt động:</span>
-                  <span className="value">{vehicle.range || "N/A"}</span>
+                  <span className="value">{vehicle.range ? `${vehicle.range} km` : "N/A"}</span>
+                </div>
+                <div className="info-row">
+                  <span className="label">Số chỗ ngồi:</span>
+                  <span className="value">{vehicle.numberofseat || "N/A"}</span>
+                </div>
+                <div className="info-row">
+                  <span className="label">Địa điểm:</span>
+                  <span className="value">{postData.location || "N/A"}</span>
                 </div>
                 <div className="info-row price-row">
                   <span className="label">Giá bán:</span>
-                  <span className="value price">{vehicle.price ? `${vehicle.price.toLocaleString()} ₫` : "N/A"}</span>
+                  <span className="value price">{postData.price ? `${Number(postData.price).toLocaleString()} ₫` : "N/A"}</span>
                 </div>
               </div>
             </div>
@@ -260,7 +327,7 @@ export default function ContractInfoPreview({
                 </div>
                 <div className="info-row">
                   <span className="label">Địa chỉ:</span>
-                  <span className="value">{vehicle.seller?.address || "Không rõ"}</span>
+                  <span className="value">{sellerData.address}</span>
                 </div>
               </div>
             </div>

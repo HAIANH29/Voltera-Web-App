@@ -1,15 +1,11 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
-import Cookies from "js-cookie";
+import api from "../../config/api";
 import { useNavigate } from "react-router-dom";
 
 export default function ContractList() {
   const [contracts, setContracts] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  
-  // Lấy token từ cookies như trong headerAfter
-  const token = Cookies.get("accessToken");
 
   useEffect(() => {
     fetchContracts();
@@ -18,13 +14,11 @@ export default function ContractList() {
   const fetchContracts = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(
-        "http://localhost:8080/api/contract/list",
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const res = await api.get("/api/contract/list");
       setContracts(res.data);
+      console.log("✅ Contracts loaded:", res.data);
     } catch (err) {
-      console.error("Error fetching contracts:", err);
+      console.error("❌ Error fetching contracts:", err);
       alert("Không thể tải danh sách hợp đồng.");
     } finally {
       setLoading(false);
@@ -74,69 +68,217 @@ export default function ContractList() {
             <p>Bạn chưa có hợp đồng nào.</p>
           </div>
         ) : (
-          <div className="contract-info-cards">
+          <div 
+            className="contract-list-items" 
+            style={{
+              display: 'flex', 
+              flexDirection: 'column', 
+              gap: '16px',
+              padding: '0 16px'
+            }}
+          >
             {contracts.map((contract) => (
-              <div key={contract.contractId} className="contract-info-card">
-                <div className="contract-info-card-header">
-                  <div className="contract-info-card-icon vehicle">
+              <div 
+                key={contract.contractId} 
+                className="contract-list-item"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '20px',
+                  backgroundColor: '#ffffff',
+                  borderRadius: '12px',
+                  border: '1px solid #e5e7eb',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+                  transition: 'all 0.2s ease',
+                  cursor: 'pointer'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.12)';
+                  e.currentTarget.style.borderColor = '#d1d5db';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.08)';
+                  e.currentTarget.style.borderColor = '#e5e7eb';
+                }}
+              >
+                {/* Bên trái: Thông tin hợp đồng */}
+                <div 
+                  className="contract-left-section"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    flex: '0 0 300px'
+                  }}
+                >
+                  <div 
+                    className="contract-icon"
+                    style={{
+                      fontSize: '24px',
+                      padding: '8px',
+                      backgroundColor: '#f3f4f6',
+                      borderRadius: '8px'
+                    }}
+                  >
                     📋
                   </div>
-                  <div>
-                    <h3 className="contract-info-card-title">
+                  <div className="contract-basic-info">
+                    <h3 
+                      className="contract-title"
+                      style={{
+                        margin: '0 0 4px 0',
+                        fontSize: '16px',
+                        fontWeight: '600',
+                        color: '#1f2937'
+                      }}
+                    >
                       Hợp đồng #{contract.contractId}
                     </h3>
-                    <span className={`contract-status-badge ${contract.contractStatus.toLowerCase()}`}>
+                    <p 
+                      className="contract-post-title"
+                      style={{
+                        margin: '0',
+                        fontSize: '14px',
+                        color: '#6b7280',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        maxWidth: '220px'
+                      }}
+                    >
+                      {contract.postTitle}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Giữa: Thông tin trạng thái */}
+                <div 
+                  className="contract-center-section"
+                  style={{
+                    flex: '1',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '0 20px'
+                  }}
+                >
+                  <div className="contract-status-info">
+                    <span 
+                      className={`contract-status-badge ${contract.contractStatus.toLowerCase()}`}
+                      style={{
+                        display: 'inline-block',
+                        padding: '4px 12px',
+                        borderRadius: '16px',
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        textTransform: 'uppercase',
+                        backgroundColor: contract.contractStatus === 'SIGNED' ? '#dcfce7' : 
+                                       contract.contractStatus === 'PENDING' ? '#fef3c7' : '#fef2f2',
+                        color: contract.contractStatus === 'SIGNED' ? '#166534' : 
+                               contract.contractStatus === 'PENDING' ? '#92400e' : '#991b1b'
+                      }}
+                    >
                       {contract.contractStatus}
                     </span>
-                  </div>
-                </div>
-                
-                <div className="contract-info-card-content">
-                  <div className="contract-info-item">
-                    <span className="contract-info-label">Bài đăng</span>
-                    <span className="contract-info-value">{contract.postTitle}</span>
-                  </div>
-                  
-                  <div className="contract-info-item">
-                    <span className="contract-info-label">Người bán</span>
-                    <span className="contract-info-value">{contract.sellerName}</span>
-                  </div>
-                  
-                  <div className="contract-info-item">
-                    <span className="contract-info-label">Người mua</span>
-                    <span className="contract-info-value">{contract.buyerName}</span>
-                  </div>
-                  
-                  <div className="contract-info-item">
-                    <span className="contract-info-label">Trạng thái ký</span>
-                    <span className="contract-info-value">
-                      <div className="contract-sign-status">
-                        <span className={contract.signedByBuyer ? 'signed' : 'unsigned'}>
-                          Mua: {contract.signedByBuyer ? "✅" : "❌"}
-                        </span>
-                        <span className={contract.signedBySeller ? 'signed' : 'unsigned'}>
-                          Bán: {contract.signedBySeller ? "✅" : "❌"}
-                        </span>
-                      </div>
-                    </span>
-                  </div>
-                  
-                  {contract.signedDate && (
-                    <div className="contract-info-item">
-                      <span className="contract-info-label">Ngày ký</span>
-                      <span className="contract-info-value">
-                        {new Date(contract.signedDate).toLocaleDateString("vi-VN")}
+                    <div 
+                      className="contract-parties"
+                      style={{
+                        display: 'flex',
+                        gap: '16px',
+                        marginTop: '8px',
+                        fontSize: '13px'
+                      }}
+                    >
+                      <span className="party-info" style={{color: '#4b5563'}}>
+                        👤 {contract.buyerName}
+                      </span>
+                      <span className="party-info" style={{color: '#4b5563'}}>
+                        🏪 {contract.sellerName}
                       </span>
                     </div>
-                  )}
+                    <div 
+                      className="contract-sign-status"
+                      style={{
+                        display: 'flex',
+                        gap: '12px',
+                        marginTop: '6px',
+                        fontSize: '12px'
+                      }}
+                    >
+                      <span 
+                        className={contract.signedByBuyer ? 'signed' : 'unsigned'}
+                        style={{
+                          color: contract.signedByBuyer ? '#059669' : '#9ca3af',
+                          fontWeight: '500'
+                        }}
+                      >
+                        Mua: {contract.signedByBuyer ? "✅" : "❌"}
+                      </span>
+                      <span 
+                        className={contract.signedBySeller ? 'signed' : 'unsigned'}
+                        style={{
+                          color: contract.signedBySeller ? '#059669' : '#9ca3af',
+                          fontWeight: '500'
+                        }}
+                      >
+                        Bán: {contract.signedBySeller ? "✅" : "❌"}
+                      </span>
+                    </div>
+                    {contract.signedDate && (
+                      <div 
+                        className="contract-date"
+                        style={{
+                          fontSize: '12px',
+                          color: '#6b7280',
+                          marginTop: '4px'
+                        }}
+                      >
+                        📅 {new Date(contract.signedDate).toLocaleDateString("vi-VN")}
+                      </div>
+                    )}
+                  </div>
                 </div>
-                
-                <div className="contract-actions">
+
+                {/* Bên phải: Nút action */}
+                <div 
+                  className="contract-right-section"
+                  style={{
+                    flex: '0 0 140px',
+                    display: 'flex',
+                    justifyContent: 'flex-end'
+                  }}
+                >
                   <button
                     onClick={() => handleViewContract(contract.contractId)}
-                    className="contract-btn secondary"
+                    className="contract-view-btn"
+                    style={{
+                      padding: '10px 20px',
+                      backgroundColor: '#3b82f6',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.backgroundColor = '#2563eb';
+                      e.target.style.transform = 'translateY(-1px)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.backgroundColor = '#3b82f6';
+                      e.target.style.transform = 'translateY(0)';
+                    }}
                   >
-                    👁️ Xem chi tiết
+                    Xem chi tiết
                   </button>
                 </div>
               </div>

@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import api from "../../config/api";
+import ContractPreview from "../../components/contract/contractPreview";
+import ContractInfoPreview from "../../components/contractInfoPreview/ContractInfoPreview";
 import "./ContractPage.css";
 
 // Icon SVGs (tương tự dashboardAdmin)
@@ -17,6 +20,7 @@ const ContractIcon = () => (
 );
 
 export default function ContractPage() {
+  const [searchParams] = useSearchParams();
   const [contracts, setContracts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -29,15 +33,24 @@ export default function ContractPage() {
   });
   const [actionLoading, setActionLoading] = useState(false);
 
+  // Contract viewing/creation states
+  const postId = searchParams.get("postId");
+  const action = searchParams.get("action");  
+  const contractId = searchParams.get("contractId");
+  const [viewingContract, setViewingContract] = useState(null);
+  const [showContractPreview, setShowContractPreview] = useState(false);
+
   // Fetch contract list
   const fetchContracts = async () => {
     setLoading(true);
     setError("");
     try {
-      const res = await api.get("/api/contracts/my");
+      const res = await api.get("/api/contract/list");
       setContracts(res.data);
+      console.log("✅ Contracts loaded:", res.data);
     } catch (err) {
-      setError("Failed to load contracts");
+      console.error("❌ Error loading contracts:", err);
+      setError(err.response?.data?.message || "Failed to load contracts");
     }
     setLoading(false);
   };
@@ -46,18 +59,31 @@ export default function ContractPage() {
     fetchContracts();
   }, []);
 
-  // Create new contract
+  useEffect(() => {
+    // Nếu có contractId trong URL, hiển thị contract detail
+    if (contractId) {
+      setViewingContract(contractId);
+    }
+    // Nếu có postId và action=create, hiển thị contract creation
+    if (postId && action === "create") {
+      setShowContractPreview(true);
+    }
+  }, [contractId, postId, action]);
+
+  // Create new contract (for manual form - deprecated, use ContractInfoPreview instead)
   const handleCreate = async (e) => {
     e.preventDefault();
     setActionLoading(true);
     setError("");
     try {
-      await api.post("/api/contracts", form);
+      // Backend expects { postId: Integer }
+      await api.post("/api/contract/create", { postId: parseInt(form.vehicleId) });
       setShowCreate(false);
       setForm({ vehicleId: "", buyerId: "", sellerId: "", price: "" });
       fetchContracts();
     } catch (err) {
-      setError("Failed to create contract");
+      console.error("❌ Error creating contract:", err);
+      setError(err.response?.data?.message || "Failed to create contract");
     }
     setActionLoading(false);
   };
@@ -67,10 +93,11 @@ export default function ContractPage() {
     setActionLoading(true);
     setError("");
     try {
-      await api.post(`/api/contracts/${id}/sign`);
+      await api.put(`/api/contract/${id}/sign`);
       fetchContracts();
     } catch (err) {
-      setError("Failed to sign contract");
+      console.error("❌ Error signing contract:", err);
+      setError(err.response?.data?.message || "Failed to sign contract");
     }
     setActionLoading(false);
   };
@@ -80,12 +107,26 @@ export default function ContractPage() {
     setActionLoading(true);
     setError("");
     try {
-      await api.post(`/api/contracts/${id}/cancel`);
+      await api.put(`/api/contract/${id}/cancel`);
       fetchContracts();
     } catch (err) {
-      setError("Failed to cancel contract");
+      console.error("❌ Error cancelling contract:", err);
+      setError(err.response?.data?.message || "Failed to cancel contract");
     }
     setActionLoading(false);
+  };
+
+  // Handle viewing contract detail
+  const handleViewContract = (contractId) => {
+    setViewingContract(contractId);
+  };
+
+  // Handle contract created from preview modal
+  const handleContractCreated = (newContractData) => {
+    console.log("✅ Contract created:", newContractData);
+    setShowContractPreview(false);
+    fetchContracts();
+    alert(`🎉 Hợp đồng #${newContractData.contractId} đã được tạo và ký thành công!`);
   };
 
   return (
@@ -93,45 +134,45 @@ export default function ContractPage() {
       <div className="contract-header">
         <ContractIcon />
         <h2>Contract Management</h2>
-        <button className="btn" onClick={() => setShowCreate(!showCreate)}>
-          {showCreate ? "Close" : "Create New Contract"}
+        {!postId && !viewingContract && (
+          <button className="btn" onClick={() => setShowCreate(!showCreate)}>
+            {showCreate ? "Close" : "Create New Contract"}
+          </button>
+        )}
+        {postId && (
+          <button className="btn" onClick={() => setShowContractPreview(true)}>
+            📋 Tạo hợp đồng cho bài đăng #{postId}
+          </button>
+        )}
+        {viewingContract && (
+          <button className="btn" onClick={() => setViewingContract(null)}>
+            ⬅️ Back to Contract List
+          </button>
+        )}
+        <button 
+          className="btn" 
+          onClick={fetchContracts}
+          disabled={loading}
+          style={{marginLeft: '8px', backgroundColor: '#6b7280'}}
+        >
+          🔄 {loading ? "Loading..." : "Refresh"}
         </button>
       </div>
       {error && <div className="error-msg">{error}</div>}
-      {showCreate && (
+      {!viewingContract && showCreate && (
         <form className="contract-form card" onSubmit={handleCreate}>
-          <h3>Create New Contract</h3>
+          <h3>Create New Contract (Manual)</h3>
+          <p style={{color: '#6b7280', fontSize: '14px'}}>
+            Note: Use "Tạo hợp đồng" from vehicle detail page for better experience
+          </p>
           <div className="form-row">
-            <label>Vehicle (ID):</label>
-            <input
-              required
-              value={form.vehicleId}
-              onChange={(e) => setForm({ ...form, vehicleId: e.target.value })}
-            />
-          </div>
-          <div className="form-row">
-            <label>Buyer (ID):</label>
-            <input
-              required
-              value={form.buyerId}
-              onChange={(e) => setForm({ ...form, buyerId: e.target.value })}
-            />
-          </div>
-          <div className="form-row">
-            <label>Seller (ID):</label>
-            <input
-              required
-              value={form.sellerId}
-              onChange={(e) => setForm({ ...form, sellerId: e.target.value })}
-            />
-          </div>
-          <div className="form-row">
-            <label>Price:</label>
+            <label>Post ID:</label>
             <input
               required
               type="number"
-              value={form.price}
-              onChange={(e) => setForm({ ...form, price: e.target.value })}
+              placeholder="Enter Post ID"
+              value={form.vehicleId}
+              onChange={(e) => setForm({ ...form, vehicleId: e.target.value })}
             />
           </div>
           <button className="btn" type="submit" disabled={actionLoading}>
@@ -139,8 +180,14 @@ export default function ContractPage() {
           </button>
         </form>
       )}
-      <div className="card contract-list">
-        <h3>Your Contracts</h3>
+      {!viewingContract && (
+        <div className="card contract-list">
+        <h3>Your Contracts ({contracts.length})</h3>
+        {error && (
+          <div style={{color: 'red', padding: '10px', marginBottom: '10px', backgroundColor: '#fef2f2', border: '1px solid #fecaca', borderRadius: '6px'}}>
+            ❌ {error}
+          </div>
+        )}
         {loading ? (
           <div className="loading-state">
             <div className="loading-spinner" />
@@ -159,61 +206,90 @@ export default function ContractPage() {
             <thead>
               <tr>
                 <th>ID</th>
-                <th>Vehicle</th>
+                <th>Post Title</th>
                 <th>Buyer</th>
                 <th>Seller</th>
-                <th>Price</th>
                 <th>Status</th>
+                <th>Signed Status</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
               {contracts.map((contract) => (
-                <tr key={contract.id}>
-                  <td>{contract.id}</td>
-                  <td>{contract.vehicleId}</td>
-                  <td>{contract.buyerId}</td>
-                  <td>{contract.sellerId}</td>
-                  <td>{contract.price}</td>
+                <tr key={contract.contractId}>
+                  <td>#{contract.contractId}</td>
+                  <td>{contract.postTitle || "N/A"}</td>
+                  <td>{contract.buyerName || "N/A"}</td>
+                  <td>{contract.sellerName || "N/A"}</td>
                   <td>
                     <span
                       className={`badge ${
-                        contract.status === "SIGNED"
+                        contract.contractStatus === "SIGNED"
                           ? "success"
-                          : contract.status === "CANCELLED"
+                          : contract.contractStatus === "CANCELLED" || contract.contractStatus === "CANCEL"
                           ? "danger"
                           : "secondary"
                       }`}
                     >
-                      {contract.status}
+                      {contract.contractStatus}
                     </span>
                   </td>
+                  <td style={{fontSize: '12px'}}>
+                    <div>Buyer: {contract.signedByBuyer ? "✅" : "❌"}</div>
+                    <div>Seller: {contract.signedBySeller ? "✅" : "❌"}</div>
+                  </td>
                   <td className="action-buttons">
-                    {contract.status === "PENDING" && (
+                    {contract.contractStatus === "PENDING" && (
                       <>
                         <button
                           className="btn"
                           disabled={actionLoading}
-                          onClick={() => handleSign(contract.id)}
+                          onClick={() => handleSign(contract.contractId)}
                         >
                           Sign
                         </button>
                         <button
                           className="btn danger"
                           disabled={actionLoading}
-                          onClick={() => handleCancel(contract.id)}
+                          onClick={() => handleCancel(contract.contractId)}
                         >
                           Cancel
                         </button>
                       </>
                     )}
+                    <button
+                      className="btn"
+                      onClick={() => handleViewContract(contract.contractId)}
+                      style={{marginTop: '4px', fontSize: '12px'}}
+                    >
+                      View
+                    </button>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         )}
-      </div>
+        </div>
+      )}
+
+      {/* Contract Detail View */}
+      {viewingContract && (
+        <ContractPreview 
+          contractId={viewingContract}
+          onClose={() => setViewingContract(null)}
+        />
+      )}
+
+      {/* Contract Info Preview Modal (for creating new contracts) */}
+      {postId && (
+        <ContractInfoPreview
+          postId={postId}
+          show={showContractPreview}
+          onCreateContract={handleContractCreated}
+          onCancel={() => setShowContractPreview(false)}
+        />
+      )}
     </div>
   );
 }

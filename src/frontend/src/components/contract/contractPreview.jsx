@@ -7,7 +7,7 @@ import { saveAs } from "file-saver";
 import ContractInfoPreview from "../contractInfoPreview/ContractInfoPreview";
 import "./contractPreview.css";
 
-export default function ContractPreview({ postId, contractId }) {
+export default function ContractPreview({ postId, contractId, onClose }) {
   const [loading, setLoading] = useState(false);
   const [contractData, setContractData] = useState(null);
   const [postData, setPostData] = useState(null);
@@ -307,8 +307,28 @@ BÊN MUA (Ký tên): ${contractData.signedByBuyer ? "✅ Đã ký" : "❌ Chưa 
 
   return (
     <div className="contract-preview">
-      <div className="contract-header">
+      <div className="contract-header" style={{position: 'relative'}}>
         <h2>Thông tin hợp đồng</h2>
+        {onClose && (
+          <button 
+            onClick={onClose}
+            className="contract-close-btn"
+            style={{
+              position: 'absolute',
+              top: '10px',
+              right: '10px',
+              background: '#ef4444',
+              color: 'white',
+              border: 'none',
+              borderRadius: '6px',
+              padding: '8px 12px',
+              cursor: 'pointer',
+              fontSize: '14px'
+            }}
+          >
+            ✕ Close
+          </button>
+        )}
       </div>
 
       <div className="contract-content">
@@ -426,10 +446,10 @@ BÊN MUA (Ký tên): ${contractData.signedByBuyer ? "✅ Đã ký" : "❌ Chưa 
                       <span>Trạng thái hiện tại:</span>
                       <ul>
                         <li className={contractData.signedBySeller ? 'completed' : 'pending'}>
-                          {contractData.signedBySeller ? '✅' : '⏳'} Người bán đã ký
+                          {contractData.signedBySeller ? '✅' : '⏳'} Người bán
                         </li>
                         <li className={contractData.signedByBuyer ? 'completed' : 'pending'}>
-                          {contractData.signedByBuyer ? '✅' : '⏳'} Người mua đã ký
+                          {contractData.signedByBuyer ? '✅' : '⏳'} Người mua
                         </li>
                       </ul>
                     </div>
@@ -460,7 +480,7 @@ BÊN MUA (Ký tên): ${contractData.signedByBuyer ? "✅ Đã ký" : "❌ Chưa 
                   className="contract-btn secondary"
                 >
                   {loading && <div className="contract-btn-spinner"></div>}
-                  {loading ? "Đang tải..." : "📄 Tải hợp đồng"}
+                  {loading ? "Đang tải..." : "Tải hợp đồng"}
                 </button>
               ) : (
                 <button

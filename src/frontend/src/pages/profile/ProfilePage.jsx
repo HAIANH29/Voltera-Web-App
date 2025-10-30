@@ -20,7 +20,7 @@ export default function ProfilePage() {
 
   async function loadProfile() {
     try {
-      const res = await api.get("/users/me/profile");
+      const res = await api.get("/api/v1/users/me/profile");
       setProfile(res.data);
       setForm({
         fullName: res.data.fullname || "", // backend returns 'fullname'
@@ -65,7 +65,7 @@ export default function ProfilePage() {
         address: form.address,
       };
 
-      const res = await api.put("/users/me/profile", profileData);
+      const res = await api.put("/api/v1/users/me/profile", profileData);
       setProfile(res.data);
       setEditing(false);
     } catch (err) {
