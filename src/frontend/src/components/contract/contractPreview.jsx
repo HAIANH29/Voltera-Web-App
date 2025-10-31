@@ -15,6 +15,7 @@ export default function ContractPreview({ postId, contractId, onClose }) {
   const [isSigning, setIsSigning] = useState(false);
   const [isCanceling, setIsCanceling] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [isPaymentLoading, setIsPaymentLoading] = useState(false);
 
   // Lấy token từ cookies như trong headerAfter
   const token = Cookies.get("accessToken");
@@ -115,6 +116,34 @@ export default function ContractPreview({ postId, contractId, onClose }) {
       alert(`Không thể hủy hợp đồng: ${errorMessage}`);
     } finally {
       setIsCanceling(false);
+    }
+  };
+
+  // Handle Pay Now button
+  const handlePayNow = async () => {
+    try {
+      setIsPaymentLoading(true);
+      
+      // Tạo transaction ID từ contract
+      const response = await api.post(`/api/contract/${contractData.contractId}/create-payment`);
+      const transactionId = response.data;
+      
+      if (!transactionId) {
+        throw new Error("Không thể tạo giao dịch thanh toán");
+      }
+
+      // Chuyển hướng đến trang thanh toán với thông tin contract
+      const paymentUrl = `/payment?contractId=${contractData.contractId}&transactionId=${transactionId}&amount=${contractData.postId?.price || postData?.price}&postId=${contractData.postId?.id || postId}`;
+      
+      // Use window.location.href to navigate
+      window.location.href = paymentUrl;
+      
+    } catch (err) {
+      console.error("Error creating payment:", err);
+      const errorMessage = err.response?.data?.message || err.message || "Không thể tạo thanh toán";
+      alert(`Lỗi: ${errorMessage}`);
+    } finally {
+      setIsPaymentLoading(false);
     }
   };
 
@@ -489,6 +518,18 @@ BÊN MUA (Ký tên): ${contractData.signedByBuyer ? "✅ Đã ký" : "❌ Chưa 
                   title="Chỉ có thể tải hợp đồng khi cả hai bên đã ký"
                 >
                   🔒 Tải hợp đồng (Chờ ký)
+                </button>
+              )}
+
+              {/* Pay Now Button - Only if both parties signed */}
+              {contractData.signedByBuyer && contractData.signedBySeller && (
+                <button
+                  onClick={handlePayNow}
+                  disabled={isPaymentLoading}
+                  className="contract-btn success pay-now-btn"
+                >
+                  {isPaymentLoading && <div className="contract-btn-spinner"></div>}
+                  {isPaymentLoading ? "Đang chuyển hướng..." : "💳 Thanh toán ngay"}
                 </button>
               )}
 

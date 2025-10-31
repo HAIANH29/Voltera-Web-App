@@ -161,6 +161,71 @@
     margin-top: 30px;
 }
 
+/* Contract payment info styles */
+.payment-contract-info {
+    background: linear-gradient(135deg, #e8f5e8 0%, #f0fff0 100%);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 25px;
+    border: 2px solid #28a745;
+}
+
+.payment-contract-info h3 {
+    margin: 0 0 15px 0;
+    color: #155724;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.contract-payment-summary {
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 8px;
+    padding: 15px;
+}
+
+.contract-details {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.contract-field {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(40, 167, 69, 0.2);
+}
+
+.contract-field:last-child {
+    border-bottom: none;
+}
+
+.contract-field strong {
+    color: #155724;
+    font-weight: 600;
+}
+
+.status-badge {
+    background: #28a745;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.contract-note {
+    background: rgba(40, 167, 69, 0.1);
+    color: #155724;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    margin-top: 8px !important;
+    border-left: 3px solid #28a745;
+}
+
 /* Product info styles */
 .payment-product-info {
     background: #f8f9fa;

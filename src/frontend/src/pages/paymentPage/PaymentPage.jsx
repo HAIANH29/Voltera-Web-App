@@ -19,6 +19,7 @@ const PaymentPage = () => {
     const postIdParam = searchParams.get("postId");
     const amountParam = searchParams.get("amount");
     const contractId = searchParams.get("contractId");
+    const transactionId = searchParams.get("transactionId");
     
     if (postIdParam) {
       setPostId(postIdParam);
@@ -56,13 +57,21 @@ const PaymentPage = () => {
     setError("");
 
     try {
+      const transactionId = searchParams.get("transactionId");
+      
       console.log("Creating VNPay payment with:", {
         amount: parseInt(amount),
         orderInfo,
-        postId: parseInt(postId)
+        postId: parseInt(postId),
+        transactionId: transactionId
       });
 
-      const response = await api.post("/api/vnpay/create-payment", {
+      // Sử dụng transaction ID nếu có (từ contract), nếu không thì tạo payment thông thường
+      const apiUrl = transactionId 
+        ? `/api/vnpay/create-payment/${transactionId}`
+        : "/api/vnpay/create-payment";
+
+      const response = await api.post(apiUrl, {
         amount: parseInt(amount),
         orderInfo,
         postId: parseInt(postId)
@@ -114,10 +123,30 @@ const PaymentPage = () => {
           </div>
         </div>
         
+        {/* Hiển thị thông tin thanh toán */}
+        {searchParams.get("contractId") && (
+          <div className="payment-contract-info">
+            <h3>💼 Contract Payment</h3>
+            <div className="contract-payment-summary">
+              <div className="contract-details">
+                <div className="contract-field">
+                  <strong>Contract ID:</strong> #{searchParams.get("contractId")}
+                </div>
+                <div className="contract-field">
+                  <strong>Transaction ID:</strong> #{searchParams.get("transactionId")}
+                </div>
+                <div className="contract-field">
+                  <strong>Status:</strong> <span className="status-badge">Both parties signed ✅</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Hiển thị thông tin sản phẩm nếu có */}
         {postDetails && (
           <div className="payment-product-info">
-            <h3>Payment for:</h3>
+            <h3>{searchParams.get("contractId") ? "Vehicle Details:" : "Payment for:"}</h3>
             <div className="product-summary">
               <img 
                 src={postDetails.thumbnail || postDetails.imageUrls?.[0] || '/placeholder.jpg'} 
@@ -127,6 +156,11 @@ const PaymentPage = () => {
               <div className="product-details">
                 <h4>{postDetails.title}</h4>
                 <p>{postDetails.location}</p>
+                {searchParams.get("contractId") && (
+                  <p className="contract-note">
+                    🤝 This payment is secured by a signed contract between buyer and seller.
+                  </p>
+                )}
               </div>
             </div>
           </div>

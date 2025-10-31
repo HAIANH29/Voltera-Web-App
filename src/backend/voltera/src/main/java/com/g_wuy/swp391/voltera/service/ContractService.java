@@ -180,4 +180,46 @@ public class ContractService {
                 .map(transactionMapper::toResponse)
                 .toList();
     }
+
+    @Transactional
+    public String createPaymentForContract(Integer contractId, String username) {
+        User user = userRepository.findUserByUsername(username);
+        Contract contract = contractRepository.findById(contractId)
+                .orElseThrow(() -> new RuntimeException("Contract not found"));
+
+        // Kiểm tra quyền truy cập
+        if (!contract.getBuyerid().getId().equals(user.getId()) &&
+                !contract.getSellerid().getId().equals(user.getId())) {
+            throw new RuntimeException("Access denied to this contract");
+        }
+
+        // Kiểm tra contract đã được ký bởi cả hai bên
+        if (!"SIGNED".equals(contract.getContractstatus()) ||
+                !Boolean.TRUE.equals(contract.getBuyersigned()) ||
+                !Boolean.TRUE.equals(contract.getSellersigned())) {
+            throw new RuntimeException("Contract must be signed by both parties before payment");
+        }
+
+        // Tìm transaction hiện có hoặc tạo mới nếu chưa có
+        List<Transaction> existingTransactions = contract.getTransactions();
+        Transaction transaction;
+        
+        if (existingTransactions != null && !existingTransactions.isEmpty()) {
+            // Sử dụng transaction đầu tiên nếu đã tồn tại
+            transaction = existingTransactions.get(0);
+        } else {
+            // Tạo transaction mới nếu chưa có
+            transaction = Transaction.builder()
+                    .post(contract.getPostid())
+                    .contractid(contract)
+                    .transactionStatus("PENDING")
+                    .price(contract.getPostid().getPrice())
+                    .createAt(Instant.now())
+                    .build();
+            
+            transaction = transactionRepository.save(transaction);
+        }
+
+        return transaction.getTransactionid().toString();
+    }
 }
