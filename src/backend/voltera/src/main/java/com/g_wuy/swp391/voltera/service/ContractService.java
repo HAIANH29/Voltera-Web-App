@@ -65,7 +65,7 @@ public class ContractService {
                 .orElseThrow(() -> new RuntimeException("Contract not found"));
 
         if (contract.getExpirationdate() != null && contract.getExpirationdate().isBefore(LocalDate.now())) {
-            contract.setContractstatus("CANCEL");
+            contract.setContractstatus("CANCELLED");
             contractRepository.save(contract);
             throw new RuntimeException("This contract has expired and cannot be signed");
         }
@@ -112,7 +112,7 @@ public class ContractService {
             throw new RuntimeException("Cannot cancel a signed contract");
         }
 
-        contract.setContractstatus("CANCEL");
+        contract.setContractstatus("CANCELLED");
         contractRepository.save(contract);
         return contractMapper.toResponse(contract);
     }
