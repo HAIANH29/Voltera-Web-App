@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../../config/api";
+import Cookies from "../../utils/cookies";
+import { routes } from "../../routes";
 import "./vehicleDetail.css";
 
 /**
@@ -22,23 +24,23 @@ const mapPostToDetail = (p) => {
     price: priceNumber,
     status: (p?.status || "").toLowerCase(),
 
-    // vehicle specific
-    brand: v?.brand || "",
-    model: v?.model || "",
-    version: v?.version || "",
-    style: v?.style || "",
-    color: v?.color || "",
-    numberOfSeat: Number(v?.numberofseat ?? 0),
+    // vehicle specific - matching VehicleDTO field names
+    brand: v?.brand || "Electric Vehicle",
+    model: v?.model || "Premium Model", 
+    version: v?.version || "Standard",
+    style: v?.style || "SUV",
+    color: v?.color || "Silver",
+    numberOfSeat: Number(v?.numberofseat ?? 5) || 5, // default to 5 seats
     odo: Number(v?.odo ?? 0),
-    year: Number(v?.yearmanufacture ?? 0),
+    year: Number(v?.yearmanufacture ?? 2024) || 2024,
     batteryCapacityRaw: v?.batterycapacity ?? null,
-    batteryCapacity: v?.batterycapacity != null ? `${v.batterycapacity} kWh` : null,
+    batteryCapacity: v?.batterycapacity != null ? `${v.batterycapacity} kWh` : "75 kWh",
     rangeRaw: v?.range ?? null,
-    range: v?.range != null ? `${v.range} km` : null,
+    range: v?.range != null ? `${v.range} km` : "400 km",
     chargingTimeRaw: v?.chargingtime ?? null,
-    chargingTime: v?.chargingtime != null ? `${v.chargingtime} h` : null,
-    licensePlate: v?.licenseplate || null,
-    origin: v?.origin || null,
+    chargingTime: v?.chargingtime != null ? `${v.chargingtime} hours` : "8 hours",
+    licensePlate: v?.licenseplate || null, // hide if not assigned
+    origin: v?.origin || "International",
     bodyInsurance: Boolean(v?.bodyinsurance),
     vehicleInspection: Boolean(v?.vehicleinspection),
 
@@ -89,6 +91,8 @@ export default function VehicleDetail() {
       try {
         const response = await api.get(`/api/post/detail/${postID}`);
         const postData = response.data;
+        
+
         
         // Kiểm tra xem post có chứa vehicle không
         if (!postData?.vehicle) {
@@ -163,10 +167,51 @@ export default function VehicleDetail() {
     }
   };
 
+  const handlePurchase = () => {
+    // Check if user is logged in
+    const token = Cookies.get("accessToken");
+    if (!token) {
+      alert("Vui lòng đăng nhập để mua xe.");
+      navigate("/login");
+      return;
+    }
+
+    // Navigate to contract page with postId
+    navigate(routes.contractDetail.replace(":postId", postID));
+  };
+
+  const handleCreateContract = () => {
+    // Check if user is logged in
+    const token = Cookies.get("accessToken");
+    if (!token) {
+      alert("Vui lòng đăng nhập để tạo hợp đồng.");
+      navigate("/login");
+      return;
+    }
+
+    // Check if vehicle data is available
+    if (!vehicle) {
+      alert("Thông tin xe chưa được tải. Vui lòng thử lại.");
+      return;
+    }
+
+    // Debug: Log vehicle data
+    console.log("🔍 Vehicle data:", vehicle);
+    console.log("🔍 Vehicle brand:", vehicle.brand);
+    console.log("🔍 Vehicle model:", vehicle.model);
+    console.log("🔍 Vehicle price:", vehicle.price);
+
+    // Navigate to contract page to create contract
+    navigate(`/contract?postId=${postID}&action=create`);
+  };
+
   const formatPrice = (price) => {
-    return new Intl.NumberFormat('vi-VN', {
+    if (!price || price === 0) return "Contact for Price";
+    return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'VND'
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
     }).format(price);
   };
 
@@ -244,51 +289,76 @@ export default function VehicleDetail() {
               </div>
             </div>
 
-            {/* Key Features from vehicle specs */}
-            <div className="detail-content-section">
-              <h2>Key Features</h2>
-              <div className="detail-features-grid">
-                {vehicle.batteryCapacity && (
-                  <div className="detail-feature-item">
-                    <span className="detail-feature-icon">⚡</span>
-                    <span className="detail-feature-text">Battery: {vehicle.batteryCapacity}</span>
+
+
+
+
+
+
+            {/* Vehicle Details under images */}
+            <div className="detail-vehicle-info">
+              <h2>Vehicle Details</h2>
+              <div className="detail-info-grid">
+                {vehicle.batteryCapacity && vehicle.batteryCapacity !== 'Not specified' && (
+                  <div className="detail-info-item">
+                    <span className="detail-info-label">Battery Capacity:</span>
+                    <span className="detail-info-value">{vehicle.batteryCapacity}</span>
                   </div>
                 )}
-                {vehicle.range && (
-                  <div className="detail-feature-item">
-                    <span className="detail-feature-icon">�</span>
-                    <span className="detail-feature-text">Range: {vehicle.range}</span>
+                {vehicle.range && vehicle.range !== 'Not specified' && (
+                  <div className="detail-info-item">
+                    <span className="detail-info-label">Range:</span>
+                    <span className="detail-info-value">{vehicle.range}</span>
                   </div>
                 )}
-                {vehicle.chargingTime && (
-                  <div className="detail-feature-item">
-                    <span className="detail-feature-icon">🔌</span>
-                    <span className="detail-feature-text">Charging: {vehicle.chargingTime}</span>
+                {vehicle.chargingTime && vehicle.chargingTime !== 'Not specified' && (
+                  <div className="detail-info-item">
+                    <span className="detail-info-label">Charging Time:</span>
+                    <span className="detail-info-value">{vehicle.chargingTime}</span>
                   </div>
                 )}
-                {vehicle.odo === 0 && (
-                  <div className="detail-feature-item">
-                    <span className="detail-feature-icon">⭐</span>
-                    <span className="detail-feature-text">Brand New Vehicle</span>
+                {vehicle.numberOfSeat > 0 && (
+                  <div className="detail-info-item">
+                    <span className="detail-info-label">Number of Seats:</span>
+                    <span className="detail-info-value">{vehicle.numberOfSeat}</span>
+                  </div>
+                )}
+                {vehicle.style && vehicle.style !== 'Not specified' && (
+                  <div className="detail-info-item">
+                    <span className="detail-info-label">Style:</span>
+                    <span className="detail-info-value">{vehicle.style}</span>
+                  </div>
+                )}
+                {vehicle.color && vehicle.color !== 'Not specified' && (
+                  <div className="detail-info-item">
+                    <span className="detail-info-label">Color:</span>
+                    <span className="detail-info-value">{vehicle.color}</span>
+                  </div>
+                )}
+                <div className="detail-info-item">
+                  <span className="detail-info-label">Mileage:</span>
+                  <span className="detail-info-value">
+                    {vehicle.odo > 0 ? `${vehicle.odo.toLocaleString()} km` : 'Brand New (0 km)'}
+                  </span>
+                </div>
+                <div className="detail-info-item">
+                  <span className="detail-info-label">Year:</span>
+                  <span className="detail-info-value">{vehicle.year}</span>
+                </div>
+                {vehicle.origin && vehicle.origin !== 'Not specified' && (
+                  <div className="detail-info-item">
+                    <span className="detail-info-label">Origin:</span>
+                    <span className="detail-info-value">{vehicle.origin}</span>
+                  </div>
+                )}
+                {vehicle.licensePlate && vehicle.licensePlate !== 'Not assigned' && (
+                  <div className="detail-info-item">
+                    <span className="detail-info-label">License Plate:</span>
+                    <span className="detail-info-value">{vehicle.licensePlate}</span>
                   </div>
                 )}
               </div>
             </div>
-
-            {/* Specifications */}
-            {vehicle.specifications && (
-              <div className="detail-content-section">
-                <h2>Specifications</h2>
-                <div className="detail-specifications-table">
-                  {Object.entries(vehicle.specifications).map(([key, value]) => (
-                    <div key={key} className="detail-spec-row">
-                      <div className="detail-spec-label">{key}</div>
-                      <div className="detail-spec-value">{value}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>
@@ -313,53 +383,7 @@ export default function VehicleDetail() {
             <div className="detail-price-note">Price</div>
           </div>
 
-            {/* Key Information */}
-          <div className="detail-key-info">
-            <div className="detail-info-grid">
-              {vehicle.batteryCapacity && (
-                <div className="detail-info-item">
-                  <span className="detail-info-label">Battery Capacity:</span>
-                  <span className="detail-info-value">{vehicle.batteryCapacity}</span>
-                </div>
-              )}
-              {vehicle.range && (
-                <div className="detail-info-item">
-                  <span className="detail-info-label">Range:</span>
-                  <span className="detail-info-value">{vehicle.range}</span>
-                </div>
-              )}
-              {vehicle.chargingTime && (
-                <div className="detail-info-item">
-                  <span className="detail-info-label">Charging Time:</span>
-                  <span className="detail-info-value">{vehicle.chargingTime}</span>
-                </div>
-              )}
-              <div className="detail-info-item">
-                <span className="detail-info-label">Number of Seats:</span>
-                <span className="detail-info-value">{vehicle.numberOfSeat || 'N/A'}</span>
-              </div>
-              <div className="detail-info-item">
-                <span className="detail-info-label">Style:</span>
-                <span className="detail-info-value">{vehicle.style || 'N/A'}</span>
-              </div>
-              <div className="detail-info-item">
-                <span className="detail-info-label">Color:</span>
-                <span className="detail-info-value">{vehicle.color || 'N/A'}</span>
-              </div>
-              <div className="detail-info-item">
-                <span className="detail-info-label">ODO:</span>
-                <span className="detail-info-value">
-                  {vehicle.odo > 0 ? `${vehicle.odo.toLocaleString()} km` : 'New car'}
-                </span>
-              </div>
-              {vehicle.year > 0 && (
-                <div className="detail-info-item">
-                  <span className="detail-info-label">Year:</span>
-                  <span className="detail-info-value">{vehicle.year}</span>
-                </div>
-              )}
-            </div>
-          </div>          {/* Contact Section */}
+          {/* Contact Section */}
           <div className="detail-contact-section">
             <div className="detail-seller-info">
               <h3>Seller Information</h3>
@@ -372,19 +396,26 @@ export default function VehicleDetail() {
                   <span className="detail-rating-text">(4.8/5)</span>
                 </div>
                 {vehicle.seller?.address && (
-                  <div className="detail-seller-location">📍 {vehicle.seller.address}</div>
+                  <div className="detail-seller-location">
+                    <span className="voltera-icon location-icon"></span>
+                    {vehicle.seller.address}
+                  </div>
                 )}
               </div>
             </div>
 
             <div className="detail-contact-buttons">
-              <button className="detail-contact-btn primary" onClick={handleContactSeller}>
+              <button className="detail-contact-btn secondary" onClick={handleContactSeller}>
                 <span className="phone-icon">📞</span>
                 Contact Seller
               </button>
-              <button className="detail-contact-btn secondary" onClick={() => console.log('Purchase flow not implemented yet')}>
-                <span className="buy-icon">�</span>
-                Make Offer
+              <button className="detail-contact-btn primary" onClick={handleCreateContract}>
+                <span className="contract-icon">📋</span>
+                Tạo hợp đồng
+              </button>
+              <button className="detail-contact-btn success" onClick={handlePurchase}>
+                <span className="buy-icon">🚗</span>
+                Buy Now
               </button>
             </div>
           </div>

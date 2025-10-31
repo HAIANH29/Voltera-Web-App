@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class VNPayRequest {
     private Long amount;
+    private Integer postId;
     private String orderInfo;
     private String orderType;
     private String bankCode;

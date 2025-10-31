@@ -19,6 +19,10 @@ public interface AccountMapper {
     
     @Mapping(source = "id", target = "accountId")
     @Mapping(source = "id", target = "userId")
+    @Mapping(source = "role", target = "role")
+    @Mapping(source = "user.email", target = "email")
+    @Mapping(source = "user.fullname", target = "fullname")
+    @Mapping(source = "createat", target = "createdAt")
     @Mapping(target = "approvedAt", ignore = true)
     ApproveResponse toAccountResponse(Account account);
 }

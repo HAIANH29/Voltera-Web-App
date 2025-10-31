@@ -95,16 +95,11 @@ export default function VerifyEmailPage() {
       if (purpose === "signup") {
         const res = await otpService.verifyOtp(email, joined);
         console.log("OTP verify response:", res);
-      } else {
-        // reset password flow - chỉ verify OTP, chưa reset password
-        // Backend sẽ verify OTP trong ResetPasswordPage
-        console.log("OTP verified for reset password");
-      }
-
-      if (purpose === "signup") {
         navigate("/login", { replace: true });
       } else {
-        // reset password flow
+        // reset password flow - xác thực OTP với backend trước khi chuyển bước
+        // Gọi verifyOtp, nếu đúng thì chuyển sang bước đổi mật khẩu
+        await otpService.verifyOtp(email, joined);
         navigate("/reset-password", {
           replace: true,
           state: { email, verifiedOtp: joined },
@@ -196,8 +191,6 @@ export default function VerifyEmailPage() {
       >
         {left > 0 ? `Resend Code in ${left}s` : "Resend Code"}
       </button>
-
-      
     </div>
   );
 }

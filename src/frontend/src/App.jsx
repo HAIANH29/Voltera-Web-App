@@ -15,6 +15,7 @@ import ForgotPasswordPage from "./pages/forgotpasswordPage/ForgotPasswordPage";
 import MainLayout from "./layout/mainLayout";
 import AdminLayout from "./layout/adminLayout";
 import BuyerLayout from "./layout/buyerLayout";
+import SellerLayout from "./layout/sellerLayout";
 import ResetPasswordPage from "./pages/resetPasswordPage/ResetPasswordPage";
 import VerifyEmailPage from "./pages/VerifyEmailPage/VerifyEmailPage";
 import AboutUsPage from "./pages/AboutUsPage/AboutUsPage";
@@ -23,16 +24,27 @@ import PostVehicleWizard from "./pages/post/vehicles/PostVehicleWizard";
 import VehicleDetail from "./pages/vehicleDetail/vehicleDetail";
 import ElectricDetail from "./pages/electricDetail/electricDetail";
 import DashboardAdmin from "./pages/dashboardAdmin/dashboardAdmin";
+import DashboardSeller from "./pages/dashboardSeller/dashboardSeller";
 import DashboardBuyer from "./pages/dashboardBuyer/dashboardBuyer";
 import Dashboard from "./components/Dashboard";
 import PaymentPage from "./pages/paymentPage/PaymentPage";
 import PaymentCallback from "./pages/paymentPage/PaymentCallback";
+import ContractPage from "./pages/contractPage/contractPage";
+import ContractsPage from "./pages/contractsPage/contractsPage";
 
 console.log("routes:", routes);
 console.log("postVehicles:", routes.postVehicles);
 
 function App() {
   const router = createBrowserRouter([
+    {
+      path: routes.contractDetail,
+      element: (
+        <MainLayout>
+          <ContractPage />
+        </MainLayout>
+      ),
+    },
     {
       path: routes.home,
       element: (
@@ -114,6 +126,22 @@ function App() {
       element: (
         <MainLayout>
           <PaymentCallback />
+        </MainLayout>
+      ),
+    },
+    {
+      path: routes.contractView,
+      element: (
+        <MainLayout>
+          <ContractPage />
+        </MainLayout>
+      ),
+    },
+    {
+      path: routes.contracts,
+      element: (
+        <MainLayout>
+          <ContractsPage />
         </MainLayout>
       ),
     },
@@ -200,6 +228,14 @@ function App() {
         <MainLayout>
           <Dashboard />
         </MainLayout>
+      ),
+    },
+    {
+      path: routes.dashboardSeller,
+      element: (
+        <SellerLayout>
+          <DashboardSeller />
+        </SellerLayout>
       ),
     },
     {

@@ -87,4 +87,16 @@ public class ContractController {
 
         return ResponseEntity.ok(contractService.getTransactionsForUser(username));
     }
+
+    @PostMapping("/{id}/create-payment")
+    public ResponseEntity<String> createPaymentForContract(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable Integer id) {
+
+        String token = authHeader.substring(7);
+        String username = jwtService.extractUsername(token);
+
+        String transactionId = contractService.createPaymentForContract(id, username);
+        return ResponseEntity.ok(transactionId);
+    }
 }

@@ -2,8 +2,6 @@ package com.g_wuy.swp391.voltera.controller;
 
 import com.g_wuy.swp391.voltera.model.request.VNPayRequest;
 import com.g_wuy.swp391.voltera.model.response.VNPayResponse;
-import com.g_wuy.swp391.voltera.service.JwtService;
-import com.g_wuy.swp391.voltera.service.UserService;
 import com.g_wuy.swp391.voltera.service.VNPayService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -21,17 +19,34 @@ public class VNPayController {
     @Autowired
     private VNPayService vnPayService;
 
-    @PostMapping("/create-payment")
+    @PostMapping("/create-payment/{transactionId}")
     public ResponseEntity<VNPayResponse> createPayment(
             @RequestBody VNPayRequest request,
-            HttpServletRequest httpRequest) {
-        VNPayResponse response = vnPayService.createPayment(request, httpRequest);
+            HttpServletRequest httpRequest,
+            @PathVariable("transactionId") String transactionId) {
+        VNPayResponse response = vnPayService.createPayment(request, httpRequest, transactionId);
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/return")
-    public ResponseEntity<String> handleReturn(@RequestParam Map<String, String> params) {
-        String result = vnPayService.handleReturn(params);
-        return ResponseEntity.ok(result);
+    @GetMapping("/return/{transactionId}")
+    public void handleReturn(
+            @RequestParam Map<String, String> params,
+            @PathVariable("transactionId") Integer transactionId,
+            jakarta.servlet.http.HttpServletResponse response) throws java.io.IOException {
+
+        vnPayService.handleReturn(params, transactionId);
+
+        StringBuilder frontendUrl = new StringBuilder("http://localhost:5173/payment/callback");
+        frontendUrl.append("?");
+        
+        for (Map.Entry<String, String> entry : params.entrySet()) {
+            frontendUrl.append(entry.getKey()).append("=").append(entry.getValue()).append("&");
+        }
+
+        if (frontendUrl.toString().endsWith("&")) {
+            frontendUrl.setLength(frontendUrl.length() - 1);
+        }
+
+        response.sendRedirect(frontendUrl.toString());
     }
 }

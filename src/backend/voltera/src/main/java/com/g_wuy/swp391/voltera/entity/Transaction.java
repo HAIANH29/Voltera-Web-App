@@ -25,6 +25,9 @@ public class Transaction {
     @JoinColumn(name = "postid", nullable = false)
     private Post post;
 
+//    @OneToOne
+//    @JoinColumn(name = "reportid")
+//    private Report report;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "createat")
@@ -36,7 +39,7 @@ public class Transaction {
     @Column(name = "price", precision = 12, scale = 2)
     private BigDecimal price;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "contractid")
     private Contract contractid;
 
@@ -49,4 +52,7 @@ public class Transaction {
     @Column(name = "transactionstatus", length = 20)
     private String transactionStatus;
 
+//    @OneToOne
+//    @JoinColumn(name = "contractid")
+//    private Contract contract;
 }

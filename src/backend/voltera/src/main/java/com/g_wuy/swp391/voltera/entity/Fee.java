@@ -1,13 +1,18 @@
 package com.g_wuy.swp391.voltera.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 @Entity
 @Table(name = "fee")
 public class Fee {
@@ -18,15 +23,24 @@ public class Fee {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "postid")
-    private Post postId;
+    private Post post;
 
-    @Column(name = "percentage", precision = 5, scale = 2)
-    private BigDecimal percentage;
+    @Column(name = "amount", precision = 12, scale = 2)
+    private BigDecimal amount;
 
-    @Column(name = "minprice", precision = 12, scale = 2)
-    private BigDecimal minPrice;
+    @Column(name = "description", length = Integer.MAX_VALUE)
+    private String description;
 
-    @Column(name = "maxprice", precision = 12, scale = 2)
-    private BigDecimal maxPrice;
+    @ColumnDefault("CURRENT_TIMESTAMP")
+    @Column(name = "createdat")
+    private LocalDateTime createdAt;
+
+    @ColumnDefault("CURRENT_TIMESTAMP")
+    @Column(name = "expired")
+    private LocalDateTime expiredAt;
+
+    @Column(name = "feestatus")
+    private String feeStatus;
+
 
 }

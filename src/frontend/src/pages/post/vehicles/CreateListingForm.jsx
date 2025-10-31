@@ -381,8 +381,7 @@ function Step2({ formData, updateFormData, fieldErrors = {} }) {
   );
 }
 
-// ==== STEP 3 (REPLACE / THAY THẾ TOÀN BỘ) ====
-// ==== STEP 3 (props version) ====
+// ==== STEP 3 - Optimized Photo Upload (Auto-titles, Better UX) ====
 const Step3 = ({
   formData,
   setImageForSlot,
@@ -394,47 +393,72 @@ const Step3 = ({
   const getImg = (slot) => (formData.images || []).find((i) => i.slot === slot);
 
   return (
-    <Card title="Photos" icon={<Camera className="w-5 h-5" />}>
+    <Card title="Vehicle Photos" icon={<Camera className="w-5 h-5" />}>
+      {/* Helpful intro */}
+      <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+        <div className="flex items-start gap-3">
+          <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+            <Camera className="w-4 h-4 text-blue-600" />
+          </div>
+          <div>
+            <h4 className="font-semibold text-blue-900 mb-1">📸 Photo Tips for Better Sales</h4>
+            <p className="text-sm text-blue-700 mb-2">Quality photos get 3x more interest! Each photo is automatically labeled for you.</p>
+            <ul className="text-xs text-blue-600 space-y-1">
+              <li>• <strong>First photo will be your main thumbnail</strong> - make it count!</li>
+              <li>• Upload at least 3-4 photos for maximum visibility</li>
+              <li>• Take photos in good lighting (daytime/well-lit garage)</li>
+              <li>• Clean your vehicle before photographing</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
       <div className="photos-grid">
-        {IMAGE_SLOTS.map(({ key, label }) => {
-          const it = getImg(key) || { title: label, url: "" };
+        {IMAGE_SLOTS.map(({ key, label }, index) => {
+          const it = getImg(key) || { title: label, url: "" }; // Auto-use predefined label as title
 
           return (
-            <div key={key}>
-              <L>{label}</L>
+            <div key={key} className="photo-slot">
+              {/* Auto-generated label */}
+              <div className="flex items-center justify-between mb-3">
+                <L className="font-medium text-gray-700">{label}</L>
+                <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                  {index === 0 ? 'Main Photo' : `Photo ${index + 1}`}
+                </span>
+              </div>
 
-              {/* Photo title (required) */}
-              <input
-                className="v-input mb-2"
-                placeholder="Photo title (required)…"
-                value={it.title ?? ""}
-                onChange={(e) => setImageForSlot(key, { title: e.target.value })}
-              />
-
-              {/* Input file – luôn tồn tại để có thể Replace */}
+              {/* Hidden file input */}
               <input
                 id={`up-${key}`}
                 type="file"
                 accept="image/*"
                 className="hidden"
-                onChange={(e) => handleUploadForSlot(key, e.target.files?.[0])}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    // Auto-set title to predefined label when uploading
+                    setImageForSlot(key, { title: label });
+                    handleUploadForSlot(key, file);
+                  }
+                }}
               />
 
-              <div className="v-dropzone">
+              <div className="v-dropzone improved">
                 {it.url ? (
                   <>
                     <img
                       src={it.url}
-                      alt={it.title || label}
+                      alt={label}
                       onClick={() => document.getElementById(`up-${key}`)?.click()}
-                      style={{ cursor: "pointer" }}
+                      className="uploaded-image"
                     />
 
                     <div className="v-overlay-actions">
                       <button
                         type="button"
-                        className="v-btn-mini"
+                        className="v-btn-mini primary"
                         onClick={() => document.getElementById(`up-${key}`)?.click()}
+                        title="Replace this photo"
                       >
                         Change
                       </button>
@@ -442,6 +466,7 @@ const Step3 = ({
                         type="button"
                         className="v-btn-mini danger"
                         onClick={() => removeImageForSlot(key)}
+                        title="Remove this photo"
                       >
                         Remove
                       </button>
@@ -451,43 +476,75 @@ const Step3 = ({
                       type="button"
                       className="v-chip-remove"
                       onClick={() => removeImageForSlot(key)}
+                      title="Remove photo"
                     >
-                      <X className="w-3 h-3" />
+                      <X className="w-4 h-4" />
                     </button>
+
+                    {/* Success indicator */}
+                    <div className="upload-success-badge">
+                      ✓ Uploaded
+                    </div>
                   </>
                 ) : (
-                  <label htmlFor={`up-${key}`} className="v-empty-upload">
-                    <Upload className="h-10 w-10" />
-                    <span>Choose an image to upload</span>
+                  <label htmlFor={`up-${key}`} className="v-empty-upload enhanced">
+                    <div className="upload-icon-container">
+                      <Upload className="h-12 w-12" />
+                    </div>
+                    <div className="upload-text">
+                      <span className="upload-main">Click to add {label.toLowerCase()}</span>
+                      <span className="upload-sub">JPG, PNG up to 10MB</span>
+                    </div>
+                    <div className="upload-hint">
+                      {index === 0 && "🌟 Main thumbnail photo"}
+                      {index === 1 && "📐 Show full rear view"}
+                      {index === 2 && "📱 Profile/side angle"}
+                      {index === 3 && "📱 Other side view"}
+                      {index === 4 && "🏠 Interior & dashboard"}
+                      {index === 5 && "📄 Papers & documents"}
+                    </div>
                   </label>
                 )}
-              </div>
 
-              {uploadingSlot === key && (
-                <div className="mt-2">
-                  <div className="flex justify-between text-sm mb-1">
-                    <span>Uploading…</span>
-                    <span>{uploadProgress}%</span>
+                {uploadingSlot === key && (
+                  <div className="upload-progress-overlay">
+                    <div className="upload-progress-content">
+                      <div className="upload-spinner"></div>
+                      <div className="upload-progress-text">
+                        <span>Uploading...</span>
+                        <span className="font-semibold">{uploadProgress}%</span>
+                      </div>
+                      <div className="v-progress">
+                        <div style={{ width: `${uploadProgress}%` }} />
+                      </div>
+                    </div>
                   </div>
-                  <div className="v-progress">
-                    <div style={{ width: `${uploadProgress}%` }} />
-                  </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           );
         })}
       </div>
 
-      <div className="p-4 rounded-md bg-blue-50 mt-6 text-sm text-blue-800">
-        <div className="font-semibold mb-2">📸 Photo Guidelines:</div>
-        <ul className="space-y-1">
-          <li>• <strong>First photo will be your main thumbnail</strong> - choose your best front view</li>
-          <li>• Upload at least 3 photos for better visibility</li>
-          <li>• Clear, well-lit photos get more attention</li>
-          <li>• Include interior, exterior, and any documents</li>
-        </ul>
-      </div>
+      {/* Progress indicator */}
+      {formData.images?.length > 0 && (
+        <div className="mt-6 p-4 bg-green-50 rounded-lg border border-green-200">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
+                <span className="text-green-600 text-sm font-semibold">{formData.images.length}</span>
+              </div>
+              <span className="text-green-800 font-medium">
+                {formData.images.length} photo{formData.images.length !== 1 ? 's' : ''} uploaded
+              </span>
+            </div>
+            <span className="text-xs text-green-600 font-medium">
+              {formData.images.length >= 3 ? '✅ Great coverage!' : 
+               formData.images.length >= 1 ? '👍 Add more for better results' : ''}
+            </span>
+          </div>
+        </div>
+      )}
     </Card>
   );
 };
@@ -495,43 +552,174 @@ const Step3 = ({
 
 
 function Step4({ formData, updateFormData }) {
+  const totalPhotos = formData.images?.length || 0;
+  const hasMainPhoto = formData.images?.[0]?.url;
+  
   return (
-    <Card title="Review & Submit">
-      <div className="grid md:grid-cols-2 gap-6">
-        <div>
-          <div className="font-semibold mb-3">Summary</div>
-          <div className="space-y-2 text-sm">
-            <div className="v-kv"><span>Title:</span><span>{formData.title || "—"}</span></div>
-            <div className="v-kv"><span>Brand/Model:</span><span>{formData.brand} {formData.model}</span></div>
-            <div className="v-kv"><span>Year:</span><span>{formData.year || "—"}</span></div>
-            <div className="v-kv"><span>Price:</span><span>${parseInt(formData.price || "0").toLocaleString()}</span></div>
-            <div className="v-kv"><span>Location:</span><span>{formData.location || "—"}</span></div>
-          </div>
-        </div>
-        <div>
-          <div className="font-semibold mb-3">Preview</div>
-          {(formData.images?.[0]?.url) && (
-            <div className="aspect-video bg-gray-100 rounded-md overflow-hidden mb-2">
-              <img src={formData.images[0].url} alt="Preview" className="w-full h-full object-cover" />
+    <Card title="Final Review & Submit" icon={<Car className="w-5 h-5" />}>
+      {/* Enhanced Review Section */}
+      <div className="review-summary">
+        <div className="grid md:grid-cols-2 gap-8">
+          {/* Left Column - Vehicle Info */}
+          <div className="vehicle-summary">
+            <div className="summary-header">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Vehicle Summary</h3>
             </div>
-          )}
-          <p className="text-sm text-muted-foreground">{(formData.description || "").slice(0, 120)}...</p>
+            
+            <div className="summary-grid">
+              <div className="summary-item">
+                <span className="summary-label">Title</span>
+                <span className="summary-value">{formData.title || "—"}</span>
+              </div>
+              <div className="summary-item">
+                <span className="summary-label">Vehicle</span>
+                <span className="summary-value">{formData.brand} {formData.model} {formData.version}</span>
+              </div>
+              <div className="summary-item">
+                <span className="summary-label">Year</span>
+                <span className="summary-value">{formData.year || "—"}</span>
+              </div>
+              <div className="summary-item">
+                <span className="summary-label">Mileage</span>
+                <span className="summary-value">{formData.odo ? `${parseInt(formData.odo).toLocaleString()} km` : "—"}</span>
+              </div>
+              <div className="summary-item">
+                <span className="summary-label">Price</span>
+                <span className="summary-value price">${parseInt(formData.price || "0").toLocaleString()}</span>
+              </div>
+              <div className="summary-item">
+                <span className="summary-label">Location</span>
+                <span className="summary-value">{formData.location || "—"}</span>
+              </div>
+              {formData.batteryCapacity && (
+                <div className="summary-item">
+                  <span className="summary-label">Battery</span>
+                  <span className="summary-value">{formData.batteryCapacity} kWh</span>
+                </div>
+              )}
+              {formData.range && (
+                <div className="summary-item">
+                  <span className="summary-label">Range</span>
+                  <span className="summary-value">{formData.range} km</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Right Column - Preview */}
+          <div className="listing-preview">
+            <div className="preview-header">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Listing Preview</h3>
+            </div>
+            
+            {hasMainPhoto ? (
+              <div className="preview-card">
+                <div className="preview-image">
+                  <img src={formData.images[0].url} alt="Main preview" className="w-full h-48 object-cover rounded-lg" />
+                  <div className="photo-count-badge">
+                    📸 {totalPhotos} photo{totalPhotos !== 1 ? 's' : ''}
+                  </div>
+                </div>
+                <div className="preview-content">
+                  <div className="preview-title">{formData.title}</div>
+                  <div className="preview-price">${parseInt(formData.price || "0").toLocaleString()}</div>
+                  <p className="preview-description">
+                    {(formData.description || "").slice(0, 100)}
+                    {formData.description?.length > 100 ? "..." : ""}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="preview-placeholder">
+                <Camera className="w-12 h-12 text-gray-400 mb-2" />
+                <span className="text-gray-500">No photos uploaded</span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      <hr className="my-6"/>
+      {/* Spacious Divider */}
+      <div className="confirmation-divider">
+        <div className="divider-line"></div>
+        <span className="divider-text">Final Confirmation</span>
+        <div className="divider-line"></div>
+      </div>
 
-      <div className="space-y-3">
-        <label className="inline-flex items-center gap-2">
-          <input type="checkbox" checked={!!formData.confirmOwnership}
-                 onChange={(e)=>updateFormData("confirmOwnership", e.target.checked)} />
-          <span className="text-sm">I confirm I am the legal owner</span>
-        </label>
-        <label className="inline-flex items-center gap-2">
-          <input type="checkbox" checked={!!formData.agreeTerms}
-                 onChange={(e)=>updateFormData("agreeTerms", e.target.checked)} />
-          <span className="text-sm">I agree to the Terms & Guidelines</span>
-        </label>
+      {/* Enhanced Confirmation Section */}
+      <div className="confirmation-section">
+        <div className="confirmation-intro">
+          <h3 className="confirmation-title">Before You Submit</h3>
+          <p className="confirmation-subtitle">
+            Please review and confirm the following to complete your listing
+          </p>
+        </div>
+
+        <div className="confirmation-checklist">
+          {/* Ownership Confirmation */}
+          <div className="confirmation-item">
+            <label className="confirmation-checkbox">
+              <input 
+                type="checkbox" 
+                checked={!!formData.confirmOwnership}
+                onChange={(e) => updateFormData("confirmOwnership", e.target.checked)}
+                className="checkbox-input"
+              />
+              <div className="checkbox-custom">
+                <div className="checkbox-checkmark">✓</div>
+              </div>
+              <div className="checkbox-content">
+                <div className="checkbox-title">Vehicle Ownership Verification</div>
+                <div className="checkbox-description">
+                  I confirm that I am the legal owner of this vehicle and have the right to sell it
+                </div>
+              </div>
+            </label>
+          </div>
+
+          {/* Terms Agreement */}
+          <div className="confirmation-item">
+            <label className="confirmation-checkbox">
+              <input 
+                type="checkbox" 
+                checked={!!formData.agreeTerms}
+                onChange={(e) => updateFormData("agreeTerms", e.target.checked)}
+                className="checkbox-input"
+              />
+              <div className="checkbox-custom">
+                <div className="checkbox-checkmark">✓</div>
+              </div>
+              <div className="checkbox-content">
+                <div className="checkbox-title">Terms & Guidelines Agreement</div>
+                <div className="checkbox-description">
+                  I agree to Voltera's <a href="/terms" className="terms-link">Terms of Service</a> and 
+                  <a href="/guidelines" className="terms-link"> Listing Guidelines</a>
+                </div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        {/* Status Indicator */}
+        <div className="submission-status">
+          {formData.confirmOwnership && formData.agreeTerms ? (
+            <div className="status-ready">
+              <div className="status-icon ready">✓</div>
+              <div className="status-text">
+                <div className="status-title">Ready to Submit</div>
+                <div className="status-description">Your listing will be reviewed within 24 hours</div>
+              </div>
+            </div>
+          ) : (
+            <div className="status-pending">
+              <div className="status-icon pending">⏳</div>
+              <div className="status-text">
+                <div className="status-title">Complete Required Confirmations</div>
+                <div className="status-description">Please check both boxes above to proceed</div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </Card>
   );
@@ -768,7 +956,7 @@ export default function CreateListingForm({ listingType = "vehicle", currentUser
     
     const imgs = formData.images || [];
     if (imgs.length === 0) return toast.error("Please upload at least one photo of your vehicle");
-    if (imgs.some(i => !i.url || !i.title?.trim())) return toast.error("Each photo must have a title and a URL.");
+    if (imgs.some(i => !i.url)) return toast.error("Please wait for all photos to finish uploading.");
 
     const payload = {
       title: formData.title,

@@ -1,0 +1,116 @@
+:root {
+    --bg: #f8fafc;
+    --card: #fff;
+    --line: #e5e7eb;
+    --ink: #0f172a;
+    --muted: #6b7280;
+    --accent: #2563eb;
+    --accent-light: #3b82f6;
+    --radius: 12px;
+    --shadow: 0 4px 12px rgba(0, 0, 0, .08);
+}
+
+.seller-layout {
+    background: var(--bg);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.seller-header {
+    background: var(--card);
+    border-bottom: 1px solid var(--line);
+    padding: 18px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: var(--shadow);
+}
+
+.logo {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.seller-nav a {
+    margin-left: 24px;
+    color: var(--ink);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color .2s;
+}
+
+.seller-nav a:hover {
+    color: var(--accent);
+}
+
+.seller-main {
+    display: flex;
+    flex: 1;
+}
+
+.seller-sidebar {
+    width: 220px;
+    background: var(--card);
+    border-right: 1px solid var(--line);
+    padding: 32px 0;
+    box-shadow: var(--shadow);
+}
+
+.seller-sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.seller-sidebar li {
+    margin-bottom: 18px;
+}
+
+.seller-sidebar a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: 500;
+    padding: 8px 24px;
+    display: block;
+    border-radius: 8px;
+    transition: background .2s, color .2s;
+}
+
+.seller-sidebar a:hover {
+    background: var(--accent-light);
+    color: #fff;
+}
+
+.seller-content {
+    flex: 1;
+    padding: 40px 32px;
+    min-height: 600px;
+}
+
+.seller-footer {
+    background: var(--card);
+    border-top: 1px solid var(--line);
+    text-align: center;
+    padding: 16px 0;
+    color: var(--muted);
+    font-size: 15px;
+}
+
+@media (max-width: 900px) {
+    .seller-main {
+        flex-direction: column;
+    }
+
+    .seller-sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid var(--line);
+    }
+
+    .seller-content {
+        padding: 24px 8px;
+    }
+}

@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -38,9 +38,9 @@ public class Complaint {
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "createat")
-    private Instant createAt;
+    private LocalDateTime createAt;
 
     @Column(name = "resolveat")
-    private Instant resolveAt;
+    private LocalDateTime resolveAt;
 
 }

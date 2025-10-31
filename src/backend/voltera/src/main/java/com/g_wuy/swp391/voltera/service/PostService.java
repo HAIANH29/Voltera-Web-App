@@ -1,6 +1,8 @@
 package com.g_wuy.swp391.voltera.service;
 
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,7 @@ import com.g_wuy.swp391.voltera.repository.*;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -41,12 +44,14 @@ public class PostService {
     private VehicleImageRepository vehicleImageRepository;
     @Autowired
     private BatteryImageRepository batteryImageRepository;
+    @Autowired
+    private EmailService emailService;
 
+    @Transactional
     public PostResponse createPost(PostRequest dto, String username) {
-
-
+        // 🔐 Lấy account và kiểm tra quyền
         Account account = accountRepository.findByUsername(username)
-                .orElseThrow(() -> new BusinessException("Account not found"));
+                .orElseThrow(() -> new AccessDeniedException("Account not found"));
 
         if (!"SELLER".equalsIgnoreCase(account.getRole())) {
             throw new SecurityException("Only sellers can create posts");
@@ -55,25 +60,33 @@ public class PostService {
         User seller = Optional.ofNullable(account.getUser())
                 .orElseThrow(() -> new SecurityException("Seller information not found"));
 
-
-
-        Post post = postRepository.save(Post.builder()
+        // 🧱 Tạo Post trước
+        Post post = Post.builder()
                 .sellerId(seller)
                 .title(dto.getTitle())
                 .description(dto.getDescription())
                 .price(dto.getPrice())
-                .status("PENDING")
+                .status("UNPAID")
                 .createdAt(Instant.now())
                 .updatedAt(Instant.now())
-                .build());
+                .build();
 
+        postRepository.save(post);
+        postRepository.flush(); // ⚠️ Quan trọng với @MapsId — đảm bảo có post.id
+
+        // 🚫 Kiểm tra chỉ được chọn 1 trong 2: vehicle hoặc battery
         if (dto.getVehicle() != null && dto.getBattery() != null) {
             throw new IllegalArgumentException("Choose either a vehicle or a battery, not both.");
+        }
+        if (dto.getVehicle() == null && dto.getBattery() == null) {
+            throw new IllegalArgumentException("Provide either vehicle or battery details.");
         }
 
         Battery savedBattery = null;
         Vehicle savedVehicle = null;
         List<String> allImages = new ArrayList<>();
+
+        // ================= VEHICLE =================
         if (dto.getVehicle() != null) {
             if (vehicleRepository.isLicensePlateExist(dto.getVehicle().getLicenseplate())) {
                 throw new BusinessException("This License Plate already exists");
@@ -99,7 +112,7 @@ public class PostService {
                     .yearManufacture(dto.getVehicle().getYearmanufacture())
                     .build());
 
-
+            // 🖼️ Lưu ảnh xe (nếu có)
             if (dto.getVehicleImages() != null && !dto.getVehicleImages().isEmpty()) {
                 for (String url : dto.getVehicleImages()) {
                     vehicleImageRepository.save(VehicleImage.builder()
@@ -112,7 +125,7 @@ public class PostService {
             }
         }
 
-
+        // ================= BATTERY =================
         else if (dto.getBattery() != null) {
             Integer typeId = dto.getBattery().getBatteryTypeId().getId();
             if (typeId == null) throw new IllegalArgumentException("Battery type ID is required");
@@ -138,7 +151,7 @@ public class PostService {
                     .lifecycle(dto.getBattery().getLifeCycle())
                     .build());
 
-
+            // 🖼️ Lưu ảnh pin (nếu có)
             if (dto.getBatteryImages() != null && !dto.getBatteryImages().isEmpty()) {
                 for (String url : dto.getBatteryImages()) {
                     batteryImageRepository.save(BatteryImage.builder()
@@ -149,14 +162,15 @@ public class PostService {
                 }
                 allImages.addAll(dto.getBatteryImages());
             }
-        } else {
-            throw new IllegalArgumentException("Provide either vehicle or battery details.");
         }
+
+        // ✉️ Gửi email thông báo thanh toán
+        emailService.sendEmailFee(seller.getEmail(), post.getId());
+
+        // 📦 Chuẩn bị response
         PostResponse response = postMapper.toPostResponse(post, savedBattery, savedVehicle, allImages);
         response.setLocation(seller.getAddress());
-
         return response;
-
     }
 
 
