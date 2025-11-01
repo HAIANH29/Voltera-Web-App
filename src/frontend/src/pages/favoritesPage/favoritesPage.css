@@ -1,5 +1,5 @@
 /* ============ Favorites Page (Modern Design) ============ */
-:root{
+:root {
   --bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   --bg-light: #f8fafc;
   --card: #ffffff;
@@ -139,6 +139,14 @@
   margin-left: auto;
   margin-right: auto;
   color: var(--muted);
+}
+
+.browse-buttons {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 16px;
 }
 
 .browse-btn {
@@ -293,6 +301,7 @@
   0% {
     background-position: 200% 0;
   }
+
   100% {
     background-position: -200% 0;
   }
@@ -302,15 +311,19 @@
   0% {
     opacity: 1;
   }
+
   100% {
     opacity: 0.7;
   }
 }
 
 @keyframes heartbeat {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: scale(1);
   }
+
   50% {
     transform: scale(1.1);
   }
@@ -466,7 +479,7 @@
     max-width: 1400px;
     margin: 0 auto;
   }
-  
+
   .favorites-grid,
   .loading-grid {
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -479,7 +492,7 @@
   .favorites-page {
     padding: 32px;
   }
-  
+
   .favorites-grid,
   .loading-grid {
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -492,31 +505,31 @@
   .favorites-page {
     padding: 24px;
   }
-  
+
   .favorites-grid,
   .loading-grid {
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
     gap: 24px;
   }
-  
+
   .favorites-header h1 {
     font-size: 2.5rem;
   }
-  
+
   .favorites-header .heart-icon {
     font-size: 2.2rem;
   }
-  
+
   .filter-tabs {
     gap: 10px;
     margin-bottom: 32px;
   }
-  
+
   .filter-tab {
     padding: 10px 20px;
     font-size: 0.9rem;
   }
-  
+
   .pagination-btn {
     min-width: 44px;
     height: 44px;
@@ -528,50 +541,50 @@
   .favorites-page {
     padding: 20px;
   }
-  
+
   .favorites-grid,
   .loading-grid {
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     gap: 20px;
   }
-  
+
   .favorites-header {
     margin-bottom: 32px;
     text-align: center;
   }
-  
+
   .favorites-header h1 {
     font-size: 2.2rem;
   }
-  
+
   .favorites-header .heart-icon {
     font-size: 2rem;
   }
-  
+
   .favorites-header p {
     font-size: 1rem;
   }
-  
+
   .filter-tabs {
     gap: 8px;
     margin-bottom: 28px;
   }
-  
+
   .filter-tab {
     padding: 8px 16px;
     font-size: 0.85rem;
   }
-  
+
   .pagination-btn {
     min-width: 40px;
     height: 40px;
     font-size: 0.9rem;
   }
-  
+
   .category-header {
     padding: 16px 20px;
   }
-  
+
   .category-header h2 {
     font-size: 1.3rem;
   }
@@ -582,33 +595,33 @@
   .favorites-page {
     padding: 16px;
   }
-  
+
   .favorites-grid,
   .loading-grid {
     grid-template-columns: 1fr;
     gap: 16px;
     padding: 0 8px;
   }
-  
+
   .favorites-header {
     margin-bottom: 24px;
     padding: 16px 8px;
     text-align: center;
   }
-  
+
   .favorites-header h1 {
     font-size: 1.8rem;
   }
-  
+
   .favorites-header .heart-icon {
     font-size: 1.6rem;
   }
-  
+
   .favorites-header p {
     font-size: 0.9rem;
     padding: 0 4px;
   }
-  
+
   .filter-tabs {
     gap: 6px;
     margin-bottom: 20px;
@@ -616,57 +629,57 @@
     overflow-x: auto;
     padding-bottom: 8px;
   }
-  
+
   .filter-tab {
     padding: 8px 14px;
     font-size: 0.8rem;
     white-space: nowrap;
   }
-  
+
   .pagination-container {
     margin-top: 32px;
     gap: 12px;
     padding: 20px 16px;
   }
-  
+
   .pagination {
     gap: 6px;
     flex-wrap: wrap;
   }
-  
+
   .pagination-btn {
     min-width: 36px;
     height: 36px;
     font-size: 0.8rem;
   }
-  
+
   .pagination-info {
     font-size: 0.8rem;
     padding: 6px 12px;
   }
-  
+
   .empty-favorites {
     padding: 40px 16px;
   }
-  
+
   .empty-favorites .empty-icon {
     font-size: 2.5rem;
   }
-  
+
   .empty-favorites h2 {
     font-size: 1.3rem;
   }
-  
+
   .browse-btn {
     padding: 12px 24px;
     font-size: 0.9rem;
   }
-  
+
   .category-header {
     padding: 16px;
     margin-bottom: 20px;
   }
-  
+
   .category-header h2 {
     font-size: 1.2rem;
   }
@@ -677,15 +690,15 @@
   .favorites-page {
     padding: 12px;
   }
-  
+
   .favorites-header h1 {
     font-size: 1.6rem;
   }
-  
+
   .filter-tabs {
     justify-content: flex-start;
   }
-  
+
   .pagination-btn {
     min-width: 32px;
     height: 32px;
@@ -708,71 +721,73 @@
     --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
     --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.5);
   }
-  
+
   .favorites-page {
     background: var(--bg-primary);
     color: var(--text);
   }
-  
+
   .favorites-header h1 {
     background: linear-gradient(135deg, #f87171, #fb923c);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
-  
+
   .favorites-header .heart-icon {
     color: #f87171;
   }
-  
+
   .favorites-header p {
     color: var(--text-secondary);
   }
-  
+
   .filter-tab {
     background: rgba(26, 32, 44, 0.9);
     border-color: var(--border);
     color: var(--text-secondary);
   }
-  
+
   .filter-tab:hover {
     background: rgba(245, 101, 101, 0.1);
     border-color: var(--favorite);
     color: var(--favorite);
   }
-  
+
   .filter-tab.active {
     background: var(--favorite);
     color: var(--favorite-ink);
   }
-  
+
   .empty-favorites {
     background: rgba(26, 32, 44, 0.9);
     border-color: var(--favorite);
   }
-  
+
   .pagination-container {
     background: rgba(26, 32, 44, 0.9);
   }
-  
+
   .pagination-btn {
     background: rgba(45, 55, 72, 0.9);
     border-color: var(--border);
     color: var(--text-secondary);
   }
-  
+
   .category-header {
     background: rgba(26, 32, 44, 0.9);
   }
 }
 
 /* High DPI/Retina Displays */
-@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+@media (-webkit-min-device-pixel-ratio: 2),
+(min-resolution: 192dpi) {
+
   .favorites-grid,
   .loading-grid {
     gap: 32px;
   }
-  
+
   .filter-tab,
   .pagination-btn {
     border-width: 1px;
@@ -786,7 +801,7 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-  
+
   .loading-image,
   .loading-line {
     animation: none;
@@ -798,12 +813,12 @@
   .favorites-page {
     padding: 0;
   }
-  
+
   .pagination-container,
   .filter-tabs {
     display: none;
   }
-  
+
   .favorites-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 16px;

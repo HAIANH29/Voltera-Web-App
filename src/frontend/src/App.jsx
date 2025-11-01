@@ -5,6 +5,7 @@ import HomePage from "./pages/homepage/HomePage";
 import VehiclesPage from "./pages/vehiclesPage/vehiclesPage";
 import ElectricsPage from "./pages/electricsPage/electricsPage";
 import FavoritesPage from "./pages/favoritesPage/favoritesPage";
+import ComparisonPage from "./pages/comparison/ComparisonPage";
 import LoginPage from "./pages/login/LoginPage";
 import RegisterPage from "./pages/register/RegisterPage";
 import AuthLayout from "./layout/authenLayout.jsx";
@@ -77,6 +78,14 @@ function App() {
       element: (
         <MainLayout>
           <FavoritesPage />
+        </MainLayout>
+      ),
+    },
+    {
+      path: "/comparison",
+      element: (
+        <MainLayout>
+          <ComparisonPage />
         </MainLayout>
       ),
     },

@@ -1,110 +1,68 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import MiniPost from "../../components/miniPost/miniPost";
+import api from "../../config/api";
 import "./favoritesPage.css";
-
-// Mock data for favorite electric vehicles
-const mockFavoriteVehicles = [
-  {
-    id: 2,
-    image: "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=400",
-    productName: "VinFast VF8 Plus",
-    basicInfo: ["Electric", "7 seats", "420km"],
-    sellerName: "Tran Thi B",
-    price: 1350000000,
-    isNew: false,
-    isFavorite: true,
-    category: "vehicle"
-  },
-  {
-    id: 5,
-    image: "https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=400",
-    productName: "Audi e-tron GT",
-    basicInfo: ["Electric", "4 seats", "388km"],
-    sellerName: "Hoang Van E",
-    price: 4500000000,
-    isNew: true,
-    isFavorite: true,
-    category: "vehicle"
-  },
-  {
-    id: 8,
-    image: "https://images.unsplash.com/photo-1554744512-d6c603f27c54?w=400",
-    productName: "Mercedes EQS 450+",
-    basicInfo: ["Electric", "5 seats", "770km"],
-    sellerName: "Bui Thi H",
-    price: 5500000000,
-    isNew: true,
-    isFavorite: true,
-    category: "vehicle"
-  },
-  {
-    id: 11,
-    image: "https://images.unsplash.com/photo-1619976215249-4d1c3b3e3db4?w=400",
-    productName: "Lucid Air Dream",
-    basicInfo: ["Electric", "5 seats", "832km"],
-    sellerName: "Truong Van L",
-    price: 7800000000,
-    isNew: true,
-    isFavorite: true,
-    category: "vehicle"
-  }
-];
-
-// Mock data for favorite batteries
-const mockFavoriteBatteries = [
-  {
-    id: 101,
-    image: "https://images.unsplash.com/photo-1609592045856-c6ed3ac6a7a2?w=400",
-    productName: "Tesla Lithium Battery 75kWh",
-    basicInfo: ["75kWh", "8 years warranty", "95% new"],
-    sellerName: "ABC Company",
-    price: 450000000,
-    isNew: false,
-    isFavorite: true,
-    category: "battery"
-  },
-  {
-    id: 102,
-    image: "https://images.unsplash.com/photo-1628618219968-6a65734d6bf8?w=400",
-    productName: "CATL LFP Battery 60kWh",
-    basicInfo: ["60kWh", "10 years warranty", "98% new"],
-    sellerName: "Electric Viet Co.",
-    price: 320000000,
-    isNew: true,
-    isFavorite: true,
-    category: "battery"
-  },
-  {
-    id: 103,
-    image: "https://images.unsplash.com/photo-1586339546557-64463a5bb3ca?w=400",
-    productName: "Samsung SDI Battery 85kWh",
-    basicInfo: ["85kWh", "12 years warranty", "100% new"],
-    sellerName: "Green Energy Ltd",
-    price: 680000000,
-    isNew: true,
-    isFavorite: true,
-    category: "battery"
-  }
-];
 
 const ITEMS_PER_PAGE = 12;
 
 export default function FavoritesPage() {
+  const navigate = useNavigate();
   const [favorites, setFavorites] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState("all"); // all, vehicles, batteries
 
   useEffect(() => {
-    // Simulate fetching data from API or localStorage
+    // Fetch real favorites from API
     const fetchFavorites = async () => {
       setLoading(true);
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Combine vehicles and batteries favorites
-      const allFavorites = [...mockFavoriteVehicles, ...mockFavoriteBatteries];
-      setFavorites(allFavorites);
+      try {
+        const token = document.cookie
+          .split("; ")
+          .find((row) => row.startsWith("accessToken="))
+          ?.split("=")[1];
+
+        if (!token) {
+          console.log("❌ No access token found - user not logged in");
+          setFavorites([]);
+          setLoading(false);
+          return;
+        }
+
+        const response = await api.get("/api/favorites", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (response.data && Array.isArray(response.data)) {
+          // Map backend FavListResponse to frontend format
+          const mappedFavorites = response.data.map((fav) => ({
+            id: fav.postId,
+            postID: String(fav.postId),
+            image:
+              fav.thumbnailUrl ||
+              "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=400",
+            productName: fav.postTitle || "Product",
+            basicInfo: ["Click to view details"],
+            sellerName: "Seller",
+            price: Number(fav.price) || 0,
+            isNew: true,
+            isFavorite: true,
+            category: "vehicle", // Default, will be determined by post details
+          }));
+
+          console.log("✅ Loaded favorites from API:", mappedFavorites.length);
+          setFavorites(mappedFavorites);
+        } else {
+          console.log("✅ No favorites found");
+          setFavorites([]);
+        }
+      } catch (error) {
+        console.error("❌ Error fetching favorites:", error);
+        setFavorites([]);
+      }
       setLoading(false);
     };
 
@@ -112,7 +70,7 @@ export default function FavoritesPage() {
   }, []);
 
   // Filter by category
-  const filteredFavorites = favorites.filter(item => {
+  const filteredFavorites = favorites.filter((item) => {
     if (activeFilter === "all") return true;
     if (activeFilter === "vehicles") return item.category === "vehicle";
     if (activeFilter === "batteries") return item.category === "battery";
@@ -126,8 +84,12 @@ export default function FavoritesPage() {
   const currentFavorites = filteredFavorites.slice(startIndex, endIndex);
 
   // Calculate counts for filter tabs
-  const vehiclesCount = favorites.filter(item => item.category === "vehicle").length;
-  const batteriesCount = favorites.filter(item => item.category === "battery").length;
+  const vehiclesCount = favorites.filter(
+    (item) => item.category === "vehicle"
+  ).length;
+  const batteriesCount = favorites.filter(
+    (item) => item.category === "battery"
+  ).length;
 
   // Reset current page when filter changes
   useEffect(() => {
@@ -135,41 +97,75 @@ export default function FavoritesPage() {
   }, [activeFilter]);
 
   // Handle remove favorite
-  const handleFavoriteClick = (itemId) => {
-    setFavorites(prev =>
-      prev.map(item =>
-        item.id === itemId
-          ? { ...item, isFavorite: !item.isFavorite }
-          : item
-      ).filter(item => item.isFavorite) // Remove items that are no longer favorites
-    );
+  const handleFavoriteClick = async (itemId) => {
+    try {
+      const token = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("accessToken="))
+        ?.split("=")[1];
+
+      if (token) {
+        // Call API to remove from favorites
+        await api.delete(`/api/favorites/delete/${itemId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      }
+
+      // Update local state
+      setFavorites((prev) => prev.filter((item) => item.id !== itemId));
+    } catch (error) {
+      console.error("Error removing from favorites:", error);
+      // Still update local state even if API call fails
+      setFavorites((prev) => prev.filter((item) => item.id !== itemId));
+    }
   };
 
-  // Handle card click
+  // Handle card click - navigate to detail page
   const handleCardClick = (item) => {
-    console.log("Clicked favorite item:", item);
-    // Navigate to corresponding detail page
-    if (item.category === "vehicle") {
-      // navigate(`/vehicles/${item.id}`);
-    } else if (item.category === "battery") {
-      // navigate(`/batteries/${item.id}`);
+    console.log("Navigating to product detail:", item.postID);
+
+    // Determine the route based on category or try to detect from product name
+    if (
+      item.category === "vehicle" ||
+      item.productName.toLowerCase().includes("car") ||
+      item.productName.toLowerCase().includes("vehicle") ||
+      item.productName.toLowerCase().includes("tesla") ||
+      item.productName.toLowerCase().includes("vinfast") ||
+      item.productName.toLowerCase().includes("audi") ||
+      item.productName.toLowerCase().includes("mercedes") ||
+      item.productName.toLowerCase().includes("lucid")
+    ) {
+      navigate(`/vehicles/${item.postID}`);
+    } else if (
+      item.category === "battery" ||
+      item.productName.toLowerCase().includes("battery") ||
+      item.productName.toLowerCase().includes("lithium") ||
+      item.productName.toLowerCase().includes("catl") ||
+      item.productName.toLowerCase().includes("samsung")
+    ) {
+      navigate(`/electrics/${item.postID}`);
+    } else {
+      // Default to vehicles for unknown type
+      navigate(`/vehicles/${item.postID}`);
     }
   };
 
   // Handle page change
   const handlePageChange = (page) => {
     setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   // Render pagination buttons
   const renderPagination = () => {
     const pages = [];
     const maxVisiblePages = 5;
-    
+
     let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
     let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-    
+
     if (endPage - startPage + 1 < maxVisiblePages) {
       startPage = Math.max(1, endPage - maxVisiblePages + 1);
     }
@@ -199,7 +195,11 @@ export default function FavoritesPage() {
         </button>
       );
       if (startPage > 2) {
-        pages.push(<span key="ellipsis1" className="pagination-ellipsis">...</span>);
+        pages.push(
+          <span key="ellipsis1" className="pagination-ellipsis">
+            ...
+          </span>
+        );
       }
     }
 
@@ -208,7 +208,7 @@ export default function FavoritesPage() {
       pages.push(
         <button
           key={i}
-          className={`pagination-btn ${i === currentPage ? 'active' : ''}`}
+          className={`pagination-btn ${i === currentPage ? "active" : ""}`}
           onClick={() => handlePageChange(i)}
         >
           {i}
@@ -219,7 +219,11 @@ export default function FavoritesPage() {
     // Last page
     if (endPage < totalPages) {
       if (endPage < totalPages - 1) {
-        pages.push(<span key="ellipsis2" className="pagination-ellipsis">...</span>);
+        pages.push(
+          <span key="ellipsis2" className="pagination-ellipsis">
+            ...
+          </span>
+        );
       }
       pages.push(
         <button
@@ -284,18 +288,24 @@ export default function FavoritesPage() {
           </h1>
           <p>Your saved products list</p>
         </div>
-        
+
         <div className="empty-favorites">
           <div className="empty-icon">♡</div>
           <h2>No favorite products yet</h2>
           <p>
-            You haven't saved any products to your favorites yet. 
-            Explore and add products you're interested in!
+            You haven't saved any products to your favorites yet. Explore and
+            add products you're interested in!
           </p>
-          <a href="/vehicles" className="browse-btn">
-            <span>🚗</span>
-            Explore Electric Vehicles
-          </a>
+          <div className="browse-buttons">
+            <a href="/vehicles" className="browse-btn">
+              <span>🚗</span>
+              Explore Electric Vehicles
+            </a>
+            <a href="/electrics" className="browse-btn">
+              <span>🔋</span>
+              Explore Batteries
+            </a>
+          </div>
         </div>
       </div>
     );
@@ -310,7 +320,8 @@ export default function FavoritesPage() {
           Favorite
         </h1>
         <p>
-          {favorites.length} product {favorites.length > 1 ? "s" : ""} saved in your favorites
+          {favorites.length} product {favorites.length > 1 ? "s" : ""} saved in
+          your favorites
         </p>
       </div>
 
@@ -323,13 +334,17 @@ export default function FavoritesPage() {
           All ({favorites.length})
         </button>
         <button
-          className={`filter-tab ${activeFilter === "vehicles" ? "active" : ""}`}
+          className={`filter-tab ${
+            activeFilter === "vehicles" ? "active" : ""
+          }`}
           onClick={() => setActiveFilter("vehicles")}
         >
           Vehicle ({vehiclesCount})
         </button>
         <button
-          className={`filter-tab ${activeFilter === "batteries" ? "active" : ""}`}
+          className={`filter-tab ${
+            activeFilter === "batteries" ? "active" : ""
+          }`}
           onClick={() => setActiveFilter("batteries")}
         >
           Battery ({batteriesCount})
@@ -365,11 +380,11 @@ export default function FavoritesPage() {
           {/* Pagination */}
           {totalPages > 1 && (
             <div className="pagination-container">
-              <div className="pagination">
-                {renderPagination()}
-              </div>
+              <div className="pagination">{renderPagination()}</div>
               <div className="pagination-info">
-                Showing {startIndex + 1}-{Math.min(endIndex, filteredFavorites.length)} of {filteredFavorites.length} favorite products
+                Showing {startIndex + 1}-
+                {Math.min(endIndex, filteredFavorites.length)} of{" "}
+                {filteredFavorites.length} favorite products
               </div>
             </div>
           )}
