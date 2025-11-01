@@ -19,6 +19,7 @@ const HeaderAfter = ({ user: userProp }) => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showPostMenu, setShowPostMenu] = useState(false);
   const [cartItemsCount] = useState(3); // mock
+  const [userProfile, setUserProfile] = useState(null);
 
   // ----- refs cho click outside -----
   const userMenuRef = useRef(null);
@@ -26,9 +27,36 @@ const HeaderAfter = ({ user: userProp }) => {
   const avatarBtnRef = useRef(null);
   const postBtnRef = useRef(null);
 
+  // ----- Load user profile để lấy avatar -----
+  useEffect(() => {
+    const loadUserProfile = async () => {
+      try {
+        const res = await api.get("/api/v1/users/me/profile");
+        setUserProfile(res.data);
+
+        // Update localStorage with avatar
+        const currentUser = localStorage.getItem("currentUser");
+        if (currentUser) {
+          const userData = JSON.parse(currentUser);
+          userData.avatar = res.data.avatar;
+          localStorage.setItem("currentUser", JSON.stringify(userData));
+        }
+      } catch (err) {
+        console.error("Failed to load user profile:", err);
+      }
+    };
+
+    loadUserProfile();
+  }, []);
+
   // ----- user hiện tại: props > localStorage -----
   const currentUser = useMemo(() => {
-    if (userProp && (userProp.name || userProp.email)) return userProp;
+    if (userProp && (userProp.name || userProp.email)) {
+      return {
+        ...userProp,
+        avatar: userProfile?.avatar || userProp.avatar,
+      };
+    }
     try {
       const raw = localStorage.getItem("currentUser");
       const stored = raw ? JSON.parse(raw) : null;
@@ -37,13 +65,22 @@ const HeaderAfter = ({ user: userProp }) => {
           ...stored,
           name: stored.name || stored.username || stored.email || "User",
           email: stored.email || stored.username || "user@example.com",
+          avatar: userProfile?.avatar || stored.avatar,
         };
       }
-      return { name: "User", email: "user@example.com" };
+      return {
+        name: "User",
+        email: "user@example.com",
+        avatar: userProfile?.avatar,
+      };
     } catch {
-      return { name: "User", email: "user@example.com" };
+      return {
+        name: "User",
+        email: "user@example.com",
+        avatar: userProfile?.avatar,
+      };
     }
-  }, [userProp]);
+  }, [userProp, userProfile]);
 
   // ----- đóng dropdown khi click ra ngoài -----
   useEffect(() => {

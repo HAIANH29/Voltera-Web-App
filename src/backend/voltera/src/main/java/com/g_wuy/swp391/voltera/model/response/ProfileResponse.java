@@ -16,4 +16,5 @@ public class ProfileResponse {
     private String address;
     private Instant createAt;
     private Instant updateAt;
+    private String avatar;
 }

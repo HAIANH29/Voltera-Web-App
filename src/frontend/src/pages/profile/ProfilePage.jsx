@@ -6,6 +6,7 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState(null);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [form, setForm] = useState({
     fullName: "",
     email: "",
@@ -76,12 +77,93 @@ export default function ProfilePage() {
     }
   }
 
+  async function handleAvatarUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      alert("Please select an image file");
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert("File size must be less than 5MB");
+      return;
+    }
+
+    setUploadingAvatar(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await api.post("/api/upload/avatar", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      // Reload profile to get updated avatar
+      await loadProfile();
+
+      // Update localStorage if exists
+      const currentUser = localStorage.getItem("currentUser");
+      if (currentUser) {
+        const userData = JSON.parse(currentUser);
+        userData.avatar = res.data;
+        localStorage.setItem("currentUser", JSON.stringify(userData));
+      }
+
+      alert("Avatar updated successfully!");
+    } catch (err) {
+      console.error("Avatar upload error", err);
+      alert("Failed to upload avatar");
+    } finally {
+      setUploadingAvatar(false);
+    }
+  }
+
   if (!profile) return <div className="profile-root">Loading profile...</div>;
 
   return (
     <div className="profile-root">
       <div className="profile-card">
         <h2>Your Profile</h2>
+
+        {/* Avatar Section */}
+        <div className="avatar-section">
+          <div className="avatar-container">
+            {profile?.avatar ? (
+              <img
+                src={profile.avatar}
+                alt="Avatar"
+                className="profile-avatar"
+              />
+            ) : (
+              <div className="avatar-placeholder-large">
+                {(profile?.fullname?.charAt(0) || "U").toUpperCase()}
+              </div>
+            )}
+            <div className="avatar-upload">
+              <input
+                type="file"
+                id="avatar-input"
+                accept="image/*"
+                onChange={handleAvatarUpload}
+                style={{ display: "none" }}
+              />
+              <label
+                htmlFor="avatar-input"
+                className={`avatar-upload-btn ${
+                  uploadingAvatar ? "uploading" : ""
+                }`}
+              >
+                {uploadingAvatar ? "Uploading..." : "Change Avatar"}
+              </label>
+            </div>
+          </div>
+        </div>
 
         {!editing ? (
           <div className="profile-view">
