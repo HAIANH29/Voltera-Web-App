@@ -138,4 +138,8 @@ public interface PostRepository extends JpaRepository<Post, Integer>, JpaSpecifi
             "LIMIT 1 ",
             nativeQuery = true)
     String getThumbnailUrlByPostId(@Param("postId") int postId);
+
+
+    @Query("SELECT f.post FROM Fee f WHERE f.feeStatus = 'VALID' AND f.post.status = 'APPROVE'")
+    List<Post> getAllPost();
 }

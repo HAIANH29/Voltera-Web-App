@@ -32,7 +32,6 @@ public class FeeService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
 
-        // Tạo Fee cho bài post
         Fee fee = new Fee();
         fee.setPost(post);
         if (post.getVehicle() != null) {
@@ -47,13 +46,11 @@ public class FeeService {
         fee.setExpiredAt(LocalDateTime.now().plusSeconds(30L * 24 * 60 * 60));
         feeRepository.save(fee);
 
-        // Tạo Transaction tương ứng
         Transaction transaction = new Transaction();
         transaction.setTransactionStatus("PENDING");
         transaction.setPrice(fee.getAmount());
         transactionRepository.save(transaction);
 
-        // Gọi sang VNPay để tạo URL thanh toán
         VNPayRequest vnPayRequest = new VNPayRequest();
 
         return vNPayService.createPayment(vnPayRequest, httpRequest, transaction.getTransactionid().toString());
@@ -63,34 +60,28 @@ public class FeeService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
 
-        // Lấy Fee hiện tại (nếu có)
         Fee oldFee = feeRepository.findValidFeeByPostId(postId)
                 .orElse(null);
 
-        // Đánh dấu Fee cũ là hết hạn (nếu có)
         if (oldFee != null) {
             oldFee.setFeeStatus("EXPIRED");
             feeRepository.save(oldFee);
         }
-
-        // Tạo Fee mới cho lần gia hạn
         Fee newFee = Fee.builder()
                 .post(post)
-                .amount(BigDecimal.valueOf(50000)) // phí gia hạn: 50.000 VNĐ
+                .amount(BigDecimal.valueOf(50000))
                 .description("Gia hạn bài đăng: " + post.getTitle())
                 .feeStatus("VALID")
                 .createdAt(LocalDateTime.now())
-                .expiredAt(LocalDateTime.now().plusSeconds(30L * 24 * 60 * 60)) // 30 ngày
+                .expiredAt(LocalDateTime.now().plusSeconds(30L * 24 * 60 * 60))
                 .build();
         feeRepository.save(newFee);
 
-        // Tạo Transaction tương ứng
         Transaction transaction = new Transaction();
-        transaction.setTransactionStatus("PENDING");
+        transaction.setTransactionStatus("APPROVE");
         transaction.setPrice(newFee.getAmount());
         transactionRepository.save(transaction);
 
-        // Gọi sang VNPay để tạo URL thanh toán
         VNPayRequest vnPayRequest = VNPayRequest.builder()
                 .amount(newFee.getAmount().longValue())
                 .orderInfo("Gia hạn bài đăng: " + post.getTitle())

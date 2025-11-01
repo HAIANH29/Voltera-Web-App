@@ -53,7 +53,7 @@ public class UserService {
         Account account = accountRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new BusinessException("Account not found with username: " + request.getUsername()));
 
-        if (!"APPROVE".equalsIgnoreCase(account.getStatus())) {
+        if (!"APPROVE".equalsIgnoreCase(account.getStatus()) && !"ACTIVE".equalsIgnoreCase(account.getStatus())) {
             throw new RuntimeException("Your account has not been approved yet.");
         }
 
@@ -215,7 +215,23 @@ public class UserService {
         accountRepository.save(account);
     }
 
-    public Integer findUserIdByUsername(String username) {
-        return userRepository.findUserIdByUsername(username);
+    public void lockAccount(Integer accountId) {
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new BusinessException("Account not found"));
+        if (account.getStatus().equals("INACTIVE")) {
+            throw new LogicException("Account has already been locked");
+        }
+        account.setStatus("INACTIVE");
+        accountRepository.save(account);
+    }
+
+    public void unlockAccount(Integer accountId) {
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new BusinessException("Account not found"));
+        if (account.getStatus().equals("ACTIVE")) {
+            throw new LogicException("Account has already been unlocked");
+        }
+        account.setStatus("ACTIVE");
+        accountRepository.save(account);
     }
 }

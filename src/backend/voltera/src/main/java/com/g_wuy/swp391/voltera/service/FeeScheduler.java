@@ -5,7 +5,6 @@ import com.g_wuy.swp391.voltera.entity.Post;
 import com.g_wuy.swp391.voltera.entity.User;
 import com.g_wuy.swp391.voltera.repository.FeeRepository;
 import com.g_wuy.swp391.voltera.repository.PostRepository;
-import com.g_wuy.swp391.voltera.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
