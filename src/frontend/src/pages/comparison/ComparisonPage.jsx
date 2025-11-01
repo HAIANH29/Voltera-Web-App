@@ -229,8 +229,8 @@ export default function ComparisonPage() {
             onChange={(e) => handleTypeChange(e.target.value)}
             className="type-selector"
           >
-            <option value="vehicles">Electric Vehicles</option>
-            <option value="batteries">Batteries</option>
+            <option value="vehicles">Vehicles</option>
+            <option value="batteries">Electrics</option>
           </select>
         </div>
       </div>
