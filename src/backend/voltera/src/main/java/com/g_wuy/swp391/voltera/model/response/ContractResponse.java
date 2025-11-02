@@ -15,6 +15,8 @@ public class ContractResponse {
     private Integer contractId;
     private String buyerName;
     private String sellerName;
+    private String buyerEmail;
+    private String sellerEmail;
     private String postTitle;
     private String terms;
     private Boolean signedByBuyer;

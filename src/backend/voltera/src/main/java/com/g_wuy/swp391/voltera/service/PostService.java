@@ -49,7 +49,7 @@ public class PostService {
 
     @Transactional
     public PostResponse createPost(PostRequest dto, String username) {
-        // 🔐 Lấy account và kiểm tra quyền
+        //Lấy account và kiểm tra quyền
         Account account = accountRepository.findByUsername(username)
                 .orElseThrow(() -> new AccessDeniedException("Account not found"));
 
@@ -60,7 +60,7 @@ public class PostService {
         User seller = Optional.ofNullable(account.getUser())
                 .orElseThrow(() -> new SecurityException("Seller information not found"));
 
-        // 🧱 Tạo Post trước
+        //Tạo Post trước
         Post post = Post.builder()
                 .sellerId(seller)
                 .title(dto.getTitle())
@@ -72,9 +72,9 @@ public class PostService {
                 .build();
 
         postRepository.save(post);
-        postRepository.flush(); // ⚠️ Quan trọng với @MapsId — đảm bảo có post.id
+        postRepository.flush(); // Quan trọng với @MapsId — đảm bảo có post.id
 
-        // 🚫 Kiểm tra chỉ được chọn 1 trong 2: vehicle hoặc battery
+        // Kiểm tra chỉ được chọn 1 trong 2: vehicle hoặc battery
         if (dto.getVehicle() != null && dto.getBattery() != null) {
             throw new IllegalArgumentException("Choose either a vehicle or a battery, not both.");
         }
@@ -88,7 +88,7 @@ public class PostService {
 
         // ================= VEHICLE =================
         if (dto.getVehicle() != null) {
-            if (vehicleRepository.isLicensePlateExist(dto.getVehicle().getLicenseplate())) {
+            if (vehicleRepository.isLicensePlateExist(dto.getVehicle().getLicensePlate())) {
                 throw new BusinessException("This License Plate already exists");
             }
 
@@ -98,21 +98,21 @@ public class PostService {
                     .model(dto.getVehicle().getModel())
                     .version(dto.getVehicle().getVersion())
                     .odo(dto.getVehicle().getOdo())
-                    .batteryCapacity(dto.getVehicle().getBatterycapacity())
+                    .batteryCapacity(dto.getVehicle().getBatteryCapacity())
                     .range(dto.getVehicle().getRange())
-                    .chargingTime(dto.getVehicle().getChargingtime())
+                    .chargingTime(dto.getVehicle().getChargingTime())
                     .color(dto.getVehicle().getColor())
-                    .numberOfSeat(dto.getVehicle().getNumberofseat())
+                    .numberOfSeat(dto.getVehicle().getNumberOfSeat())
                     .style(dto.getVehicle().getStyle())
-                    .bodyInsurance(Boolean.TRUE.equals(dto.getVehicle().getBodyinsurance()))
-                    .vehicleInspection(Boolean.TRUE.equals(dto.getVehicle().getVehicleinspection()))
-                    .licensePlate(dto.getVehicle().getLicenseplate())
+                    .bodyInsurance(Boolean.TRUE.equals(dto.getVehicle().getBodyInsurance()))
+                    .vehicleInspection(Boolean.TRUE.equals(dto.getVehicle().getVehicleInspection()))
+                    .licensePlate(dto.getVehicle().getLicensePlate())
                     .origin(dto.getVehicle().getOrigin())
                     .status("AVAILABLE")
-                    .yearManufacture(dto.getVehicle().getYearmanufacture())
+                    .yearManufacture(dto.getVehicle().getYearManufacture())
                     .build());
 
-            // 🖼️ Lưu ảnh xe (nếu có)
+            //Lưu ảnh xe (nếu có)
             if (dto.getVehicleImages() != null && !dto.getVehicleImages().isEmpty()) {
                 for (String url : dto.getVehicleImages()) {
                     vehicleImageRepository.save(VehicleImage.builder()
@@ -148,10 +148,10 @@ public class PostService {
                     .cycleCount(dto.getBattery().getCycleCount())
                     .warranty(dto.getBattery().getWarranty())
                     .weight(dto.getBattery().getWeight())
-                    .lifecycle(dto.getBattery().getLifeCycle())
+                    .lifecycle(dto.getBattery().getLifecycle())
                     .build());
 
-            // 🖼️ Lưu ảnh pin (nếu có)
+            //Lưu ảnh pin (nếu có)
             if (dto.getBatteryImages() != null && !dto.getBatteryImages().isEmpty()) {
                 for (String url : dto.getBatteryImages()) {
                     batteryImageRepository.save(BatteryImage.builder()
@@ -164,12 +164,21 @@ public class PostService {
             }
         }
 
-        // ✉️ Tạo transaction thanh toán phí đăng bài
+        //Tạo transaction thanh toán phí đăng bài
+
+        BigDecimal price = BigDecimal.valueOf(0.0);
+        if (dto.getBattery() != null) {
+            price = BigDecimal.valueOf(200000);
+        }
+        else if (dto.getVehicle() != null) {
+            price = BigDecimal.valueOf(500000);
+        }
+
         Transaction transaction = Transaction.builder()
                 .post(post)
                 .createAt(Instant.now())
                 .updateAt(Instant.now())
-                .price(dto.getPrice())
+                .price(price)
                 .contractid(null)
                 .reportid(null)
                 .transactionStatus("PENDING")
@@ -177,7 +186,7 @@ public class PostService {
                 .build();
         transactionRepository.save(transaction);
 
-        // 📦 Chuẩn bị response
+        //Chuẩn bị response
         PostResponse response = postMapper.toPostResponse(post, savedBattery, savedVehicle, allImages);
         response.setLocation(seller.getAddress());
         return response;

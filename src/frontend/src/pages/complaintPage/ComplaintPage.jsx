@@ -75,6 +75,8 @@ const ComplaintPage = () => {
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [selectedComplaint, setSelectedComplaint] = useState(null);
+  const [complaintReplies, setComplaintReplies] = useState([]);
+  const [loadingReplies, setLoadingReplies] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('ALL');
 
@@ -151,8 +153,40 @@ const ComplaintPage = () => {
     toast.success('Complaint submitted successfully!');
   };
 
+  const loadComplaintReplies = async (complaintId = null) => {
+    try {
+      setLoadingReplies(true);
+      console.log('🔄 Loading replies for complaint:', complaintId);
+      
+      const response = await api.get('/api/reply-complaint/my-complaint');
+      console.log('📨 API Response:', response.data);
+      
+      if (response.data) {
+        const repliesArray = Array.isArray(response.data) ? response.data : [];
+        setComplaintReplies(repliesArray);
+        console.log('✅ Loaded complaint replies:', repliesArray);
+        
+        if (complaintId) {
+          const repliesForThisComplaint = repliesArray.filter(reply => reply.id === complaintId);
+          console.log(`📋 Replies for complaint ${complaintId}:`, repliesForThisComplaint);
+          console.log('🔍 Reply structure:', repliesArray[0] ? Object.keys(repliesArray[0]) : 'No replies');
+        }
+      } else {
+        setComplaintReplies([]);
+        console.log('❌ No data received from API');
+      }
+    } catch (error) {
+      console.error('❌ Error loading complaint replies:', error);
+      setComplaintReplies([]);
+    } finally {
+      setLoadingReplies(false);
+    }
+  };
+
   const handleViewDetail = (complaint) => {
+    console.log('👁️ Viewing complaint detail:', complaint);
     setSelectedComplaint(complaint);
+    loadComplaintReplies(complaint.id);
   };
 
   if (showForm) {
@@ -216,28 +250,46 @@ const ComplaintPage = () => {
             <div className="complaint-responses">
               <h3>
                 <Icons.MessageCircle />
-                Admin Responses
+                Admin Responses ({complaintReplies.filter(reply => reply.id === selectedComplaint.id).length})
               </h3>
               <div className="responses-list">
-                {selectedComplaint.responses?.length ? (
-                  selectedComplaint.responses.map((response, index) => (
-                    <div key={index} className="response-item">
-                      <div className="response-header">
-                        <span className="response-author">Admin</span>
-                        <span className="response-date">
-                          {new Date(response.createdAt).toLocaleDateString()}
-                        </span>
-                      </div>
-                      <div className="response-content">
-                        {response.content}
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="no-responses">
-                    <Icons.MessageCircle />
-                    <p>No admin responses yet. Your complaint is being reviewed.</p>
+                {loadingReplies ? (
+                  <div className="loading-state">
+                    <div className="loading-spinner"></div>
+                    <p>Loading responses...</p>
                   </div>
+                ) : (
+                  complaintReplies.filter(reply => reply.id === selectedComplaint.id).length ? (
+                      complaintReplies
+                        .filter(reply => reply.id === selectedComplaint.id)
+                        .map((reply, index) => (
+                          <div key={index} className="response-item">
+                            <div className="response-header">
+                              <span className="response-author">
+                                <Icons.MessageCircle />
+                                Admin
+                              </span>
+                              <span className="response-date">
+                                {reply.resolveAt ? new Date(reply.resolveAt).toLocaleDateString('vi-VN', {
+                                  year: 'numeric',
+                                  month: 'short',
+                                  day: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                }) : 'N/A'}
+                              </span>
+                            </div>
+                            <div className="response-content">
+                              {reply.solution}
+                            </div>
+                          </div>
+                        ))
+                    ) : (
+                      <div className="no-responses">
+                        <Icons.MessageCircle />
+                        <p>No admin responses yet. Your complaint is being reviewed.</p>
+                      </div>
+                    )
                 )}
               </div>
             </div>
