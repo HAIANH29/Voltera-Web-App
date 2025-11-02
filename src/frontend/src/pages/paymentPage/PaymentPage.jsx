@@ -21,37 +21,101 @@ const PaymentPage = () => {
     const contractId = searchParams.get("contractId");
     const transactionId = searchParams.get("transactionId");
 
-    if (postIdParam) {
-      setPostId(postIdParam);
-      fetchPostDetails(postIdParam);
+    // Always fetch contract details if contractId exists  
+    if (contractId) {
+      fetchContractDetails(contractId);
+    } else {
+      // For non-contract payments
+      if (postIdParam && postIdParam !== 'undefined') {
+        setPostId(postIdParam);
+        fetchPostDetails(postIdParam);
+      }
+      if (amountParam && amountParam !== 'undefined') {
+        setAmount(amountParam);
+      }
     }
-    if (amountParam) {
-      setAmount(amountParam);
-    }
+    
     if (contractId) {
       setOrderInfo(`Payment for contract #${contractId}`);
     }
   }, [searchParams]);
 
+  // Fetch contract details to get missing postId/amount
+  const fetchContractDetails = async (contractId) => {
+    try {
+      const response = await api.get(`/api/contract/${contractId}`);
+      const contractData = response.data;
+      
+      // Always set postId from contract
+      if (contractData.postId) {
+        setPostId(contractData.postId.toString());
+        // Fetch post details to get price
+        fetchPostDetails(contractData.postId);
+      }
+      
+      // Set amount from URL params if available
+      const amountParam = searchParams.get("amount");
+      if (amountParam && amountParam !== 'undefined' && amountParam !== '0') {
+        setAmount(amountParam);
+      }
+      
+      // Set order info from contract
+      setOrderInfo(`Payment for contract #${contractId} - ${contractData.postTitle || 'Vehicle Purchase'}`);
+    } catch (err) {
+      console.error("Error fetching contract details:", err);
+      setError("Unable to load contract information. Please try again.");
+    }
+  };
+
   // Fetch thông tin bài post
   const fetchPostDetails = async (id) => {
     try {
-      const response = await api.get(`/api/post/${id}`);
-      setPostDetails(response.data);
-      if (!orderInfo) {
-        setOrderInfo(
-          `Payment for ${response.data.title || "vehicle purchase"}`
-        );
+      const response = await api.get(`/api/post/detail/${id}`);
+      const postData = response.data;
+      
+      setPostDetails(postData);
+      
+      // Auto-fill amount from post price
+      const amountParam = searchParams.get("amount");
+      const isContractPayment = searchParams.get("contractId");
+      
+      if (postData.price && postData.price > 0) {
+        if (isContractPayment) {
+          // Contract payment - always use post price if no valid amount from URL
+          if (!amountParam || amountParam === 'undefined' || amountParam === '0' || !amount) {
+            setAmount(postData.price.toString());
+          }
+        } else {
+          // Regular payment - auto-fill if empty
+          if (!amount || amount === 'undefined' || amount === '0') {
+            setAmount(postData.price.toString());
+          }
+        }
+      }
+      
+      // Set order info if not from contract
+      if (!orderInfo || !isContractPayment) {
+        setOrderInfo(`Payment for ${postData.title || "vehicle purchase"}`);
       }
     } catch (err) {
       console.error("Error fetching post details:", err);
+      setError("Unable to load product information. Please try again.");
     }
   };
 
   const handlePayment = async (e) => {
     e.preventDefault();
-    if (!amount || !orderInfo || !postId) {
-      setError("Missing required information. Please go back and try again.");
+    
+    // Basic validation
+    if (!amount || !orderInfo) {
+      setError("Please fill in all required fields.");
+      return;
+    }
+    
+    // PostId only required for non-contract payments
+    const isContractPayment = searchParams.get("contractId");
+    if (!isContractPayment && !postId) {
+      setError("Post ID is required for direct payments.");
       return;
     }
 
@@ -61,23 +125,18 @@ const PaymentPage = () => {
     try {
       const transactionId = searchParams.get("transactionId");
 
-      console.log("Creating VNPay payment with:", {
+      const paymentData = {
         amount: parseInt(amount),
         orderInfo,
-        postId: parseInt(postId),
-        transactionId: transactionId,
-      });
+        ...(postId && { postId: parseInt(postId) }) // Only include postId if available
+      };
 
       // Use transaction ID if available (from contract), otherwise create regular payment
       const apiUrl = transactionId
         ? `/api/vnpay/create-payment/${transactionId}`
         : "/api/vnpay/create-payment";
 
-      const response = await api.post(apiUrl, {
-        amount: parseInt(amount),
-        orderInfo,
-        postId: parseInt(postId),
-      });
+      const response = await api.post(apiUrl, paymentData);
 
       console.log(
         "🔍 Full VNPay response:",
@@ -207,30 +266,51 @@ const PaymentPage = () => {
         )}
 
         <form onSubmit={handlePayment} className="payment-form">
-          <div className="form-group">
-            <label htmlFor="postId">Post ID</label>
-            <input
-              type="text"
-              id="postId"
-              value={postId}
-              onChange={(e) => setPostId(e.target.value)}
-              placeholder="Post ID"
-              required
-              disabled={searchParams.get("postId")}
-            />
-          </div>
+          {/* Only show Post ID field if not from contract */}
+          {!searchParams.get("contractId") && (
+            <div className="form-group">
+              <label htmlFor="postId">Post ID</label>
+              <input
+                type="text"
+                id="postId"
+                value={postId}
+                onChange={(e) => setPostId(e.target.value)}
+                placeholder="Post ID"
+                required
+              />
+            </div>
+          )}
 
           <div className="form-group">
             <label htmlFor="amount">Amount (VND)</label>
-            <input
-              type="number"
-              id="amount"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder="Enter amount"
-              min="1000"
-              required
-            />
+            
+            {/* Manual amount input hint */}
+            {searchParams.get("contractId") && !amount && (
+              <div style={{background: '#fff3cd', padding: '8px', margin: '8px 0', fontSize: '14px', borderRadius: '4px'}}>
+                💡 <strong>Note:</strong> Please enter the vehicle price manually
+              </div>
+            )}
+            
+            <div className="amount-input-wrapper">
+              <input
+                type="number"
+                id="amount"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="Enter amount"
+                min="1000"
+                required
+              />
+              {postDetails && postDetails.price && (
+                <button
+                  type="button"
+                  className="auto-fill-btn"
+                  onClick={() => setAmount(postDetails.price.toString())}
+                >
+                  Use Vehicle Price: {new Intl.NumberFormat("vi-VN").format(postDetails.price)} VND
+                </button>
+              )}
+            </div>
           </div>
 
           <div className="form-group">
@@ -240,7 +320,7 @@ const PaymentPage = () => {
               value={orderInfo}
               onChange={(e) => setOrderInfo(e.target.value)}
               placeholder="Enter order description"
-              rows="4"
+              rows="3"
               required
             />
           </div>
