@@ -45,4 +45,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
             "AND u.id = :userId " +
             "AND t.transactionStatus = :status")
     List<TransactionResponse> findTransactionByStatus(@Param("userId") Integer userId, @Param("status") String status);
+
+    @Query("SELECT t FROM Transaction t WHERE t.post.id = :postId")
+    Transaction findByPostId(@Param("postId") Integer postId);
 }

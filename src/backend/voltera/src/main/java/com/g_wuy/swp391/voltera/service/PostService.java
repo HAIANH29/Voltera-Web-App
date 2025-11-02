@@ -45,7 +45,7 @@ public class PostService {
     @Autowired
     private BatteryImageRepository batteryImageRepository;
     @Autowired
-    private EmailService emailService;
+    private TransactionRepository transactionRepository;
 
     @Transactional
     public PostResponse createPost(PostRequest dto, String username) {
@@ -66,7 +66,7 @@ public class PostService {
                 .title(dto.getTitle())
                 .description(dto.getDescription())
                 .price(dto.getPrice())
-                .status("UNPAID")
+                .status("PENDING")
                 .createdAt(Instant.now())
                 .updatedAt(Instant.now())
                 .build();
@@ -164,8 +164,17 @@ public class PostService {
             }
         }
 
-        // ✉️ Gửi email thông báo thanh toán
-        emailService.sendEmailFee(seller.getEmail(), post.getId());
+        // ✉️ Tạo transaction thanh toán phí đăng bài
+        Transaction transaction = Transaction.builder()
+                .post(post)
+                .createAt(Instant.now())
+                .updateAt(Instant.now())
+                .price(dto.getPrice())
+                .contractid(null)
+                .reportid(null)
+                .transactionStatus("PENDING")
+                .build();
+        transactionRepository.save(transaction);
 
         // 📦 Chuẩn bị response
         PostResponse response = postMapper.toPostResponse(post, savedBattery, savedVehicle, allImages);

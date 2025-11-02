@@ -43,4 +43,8 @@ public class Fee {
     private String feeStatus;
 
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "transactionid")
+    private Transaction transaction;
+
 }

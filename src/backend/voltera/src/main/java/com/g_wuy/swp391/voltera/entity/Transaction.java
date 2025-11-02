@@ -25,10 +25,6 @@ public class Transaction {
     @JoinColumn(name = "postid", nullable = false)
     private Post post;
 
-//    @OneToOne
-//    @JoinColumn(name = "reportid")
-//    private Report report;
-
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "createat")
     private Instant createAt;
@@ -52,7 +48,4 @@ public class Transaction {
     @Column(name = "transactionstatus", length = 20)
     private String transactionStatus;
 
-//    @OneToOne
-//    @JoinColumn(name = "contractid")
-//    private Contract contract;
 }

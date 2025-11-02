@@ -86,7 +86,6 @@ public class EmailService {
                 + "Best regards,\n"
                 + "Voltera Support Team");
         message.setFrom("voltera.global@gmail.com");
-        System.out.println("đã gửi email đến: " + email);
         mailSender.send(message);
     }
 
@@ -122,7 +121,6 @@ public class EmailService {
         message.setFrom("voltera.global@gmail.com");
 
         // Gửi email
-        System.out.println("đã gửi mail đến " + email);
         mailSender.send(message);
     }
 }

@@ -61,21 +61,22 @@ public class VNPayConfiguration {
         Collections.sort(fieldNames);
         StringBuilder sb = new StringBuilder();
 
-        boolean first = true;
-        for (String key : fieldNames) {
+        for (int i = 0; i < fieldNames.size(); i++) {
+            String key = fieldNames.get(i);
             String value = fields.get(key);
             if (value != null && !value.isEmpty()) {
-                if (!first) {
+                sb.append(key)
+                        .append("=")
+                        .append(URLEncoder.encode(value, StandardCharsets.US_ASCII));
+                if (i < fieldNames.size() - 1) {
                     sb.append("&");
                 }
-                // VNPay requires no URL encoding in hash data
-                sb.append(key).append("=").append(value);
-                first = false;
             }
         }
 
         return hmacSHA512(secretKey, sb.toString());
     }
+
 
     public static String getRandomNumber(int len) {
         Random rnd = new Random();

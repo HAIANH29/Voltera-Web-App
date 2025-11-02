@@ -28,12 +28,12 @@ public class FeeScheduler {
     @Scheduled(cron = "0 0 0 * * ?")
     @Transactional
     public void scheduled() {
-        LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);
+        LocalDateTime oneMonthAgo = LocalDateTime.now().minusDays(15);
 
-        List<Fee> expiredFees = feeRepository.findByCreatedAtBeforeAndFeeStatus(oneMonthAgo, "ACTIVE");
+        List<Fee> expiredFees = feeRepository.findByCreatedAtBeforeAndFeeStatus(oneMonthAgo, "PAID");
 
         for (Fee fee : expiredFees) {
-            fee.setFeeStatus("EXPIRED");
+            fee.setFeeStatus("PENDING");
             feeRepository.save(fee);
 
             Post post = fee.getPost();
@@ -42,7 +42,7 @@ public class FeeScheduler {
                 if (seller != null && seller.getEmail() != null) {
                     emailService.sendEmailRenewalFee(seller.getEmail(), fee.getId());
                 }
-                post.setStatus("UNPAID");
+                post.setStatus("PENDING");
                 postRepository.save(post);
             }
         }

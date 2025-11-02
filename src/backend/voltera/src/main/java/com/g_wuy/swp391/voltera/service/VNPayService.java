@@ -1,10 +1,12 @@
 package com.g_wuy.swp391.voltera.service;
 
 import com.g_wuy.swp391.voltera.configuration.VNPayConfiguration;
+import com.g_wuy.swp391.voltera.entity.Fee;
 import com.g_wuy.swp391.voltera.entity.Payment;
 import com.g_wuy.swp391.voltera.entity.Transaction;
 import com.g_wuy.swp391.voltera.model.request.VNPayRequest;
 import com.g_wuy.swp391.voltera.model.response.VNPayResponse;
+import com.g_wuy.swp391.voltera.repository.FeeRepository;
 import com.g_wuy.swp391.voltera.repository.PaymentRepository;
 import com.g_wuy.swp391.voltera.repository.TransactionRepository;
 import jakarta.servlet.http.HttpServletRequest;
@@ -36,7 +38,10 @@ public class VNPayService {
     @Autowired
     private PaymentRepository paymentRepository;
 
-    public VNPayResponse createPayment(VNPayRequest request, HttpServletRequest httpRequest, String transactionId) {
+    @Autowired
+    private FeeRepository feeRepository;
+
+    public VNPayResponse createPayment(VNPayRequest request, HttpServletRequest httpRequest, Integer transactionId) {
         try {
             String vnp_TxnRef = VNPayConfiguration.getRandomNumber(8);
             String vnp_IpAddr = VNPayConfiguration.getIpAddress(httpRequest);
@@ -105,6 +110,8 @@ public class VNPayService {
             Transaction transaction = transactionRepository.findById(transactionId)
                     .orElseThrow(() -> new RuntimeException("Transaction not found"));
 
+            Fee fee = feeRepository.findByTransactionId(transactionId);
+
             BigDecimal amount = new BigDecimal(params.get("vnp_Amount")).divide(BigDecimal.valueOf(100));
             transaction.setPrice(amount);
             transaction.setUpdateAt(Instant.now());
@@ -126,9 +133,11 @@ public class VNPayService {
             if ("00".equals(params.get("vnp_ResponseCode"))) {
                 transaction.setTransactionStatus("DONE");
                 payment.setPaymentStatus("COMPLETED");
+                fee.setFeeStatus("PAID");
             } else {
                 transaction.setTransactionStatus("FAILED");
                 payment.setPaymentStatus("FAILED");
+                fee.setFeeStatus("PENDING");
             }
 
             paymentRepository.save(payment);

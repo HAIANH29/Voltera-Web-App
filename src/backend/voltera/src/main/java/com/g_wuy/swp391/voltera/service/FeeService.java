@@ -1,22 +1,31 @@
 package com.g_wuy.swp391.voltera.service;
 
+import com.g_wuy.swp391.voltera.configuration.VNPayConfiguration;
 import com.g_wuy.swp391.voltera.entity.Fee;
+import com.g_wuy.swp391.voltera.entity.Payment;
 import com.g_wuy.swp391.voltera.entity.Post;
 import com.g_wuy.swp391.voltera.entity.Transaction;
+import com.g_wuy.swp391.voltera.exception.BusinessException;
 import com.g_wuy.swp391.voltera.model.request.VNPayRequest;
 import com.g_wuy.swp391.voltera.model.response.VNPayResponse;
 import com.g_wuy.swp391.voltera.repository.FeeRepository;
+import com.g_wuy.swp391.voltera.repository.PaymentRepository;
 import com.g_wuy.swp391.voltera.repository.PostRepository;
 import com.g_wuy.swp391.voltera.repository.TransactionRepository;
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @Service
 public class FeeService {
+    private static final Logger log = LoggerFactory.getLogger(FeeService.class);
     @Autowired
     private FeeRepository feeRepository;
 
@@ -28,32 +37,44 @@ public class FeeService {
     @Autowired
     private VNPayService vNPayService;
 
-    public VNPayResponse createFeeAndPay(Integer postId, HttpServletRequest httpRequest) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new RuntimeException("Post not found"));
+    @Autowired
+    private VNPayConfiguration vnPayConfig;
+
+    @Autowired
+    private PaymentRepository paymentRepository;
+
+    public VNPayResponse createFeeAndPay(Integer transactionId, HttpServletRequest httpRequest) {
+
+        Transaction transaction = transactionRepository.findById(transactionId).orElse(null);
+        if (transaction == null) {
+            throw new BusinessException("Transaction Not Found");
+        }
 
         Fee fee = new Fee();
-        fee.setPost(post);
-        if (post.getVehicle() != null) {
+        fee.setPost(transaction.getPost());
+        if (transaction.getPost().getVehicle() != null) {
             fee.setAmount(BigDecimal.valueOf(500000));
-        }
-        else {
+        } else if (transaction.getPost().getBattery() != null) {
             fee.setAmount(BigDecimal.valueOf(200000));
+        } else {
+            throw new BusinessException("Post không có vehicle hay battery");
         }
-        fee.setDescription("Fee for post:  " + post.getTitle());
-        fee.setFeeStatus("VALID");
+        fee.setDescription("Fee for posting " + transaction.getPost().getTitle());
         fee.setCreatedAt(LocalDateTime.now());
-        fee.setExpiredAt(LocalDateTime.now().plusSeconds(30L * 24 * 60 * 60));
+        fee.setExpiredAt(LocalDateTime.now().plusDays(15));
+        fee.setFeeStatus("PENDING");
+        fee.setTransaction(transaction);
         feeRepository.save(fee);
 
-        Transaction transaction = new Transaction();
-        transaction.setTransactionStatus("PENDING");
-        transaction.setPrice(fee.getAmount());
-        transactionRepository.save(transaction);
-
         VNPayRequest vnPayRequest = new VNPayRequest();
+        vnPayRequest.setAmount(Long.valueOf(String.valueOf(fee.getAmount())));
+        vnPayRequest.setPostId(transaction.getPost().getId());
+        vnPayRequest.setOrderInfo("Pay for posting " + transaction.getPost().getTitle());
+        vnPayRequest.setOrderType("Bill Payment");
+        vnPayRequest.setBankCode("NCB");
+        vnPayRequest.setLanguage("vn");
 
-        return vNPayService.createPayment(vnPayRequest, httpRequest, transaction.getTransactionid().toString());
+        return vNPayService.createPayment(vnPayRequest, httpRequest, transaction.getTransactionid());
     }
 
     public VNPayResponse renewFee(Integer postId, HttpServletRequest httpRequest) {
@@ -71,22 +92,82 @@ public class FeeService {
                 .post(post)
                 .amount(BigDecimal.valueOf(50000))
                 .description("Gia hạn bài đăng: " + post.getTitle())
-                .feeStatus("VALID")
+                .feeStatus("PENDING")
                 .createdAt(LocalDateTime.now())
-                .expiredAt(LocalDateTime.now().plusSeconds(30L * 24 * 60 * 60))
+                .expiredAt(LocalDateTime.now().plusDays(15))
                 .build();
         feeRepository.save(newFee);
 
         Transaction transaction = new Transaction();
+        transaction.setPost(post);
         transaction.setTransactionStatus("APPROVE");
         transaction.setPrice(newFee.getAmount());
+        transaction.setCreateAt(Instant.now());
         transactionRepository.save(transaction);
+
+        newFee.setTransaction(transaction);
+        feeRepository.save(newFee);
 
         VNPayRequest vnPayRequest = VNPayRequest.builder()
                 .amount(newFee.getAmount().longValue())
                 .orderInfo("Gia hạn bài đăng: " + post.getTitle())
                 .build();
 
-        return vNPayService.createPayment(vnPayRequest, httpRequest, transaction.getTransactionid().toString());
+        return vNPayService.createPayment(vnPayRequest, httpRequest, transaction.getTransactionid());
+    }
+
+    public String handleReturn(Map<String, String> params, Integer transactionId) {
+        try {
+            String vnpSecureHash = params.get("vnp_SecureHash");
+            params.remove("vnp_SecureHash");
+            params.remove("vnp_SecureHashType");
+
+            String signValue = vnPayConfig.hashAllFields(params);
+            if (!signValue.equalsIgnoreCase(vnpSecureHash)) {
+                log.error("Invalid checksum. Expected {}, got {}", vnpSecureHash, signValue);
+                return "Lỗi xác minh chữ ký!";
+            }
+
+            Transaction transaction = transactionRepository.findById(transactionId)
+                    .orElseThrow(() -> new RuntimeException("Transaction not found"));
+
+            Fee fee = feeRepository.findByTransactionId(transactionId);
+
+            BigDecimal amount = new BigDecimal(params.get("vnp_Amount")).divide(BigDecimal.valueOf(100));
+            transaction.setPrice(amount);
+            transaction.setUpdateAt(Instant.now());
+
+            Payment payment = new Payment();
+            payment.setTransaction(transaction);
+            payment.setPaymentMethod("VNPAY");
+            payment.setTransactionCode(params.get("vnp_TxnRef"));
+            payment.setPaymentDate(LocalDateTime.now());
+            payment.setVnpTransactionNo(params.get("vnp_TransactionNo"));
+            payment.setVnpBankCode(params.get("vnp_BankCode"));
+            payment.setVnpBankTranNo(params.get("vnp_BankTranNo"));
+            payment.setVnpCardType(params.get("vnp_CardType"));
+            payment.setVnpPayDate(params.get("vnp_PayDate"));
+            payment.setVnpResponseCode(params.get("vnp_ResponseCode"));
+            payment.setAmount(amount);
+            payment.setOrderInfo(params.get("vnp_OrderInfo"));
+
+            if ("00".equals(params.get("vnp_ResponseCode"))) {
+                transaction.setTransactionStatus("DONE");
+                payment.setPaymentStatus("COMPLETED");
+                fee.setFeeStatus("PAID");
+            } else {
+                transaction.setTransactionStatus("FAILED");
+                payment.setPaymentStatus("FAILED");
+                fee.setFeeStatus("PENDING");
+            }
+
+            paymentRepository.save(payment);
+            transactionRepository.save(transaction);
+
+            return "Giao dịch " + transaction.getTransactionStatus().toLowerCase() + "!";
+        } catch (Exception e) {
+            FeeService.log.error("Error handling VNPay return", e);
+            return "Lỗi xử lý callback: " + e.getMessage();
+        }
     }
 }
