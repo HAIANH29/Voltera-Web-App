@@ -1,118 +1,152 @@
-
-
-
 /* ===== Tesla-like Register Form ===== */
 
 /* Cột form trung tâm */
 .t-register {
-    width: 100%;
-    max-width: 420px;
-    /* gọn như Tesla */
-    margin: 60px auto;
-    color: #171a20;
-    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  width: 100%;
+  max-width: 420px;
+  /* gọn như Tesla */
+  margin: 60px auto;
+  color: #171a20;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
 }
 
 /* Step nhỏ, xám */
 .t-step {
-    font-size: 13px;
-    color: #6b7280;
-    margin-bottom: 10px;
+  font-size: 13px;
+  color: #6b7280;
+  margin-bottom: 10px;
 }
 
 /* Heading */
 .t-heading {
-    font-size: 32px;
-    line-height: 1.2;
-    font-weight: 700;
-    letter-spacing: -0.01em;
-    margin: 0 0 20px;
+  font-size: 32px;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin: 0 0 20px;
 }
 
 /* Label */
 .t-label {
-    display: block;
-    font-size: 14px;
-    font-weight: 600;
-    margin: 14px 0 6px;
-    color: #171a20;
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  margin: 14px 0 6px;
+  color: #171a20;
 }
 
 /* Bọc input + eye */
 .t-field {
-    position: relative;
-    display: flex;
-    align-items: center;
+  position: relative;
+  display: flex;
+  align-items: center;
 }
 
 /* Input */
 .t-input {
-    width: 100%;
-    height: 44px;
-    border: 1px solid #e6e6e6;
-    border-radius: 6px;
-    background: #f2f2f2;
-    padding: 0 44px 0 14px;
-    /* chừa chỗ icon bên phải */
-    font-size: 15px;
-    transition: border-color .15s, background .15s;
+  width: 100%;
+  height: 44px;
+  border: 1px solid #e6e6e6;
+  border-radius: 6px;
+  background: #f2f2f2;
+  padding: 0 44px 0 14px;
+  /* chừa chỗ icon bên phải */
+  font-size: 15px;
+  transition: border-color .15s, background .15s;
 }
 
 .t-input:focus {
-    outline: none;
-    border-color: #d1d5db;
-    background: #fff;
+  outline: none;
+  border-color: #d1d5db;
+  background: #fff;
 }
 
 .t-input-error {
-    border-color: #e11d48;
+  border-color: #e11d48;
 }
 
 /* Icon con mắt – nằm sát mép phải & giữa dọc */
 
-.t-eye{
-  position:absolute;
-  right:8px;
-  top:50%;
-  transform:translateY(-50%);
-  width:32px;                     /* có kích thước rõ ràng để không che vùng gõ */
-  height:32px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  border:none;
-  background:transparent;
-  cursor:pointer;
-  color:#111827;
-  padding:0;
-  z-index:1;                      /* trên nền input nhưng chỉ chiếm ô 32px */
+.t-eye {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  /* có kích thước rõ ràng để không che vùng gõ */
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: #111827;
+  padding: 0;
+  z-index: 1;
+  /* trên nền input nhưng chỉ chiếm ô 32px */
 }
-.t-eye:focus{ outline:none; }
+
+.t-eye:focus {
+  outline: none;
+}
+
+/* Role selector styling */
+.t-input[type="role"],
+select.t-input {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 12px center;
+  background-repeat: no-repeat;
+  background-size: 16px;
+  padding-left: 40px;
+  padding-right: 40px;
+  cursor: pointer;
+  text-align: center;
+  text-align-last: center;
+  font-weight: 600;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+select.t-input option {
+  padding: 8px 12px;
+  background: #fff;
+  color: #171a20;
+  font-size: 14px;
+  text-align: center;
+  font-weight: 600;
+}
 
 /* Lỗi */
-.t-error{
-  color:#e11d48;
-  font-size:13px;
-  margin-top:4px;
+.t-error {
+  color: #e11d48;
+  font-size: 13px;
+  margin-top: 4px;
 }
 
 /* Nút Next */
-.t-btn{
-  width:100%;
-  height:44px;
-  border-radius:6px;
-  border:1px solid transparent;
-  font-weight:600;
-  font-size:15px;
-  cursor:pointer;
-  margin-top:18px;
-  transition:background .15s;
+.t-btn {
+  width: 100%;
+  height: 44px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  margin-top: 18px;
+  transition: background .15s;
 }
-.t-btn-primary{
-  background:#3b82f6;
-  color:#fff;
+
+.t-btn-primary {
+  background: #3b82f6;
+  color: #fff;
 }
-.t-btn-primary:hover{ background:#8ea4ef; }
-.t-btn-primary:active{ transform: translateY(1px); }
 
+.t-btn-primary:hover {
+  background: #8ea4ef;
+}
 
+.t-btn-primary:active {
+  transform: translateY(1px);
+}

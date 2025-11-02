@@ -22,6 +22,9 @@ const schema = Yup.object({
   confirmPassword: Yup.string()
     .oneOf([Yup.ref("password"), null], "Passwords do not match.")
     .required("Please confirm your password."),
+  role: Yup.string()
+    .oneOf(["BUYER", "SELLER"], "Please select a valid role.")
+    .required("Please select your role."),
 });
 
 export default function RegisterPage() {
@@ -31,7 +34,12 @@ export default function RegisterPage() {
   const [serverError, setServerError] = useState("");
 
   const formik = useFormik({
-    initialValues: { email: "", password: "", confirmPassword: "" },
+    initialValues: {
+      email: "",
+      password: "",
+      confirmPassword: "",
+      role: "BUYER",
+    },
     validationSchema: schema,
     onSubmit: async (values, { setSubmitting }) => {
       setServerError("");
@@ -41,13 +49,13 @@ export default function RegisterPage() {
         const payload = {
           username: values.email.trim(), // Backend expect username field
           password: values.password,
-          role: "BUYER", // Default role cho user đăng ký
+          role: values.role, // Use selected role from form
         };
 
         console.log("Sending register request:", payload);
 
-  // BE path: /api/v1/auth/register  (baseURL là http://localhost:8080)
-  const res = await api.post("/api/v1/auth/register", payload);
+        // BE path: /api/v1/auth/register  (baseURL là http://localhost:8080)
+        const res = await api.post("/api/v1/auth/register", payload);
 
         console.log("Register response:", res.data);
 
@@ -80,7 +88,7 @@ export default function RegisterPage() {
               JSON.stringify({
                 email: values.email.trim(),
                 username: values.email.trim(),
-                role: "BUYER",
+                role: values.role, // Use selected role
               })
             );
           }
@@ -92,13 +100,13 @@ export default function RegisterPage() {
         console.log("Registration successful, sending OTP...");
         await otpService.requestOtp(values.email.trim());
         console.log("OTP sent successfully");
-        
+
         // Chuyển đến trang verify email
-        navigate("/verify-email", { 
-          state: { 
-            email: values.email.trim(), 
-            purpose: "signup" 
-          } 
+        navigate("/verify-email", {
+          state: {
+            email: values.email.trim(),
+            purpose: "signup",
+          },
         });
       } catch (err) {
         console.error("Register error:", err.response?.data || err.message);
@@ -164,6 +172,28 @@ export default function RegisterPage() {
         />
         {touched.email && errors.email && (
           <div className="t-error">{errors.email}</div>
+        )}
+
+        {/* Role Selection */}
+        <label className="t-label" htmlFor="role">
+          Account Type
+        </label>
+        <select
+          id="role"
+          name="role"
+          value={values.role}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          className={`t-input ${
+            touched.role && errors.role ? "t-input-error" : ""
+          }`}
+          disabled={isSubmitting}
+        >
+          <option value="BUYER">Buyer</option>
+          <option value="SELLER">Seller</option>
+        </select>
+        {touched.role && errors.role && (
+          <div className="t-error">{errors.role}</div>
         )}
 
         {/* Password */}
