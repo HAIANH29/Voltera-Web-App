@@ -387,4 +387,28 @@ public class PostService {
 
         return response;
     }
+
+    public List<PostResponse> getPostsByUserId(Integer userId) {
+        List<Post> posts = postRepository.findBySellerIdIdOrderByCreatedAtDesc(userId);
+        List<PostResponse> responses = new ArrayList<>();
+
+        for (Post post : posts) {
+            Vehicle vehicle = vehicleRepository.findByPost(post).orElse(null);
+            Battery battery = batteryRepository.findByPost(post).orElse(null);
+            List<String> imageUrls = new ArrayList<>();
+
+            if (vehicle != null) {
+                imageUrls = vehicleImageRepository.findByVehicle(vehicle)
+                        .stream().map(VehicleImage::getImageUrl).toList();
+            } else if (battery != null) {
+                imageUrls = batteryImageRepository.findByBattery(battery)
+                        .stream().map(BatteryImage::getImageUrl).toList();
+            }
+
+            PostResponse response = postMapper.toPostResponse(post, battery, vehicle, imageUrls);
+            response.setLocation(post.getSellerId().getAddress());
+            responses.add(response);
+        }
+        return responses;
+    }
 }

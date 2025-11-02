@@ -21,6 +21,13 @@ const PaymentPage = () => {
     const contractId = searchParams.get("contractId");
     const transactionId = searchParams.get("transactionId");
 
+    console.log("PaymentPage URL params:", {
+      postIdParam,
+      amountParam,
+      contractId,
+      transactionId,
+    });
+
     if (postIdParam) {
       setPostId(postIdParam);
       fetchPostDetails(postIdParam);
@@ -36,7 +43,7 @@ const PaymentPage = () => {
   // Fetch thông tin bài post
   const fetchPostDetails = async (id) => {
     try {
-      const response = await api.get(`/api/post/${id}`);
+      const response = await api.get(`/api/post/detail/${id}`);
       setPostDetails(response.data);
       if (!orderInfo) {
         setOrderInfo(
@@ -68,16 +75,31 @@ const PaymentPage = () => {
         transactionId: transactionId,
       });
 
-      // Use transaction ID if available (from contract), otherwise create regular payment
-      const apiUrl = transactionId
-        ? `/api/vnpay/create-payment/${transactionId}`
-        : "/api/vnpay/create-payment";
+      let apiUrl;
+      let requestBody;
 
-      const response = await api.post(apiUrl, {
-        amount: parseInt(amount),
-        orderInfo,
-        postId: parseInt(postId),
-      });
+      if (
+        transactionId &&
+        transactionId !== "undefined" &&
+        transactionId !== "null"
+      ) {
+        // Fee payment for posts
+        apiUrl = `/api/fee/create-payment/${transactionId}`;
+        requestBody = {}; // Fee API might not need body
+      } else {
+        // Regular contract payment
+        apiUrl = "/api/vnpay/create-payment";
+        requestBody = {
+          amount: parseInt(amount),
+          orderInfo,
+          postId: parseInt(postId),
+        };
+      }
+
+      console.log("API URL:", apiUrl);
+      console.log("Request body:", requestBody);
+
+      const response = await api.post(apiUrl, requestBody);
 
       console.log(
         "🔍 Full VNPay response:",

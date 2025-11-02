@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.security.auth.login.LoginException;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -53,5 +54,26 @@ public class FeeController {
         }
 
         response.sendRedirect(frontendUrl.toString());
+    }
+
+    // Admin endpoints to get fee statistics and list
+    @GetMapping("/admin/all")
+    public ResponseEntity<List<Object>> getAllFees() {
+        try {
+            List<Object> fees = feeService.getAllFeesForAdmin();
+            return ResponseEntity.ok(fees);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @GetMapping("/admin/stats")
+    public ResponseEntity<Map<String, Object>> getFeeStats() {
+        try {
+            Map<String, Object> stats = feeService.getFeeStatistics();
+            return ResponseEntity.ok(stats);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
     }
 }

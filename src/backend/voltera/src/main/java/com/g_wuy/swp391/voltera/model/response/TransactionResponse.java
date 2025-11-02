@@ -14,6 +14,7 @@ import java.time.Instant;
 @Builder
 public class TransactionResponse {
     private Integer id;
+    private Integer postId;
     private String postTitle;
     private BigDecimal price;
     private String transactionStatus;

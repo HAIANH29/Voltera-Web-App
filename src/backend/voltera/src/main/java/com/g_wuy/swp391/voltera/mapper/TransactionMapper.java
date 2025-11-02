@@ -9,6 +9,7 @@ import org.mapstruct.Mapping;
 public interface TransactionMapper {
 
     @Mapping(source = "transactionid", target = "id")
+    @Mapping(source = "contractid.postid.id", target = "postId")
     @Mapping(source = "contractid.postid.title", target = "postTitle")
     @Mapping(source = "price", target = "price")
     @Mapping(source = "transactionStatus", target = "transactionStatus")

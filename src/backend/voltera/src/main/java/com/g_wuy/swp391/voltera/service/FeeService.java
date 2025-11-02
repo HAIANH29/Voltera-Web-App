@@ -21,7 +21,8 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class FeeService {
@@ -169,5 +170,80 @@ public class FeeService {
             FeeService.log.error("Error handling VNPay return", e);
             return "Lỗi xử lý callback: " + e.getMessage();
         }
+    }
+
+    // Admin methods for fee management
+    public List<Object> getAllFeesForAdmin() {
+        try {
+            List<Fee> fees = feeRepository.findAll();
+            return fees.stream()
+                    .map(this::mapFeeToAdminView)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            log.error("Error getting all fees for admin", e);
+            return new ArrayList<>();
+        }
+    }
+
+    public Map<String, Object> getFeeStatistics() {
+        try {
+            List<Fee> allFees = feeRepository.findAll();
+            
+            long totalFees = allFees.size();
+            long paidFees = allFees.stream().filter(f -> "PAID".equals(f.getFeeStatus())).count();
+            long pendingFees = allFees.stream().filter(f -> "PENDING".equals(f.getFeeStatus())).count();
+            long expiredFees = allFees.stream().filter(f -> isExpired(f)).count();
+            
+            // Calculate total revenue from paid fees
+            BigDecimal totalRevenue = allFees.stream()
+                    .filter(f -> "PAID".equals(f.getFeeStatus()))
+                    .map(Fee::getAmount)
+                    .filter(Objects::nonNull)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            Map<String, Object> stats = new HashMap<>();
+            stats.put("totalFees", totalFees);
+            stats.put("paidFees", paidFees);
+            stats.put("pendingFees", pendingFees);
+            stats.put("expiredFees", expiredFees);
+            stats.put("totalRevenue", totalRevenue);
+            
+            return stats;
+        } catch (Exception e) {
+            log.error("Error calculating fee statistics", e);
+            return new HashMap<>();
+        }
+    }
+
+    private Object mapFeeToAdminView(Fee fee) {
+        Map<String, Object> feeView = new HashMap<>();
+        feeView.put("id", fee.getId());
+        feeView.put("amount", fee.getAmount());
+        feeView.put("status", fee.getFeeStatus());
+        feeView.put("createdAt", fee.getCreatedAt());
+        feeView.put("expiredAt", fee.getExpiredAt());
+        feeView.put("description", fee.getDescription());
+        
+        // Add post information if available
+        if (fee.getPost() != null) {
+            Map<String, Object> postInfo = new HashMap<>();
+            postInfo.put("id", fee.getPost().getId());
+            postInfo.put("title", fee.getPost().getTitle());
+            feeView.put("post", postInfo);
+        }
+        
+        // Add transaction information if available
+        if (fee.getTransaction() != null) {
+            Map<String, Object> transactionInfo = new HashMap<>();
+            transactionInfo.put("transactionid", fee.getTransaction().getTransactionid());
+            feeView.put("transaction", transactionInfo);
+        }
+        
+        return feeView;
+    }
+
+    private boolean isExpired(Fee fee) {
+        if (fee.getExpiredAt() == null) return false;
+        return fee.getExpiredAt().isBefore(LocalDateTime.now());
     }
 }

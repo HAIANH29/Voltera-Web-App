@@ -182,4 +182,10 @@ public class PostController {
         PostResponse response = postService.getPostDetail(postId);
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<PostResponse>> getUserPosts(@PathVariable Integer userId) {
+        List<PostResponse> responses = postService.getPostsByUserId(userId);
+        return ResponseEntity.ok(responses);
+    }
 }

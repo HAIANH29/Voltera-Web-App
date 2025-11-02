@@ -41,6 +41,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
     @Query("""
                 SELECT new com.g_wuy.swp391.voltera.model.response.TransactionResponse(
                     t.transactionid,
+                    p.id,
                     p.title,
                     p.price,
                     t.transactionStatus,
