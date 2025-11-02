@@ -9,15 +9,15 @@ public class VehicleDTO {
     private String model;
     private String version;
     private Integer odo;
-    private BigDecimal batterycapacity;
+    private BigDecimal batteryCapacity;
     private Integer range;
-    private Integer chargingtime;
+    private Integer chargingTime;
     private String color;
-    private Integer numberofseat;
+    private Integer numberOfSeat;
     private String style;
-    private Boolean bodyinsurance;
-    private Boolean vehicleinspection;
-    private String licenseplate;
+    private Boolean bodyInsurance;
+    private Boolean vehicleInspection;
+    private String licensePlate;
     private String origin;
-    private int yearmanufacture;
+    private int yearManufacture;
 }

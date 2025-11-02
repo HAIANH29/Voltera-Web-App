@@ -38,10 +38,6 @@ public class FeeScheduler {
 
             Post post = fee.getPost();
             if (post != null) {
-                User seller = post.getSellerId();
-                if (seller != null && seller.getEmail() != null) {
-                    emailService.sendEmailRenewalFee(seller.getEmail(), fee.getId());
-                }
                 post.setStatus("PENDING");
                 postRepository.save(post);
             }

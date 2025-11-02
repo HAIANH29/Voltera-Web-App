@@ -64,7 +64,6 @@ public class VNPayService {
             String createDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
             vnp_Params.put("vnp_CreateDate", createDate);
 
-            // Build hash và query string
             StringBuilder hashData = new StringBuilder();
             StringBuilder query = new StringBuilder();
             for (Map.Entry<String, String> entry : vnp_Params.entrySet()) {

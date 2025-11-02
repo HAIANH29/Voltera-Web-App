@@ -16,6 +16,6 @@ public class BatteryDTO {
     private Integer cycleCount;
     private String warranty;
     private BigDecimal weight;
-    private String lifeCycle;
+    private String lifecycle;
     private BatteryType batteryTypeId;
 }

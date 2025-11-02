@@ -52,9 +52,9 @@ public class FeeService {
 
         Fee fee = new Fee();
         fee.setPost(transaction.getPost());
-        if (transaction.getPost().getVehicle() != null) {
+        if (transaction.getPost().getVehicle() != null && transaction.getPost().getBattery() == null) {
             fee.setAmount(BigDecimal.valueOf(500000));
-        } else if (transaction.getPost().getBattery() != null) {
+        } else if (transaction.getPost().getBattery() != null && transaction.getPost().getVehicle() == null) {
             fee.setAmount(BigDecimal.valueOf(200000));
         } else {
             throw new BusinessException("Post không có vehicle hay battery");
