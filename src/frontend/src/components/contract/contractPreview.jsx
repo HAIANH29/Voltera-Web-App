@@ -169,94 +169,161 @@ export default function ContractPreview({ postId, contractId, onClose }) {
       }
 
       setLoading(true);
+      console.log("🚀 Starting contract download process...");
+      console.log("📋 Contract Data:", contractData);
+      console.log("🚗 Post Data:", postData);
 
-      // 2️⃣ Get template from public/templates
-      console.log("🔍 Fetching DOCX template...");
-      const fileRes = await fetch("/templates/contract/VehicleContract.docx");
+      // 2️⃣ Get template from public/templates  
+      console.log("🔍 Fetching DOCX template from:", "/templates/contract/VehicleContract.docx");
+      const fileRes = await fetch("/templates/contract/VehicleContract.docx", {
+        method: 'GET',
+        headers: {
+          'Cache-Control': 'no-cache'
+        }
+      });
 
-      console.log("📄 Template response status:", fileRes.status);
-      console.log("📄 Template response ok:", fileRes.ok);
+      console.log("📄 Template response:", {
+        status: fileRes.status,
+        statusText: fileRes.statusText,
+        ok: fileRes.ok,
+        headers: Object.fromEntries(fileRes.headers.entries())
+      });
 
       if (!fileRes.ok) {
-        console.error("❌ Template file not found, falling back to text");
-        // Fallback: Create contract as text if no DOCX template
+        console.error(`❌ Template file request failed: ${fileRes.status} ${fileRes.statusText}`);
+        console.log("🔄 Falling back to text download...");
         downloadContractAsText();
         return;
       }
 
       console.log("✅ Template found, processing DOCX...");
       const buffer = await fileRes.arrayBuffer();
-      console.log("📦 Buffer size:", buffer.byteLength);
+      console.log("📦 Template buffer size:", buffer.byteLength);
+
+      if (buffer.byteLength === 0) {
+        console.error("❌ Template file is empty");
+        downloadContractAsText();
+        return;
+      }
+
+      console.log("🔧 Creating PizZip instance...");
       const zip = new PizZip(buffer);
+      
+      console.log("📝 Creating Docxtemplater instance...");
       const doc = new Docxtemplater(zip, {
         paragraphLoop: true,
         linebreaks: true,
       });
 
-      // 3️⃣ Prepare data for rendering - Simplified for testing
+      // 3️⃣ Prepare data for rendering - Comprehensive data mapping
       const vehicle = postData?.vehicle || {};
       const renderData = {
         // Contract info
+        contractId: contractData.contractId || "N/A",
         contractSigningDate: contractData.signedDate
           ? new Date(contractData.signedDate).toLocaleDateString("vi-VN")
           : new Date().toLocaleDateString("vi-VN"),
 
-        // Seller info
-        sellerName: contractData.sellerName || "Nguyen Van A",
+        // Seller info  
+        sellerName: contractData.sellerName || "N/A",
         sellerEmail: "seller@voltera.com",
 
         // Buyer info
-        buyerName: contractData.buyerName || "Tran Thi B",
+        buyerName: contractData.buyerName || "N/A", 
         buyerEmail: "buyer@voltera.com",
 
         // Vehicle info
-        title: contractData.postTitle || postData?.title || "Tesla Model 3",
+        title: contractData.postTitle || postData?.title || "N/A",
         batteryCapacity: vehicle.batterycapacity
           ? `${vehicle.batterycapacity} kWh`
-          : "75 kWh",
-        odo: vehicle.odo ? `${vehicle.odo}` : "5000",
+          : "N/A",
+        odo: vehicle.odo ? `${vehicle.odo} km` : "N/A",
         price: postData?.price
-          ? new Intl.NumberFormat("vi-VN").format(postData.price)
-          : "1,500,000,000",
+          ? new Intl.NumberFormat("vi-VN").format(postData.price) + " VND"
+          : "N/A",
 
+        // Additional fields that might be in template
+        brand: vehicle.brand || "N/A",
+        model: vehicle.model || "N/A", 
+        year: vehicle.yearManufacture || "N/A",
+        color: vehicle.color || "N/A",
+        
         // Current date
         date: new Date().toLocaleDateString("vi-VN"),
+        currentDate: new Date().toLocaleDateString("vi-VN"),
       };
 
       console.log("🎯 Render data for contract:", renderData);
 
-      // 4️⃣ Render data
+      // 4️⃣ Render data with error handling
       console.log("🔄 Rendering template with data...");
-      doc.render(renderData);
+      try {
+        doc.render(renderData);
+        console.log("✅ Template rendered successfully");
+      } catch (renderError) {
+        console.error("❌ Template render error:", renderError);
+        console.error("❌ Render error details:", {
+          message: renderError.message,
+          properties: renderError.properties,
+          stack: renderError.stack
+        });
+        throw new Error(`Template rendering failed: ${renderError.message}`);
+      }
 
-      // 5️⃣ Export file
+      // 5️⃣ Export file with comprehensive error handling
       console.log("📦 Generating DOCX blob...");
-      const blob = doc.getZip().generate({
-        type: "blob",
-        mimeType:
-          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      });
+      let blob;
+      try {
+        const zipOutput = doc.getZip().generate({
+          type: "blob",
+          mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        });
+        blob = zipOutput;
+        console.log("✅ DOCX blob generated successfully");
+      } catch (zipError) {
+        console.error("❌ ZIP generation error:", zipError);
+        throw new Error(`Failed to generate DOCX file: ${zipError.message}`);
+      }
 
       console.log("💾 Downloading DOCX file...");
-      console.log("📁 Blob size:", blob.size);
-      saveAs(
-        blob,
-        `VehicleSalesContract_${contractData.contractId}_${
-          new Date().toISOString().split("T")[0]
-        }.docx`
-      );
+      console.log("📁 Blob details:", {
+        size: blob.size,
+        type: blob.type
+      });
+
+      if (blob.size === 0) {
+        throw new Error("Generated DOCX file is empty");
+      }
+
+      const fileName = `VehicleSalesContract_${contractData.contractId}_${
+        new Date().toISOString().split("T")[0]  
+      }.docx`;
+      
+      console.log("📄 Saving file as:", fileName);
+      saveAs(blob, fileName);
+      
+      console.log("🎉 DOCX download completed successfully!");
+      alert("Contract downloaded successfully!");
+      
     } catch (err) {
       console.error("❌ Error downloading DOCX contract:", err);
-      console.error("❌ Error details:", err.message);
-      console.error("❌ Error stack:", err.stack);
+      console.error("❌ Error details:", {
+        message: err.message,
+        name: err.name,
+        stack: err.stack
+      });
 
-      // Show specific error to user
-      alert(
-        `DOCX file creation error: ${err.message}. Will create text file instead.`
-      );
+      // Show specific error to user  
+      const errorMsg = err.message || "Unknown error occurred";
+      alert(`DOCX creation failed: ${errorMsg}\n\nDownloading as text file instead...`);
 
       // Fallback if error with DOCX
-      downloadContractAsText();
+      try {
+        downloadContractAsText();
+      } catch (fallbackError) {
+        console.error("❌ Even fallback failed:", fallbackError);
+        alert("Unable to download contract in any format. Please try again later.");
+      }
     } finally {
       setLoading(false);
     }
@@ -602,7 +669,7 @@ Created by Voltera system
                   className="contract-btn secondary"
                 >
                   {loading && <div className="contract-btn-spinner"></div>}
-                  {loading ? "Loading..." : "Download Contract"}
+                  {loading ? "Generating..." : "📄 Download Contract"}
                 </button>
               ) : (
                 <button
@@ -665,25 +732,7 @@ Created by Voltera system
                 </button>
               )}
 
-              {/* Debug info */}
-              <div
-                style={{
-                  background: "#f0f0f0",
-                  padding: "10px",
-                  margin: "10px 0",
-                  fontSize: "12px",
-                }}
-              >
-                <strong>Debug Info:</strong>
-                <br />
-                Contract Status: {contractData.contractStatus}
-                <br />
-                Is Canceling: {isCanceling.toString()}
-                <br />
-                Token: {token ? "✅ Present" : "❌ Missing"}
-                <br />
-                Contract ID: {contractData.contractId}
-              </div>
+
             </div>
           </>
         ) : (
