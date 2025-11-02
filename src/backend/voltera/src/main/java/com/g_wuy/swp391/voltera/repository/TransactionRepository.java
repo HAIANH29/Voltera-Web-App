@@ -38,13 +38,26 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
     """)
     List<Transaction> findTransactionsByUser(@Param("username") String username);
 
-    @Query("SELECT new com.g_wuy.swp391.voltera.model.response.TransactionResponse(t.transactionid, t.post.title, t.post.price, t.transactionStatus, t.createAt, t.updateAt) FROM Transaction t " +
-            "JOIN Contract c ON t.contractid.id = c.id " +
-            "JOIN User u ON c.buyerid.id = u.id " +
-            "WHERE t.transactionStatus IN ('PENDING','DONE','FAILED') " +
-            "AND u.id = :userId " +
-            "AND t.transactionStatus = :status")
-    List<TransactionResponse> findTransactionByStatus(@Param("userId") Integer userId, @Param("status") String status);
+    @Query("""
+                SELECT new com.g_wuy.swp391.voltera.model.response.TransactionResponse(
+                    t.transactionid,
+                    p.title,
+                    p.price,
+                    t.transactionStatus,
+                    t.createAt,
+                    t.updateAt
+                )
+                FROM Transaction t
+                JOIN t.post p
+                JOIN p.sellerId s
+                LEFT JOIN t.buyerid b
+                WHERE (s.id = :userId OR b.id = :userId)
+                  AND t.transactionStatus = :status
+            """)
+    List<TransactionResponse> findTransactionByStatus(
+            @Param("userId") Integer userId,
+            @Param("status") String status
+    );
 
     @Query("SELECT t FROM Transaction t WHERE t.post.id = :postId")
     Transaction findByPostId(@Param("postId") Integer postId);

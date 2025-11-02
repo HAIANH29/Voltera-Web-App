@@ -173,6 +173,7 @@ public class PostService {
                 .contractid(null)
                 .reportid(null)
                 .transactionStatus("PENDING")
+                .buyerid(seller)
                 .build();
         transactionRepository.save(transaction);
 

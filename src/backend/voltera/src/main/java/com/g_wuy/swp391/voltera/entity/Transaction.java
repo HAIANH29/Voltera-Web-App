@@ -50,4 +50,8 @@ public class Transaction {
     @Column(name = "transactionstatus", length = 20)
     private String transactionStatus;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "buyerid")
+    private User buyerid;
+
 }

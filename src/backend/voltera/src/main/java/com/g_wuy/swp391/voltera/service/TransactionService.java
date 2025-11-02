@@ -32,19 +32,24 @@ public class TransactionService {
     @Autowired
     private AccountRepository accountRepository;
 
-    public ResponseEntity<List<TransactionResponse>> getTransactionByStatus(
-            String status,
-            @RequestHeader("Authorization") String token) {
+    public ResponseEntity<List<TransactionResponse>> getTransactionByStatus(String status, String token) {
         String jwt = token.substring(7);
-        User user = userRepository.findUserByUsername(jwtService.extractUsername(jwt));
-        List<TransactionResponse> transactionResponseList = new ArrayList<>();
+        String username = jwtService.extractUsername(jwt);
+        User user = userRepository.findUserByUsername(username);
+
+        List<TransactionResponse> transactionResponseList;
+
         if (status == null || status.isEmpty()) {
-            List<Transaction> transactions = transactionRepository.findTransactionsByUser(String.valueOf(accountRepository.findById(user.getId())));
-             for (int i = 0; i < transactions.toArray().length; i++) {
-                 transactionResponseList.add(transactionMapper.toResponse(transactions.get(i)));
-            }
+            // Nếu không truyền status -> lấy tất cả giao dịch của user
+            List<Transaction> transactions = transactionRepository.findTransactionsByUser(username);
+            transactionResponseList = transactions.stream()
+                    .map(transactionMapper::toResponse)
+                    .toList();
+        } else {
+            // Nếu có status -> lấy theo userId + status
+            transactionResponseList = transactionRepository.findTransactionByStatus(user.getId(), status);
         }
-        transactionResponseList = transactionRepository.findTransactionByStatus(user.getId(), status);
+
         return ResponseEntity.ok(transactionResponseList);
     }
 
