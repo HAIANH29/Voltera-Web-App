@@ -22,6 +22,7 @@ public interface ContractMapper {
     Contract toEntity(ContractRequest request, Post post, User buyer, User seller);
 
     @Mapping(source = "id", target = "contractId")
+    @Mapping(source = "postid.id", target = "postId")
     @Mapping(source = "postid.title", target = "postTitle")
     @Mapping(source = "buyerid.fullname", target = "buyerName")
     @Mapping(source = "buyerid.email", target = "buyerEmail")

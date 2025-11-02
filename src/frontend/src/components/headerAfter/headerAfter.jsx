@@ -500,7 +500,7 @@ const HeaderAfter = ({ user: userProp }) => {
                   </li>
                   <li>
                     <Link
-                      to="/contracts"
+                      to="/contract"
                       className="dropdown-item"
                       onClick={() => setShowUserMenu(false)}
                     >

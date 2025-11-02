@@ -131,13 +131,20 @@ export default function ContractPreview({ postId, contractId, onClose }) {
         throw new Error("Unable to create payment transaction");
       }
 
-      // Redirect to payment page with contract information
-      const paymentUrl = `/payment?contractId=${
-        contractData.contractId
-      }&transactionId=${transactionId}&amount=${
-        contractData.postId?.price || postData?.price
-      }&postId=${contractData.postId?.id || postId}`;
-
+      // Get postId from multiple sources
+      const paymentPostId = postData?.postId || postId || contractData.postId;
+      
+      // Build payment URL
+      let paymentUrl = `/payment?contractId=${contractData.contractId}&transactionId=${transactionId}`;
+      
+      if (paymentPostId) {
+        paymentUrl += `&postId=${paymentPostId}`;
+      }
+      
+      if (postData?.price && postData.price > 0) {
+        paymentUrl += `&amount=${postData.price}`;
+      }
+      
       // Use window.location.href to navigate
       window.location.href = paymentUrl;
     } catch (err) {

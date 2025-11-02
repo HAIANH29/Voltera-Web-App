@@ -22,7 +22,7 @@ export const routes = {
   payment: "/payment",
   paymentCallback: "/payment/callback",
   contractDetail: "/contract/post/:postId",
-  contractView: "/contract",
+  contract: "/contract",
   contracts: "/contracts",
   transactions: "/transactions",
   

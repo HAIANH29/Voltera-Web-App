@@ -141,6 +141,30 @@
     min-height: 100px;
 }
 
+/* Amount input wrapper */
+.amount-input-wrapper {
+    position: relative;
+}
+
+.auto-fill-btn {
+    margin-top: 8px;
+    padding: 8px 16px;
+    background: #e3f2fd;
+    border: 1px solid #2196f3;
+    border-radius: 6px;
+    color: #1976d2;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.auto-fill-btn:hover {
+    background: #2196f3;
+    color: white;
+    transform: translateY(-1px);
+}
+
 .error-message {
     background: #fee;
     color: #c33;

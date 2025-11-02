@@ -13,6 +13,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class ContractResponse {
     private Integer contractId;
+    private Integer postId;
     private String buyerName;
     private String sellerName;
     private String buyerEmail;

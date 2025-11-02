@@ -3,6 +3,41 @@ import api from "../../config/api";
 import Cookies from "js-cookie";
 import "./ContractInfoPreview.css";
 
+// Map and format vehicle data (similar to ContractPage.jsx)
+const mapVehicleData = (vehicleData) => {
+  const v = vehicleData || {};
+  
+  return {
+    ...v,
+    // Format fields with proper fallbacks
+    batterycapacity: v.batterycapacity != null ? v.batterycapacity : null,
+    batterycapacityDisplay: v.batterycapacity != null ? `${v.batterycapacity} kWh` : "Not specified",
+    
+    range: v.range != null ? v.range : null,
+    rangeDisplay: v.range != null ? `${v.range} km` : "Not specified",
+    
+    chargingtime: v.chargingtime != null ? v.chargingtime : null,
+    chargingtimeDisplay: v.chargingtime != null ? `${v.chargingtime} hours` : "Not specified",
+    
+    numberofseat: v.numberofseat != null ? v.numberofseat : 5, // default 5 seats
+    numberofseatDisplay: v.numberofseat != null ? v.numberofseat : 5,
+    
+    yearmanufacture: v.yearmanufacture > 0 ? v.yearmanufacture : new Date().getFullYear(),
+    
+    licenseplate: v.licenseplate || "Not assigned",
+    origin: v.origin || "International",
+    
+    bodyinsurance: v.bodyinsurance != null ? v.bodyinsurance : false,
+    vehicleinspection: v.vehicleinspection != null ? v.vehicleinspection : false,
+    
+    brand: v.brand || "Electric Vehicle",
+    model: v.model || "Premium Model", 
+    version: v.version || "Standard",
+    color: v.color || "Silver",
+    style: v.style || "SUV",
+  };
+};
+
 export default function ContractInfoPreview({
   postId,
   vehicleData, // Optional - nhận vehicleData từ vehicleDetail hoặc fetch từ API
@@ -74,21 +109,25 @@ export default function ContractInfoPreview({
         const currentUser = getBuyerInfo();
         setBuyerData(currentUser);
 
-        setPostData({
+        // Map vehicle data when using passed vehicleData
+        const vehicleForMapping = {
+          brand: vehicleData.brand,
+          model: vehicleData.model,
+          version: vehicleData.version,
+          yearmanufacture: vehicleData.yearmanufacture,
+          color: vehicleData.color,
+          odo: vehicleData.odo,
+          batterycapacity: vehicleData.batteryCapacityRaw,
+          range: vehicleData.rangeRaw,
+          numberofseat: vehicleData.numberOfSeat,
+        };
+
+        const mappedVehicle = mapVehicleData(vehicleForMapping);
+        const finalData = {
           postId: vehicleData.postID,
           title: vehicleData.title,
           price: vehicleData.price,
-          vehicle: {
-            brand: vehicleData.brand,
-            model: vehicleData.model,
-            version: vehicleData.version,
-            yearmanufacture: vehicleData.year,
-            color: vehicleData.color,
-            odo: vehicleData.odo,
-            batterycapacity: vehicleData.batteryCapacityRaw,
-            range: vehicleData.rangeRaw,
-            numberofseat: vehicleData.numberOfSeat,
-          },
+          vehicle: mappedVehicle,
           location: vehicleData.seller?.address,
           user: {
             fullName: "Seller",
@@ -96,7 +135,13 @@ export default function ContractInfoPreview({
             email: "seller@example.com",
             phone: "Contact through system",
           },
-        });
+        };
+
+        setPostData(finalData);
+        console.log("✅ ContractInfoPreview using vehicleData:");
+        console.log("- Original vehicleData:", vehicleData);
+        console.log("- Mapped vehicle:", mappedVehicle);
+        console.log("- Final postData:", finalData);
       } else {
         fetchAllData();
       }
@@ -122,8 +167,19 @@ export default function ContractInfoPreview({
           });
           clearTimeout(timeoutId);
 
-          setPostData(postResponse.data);
-          console.log("✅ Post data loaded:", postResponse.data);
+          // Map vehicle data with proper formatting
+          const rawData = postResponse.data;
+          const mappedData = {
+            ...rawData,
+            vehicle: rawData.vehicle ? mapVehicleData(rawData.vehicle) : null
+          };
+
+          setPostData(mappedData);
+          console.log("✅ Post data loaded:", rawData);
+          console.log("✅ Mapped post data:", mappedData);
+          console.log("🔍 Vehicle mapping comparison:");
+          console.log("- Raw vehicle:", rawData.vehicle);
+          console.log("- Mapped vehicle:", mappedData.vehicle);
 
           // Get buyer information from token
           const currentUser = getBuyerInfo();
@@ -295,25 +351,23 @@ export default function ContractInfoPreview({
                 </div>
                 <div className="info-row">
                   <span className="label">Brand:</span>
-                  <span className="value">{vehicle.brand || "N/A"}</span>
+                  <span className="value">{vehicle.brand}</span>
                 </div>
                 <div className="info-row">
                   <span className="label">Mẫu xe:</span>
-                  <span className="value">{vehicle.model || "N/A"}</span>
+                  <span className="value">{vehicle.model}</span>
                 </div>
                 <div className="info-row">
                   <span className="label">Phiên bản:</span>
-                  <span className="value">{vehicle.version || "N/A"}</span>
+                  <span className="value">{vehicle.version}</span>
                 </div>
                 <div className="info-row">
                   <span className="label">Year:</span>
-                  <span className="value">
-                    {vehicle.yearmanufacture || "N/A"}
-                  </span>
+                  <span className="value">{vehicle.yearmanufacture}</span>
                 </div>
                 <div className="info-row">
                   <span className="label">Màu sắc:</span>
-                  <span className="value">{vehicle.color || "N/A"}</span>
+                  <span className="value">{vehicle.color}</span>
                 </div>
                 <div className="info-row">
                   <span className="label">Mileage:</span>
@@ -325,17 +379,19 @@ export default function ContractInfoPreview({
                 </div>
                 <div className="info-row">
                   <span className="label">Dung lượng pin:</span>
-                  <span className="value">
-                    {vehicle.batterycapacity
-                      ? `${vehicle.batterycapacity} kWh`
-                      : "N/A"}
-                  </span>
+                  <span className="value">{vehicle.batterycapacityDisplay}</span>
                 </div>
                 <div className="info-row">
-                  <span className="label">Phạm vi hoạt động:</span>
-                  <span className="value">
-                    {vehicle.range ? `${vehicle.range} km` : "N/A"}
-                  </span>
+                  <span className="label">Range:</span>
+                  <span className="value">{vehicle.rangeDisplay}</span>
+                </div>
+                <div className="info-row">
+                  <span className="label">Thời gian sạc:</span>
+                  <span className="value">{vehicle.chargingtimeDisplay}</span>
+                </div>
+                <div className="info-row">
+                  <span className="label">Số ghế:</span>
+                  <span className="value">{vehicle.numberofseatDisplay}</span>
                 </div>
                 <div className="info-row">
                   <span className="label">Seats:</span>
