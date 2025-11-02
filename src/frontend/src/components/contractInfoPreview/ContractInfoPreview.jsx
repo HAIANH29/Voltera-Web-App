@@ -94,7 +94,7 @@ export default function ContractInfoPreview({
             fullName: "Seller",
             username: "seller",
             email: "seller@example.com",
-            phone: "Liên hệ qua hệ thống",
+            phone: "Contact through system",
           },
         });
       } else {
@@ -125,7 +125,7 @@ export default function ContractInfoPreview({
           setPostData(postResponse.data);
           console.log("✅ Post data loaded:", postResponse.data);
 
-          // Lấy thông tin người mua từ token
+          // Get buyer information from token
           const currentUser = getBuyerInfo();
           setBuyerData(currentUser);
         } catch (apiError) {
@@ -199,7 +199,7 @@ export default function ContractInfoPreview({
 
   if (!show) return null;
 
-  // Chỉ hiển thị loading khi không có dữ liệu xe hoặc người mua
+  // Only show loading when there's no vehicle data or buyer info
   if (loading && (!vehicleData || !buyerData)) {
     return (
       <div className="contract-preview-overlay">
@@ -218,15 +218,15 @@ export default function ContractInfoPreview({
             ></div>
             <p style={{ marginTop: "16px", color: "#6b7280" }}>
               {buyerData
-                ? "Đang tải thông tin xe..."
+                ? "Loading vehicle information..."
                 : vehicleData
-                ? "Đang chuẩn bị thông tin..."
-                : "Đang khởi tạo hợp đồng..."}
+                ? "Preparing information..."
+                : "Initializing contract..."}
             </p>
             <div
               style={{ fontSize: "12px", color: "#9ca3af", marginTop: "8px" }}
             >
-              Vui lòng đợi trong giây lát
+              Please wait a moment
             </div>
           </div>
         </div>
@@ -245,14 +245,13 @@ export default function ContractInfoPreview({
   // Sử dụng postData đã fetch
   const vehicle = postData.vehicle || {};
 
-  // Tạo seller data từ postData
+  // Create seller data from postData
   const sellerData = {
     fullName:
-      postData.user?.fullName ||
-      `Người bán tại ${postData.location || "Không rõ"}`,
+      postData.user?.fullName || `Seller in ${postData.location || "Unknown"}`,
     username: postData.user?.username || `Seller - Post #${postId}`,
     email: postData.user?.email || "Contact through system",
-    phone: postData.user?.phone || "Liên hệ qua hệ thống",
+    phone: postData.user?.phone || "Contact through system",
     address: postData.location || "Không rõ địa chỉ",
   };
 
@@ -321,7 +320,7 @@ export default function ContractInfoPreview({
                   <span className="value">
                     {vehicle.odo
                       ? `${Number(vehicle.odo).toLocaleString()} km`
-                      : "Xe mới"}
+                      : "New vehicle"}
                   </span>
                 </div>
                 <div className="info-row">

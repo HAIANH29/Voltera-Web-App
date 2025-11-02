@@ -1,5 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
-import { X, Navigation, MapPin, Search, Loader2, Map, Target } from "lucide-react";
+import {
+  X,
+  Navigation,
+  MapPin,
+  Search,
+  Loader2,
+  Map,
+  Target,
+} from "lucide-react";
 import "./MapPicker.css";
 
 // Lazy load Leaflet components
@@ -7,10 +15,10 @@ let MapContainer, TileLayer, Marker, useMapEvents, L;
 
 const loadLeaflet = async () => {
   if (!MapContainer) {
-    const leafletModule = await import('react-leaflet');
-    const leafletCore = await import('leaflet');
-    await import('leaflet/dist/leaflet.css');
-    
+    const leafletModule = await import("react-leaflet");
+    const leafletCore = await import("leaflet");
+    await import("leaflet/dist/leaflet.css");
+
     MapContainer = leafletModule.MapContainer;
     TileLayer = leafletModule.TileLayer;
     Marker = leafletModule.Marker;
@@ -20,17 +28,21 @@ const loadLeaflet = async () => {
     // Fix default markers in Leaflet
     delete L.Icon.Default.prototype._getIconUrl;
     L.Icon.Default.mergeOptions({
-      iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-      iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+      iconRetinaUrl:
+        "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
+      iconUrl:
+        "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
+      shadowUrl:
+        "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
     });
   }
 };
 
 // Custom marker for selected location
-const createCustomIcon = () => L.divIcon({
-  className: 'custom-marker',
-  html: `<div class="marker-pin">
+const createCustomIcon = () =>
+  L.divIcon({
+    className: "custom-marker",
+    html: `<div class="marker-pin">
     <div class="marker-icon">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
@@ -38,9 +50,9 @@ const createCustomIcon = () => L.divIcon({
       </svg>
     </div>
   </div>`,
-  iconSize: [30, 40],
-  iconAnchor: [15, 40],
-});
+    iconSize: [30, 40],
+    iconAnchor: [15, 40],
+  });
 
 // Component to handle map clicks
 function LocationMarker({ position, setPosition }) {
@@ -51,12 +63,21 @@ function LocationMarker({ position, setPosition }) {
     },
   });
 
-  return position ? <Marker position={position} icon={createCustomIcon()} /> : null;
+  return position ? (
+    <Marker position={position} icon={createCustomIcon()} />
+  ) : null;
 }
 
-export default function MapPicker({ isOpen, onClose, onLocationSelect, initialCoords }) {
+export default function MapPicker({
+  isOpen,
+  onClose,
+  onLocationSelect,
+  initialCoords,
+}) {
   const [position, setPosition] = useState(
-    initialCoords ? [initialCoords.lat, initialCoords.lng] : [10.762622, 106.660172]
+    initialCoords
+      ? [initialCoords.lat, initialCoords.lng]
+      : [10.762622, 106.660172]
   );
   const [address, setAddress] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -70,11 +91,13 @@ export default function MapPicker({ isOpen, onClose, onLocationSelect, initialCo
   // Load Leaflet when component mounts
   useEffect(() => {
     if (isOpen && !mapLoaded) {
-      loadLeaflet().then(() => {
-        setMapLoaded(true);
-      }).catch(error => {
-        console.error('Failed to load Leaflet:', error);
-      });
+      loadLeaflet()
+        .then(() => {
+          setMapLoaded(true);
+        })
+        .catch((error) => {
+          console.error("Failed to load Leaflet:", error);
+        });
     }
   }, [isOpen, mapLoaded]);
 
@@ -91,7 +114,7 @@ export default function MapPicker({ isOpen, onClose, onLocationSelect, initialCo
         setAddress(data.display_name);
       }
     } catch (error) {
-      console.error('Reverse geocoding failed:', error);
+      console.error("Reverse geocoding failed:", error);
     }
   };
 
@@ -105,12 +128,14 @@ export default function MapPicker({ isOpen, onClose, onLocationSelect, initialCo
     setIsSearching(true);
     try {
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&accept-language=vi,en&countrycodes=vn`
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+          query
+        )}&limit=5&accept-language=vi,en&countrycodes=vn`
       );
       const data = await response.json();
       setSuggestions(data.slice(0, 5));
     } catch (error) {
-      console.error('Search failed:', error);
+      console.error("Search failed:", error);
       setSuggestions([]);
     } finally {
       setIsSearching(false);
@@ -121,7 +146,7 @@ export default function MapPicker({ isOpen, onClose, onLocationSelect, initialCo
   const handleSearchChange = (e) => {
     const query = e.target.value;
     setSearchQuery(query);
-    
+
     // Debounce search
     clearTimeout(searchTimeoutRef.current);
     searchTimeoutRef.current = setTimeout(() => {
@@ -134,12 +159,12 @@ export default function MapPicker({ isOpen, onClose, onLocationSelect, initialCo
     const lat = parseFloat(suggestion.lat);
     const lng = parseFloat(suggestion.lon);
     const newPos = [lat, lng];
-    
+
     setPosition(newPos);
     setAddress(suggestion.display_name);
     setSearchQuery(suggestion.display_name);
     setSuggestions([]);
-    
+
     // Pan map to new location
     if (mapRef.current) {
       mapRef.current.setView(newPos, 15);
@@ -159,20 +184,20 @@ export default function MapPicker({ isOpen, onClose, onLocationSelect, initialCo
         const lat = position.coords.latitude;
         const lng = position.coords.longitude;
         const newPos = [lat, lng];
-        
+
         setPosition(newPos);
         getAddressFromCoords(lat, lng);
-        
+
         // Pan map to current location
         if (mapRef.current) {
           mapRef.current.setView(newPos, 15);
         }
-        
+
         setIsGettingLocation(false);
       },
       (error) => {
-        console.error('Geolocation error:', error);
-        alert("Không thể lấy vị trí hiện tại. Vui lòng cho phép truy cập vị trí.");
+        console.error("Geolocation error:", error);
+        alert("Cannot get current location. Please allow location access.");
         setIsGettingLocation(false);
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
@@ -189,7 +214,8 @@ export default function MapPicker({ isOpen, onClose, onLocationSelect, initialCo
   const handleConfirm = () => {
     onLocationSelect({
       coords: { lat: position[0], lng: position[1] },
-      address: address || `${position[0].toFixed(6)}, ${position[1].toFixed(6)}`
+      address:
+        address || `${position[0].toFixed(6)}, ${position[1].toFixed(6)}`,
     });
     onClose();
   };
@@ -208,7 +234,7 @@ export default function MapPicker({ isOpen, onClose, onLocationSelect, initialCo
         <div className="map-picker-header">
           <h3>
             <MapPin size={20} />
-            Chọn vị trí của bạn
+            Choose your location
           </h3>
           <button className="close-btn" onClick={onClose}>
             <X size={20} />
@@ -229,7 +255,7 @@ export default function MapPicker({ isOpen, onClose, onLocationSelect, initialCo
               />
               {isSearching && <Loader2 className="search-loading" size={16} />}
             </div>
-            
+
             {/* Search suggestions */}
             {suggestions.length > 0 && (
               <div className="suggestions-dropdown">
@@ -249,15 +275,15 @@ export default function MapPicker({ isOpen, onClose, onLocationSelect, initialCo
 
           {/* Location controls */}
           <div className="location-controls">
-            <button 
-              className="current-location-btn" 
+            <button
+              className="current-location-btn"
               onClick={handleGetCurrentLocation}
               disabled={isGettingLocation}
             >
               {isGettingLocation ? (
                 <>
                   <Loader2 className="spinning" size={16} />
-                  Đang lấy vị trí...
+                  Getting location...
                 </>
               ) : (
                 <>
@@ -275,7 +301,7 @@ export default function MapPicker({ isOpen, onClose, onLocationSelect, initialCo
                 center={position}
                 zoom={13}
                 scrollWheelZoom={true}
-                style={{ height: '400px', width: '100%' }}
+                style={{ height: "400px", width: "100%" }}
                 ref={mapRef}
               >
                 <TileLayer
@@ -288,28 +314,38 @@ export default function MapPicker({ isOpen, onClose, onLocationSelect, initialCo
               <div className="map-loading">
                 <Loader2 className="spinning" size={32} />
                 <p>Loading interactive map...</p>
-                
+
                 {/* Fallback preset locations */}
                 <div className="preset-locations">
                   <h4>Or choose a preset location:</h4>
                   <div className="preset-buttons">
-                    <button 
+                    <button
                       className="preset-btn"
-                      onClick={() => handleSimpleLocationSet(10.762622, 106.660172, "Ho Chi Minh City")}
+                      onClick={() =>
+                        handleSimpleLocationSet(
+                          10.762622,
+                          106.660172,
+                          "Ho Chi Minh City"
+                        )
+                      }
                     >
                       <MapPin size={14} />
                       Ho Chi Minh City
                     </button>
-                    <button 
+                    <button
                       className="preset-btn"
-                      onClick={() => handleSimpleLocationSet(21.028511, 105.804817, "Hanoi")}
+                      onClick={() =>
+                        handleSimpleLocationSet(21.028511, 105.804817, "Hanoi")
+                      }
                     >
                       <MapPin size={14} />
                       Hanoi
                     </button>
-                    <button 
+                    <button
                       className="preset-btn"
-                      onClick={() => handleSimpleLocationSet(16.047079, 108.206230, "Da Nang")}
+                      onClick={() =>
+                        handleSimpleLocationSet(16.047079, 108.20623, "Da Nang")
+                      }
                     >
                       <MapPin size={14} />
                       Da Nang
@@ -318,7 +354,7 @@ export default function MapPicker({ isOpen, onClose, onLocationSelect, initialCo
                 </div>
               </div>
             )}
-            
+
             {/* Map instructions overlay */}
             {mapLoaded && (
               <div className="map-instructions-overlay">
@@ -338,7 +374,9 @@ export default function MapPicker({ isOpen, onClose, onLocationSelect, initialCo
                 Vị trí đã chọn:
               </h4>
               <div className="coordinates">
-                <span>Tọa độ: {position[0].toFixed(6)}, {position[1].toFixed(6)}</span>
+                <span>
+                  Tọa độ: {position[0].toFixed(6)}, {position[1].toFixed(6)}
+                </span>
               </div>
               {address && (
                 <div className="address">
@@ -351,7 +389,7 @@ export default function MapPicker({ isOpen, onClose, onLocationSelect, initialCo
           {/* Action buttons */}
           <div className="map-picker-actions">
             <button className="cancel-btn" onClick={onClose}>
-              Hủy
+              Cancel
             </button>
             <button className="confirm-btn" onClick={handleConfirm}>
               Xác nhận vị trí

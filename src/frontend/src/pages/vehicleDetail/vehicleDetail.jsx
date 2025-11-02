@@ -198,7 +198,7 @@ export default function VehicleDetail() {
 
     // Check if vehicle data is available
     if (!vehicle) {
-      alert("Thông tin xe chưa được tải. Vui lòng thử lại.");
+      alert("Vehicle information has not been loaded. Please try again.");
       return;
     }
 

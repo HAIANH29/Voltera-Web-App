@@ -167,7 +167,7 @@ export default function ContractPage() {
         <form className="contract-form card" onSubmit={handleCreate}>
           <h3>Create New Contract (Manual)</h3>
           <p style={{ color: "#6b7280", fontSize: "14px" }}>
-            Note: Use "Tạo hợp đồng" from vehicle detail page for better
+            Note: Use "Create Contract" from vehicle detail page for better
             experience
           </p>
           <div className="form-row">

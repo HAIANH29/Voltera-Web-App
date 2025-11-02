@@ -17,10 +17,10 @@ export default function ContractPreview({ postId, contractId, onClose }) {
   const [showPreview, setShowPreview] = useState(false);
   const [isPaymentLoading, setIsPaymentLoading] = useState(false);
 
-  // Lấy token từ cookies như trong headerAfter
+  // Get token from cookies like in headerAfter
   const token = Cookies.get("accessToken");
 
-  // Fetch contract data để preview
+  // Fetch contract data for preview
   useEffect(() => {
     if (contractId) {
       fetchContractData();
@@ -33,13 +33,11 @@ export default function ContractPreview({ postId, contractId, onClose }) {
   const fetchContractData = async () => {
     try {
       setLoading(true);
-      const res = await api.get(
-        `/api/contract/${contractId}`
-      );
+      const res = await api.get(`/api/contract/${contractId}`);
       setContractData(res.data);
     } catch (err) {
       console.error("Error fetching contract:", err);
-      alert("Không thể tải thông tin hợp đồng.");
+      alert("Unable to load contract information.");
     } finally {
       setLoading(false);
     }
@@ -69,20 +67,18 @@ export default function ContractPreview({ postId, contractId, onClose }) {
     }
   };
 
-  // Ký hợp đồng
+  // Sign contract
   const signContract = async () => {
     try {
       setIsSigning(true);
-      await api.put(
-        `/api/contract/${contractData.contractId}/sign`
-      );
-      
+      await api.put(`/api/contract/${contractData.contractId}/sign`);
+
       // Refresh contract data after signing
       await fetchContractData();
-      alert("Đã ký hợp đồng thành công!");
+      alert("Contract signed successfully!");
     } catch (err) {
       console.error("Error signing contract:", err);
-      alert("Không thể ký hợp đồng, vui lòng thử lại.");
+      alert("Unable to sign contract, please try again.");
     } finally {
       setIsSigning(false);
     }
@@ -94,26 +90,27 @@ export default function ContractPreview({ postId, contractId, onClose }) {
       console.log("🔥 [Cancel] Starting cancel contract...");
       console.log("🔥 [Cancel] Contract ID:", contractData.contractId);
       console.log("🔥 [Cancel] Token:", token ? "Present" : "Missing");
-      
+
       setIsCanceling(true);
-      
+
       const response = await api.put(
         `/api/contract/${contractData.contractId}/cancel`
       );
-      
+
       console.log("✅ [Cancel] Success response:", response.data);
-      
+
       // Refresh contract data after canceling
       await fetchContractData();
-      alert("Đã hủy hợp đồng thành công!");
+      alert("Contract canceled successfully!");
     } catch (err) {
       console.error("❌ [Cancel] Error canceling contract:", err);
       console.error("❌ [Cancel] Error response:", err.response?.data);
       console.error("❌ [Cancel] Error status:", err.response?.status);
-      
+
       // Show specific error message
-      const errorMessage = err.response?.data?.message || err.message || "Lỗi không xác định";
-      alert(`Không thể hủy hợp đồng: ${errorMessage}`);
+      const errorMessage =
+        err.response?.data?.message || err.message || "Unknown error";
+      alert(`Unable to cancel contract: ${errorMessage}`);
     } finally {
       setIsCanceling(false);
     }
@@ -123,25 +120,33 @@ export default function ContractPreview({ postId, contractId, onClose }) {
   const handlePayNow = async () => {
     try {
       setIsPaymentLoading(true);
-      
-      // Tạo transaction ID từ contract
-      const response = await api.post(`/api/contract/${contractData.contractId}/create-payment`);
+
+      // Create transaction ID from contract
+      const response = await api.post(
+        `/api/contract/${contractData.contractId}/create-payment`
+      );
       const transactionId = response.data;
-      
+
       if (!transactionId) {
-        throw new Error("Không thể tạo giao dịch thanh toán");
+        throw new Error("Unable to create payment transaction");
       }
 
-      // Chuyển hướng đến trang thanh toán với thông tin contract
-      const paymentUrl = `/payment?contractId=${contractData.contractId}&transactionId=${transactionId}&amount=${contractData.postId?.price || postData?.price}&postId=${contractData.postId?.id || postId}`;
-      
+      // Redirect to payment page with contract information
+      const paymentUrl = `/payment?contractId=${
+        contractData.contractId
+      }&transactionId=${transactionId}&amount=${
+        contractData.postId?.price || postData?.price
+      }&postId=${contractData.postId?.id || postId}`;
+
       // Use window.location.href to navigate
       window.location.href = paymentUrl;
-      
     } catch (err) {
       console.error("Error creating payment:", err);
-      const errorMessage = err.response?.data?.message || err.message || "Không thể tạo thanh toán";
-      alert(`Lỗi: ${errorMessage}`);
+      const errorMessage =
+        err.response?.data?.message ||
+        err.message ||
+        "Unable to create payment";
+      alert(`Error: ${errorMessage}`);
     } finally {
       setIsPaymentLoading(false);
     }
@@ -151,28 +156,30 @@ export default function ContractPreview({ postId, contractId, onClose }) {
   const downloadContract = async () => {
     try {
       if (!contractData) {
-        alert("Không có dữ liệu hợp đồng để tải.");
+        alert("No contract data to download.");
         return;
       }
 
-      // Kiểm tra xem cả hai bên đã ký chưa
+      // Check if both parties have signed
       if (!contractData.signedByBuyer || !contractData.signedBySeller) {
-        alert("Không thể tải hợp đồng! Cả người mua và người bán phải ký trước khi tải xuống.");
+        alert(
+          "Cannot download contract! Both buyer and seller must sign before downloading."
+        );
         return;
       }
 
       setLoading(true);
 
-      // 2️⃣ Lấy template từ public/templates
+      // 2️⃣ Get template from public/templates
       console.log("🔍 Fetching DOCX template...");
       const fileRes = await fetch("/templates/contract/VehicleContract.docx");
-      
+
       console.log("📄 Template response status:", fileRes.status);
       console.log("📄 Template response ok:", fileRes.ok);
-      
+
       if (!fileRes.ok) {
         console.error("❌ Template file not found, falling back to text");
-        // Fallback: Tạo contract dạng text nếu không có template DOCX
+        // Fallback: Create contract as text if no DOCX template
         downloadContractAsText();
         return;
       }
@@ -181,59 +188,74 @@ export default function ContractPreview({ postId, contractId, onClose }) {
       const buffer = await fileRes.arrayBuffer();
       console.log("📦 Buffer size:", buffer.byteLength);
       const zip = new PizZip(buffer);
-      const doc = new Docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
+      const doc = new Docxtemplater(zip, {
+        paragraphLoop: true,
+        linebreaks: true,
+      });
 
-      // 3️⃣ Chuẩn bị dữ liệu để render - Đơn giản hóa để test
+      // 3️⃣ Prepare data for rendering - Simplified for testing
       const vehicle = postData?.vehicle || {};
       const renderData = {
         // Contract info
-        contractSigningDate: contractData.signedDate 
+        contractSigningDate: contractData.signedDate
           ? new Date(contractData.signedDate).toLocaleDateString("vi-VN")
           : new Date().toLocaleDateString("vi-VN"),
-        
-        // Seller info  
+
+        // Seller info
         sellerName: contractData.sellerName || "Nguyen Van A",
         sellerEmail: "seller@voltera.com",
-        
+
         // Buyer info
-        buyerName: contractData.buyerName || "Tran Thi B", 
+        buyerName: contractData.buyerName || "Tran Thi B",
         buyerEmail: "buyer@voltera.com",
-        
+
         // Vehicle info
         title: contractData.postTitle || postData?.title || "Tesla Model 3",
-        batteryCapacity: vehicle.batterycapacity ? `${vehicle.batterycapacity} kWh` : "75 kWh",
+        batteryCapacity: vehicle.batterycapacity
+          ? `${vehicle.batterycapacity} kWh`
+          : "75 kWh",
         odo: vehicle.odo ? `${vehicle.odo}` : "5000",
-        price: postData?.price ? new Intl.NumberFormat('vi-VN').format(postData.price) : "1,500,000,000",
-        
+        price: postData?.price
+          ? new Intl.NumberFormat("vi-VN").format(postData.price)
+          : "1,500,000,000",
+
         // Current date
         date: new Date().toLocaleDateString("vi-VN"),
       };
 
       console.log("🎯 Render data for contract:", renderData);
 
-      // 4️⃣ Render dữ liệu
+      // 4️⃣ Render data
       console.log("🔄 Rendering template with data...");
       doc.render(renderData);
 
-      // 5️⃣ Xuất file
+      // 5️⃣ Export file
       console.log("📦 Generating DOCX blob...");
       const blob = doc.getZip().generate({
         type: "blob",
-        mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        mimeType:
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       });
 
       console.log("💾 Downloading DOCX file...");
       console.log("📁 Blob size:", blob.size);
-      saveAs(blob, `HopDongMuaBanXe_${contractData.contractId}_${new Date().toISOString().split('T')[0]}.docx`);
+      saveAs(
+        blob,
+        `VehicleSalesContract_${contractData.contractId}_${
+          new Date().toISOString().split("T")[0]
+        }.docx`
+      );
     } catch (err) {
       console.error("❌ Error downloading DOCX contract:", err);
       console.error("❌ Error details:", err.message);
       console.error("❌ Error stack:", err.stack);
-      
+
       // Show specific error to user
-      alert(`Lỗi tạo file DOCX: ${err.message}. Sẽ tạo file text thay thế.`);
-      
-      // Fallback nếu có lỗi với DOCX
+      alert(
+        `DOCX file creation error: ${err.message}. Will create text file instead.`
+      );
+
+      // Fallback if error with DOCX
       downloadContractAsText();
     } finally {
       setLoading(false);
@@ -243,76 +265,94 @@ export default function ContractPreview({ postId, contractId, onClose }) {
   // Fallback: Download contract as text file
   const downloadContractAsText = () => {
     try {
-      // Kiểm tra xem cả hai bên đã ký chưa
+      // Check if both parties have signed
       if (!contractData.signedByBuyer || !contractData.signedBySeller) {
-        alert("Không thể tải hợp đồng! Cả người mua và người bán phải ký trước khi tải xuống.");
+        alert(
+          "Cannot download contract! Both buyer and seller must sign before downloading."
+        );
         return;
       }
 
       const vehicle = postData?.vehicle || {};
-      
+
       const contractText = `
-CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM
-Độc lập - Tự do - Hạnh phúc
------------------------------
+SOCIALIST REPUBLIC OF VIETNAM
+Independence - Freedom - Happiness
+----------------------------------
 
-HỢP ĐỒNG MUA BÁN XE ĐIỆN
+ELECTRIC VEHICLE SALES CONTRACT
 
-Hôm nay, ngày ${contractData.signedDate 
-  ? new Date(contractData.signedDate).toLocaleDateString("vi-VN")
-  : new Date().toLocaleDateString("vi-VN")}, thông qua hệ thống Voltera, chúng tôi gồm có:
+Today, ${
+        contractData.signedDate
+          ? new Date(contractData.signedDate).toLocaleDateString("en-US")
+          : new Date().toLocaleDateString("en-US")
+      }, through the Voltera system, we include:
 
-BÊN BÁN (Bên A):
-• Họ tên: ${contractData.sellerName || "N/A"}
+SELLER (Party A):
+• Full name: ${contractData.sellerName || "N/A"}
 • Email: seller@example.com
-• Chủ sở hữu bài đăng: ${contractData.postTitle || postData?.title || "N/A"}
+• Post owner: ${contractData.postTitle || postData?.title || "N/A"}
 
-BÊN MUA (Bên B):
-• Họ tên: ${contractData.buyerName || "N/A"}
+BUYER (Party B):
+• Full name: ${contractData.buyerName || "N/A"}
 • Email: buyer@example.com
 
-Cùng nhau thỏa thuận ký kết Hợp đồng mua bán xe điện với các điều khoản sau:
+Together agreed to sign an electric vehicle sales contract with the following terms:
 
-Điều 1. Thông tin xe điện
-• Tên xe: ${contractData.postTitle || postData?.title || "N/A"}
-• Dung lượng pin: ${vehicle.batterycapacity ? `${vehicle.batterycapacity} kWh` : "N/A"}
-• Số km đã đi: ${vehicle.odo || "0"} km
-• Giá bán: ${postData?.price ? new Intl.NumberFormat('vi-VN').format(postData.price) : "N/A"} VND
+Article 1. Electric vehicle information
+• Vehicle name: ${contractData.postTitle || postData?.title || "N/A"}
+• Battery capacity: ${
+        vehicle.batterycapacity ? `${vehicle.batterycapacity} kWh` : "N/A"
+      }
+• Mileage: ${vehicle.odo || "0"} km
+• Sale price: ${
+        postData?.price
+          ? new Intl.NumberFormat("en-US").format(postData.price)
+          : "N/A"
+      } VND
 
-Điều 2. Quyền và nghĩa vụ của Bên bán
-1. Bên bán cam kết xe điện thuộc quyền sở hữu hợp pháp, không có tranh chấp, thế chấp, cầm cố.
-2. Bên bán có trách nhiệm cung cấp đầy đủ các giấy tờ chứng minh nguồn gốc và tình trạng của xe.
-3. Bên bán phải giao xe đúng thời hạn và đúng như mô tả trong bài đăng.
+Article 2. Rights and obligations of the Seller
+1. The seller commits that the electric vehicle is legally owned, without disputes, mortgages, or pledges.
+2. The seller is responsible for providing all documents proving the origin and condition of the vehicle.
+3. The seller must deliver the vehicle on time and as described in the listing.
 
-Điều 3. Quyền và nghĩa vụ của Bên mua
-1. Bên mua có trách nhiệm thanh toán đầy đủ và đúng thời hạn theo thỏa thuận.
-2. Bên mua có trách nhiệm kiểm tra kỹ tình trạng xe trước khi nhận bàn giao.
-3. Bên mua chịu toàn bộ trách nhiệm về xe sau khi hoàn tất giao dịch.
+Article 3. Rights and obligations of the Buyer
+1. The buyer is responsible for full and timely payment as agreed.
+2. The buyer is responsible for carefully inspecting the vehicle condition before taking delivery.
+3. The buyer bears full responsibility for the vehicle after completing the transaction.
 
-Điều 4. Điều khoản chung
-1. Hai bên cam kết thực hiện đúng và đầy đủ các điều khoản của hợp đồng này.
-2. Hợp đồng này có hiệu lực từ khi hai bên xác nhận và ký trên hệ thống Voltera.
-3. Trường hợp có tranh chấp, hai bên sẽ giải quyết bằng thương lượng, nếu không thành sẽ đưa ra cơ quan có thẩm quyền giải quyết.
+Article 4. General terms
+1. Both parties commit to fully comply with all terms of this contract.
+2. This contract is effective from when both parties confirm and sign on the Voltera system.
+3. In case of disputes, both parties will resolve through negotiation, if unsuccessful, will be brought to competent authorities for resolution.
 
-Hợp đồng số: ${contractData.contractId}
-Trạng thái: ${contractData.contractStatus}
-Ngày tạo: ${new Date().toLocaleDateString("vi-VN")}
+Contract number: ${contractData.contractId}
+Status: ${contractData.contractStatus}
+Created date: ${new Date().toLocaleDateString("en-US")}
 
-BÊN BÁN (Ký tên): ${contractData.signedBySeller ? "✅ Đã ký" : "❌ Chưa ký"}
+SELLER (Signature): ${
+        contractData.signedBySeller ? "✅ Signed" : "❌ Not signed"
+      }
 
-BÊN MUA (Ký tên): ${contractData.signedByBuyer ? "✅ Đã ký" : "❌ Chưa ký"}
+BUYER (Signature): ${contractData.signedByBuyer ? "✅ Signed" : "❌ Not signed"}
 
 ---
-Được tạo bởi hệ thống Voltera
+Created by Voltera system
 `;
 
-      // Tạo file text và download
-      const blob = new Blob([contractText], { type: 'text/plain;charset=utf-8' });
-      saveAs(blob, `HopDongMuaBanXe_${contractData.contractId}_${new Date().toISOString().split('T')[0]}.txt`);
-      
+      // Create text file and download
+      const blob = new Blob([contractText], {
+        type: "text/plain;charset=utf-8",
+      });
+      saveAs(
+        blob,
+        `VehicleSalesContract_${contractData.contractId}_${
+          new Date().toISOString().split("T")[0]
+        }.txt`
+      );
     } catch (err) {
       console.error("Error creating text contract:", err);
-      alert("Không thể tạo hợp đồng. Vui lòng thử lại.");
+      alert("Unable to create contract. Please try again.");
     }
   };
 
@@ -320,7 +360,7 @@ BÊN MUA (Ký tên): ${contractData.signedByBuyer ? "✅ Đã ký" : "❌ Chưa 
     return (
       <div className="contract-preview">
         <div className="contract-header">
-          <h2>Đang tải thông tin hợp đồng...</h2>
+          <h2>Loading contract information...</h2>
         </div>
         <div className="contract-loading">
           <div className="contract-skeleton">
@@ -336,23 +376,23 @@ BÊN MUA (Ký tên): ${contractData.signedByBuyer ? "✅ Đã ký" : "❌ Chưa 
 
   return (
     <div className="contract-preview">
-      <div className="contract-header" style={{position: 'relative'}}>
-        <h2>Thông tin hợp đồng</h2>
+      <div className="contract-header" style={{ position: "relative" }}>
+        <h2>Contract Information</h2>
         {onClose && (
-          <button 
+          <button
             onClick={onClose}
             className="contract-close-btn"
             style={{
-              position: 'absolute',
-              top: '10px',
-              right: '10px',
-              background: '#ef4444',
-              color: 'white',
-              border: 'none',
-              borderRadius: '6px',
-              padding: '8px 12px',
-              cursor: 'pointer',
-              fontSize: '14px'
+              position: "absolute",
+              top: "10px",
+              right: "10px",
+              background: "#ef4444",
+              color: "white",
+              border: "none",
+              borderRadius: "6px",
+              padding: "8px 12px",
+              cursor: "pointer",
+              fontSize: "14px",
             }}
           >
             ✕ Close
@@ -365,44 +405,64 @@ BÊN MUA (Ký tên): ${contractData.signedByBuyer ? "✅ Đã ký" : "❌ Chưa 
         {contractData ? (
           <>
             <div className="contract-details">
-              <h3>Chi tiết hợp đồng</h3>
+              <h3>Contract Details</h3>
               <div className="contract-info-grid">
                 <div className="contract-info-section">
                   <div className="contract-info-item">
-                    <span className="contract-info-label">ID Hợp đồng</span>
-                    <span className="contract-info-value">#{contractData.contractId}</span>
+                    <span className="contract-info-label">Contract ID</span>
+                    <span className="contract-info-value">
+                      #{contractData.contractId}
+                    </span>
                   </div>
                   <div className="contract-info-item">
-                    <span className="contract-info-label">Người bán</span>
-                    <span className="contract-info-value">{contractData.sellerName}</span>
+                    <span className="contract-info-label">Seller</span>
+                    <span className="contract-info-value">
+                      {contractData.sellerName}
+                    </span>
                   </div>
                   <div className="contract-info-item">
-                    <span className="contract-info-label">Người mua</span>
-                    <span className="contract-info-value">{contractData.buyerName}</span>
+                    <span className="contract-info-label">Buyer</span>
+                    <span className="contract-info-value">
+                      {contractData.buyerName}
+                    </span>
                   </div>
                   <div className="contract-info-item">
-                    <span className="contract-info-label">Bài đăng</span>
-                    <span className="contract-info-value">{contractData.postTitle}</span>
+                    <span className="contract-info-label">Post</span>
+                    <span className="contract-info-value">
+                      {contractData.postTitle}
+                    </span>
                   </div>
                   {postData && (
                     <>
                       <div className="contract-info-item">
-                        <span className="contract-info-label">Giá xe</span>
+                        <span className="contract-info-label">
+                          Vehicle Price
+                        </span>
                         <span className="contract-info-value">
-                          {postData.price ? new Intl.NumberFormat('vi-VN').format(postData.price) + ' VND' : 'N/A'}
+                          {postData.price
+                            ? new Intl.NumberFormat("en-US").format(
+                                postData.price
+                              ) + " VND"
+                            : "N/A"}
                         </span>
                       </div>
                       {postData.vehicle && (
                         <>
                           <div className="contract-info-item">
-                            <span className="contract-info-label">Dung lượng pin</span>
+                            <span className="contract-info-label">
+                              Battery Capacity
+                            </span>
                             <span className="contract-info-value">
-                              {postData.vehicle.batterycapacity ? `${postData.vehicle.batterycapacity} kWh` : 'N/A'}
+                              {postData.vehicle.batterycapacity
+                                ? `${postData.vehicle.batterycapacity} kWh`
+                                : "N/A"}
                             </span>
                           </div>
                           <div className="contract-info-item">
-                            <span className="contract-info-label">Số km đã đi</span>
-                            <span className="contract-info-value">{postData.vehicle.odo || 0} km</span>
+                            <span className="contract-info-label">Mileage</span>
+                            <span className="contract-info-value">
+                              {postData.vehicle.odo || 0} km
+                            </span>
                           </div>
                         </>
                       )}
@@ -411,37 +471,53 @@ BÊN MUA (Ký tên): ${contractData.signedByBuyer ? "✅ Đã ký" : "❌ Chưa 
                 </div>
                 <div className="contract-info-section">
                   <div className="contract-info-item">
-                    <span className="contract-info-label">Trạng thái</span>
-                    <span className={`contract-status-badge ${contractData.contractStatus.toLowerCase()}`}>
+                    <span className="contract-info-label">Status</span>
+                    <span
+                      className={`contract-status-badge ${contractData.contractStatus.toLowerCase()}`}
+                    >
                       {contractData.contractStatus}
                     </span>
                   </div>
                   <div className="contract-info-item">
-                    <span className="contract-info-label">Người mua đã ký</span>
-                    <span className={`contract-sign-status ${contractData.signedByBuyer ? 'signed' : 'unsigned'}`}>
-                      {contractData.signedByBuyer ? "✅ Đã ký" : "❌ Chưa ký"}
+                    <span className="contract-info-label">Buyer Signed</span>
+                    <span
+                      className={`contract-sign-status ${
+                        contractData.signedByBuyer ? "signed" : "unsigned"
+                      }`}
+                    >
+                      {contractData.signedByBuyer
+                        ? "✅ Signed"
+                        : "❌ Not signed"}
                     </span>
                   </div>
                   <div className="contract-info-item">
-                    <span className="contract-info-label">Người bán đã ký</span>
-                    <span className={`contract-sign-status ${contractData.signedBySeller ? 'signed' : 'unsigned'}`}>
-                      {contractData.signedBySeller ? "✅ Đã ký" : "❌ Chưa ký"}
+                    <span className="contract-info-label">Seller Signed</span>
+                    <span
+                      className={`contract-sign-status ${
+                        contractData.signedBySeller ? "signed" : "unsigned"
+                      }`}
+                    >
+                      {contractData.signedBySeller
+                        ? "✅ Signed"
+                        : "❌ Not signed"}
                     </span>
                   </div>
                   {contractData.signedDate && (
                     <div className="contract-info-item">
-                      <span className="contract-info-label">Ngày ký</span>
+                      <span className="contract-info-label">Signed Date</span>
                       <span className="contract-info-value">
-                        {new Date(contractData.signedDate).toLocaleDateString("vi-VN")}
+                        {new Date(contractData.signedDate).toLocaleDateString(
+                          "en-US"
+                        )}
                       </span>
                     </div>
                   )}
                 </div>
               </div>
-              
+
               {contractData.terms && (
                 <div className="contract-terms">
-                  <h4>Điều khoản hợp đồng</h4>
+                  <h4>Contract Terms</h4>
                   <p>{contractData.terms}</p>
                 </div>
               )}
@@ -453,14 +529,17 @@ BÊN MUA (Ký tên): ${contractData.signedByBuyer ? "✅ Đã ký" : "❌ Chưa 
                 <div className="contract-info-card success">
                   <div className="contract-info-icon">🎉</div>
                   <div className="contract-info-text">
-                    <strong>Hợp đồng đã hoàn tất!</strong>
-                    <p>Cả hai bên đã ký hợp đồng. Bạn có thể tải xuống hợp đồng ngay bây giờ.</p>
+                    <strong>Contract completed!</strong>
+                    <p>
+                      Both parties have signed the contract. You can download
+                      the contract now.
+                    </p>
                     <div className="contract-progress-status">
-                      <span>Trạng thái:</span>
+                      <span>Status:</span>
                       <ul>
-                        <li className="completed">✅ Người bán đã ký</li>
-                        <li className="completed">✅ Người mua đã ký</li>
-                        <li className="completed">🔓 Có thể tải xuống</li>
+                        <li className="completed">✅ Seller signed</li>
+                        <li className="completed">✅ Buyer signed</li>
+                        <li className="completed">🔓 Download available</li>
                       </ul>
                     </div>
                   </div>
@@ -469,16 +548,29 @@ BÊN MUA (Ký tên): ${contractData.signedByBuyer ? "✅ Đã ký" : "❌ Chưa 
                 <div className="contract-info-card">
                   <div className="contract-info-icon">ℹ️</div>
                   <div className="contract-info-text">
-                    <strong>Lưu ý về tải hợp đồng:</strong>
-                    <p>Chỉ có thể tải xuống hợp đồng khi cả người mua và người bán đều đã ký.</p>
+                    <strong>Note about contract download:</strong>
+                    <p>
+                      Contract can only be downloaded when both buyer and seller
+                      have signed.
+                    </p>
                     <div className="contract-progress-status">
-                      <span>Trạng thái hiện tại:</span>
+                      <span>Current status:</span>
                       <ul>
-                        <li className={contractData.signedBySeller ? 'completed' : 'pending'}>
-                          {contractData.signedBySeller ? '✅' : '⏳'} Người bán
+                        <li
+                          className={
+                            contractData.signedBySeller
+                              ? "completed"
+                              : "pending"
+                          }
+                        >
+                          {contractData.signedBySeller ? "✅" : "⏳"} Seller
                         </li>
-                        <li className={contractData.signedByBuyer ? 'completed' : 'pending'}>
-                          {contractData.signedByBuyer ? '✅' : '⏳'} Người mua
+                        <li
+                          className={
+                            contractData.signedByBuyer ? "completed" : "pending"
+                          }
+                        >
+                          {contractData.signedByBuyer ? "✅" : "⏳"} Buyer
                         </li>
                       </ul>
                     </div>
@@ -490,16 +582,17 @@ BÊN MUA (Ký tên): ${contractData.signedByBuyer ? "✅ Đã ký" : "❌ Chưa 
             {/* Action Buttons */}
             <div className="contract-actions">
               {/* Sign Contract Button */}
-              {contractData.contractStatus === 'PENDING' && !contractData.signedByBuyer && (
-                <button
-                  onClick={signContract}
-                  disabled={isSigning}
-                  className="contract-btn primary"
-                >
-                  {isSigning && <div className="contract-btn-spinner"></div>}
-                  {isSigning ? "Đang ký..." : "✍️ Ký hợp đồng"}
-                </button>
-              )}
+              {contractData.contractStatus === "PENDING" &&
+                !contractData.signedByBuyer && (
+                  <button
+                    onClick={signContract}
+                    disabled={isSigning}
+                    className="contract-btn primary"
+                  >
+                    {isSigning && <div className="contract-btn-spinner"></div>}
+                    {isSigning ? "Signing..." : "✍️ Sign Contract"}
+                  </button>
+                )}
 
               {/* Download Contract Button - Only if both parties signed */}
               {contractData.signedByBuyer && contractData.signedBySeller ? (
@@ -509,15 +602,15 @@ BÊN MUA (Ký tên): ${contractData.signedByBuyer ? "✅ Đã ký" : "❌ Chưa 
                   className="contract-btn secondary"
                 >
                   {loading && <div className="contract-btn-spinner"></div>}
-                  {loading ? "Đang tải..." : "Tải hợp đồng"}
+                  {loading ? "Loading..." : "Download Contract"}
                 </button>
               ) : (
                 <button
                   disabled={true}
                   className="contract-btn outline"
-                  title="Chỉ có thể tải hợp đồng khi cả hai bên đã ký"
+                  title="Contract can only be downloaded when both parties have signed"
                 >
-                  🔒 Tải hợp đồng (Chờ ký)
+                  🔒 Download Contract (Waiting for signatures)
                 </button>
               )}
 
@@ -528,23 +621,35 @@ BÊN MUA (Ký tên): ${contractData.signedByBuyer ? "✅ Đã ký" : "❌ Chưa 
                   disabled={isPaymentLoading}
                   className="contract-btn success pay-now-btn"
                 >
-                  {isPaymentLoading && <div className="contract-btn-spinner"></div>}
-                  {isPaymentLoading ? "Đang chuyển hướng..." : "💳 Thanh toán ngay"}
+                  {isPaymentLoading && (
+                    <div className="contract-btn-spinner"></div>
+                  )}
+                  {isPaymentLoading ? "Redirecting..." : "💳 Pay Now"}
                 </button>
               )}
 
               {/* Cancel Contract Button */}
               {(() => {
-                console.log("🔍 [Render] Contract status:", contractData.contractStatus);
-                console.log("🔍 [Render] Should show cancel button:", contractData.contractStatus === 'PENDING');
+                console.log(
+                  "🔍 [Render] Contract status:",
+                  contractData.contractStatus
+                );
+                console.log(
+                  "🔍 [Render] Should show cancel button:",
+                  contractData.contractStatus === "PENDING"
+                );
                 console.log("🔍 [Render] Contract data:", contractData);
-                return contractData.contractStatus === 'PENDING';
+                return contractData.contractStatus === "PENDING";
               })() && (
                 <button
                   onClick={() => {
                     console.log("🖱️ [Click] Cancel button clicked");
                     console.log("🖱️ [Click] isCanceling state:", isCanceling);
-                    if (window.confirm("Bạn có chắc muốn hủy hợp đồng này? Thao tác này không thể hoàn tác.")) {
+                    if (
+                      window.confirm(
+                        "Are you sure you want to cancel this contract? This action cannot be undone."
+                      )
+                    ) {
                       console.log("✅ [Confirm] User confirmed cancel");
                       cancelContract();
                     } else {
@@ -553,19 +658,30 @@ BÊN MUA (Ký tên): ${contractData.signedByBuyer ? "✅ Đã ký" : "❌ Chưa 
                   }}
                   disabled={isCanceling}
                   className="contract-btn danger"
-                  style={{border: '2px solid red'}} // Debug style
+                  style={{ border: "2px solid red" }} // Debug style
                 >
                   {isCanceling && <div className="contract-btn-spinner"></div>}
-                  {isCanceling ? "Đang hủy..." : "❌ Hủy hợp đồng"}
+                  {isCanceling ? "Canceling..." : "❌ Cancel Contract"}
                 </button>
               )}
 
               {/* Debug info */}
-              <div style={{background: '#f0f0f0', padding: '10px', margin: '10px 0', fontSize: '12px'}}>
-                <strong>Debug Info:</strong><br/>
-                Contract Status: {contractData.contractStatus}<br/>
-                Is Canceling: {isCanceling.toString()}<br/>
-                Token: {token ? "✅ Present" : "❌ Missing"}<br/>
+              <div
+                style={{
+                  background: "#f0f0f0",
+                  padding: "10px",
+                  margin: "10px 0",
+                  fontSize: "12px",
+                }}
+              >
+                <strong>Debug Info:</strong>
+                <br />
+                Contract Status: {contractData.contractStatus}
+                <br />
+                Is Canceling: {isCanceling.toString()}
+                <br />
+                Token: {token ? "✅ Present" : "❌ Missing"}
+                <br />
                 Contract ID: {contractData.contractId}
               </div>
             </div>
@@ -574,13 +690,13 @@ BÊN MUA (Ký tên): ${contractData.signedByBuyer ? "✅ Đã ký" : "❌ Chưa 
           // Create New Contract
           <div className="contract-create-new">
             <div className="contract-create-icon">📝</div>
-            <p>Chưa có hợp đồng cho bài đăng này.</p>
+            <p>No contract exists for this post yet.</p>
             <button
               onClick={showContractPreview}
               disabled={isCreating}
               className="contract-btn primary"
             >
-              📋 Xem trước & Tạo hợp đồng
+              📋 Preview & Create Contract
             </button>
           </div>
         )}
@@ -589,22 +705,30 @@ BÊN MUA (Ký tên): ${contractData.signedByBuyer ? "✅ Đã ký" : "❌ Chưa 
       {/* Contract Info Preview Modal */}
       <ContractInfoPreview
         postId={postId}
-        vehicleData={postData ? {
-          postID: String(postData.postId || ""),
-          title: postData.title || "",
-          brand: postData.vehicle?.brand || "",
-          model: postData.vehicle?.model || "",
-          version: postData.vehicle?.version || "",
-          year: postData.vehicle?.yearManufacture || "",
-          color: postData.vehicle?.color || "",
-          odo: postData.vehicle?.odo || 0,
-          batteryCapacity: postData.vehicle?.batterycapacity ? `${postData.vehicle.batterycapacity} kWh` : "",
-          range: postData.vehicle?.range ? `${postData.vehicle.range} km` : "",
-          price: postData.price || 0,
-          seller: {
-            address: postData.location || ""
-          }
-        } : null}
+        vehicleData={
+          postData
+            ? {
+                postID: String(postData.postId || ""),
+                title: postData.title || "",
+                brand: postData.vehicle?.brand || "",
+                model: postData.vehicle?.model || "",
+                version: postData.vehicle?.version || "",
+                year: postData.vehicle?.yearManufacture || "",
+                color: postData.vehicle?.color || "",
+                odo: postData.vehicle?.odo || 0,
+                batteryCapacity: postData.vehicle?.batterycapacity
+                  ? `${postData.vehicle.batterycapacity} kWh`
+                  : "",
+                range: postData.vehicle?.range
+                  ? `${postData.vehicle.range} km`
+                  : "",
+                price: postData.price || 0,
+                seller: {
+                  address: postData.location || "",
+                },
+              }
+            : null
+        }
         show={showPreview}
         onCreateContract={handleContractCreated}
         onCancel={() => setShowPreview(false)}

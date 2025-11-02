@@ -6,7 +6,7 @@ import api from "../../config/api";
 const PaymentPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  
+
   const [postId, setPostId] = useState("");
   const [amount, setAmount] = useState("");
   const [orderInfo, setOrderInfo] = useState("");
@@ -20,7 +20,7 @@ const PaymentPage = () => {
     const amountParam = searchParams.get("amount");
     const contractId = searchParams.get("contractId");
     const transactionId = searchParams.get("transactionId");
-    
+
     if (postIdParam) {
       setPostId(postIdParam);
       fetchPostDetails(postIdParam);
@@ -39,7 +39,9 @@ const PaymentPage = () => {
       const response = await api.get(`/api/post/${id}`);
       setPostDetails(response.data);
       if (!orderInfo) {
-        setOrderInfo(`Payment for ${response.data.title || 'vehicle purchase'}`);
+        setOrderInfo(
+          `Payment for ${response.data.title || "vehicle purchase"}`
+        );
       }
     } catch (err) {
       console.error("Error fetching post details:", err);
@@ -58,43 +60,61 @@ const PaymentPage = () => {
 
     try {
       const transactionId = searchParams.get("transactionId");
-      
+
       console.log("Creating VNPay payment with:", {
         amount: parseInt(amount),
         orderInfo,
         postId: parseInt(postId),
-        transactionId: transactionId
+        transactionId: transactionId,
       });
 
-      // Sử dụng transaction ID nếu có (từ contract), nếu không thì tạo payment thông thường
-      const apiUrl = transactionId 
+      // Use transaction ID if available (from contract), otherwise create regular payment
+      const apiUrl = transactionId
         ? `/api/vnpay/create-payment/${transactionId}`
         : "/api/vnpay/create-payment";
 
       const response = await api.post(apiUrl, {
         amount: parseInt(amount),
         orderInfo,
-        postId: parseInt(postId)
+        postId: parseInt(postId),
       });
 
-      console.log("🔍 Full VNPay response:", JSON.stringify(response.data, null, 2));
+      console.log(
+        "🔍 Full VNPay response:",
+        JSON.stringify(response.data, null, 2)
+      );
 
       if (response.data.code === "00") {
         // Check response structure
         if (response.data.paymentUrl) {
-          console.log("✅ Payment URL found - redirecting to VNPay (supports MoMo):", response.data.paymentUrl);
+          console.log(
+            "✅ Payment URL found - redirecting to VNPay (supports MoMo):",
+            response.data.paymentUrl
+          );
           // Redirect tới VNPay web page (có QR cho MoMo)
           window.location.href = response.data.paymentUrl;
-        } else if (response.data.qrCode || response.data.data?.includes('00020101')) {
+        } else if (
+          response.data.qrCode ||
+          response.data.data?.includes("00020101")
+        ) {
           // Still got QR - force redirect to VNPay web anyway
           console.log("📱 QR Code detected, redirecting to VNPay web page");
-          window.location.href = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
+          window.location.href =
+            "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
         } else {
           console.log("❌ No payment URL found in response");
-          setError(`No payment URL received. Response: ${JSON.stringify(response.data)}`);
+          setError(
+            `No payment URL received. Response: ${JSON.stringify(
+              response.data
+            )}`
+          );
         }
       } else {
-        setError(`Payment creation failed: ${response.data.message || `Code: ${response.data.code}`}`);
+        setError(
+          `Payment creation failed: ${
+            response.data.message || `Code: ${response.data.code}`
+          }`
+        );
       }
     } catch (err) {
       setError("An error occurred while creating payment");
@@ -108,35 +128,46 @@ const PaymentPage = () => {
     <div className="payment-container">
       <div className="payment-card">
         <h1 className="payment-title">Payment via VNPAY</h1>
-        
+
         {/* Test Environment Notice */}
         <div className="test-notice">
           <h3>🧪 SANDBOX MODE - For Testing Only</h3>
           <div className="test-credentials">
             <h4>📱 MoMo Test Account:</h4>
             <ul>
-              <li><strong>Phone:</strong> <code>0999999999</code></li>
-              <li><strong>Password:</strong> <code>123456</code></li>
-              <li><strong>OTP:</strong> <code>888888</code></li>
+              <li>
+                <strong>Phone:</strong> <code>0999999999</code>
+              </li>
+              <li>
+                <strong>Password:</strong> <code>123456</code>
+              </li>
+              <li>
+                <strong>OTP:</strong> <code>888888</code>
+              </li>
             </ul>
-            <p><em>⚠️ Do not use real phone numbers in sandbox!</em></p>
+            <p>
+              <em>⚠️ Do not use real phone numbers in sandbox!</em>
+            </p>
           </div>
         </div>
-        
-        {/* Hiển thị thông tin thanh toán */}
+
+        {/* Display payment information */}
         {searchParams.get("contractId") && (
           <div className="payment-contract-info">
             <h3>💼 Contract Payment</h3>
             <div className="contract-payment-summary">
               <div className="contract-details">
                 <div className="contract-field">
-                  <strong>Contract ID:</strong> #{searchParams.get("contractId")}
+                  <strong>Contract ID:</strong> #
+                  {searchParams.get("contractId")}
                 </div>
                 <div className="contract-field">
-                  <strong>Transaction ID:</strong> #{searchParams.get("transactionId")}
+                  <strong>Transaction ID:</strong> #
+                  {searchParams.get("transactionId")}
                 </div>
                 <div className="contract-field">
-                  <strong>Status:</strong> <span className="status-badge">Both parties signed ✅</span>
+                  <strong>Status:</strong>{" "}
+                  <span className="status-badge">Both parties signed ✅</span>
                 </div>
               </div>
             </div>
@@ -146,10 +177,18 @@ const PaymentPage = () => {
         {/* Hiển thị thông tin sản phẩm nếu có */}
         {postDetails && (
           <div className="payment-product-info">
-            <h3>{searchParams.get("contractId") ? "Vehicle Details:" : "Payment for:"}</h3>
+            <h3>
+              {searchParams.get("contractId")
+                ? "Vehicle Details:"
+                : "Payment for:"}
+            </h3>
             <div className="product-summary">
-              <img 
-                src={postDetails.thumbnail || postDetails.imageUrls?.[0] || '/placeholder.jpg'} 
+              <img
+                src={
+                  postDetails.thumbnail ||
+                  postDetails.imageUrls?.[0] ||
+                  "/placeholder.jpg"
+                }
                 alt={postDetails.title}
                 className="product-image"
               />
@@ -158,7 +197,8 @@ const PaymentPage = () => {
                 <p>{postDetails.location}</p>
                 {searchParams.get("contractId") && (
                   <p className="contract-note">
-                    🤝 This payment is secured by a signed contract between buyer and seller.
+                    🤝 This payment is secured by a signed contract between
+                    buyer and seller.
                   </p>
                 )}
               </div>
@@ -179,7 +219,7 @@ const PaymentPage = () => {
               disabled={searchParams.get("postId")}
             />
           </div>
-          
+
           <div className="form-group">
             <label htmlFor="amount">Amount (VND)</label>
             <input
@@ -192,7 +232,7 @@ const PaymentPage = () => {
               required
             />
           </div>
-          
+
           <div className="form-group">
             <label htmlFor="orderInfo">Order Description</label>
             <textarea
@@ -204,12 +244,12 @@ const PaymentPage = () => {
               required
             />
           </div>
-          
+
           {error && <div className="error-message">{error}</div>}
-          
+
           <div className="payment-actions">
-            <button 
-              type="button" 
+            <button
+              type="button"
               className="payment-button secondary"
               onClick={() => navigate(-1)}
               disabled={loading}

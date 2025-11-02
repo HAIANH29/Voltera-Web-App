@@ -33,7 +33,7 @@
 .contract-header h2 {
     font-size: 2rem;
     font-weight: 700;
-    color: var(--accent);
+    color: white;
 }
 
 .card {
@@ -242,6 +242,7 @@ td {
 
     .contract-header h2 {
         font-size: 1.3rem;
+        color: white;
     }
 
     .contract-list h3,

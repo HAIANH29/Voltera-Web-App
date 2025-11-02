@@ -15,7 +15,7 @@
 
 /* Header */
 .contract-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #1877F2 0%, #42A5F5 100%);
   color: white;
   padding: 24px;
   text-align: center;
@@ -57,8 +57,13 @@
 }
 
 @keyframes skeleton-loading {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 /* Content */
@@ -71,7 +76,7 @@
   border-radius: 8px;
   padding: 20px;
   margin-bottom: 24px;
-  border-left: 4px solid #667eea;
+  border-left: 4px solid #1877F2;
 }
 
 .contract-details h3 {
@@ -146,9 +151,9 @@
 }
 
 .contract-status-badge.signed {
-  background: #d1fae5;
-  color: #065f46;
-  border: 1px solid #10b981;
+  background: #e3f2fd;
+  color: #0d47a1;
+  border: 1px solid #1877F2;
 }
 
 .contract-status-badge.cancelled {
@@ -166,7 +171,7 @@
 }
 
 .contract-sign-status .signed {
-  color: #059669;
+  color: #1565C0;
   font-weight: 600;
 }
 
@@ -239,12 +244,12 @@
 }
 
 .contract-btn.primary {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: linear-gradient(135deg, #1877F2 0%, #42A5F5 100%);
   color: white;
 }
 
 .contract-btn.secondary {
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  background: linear-gradient(135deg, #1877F2 0%, #42A5F5 100%);
   color: white;
 }
 
@@ -275,7 +280,7 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
   transition: left 0.5s;
 }
 
@@ -396,37 +401,37 @@
     margin: 0 16px;
     border-radius: 8px;
   }
-  
+
   .contract-header {
     padding: 20px 16px;
   }
-  
+
   .contract-header h2 {
     font-size: 20px;
   }
-  
+
   .contract-content {
     padding: 20px 16px;
   }
-  
+
   .contract-info-grid {
     grid-template-columns: 1fr;
     gap: 16px;
   }
-  
+
   .contract-actions {
     flex-direction: column;
   }
-  
+
   .contract-btn {
     justify-content: center;
     width: 100%;
   }
-  
+
   .contract-create-new {
     padding: 40px 16px;
   }
-  
+
   .contract-create-icon {
     font-size: 48px;
   }
@@ -434,9 +439,17 @@
 
 /* Animation for status changes */
 @keyframes status-change {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.05);
+  }
+
+  100% {
+    transform: scale(1);
+  }
 }
 
 .contract-status-badge.animate {
@@ -455,6 +468,11 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
