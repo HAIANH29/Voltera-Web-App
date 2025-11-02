@@ -9,7 +9,6 @@ import ComparisonPage from "./pages/comparison/ComparisonPage";
 import LoginPage from "./pages/login/LoginPage";
 import RegisterPage from "./pages/register/RegisterPage";
 import AuthLayout from "./layout/authenLayout.jsx";
-import SupportPage from "./pages/SupportPage/SupportPage.jsx";
 import { Toaster } from "react-hot-toast";
 import PostElectricWizard from "./pages/post/electrics/PostElectricWizard";
 import ForgotPasswordPage from "./pages/forgotpasswordPage/ForgotPasswordPage";
@@ -33,6 +32,7 @@ import PaymentCallback from "./pages/paymentPage/PaymentCallback";
 import ContractPage from "./pages/contractPage/contractPage";
 import ContractsPage from "./pages/contractsPage/contractsPage";
 import TransactionPage from "./pages/transactionPage/TransactionPage";
+import { ComplaintPage, AdminComplaintManagement } from "./pages/complaintPage";
 
 console.log("routes:", routes);
 console.log("postVehicles:", routes.postVehicles);
@@ -164,6 +164,14 @@ function App() {
       ),
     },
     {
+      path: routes.complaints,
+      element: (
+        <MainLayout>
+          <ComplaintPage />
+        </MainLayout>
+      ),
+    },
+    {
       path: routes.verifyEmail,
       element: (
         <AuthLayout>
@@ -229,14 +237,6 @@ function App() {
             <h2>404 - Page Not Found</h2>
             <p>The page you are looking for doesn’t exist.</p>
           </div>
-        </MainLayout>
-      ),
-    },
-    {
-      path: routes.support,
-      element: (
-        <MainLayout>
-          <SupportPage />
         </MainLayout>
       ),
     },
@@ -348,6 +348,14 @@ function App() {
             <h1>Account Settings</h1>
             <p>Admin account settings page will be implemented here.</p>
           </div>
+        </AdminLayout>
+      ),
+    },
+    {
+      path: routes.adminComplaints,
+      element: (
+        <AdminLayout>
+          <AdminComplaintManagement />
         </AdminLayout>
       ),
     },

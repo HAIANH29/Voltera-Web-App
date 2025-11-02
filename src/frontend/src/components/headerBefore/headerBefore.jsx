@@ -26,7 +26,7 @@ const HeaderBefore = () => {
             <li className="nav-item"><Link to="/" className="nav-link">Home</Link></li>
             <li className="nav-item"><Link to="/vehicles" className="nav-link">Vehicles</Link></li>
             <li className="nav-item"><Link to="/electrics" className="nav-link">Electrics</Link></li>
-            <li className="nav-item"><Link to="/support" className="nav-link">Support</Link></li>
+            <li className="nav-item"><Link to="/complaints" className="nav-link">Complaints</Link></li>
             <li className="nav-item"><Link to="/favorites" className="nav-link">Favorites</Link></li>
             <li className="nav-item"><Link to="/about" className="nav-link">About Us</Link></li>
           </ul>

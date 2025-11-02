@@ -38,7 +38,7 @@ const FooterComponent = () => {
                 <a href="/electrics">Electrics</a>
               </li>
               <li>
-                <a href="/support">Support</a>
+                <a href="/complaints">Complaints</a>
               </li>
             </ul>
           </div>
@@ -48,10 +48,10 @@ const FooterComponent = () => {
             <h4>Customer Support</h4>
             <ul className="footer-links">
               <li>
-                <a href="/support">Support Center</a>
+                <a href="/complaints">Support Center</a>
               </li>
               <li>
-                <a href="/support">Contact Us</a>
+                <a href="/complaints">Contact Us</a>
               </li>
               <li>
                 <a href="/about">About Voltera</a>
@@ -77,7 +77,7 @@ const FooterComponent = () => {
             © {new Date().getFullYear()} Voltera. All rights reserved.
           </div>
           <div className="footer-legal-links">
-            <a href="/support">Support</a>
+            <a href="/complaints">Complaints</a>
             <a href="/about">About</a>
           </div>
         </div>

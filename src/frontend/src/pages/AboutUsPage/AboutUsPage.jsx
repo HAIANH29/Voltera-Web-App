@@ -154,8 +154,8 @@ export default function AboutUsPage({ className = "" }) {
                 <a href="/register" className="vt-btn primary">
                   Get Started
                 </a>
-                <a href="/support" className="vt-btn">
-                  Talk to Sales
+                <a href="/complaints" className="vt-btn">
+                  Contact Support
                 </a>
               </div>
             </div>

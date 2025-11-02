@@ -250,22 +250,22 @@ const HeaderAfter = ({ user: userProp }) => {
             </li>
             <li className="nav-item">
               <NavLink
-                to="/support"
-                className={({ isActive }) =>
-                  `nav-link ${isActive ? "active" : ""}`
-                }
-              >
-                Support
-              </NavLink>
-            </li>
-            <li className="nav-item">
-              <NavLink
                 to="/favorites"
                 className={({ isActive }) =>
                   `nav-link ${isActive ? "active" : ""}`
                 }
               >
                 Favorites
+              </NavLink>
+            </li>
+            <li className="nav-item">
+              <NavLink
+                to="/complaints"
+                className={({ isActive }) =>
+                  `nav-link ${isActive ? "active" : ""}`
+                }
+              >
+                Complaints
               </NavLink>
             </li>
             <li className="nav-item">

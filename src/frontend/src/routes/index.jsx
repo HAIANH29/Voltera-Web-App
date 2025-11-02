@@ -14,7 +14,6 @@ export const routes = {
   electrics: "/electrics",
   favorites: "/favorites",
   aboutUs: "/about",
-  support: "/support",
   profile: "/profile",
   postVehicles: "/post/vehicles",
   postElectric: "/post/electrics",
@@ -26,6 +25,10 @@ export const routes = {
   contractView: "/contract",
   contracts: "/contracts",
   transactions: "/transactions",
+  
+  // Complaint routes
+  complaints: "/complaints",
+  adminComplaints: "/admin/complaints",
 
   // Admin routes
   adminUsers: "/admin/users",
