@@ -17,22 +17,23 @@ const mockBatteriesData = [
       batteryType: "Lithium-ion",
       serialNumber: "TSL-85-2023-001",
       originalCapacity: "85kWh",
-      remainingCapacity: "82kWh", 
+      remainingCapacity: "82kWh",
       mileageCovered: "15000km",
       voltage: "400V",
       cycleCount: 245,
       warranty: "8 năm",
       weight: "540kg",
-      lifeCycle: "8000 cycles"
+      lifeCycle: "8000 cycles",
     },
-    description: "Pin lithium-ion chính hãng Tesla Model S với công nghệ tiên tiến và độ bền cao. Pin đã được kiểm tra và bảo dưỡng định kỳ, còn 96.5% dung lượng ban đầu.",
+    description:
+      "Pin lithium-ion chính hãng Tesla Model S với công nghệ tiên tiến và độ bền cao. Pin đã được kiểm tra và bảo dưỡng định kỳ, còn 96.5% dung lượng ban đầu.",
     features: [
       "Công nghệ lithium-ion tiên tiến",
-      "Hệ thống quản lý nhiệt thông minh", 
+      "Hệ thống quản lý nhiệt thông minh",
       "Sạc nhanh DC lên đến 250kW",
       "Tuổi thọ 8000+ chu kỳ sạc",
       "Bảo hành chính hãng 8 năm",
-      "Khả năng tái chế 95%"
+      "Khả năng tái chế 95%",
     ],
     specifications: {
       "Loại pin": "Lithium-ion NCR 18650",
@@ -44,21 +45,21 @@ const mockBatteriesData = [
       "Số chu kỳ đã sử dụng": "245/8000",
       "Nhiệt độ vận hành": "-20°C đến +60°C",
       "Trọng lượng": "540kg",
-      "Kích thước": "210 x 150 x 14 cm"
+      "Kích thước": "210 x 150 x 14 cm",
     },
     images: [
       "https://images.unsplash.com/photo-1558618047-3c8c6c8b1c0e?w=800",
-      "https://images.unsplash.com/photo-1593941707882-a5bac6861d75?w=800", 
-      "https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=800"
+      "https://images.unsplash.com/photo-1593941707882-a5bac6861d75?w=800",
+      "https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=800",
     ],
     sellerInfo: {
       name: "Tesla Service Center",
       phone: "1900123456",
       address: "Quận 3, TP.HCM",
       rating: 4.9,
-      totalSales: 150
-    }
-  }
+      totalSales: 150,
+    },
+  },
 ];
 
 export default function ElectricDetail() {
@@ -74,9 +75,11 @@ export default function ElectricDetail() {
       setLoading(true);
       console.log("📌 Battery ID từ URL:", postID);
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 800));
+      await new Promise((resolve) => setTimeout(resolve, 800));
 
-      const foundBattery = mockBatteriesData.find(b => b.postID === parseInt(postID));
+      const foundBattery = mockBatteriesData.find(
+        (b) => b.postID === parseInt(postID)
+      );
       if (foundBattery) {
         setBattery(foundBattery);
         setIsFavorite(foundBattery.isFavorite);
@@ -98,9 +101,9 @@ export default function ElectricDetail() {
   };
 
   const formatPrice = (price) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND'
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
     }).format(price);
   };
 
@@ -112,14 +115,14 @@ export default function ElectricDetail() {
   };
 
   const getCycleStatus = () => {
-    if (!battery?.batteryDetails) return 'excellent';
+    if (!battery?.batteryDetails) return "excellent";
     const used = battery.batteryDetails.cycleCount;
     const total = parseInt(battery.batteryDetails.lifeCycle);
     const percentage = (used / total) * 100;
-    
-    if (percentage < 25) return 'excellent';
-    if (percentage < 50) return 'good';
-    return 'fair';
+
+    if (percentage < 25) return "excellent";
+    if (percentage < 50) return "good";
+    return "fair";
   };
 
   if (loading) {
@@ -138,7 +141,10 @@ export default function ElectricDetail() {
       <div className="electric-detail-page">
         <div className="detail-not-found">
           <h2>Product Not Found</h2>
-          <button onClick={() => navigate('/batteries')} className="detail-back-btn">
+          <button
+            onClick={() => navigate("/batteries")}
+            className="detail-back-btn"
+          >
             Back to List
           </button>
         </div>
@@ -152,9 +158,16 @@ export default function ElectricDetail() {
     <div className="electric-detail-page">
       {/* Breadcrumb */}
       <div className="detail-breadcrumb">
-        <span onClick={() => navigate('/')} className="breadcrumb-link">Home</span>
+        <span onClick={() => navigate("/")} className="breadcrumb-link">
+          Home
+        </span>
         <span className="breadcrumb-separator">/</span>
-        <span onClick={() => navigate('/batteries')} className="breadcrumb-link">Batteries</span>
+        <span
+          onClick={() => navigate("/batteries")}
+          className="breadcrumb-link"
+        >
+          Batteries
+        </span>
         <span className="breadcrumb-separator">/</span>
         <span className="breadcrumb-current">{battery.productName}</span>
       </div>
@@ -163,11 +176,15 @@ export default function ElectricDetail() {
         {/* Left Column - Images */}
         <div className="detail-images-tabs">
           <div className="detail-main-image">
-            <img 
-              src={battery.images?.[selectedImage] || battery.image || '/placeholder-battery.jpg'} 
+            <img
+              src={
+                battery.images?.[selectedImage] ||
+                battery.image ||
+                "/placeholder-battery.jpg"
+              }
               alt={battery.productName}
               onError={(e) => {
-                e.target.src = '/placeholder-battery.jpg';
+                e.target.src = "/placeholder-battery.jpg";
               }}
             />
             {battery.isNew && <div className="new-badge">New</div>}
@@ -175,13 +192,15 @@ export default function ElectricDetail() {
               🔋 {batteryHealthPercentage}%
             </div>
           </div>
-          
+
           {battery.images && battery.images.length > 1 && (
             <div className="detail-image-thumbnails">
               {battery.images.map((img, index) => (
-                <div 
+                <div
                   key={index}
-                  className={`thumbnail ${index === selectedImage ? 'active' : ''}`}
+                  className={`thumbnail ${
+                    index === selectedImage ? "active" : ""
+                  }`}
                   onClick={() => setSelectedImage(index)}
                 >
                   <img src={img} alt={`View ${index + 1}`} />
@@ -198,7 +217,8 @@ export default function ElectricDetail() {
                 <div className="detail-content-section">
                   <h2>Description</h2>
                   <div className="detail-description">
-                    {battery.description || "High-quality battery with advanced technology and durability."}
+                    {battery.description ||
+                      "High-quality battery with advanced technology and durability."}
                   </div>
                 </div>
 
@@ -222,12 +242,14 @@ export default function ElectricDetail() {
                   <div className="detail-content-section">
                     <h2>Specifications</h2>
                     <div className="detail-specifications-table">
-                      {Object.entries(battery.specifications).map(([key, value]) => (
-                        <div key={key} className="detail-spec-row">
-                          <div className="detail-spec-label">{key}</div>
-                          <div className="detail-spec-value">{value}</div>
-                        </div>
-                      ))}
+                      {Object.entries(battery.specifications).map(
+                        ([key, value]) => (
+                          <div key={key} className="detail-spec-row">
+                            <div className="detail-spec-label">{key}</div>
+                            <div className="detail-spec-value">{value}</div>
+                          </div>
+                        )
+                      )}
                     </div>
                   </div>
                 )}
@@ -239,15 +261,7 @@ export default function ElectricDetail() {
         {/* Right Column - Details */}
         <div className="detail-info-section">
           <div className="detail-battery-header">
-            <h1 className="detail-battery-title">
-              {battery.productName}
-            </h1>
-            <button 
-              className={`detail-favorite-btn ${isFavorite ? 'active' : ''}`}
-              onClick={handleFavoriteClick}
-            >
-              <span className="detail-heart-icon">♥</span>
-            </button>
+            <h1 className="detail-battery-title">{battery.productName}</h1>
           </div>
 
           <div className="detail-price-section">
@@ -257,13 +271,11 @@ export default function ElectricDetail() {
 
           {/* Battery Health Section */}
           <div className="battery-health-section">
-            <div className="battery-health-title">
-              🔋 Battery Status
-            </div>
+            <div className="battery-health-title">🔋 Battery Status</div>
             <div className="battery-health-bar">
-              <div 
-                className="battery-health-fill" 
-                style={{width: `${batteryHealthPercentage}%`}}
+              <div
+                className="battery-health-fill"
+                style={{ width: `${batteryHealthPercentage}%` }}
               ></div>
             </div>
             <div className="battery-health-text">
@@ -272,7 +284,8 @@ export default function ElectricDetail() {
             <div className="battery-cycle-indicator">
               <span>Charge Cycles:</span>
               <span className={`cycle-status ${getCycleStatus()}`}>
-                {battery.batteryDetails?.cycleCount || 0}/{parseInt(battery.batteryDetails?.lifeCycle) || 8000}
+                {battery.batteryDetails?.cycleCount || 0}/
+                {parseInt(battery.batteryDetails?.lifeCycle) || 8000}
               </span>
             </div>
           </div>
@@ -282,35 +295,51 @@ export default function ElectricDetail() {
             <div className="detail-info-grid">
               <div className="detail-info-item">
                 <span className="detail-info-label">Battery Type:</span>
-                <span className="detail-info-value">{battery.batteryDetails?.batteryType}</span>
+                <span className="detail-info-value">
+                  {battery.batteryDetails?.batteryType}
+                </span>
               </div>
               <div className="detail-info-item">
                 <span className="detail-info-label">Original Capacity:</span>
-                <span className="detail-info-value">{battery.batteryDetails?.originalCapacity}</span>
+                <span className="detail-info-value">
+                  {battery.batteryDetails?.originalCapacity}
+                </span>
               </div>
               <div className="detail-info-item">
                 <span className="detail-info-label">Current Capacity:</span>
-                <span className="detail-info-value">{battery.batteryDetails?.remainingCapacity}</span>
+                <span className="detail-info-value">
+                  {battery.batteryDetails?.remainingCapacity}
+                </span>
               </div>
               <div className="detail-info-item">
                 <span className="detail-info-label">Voltage:</span>
-                <span className="detail-info-value">{battery.batteryDetails?.voltage}</span>
+                <span className="detail-info-value">
+                  {battery.batteryDetails?.voltage}
+                </span>
               </div>
               <div className="detail-info-item">
                 <span className="detail-info-label">Mileage Covered:</span>
-                <span className="detail-info-value">{battery.batteryDetails?.mileageCovered}</span>
+                <span className="detail-info-value">
+                  {battery.batteryDetails?.mileageCovered}
+                </span>
               </div>
               <div className="detail-info-item">
                 <span className="detail-info-label">Charge Cycles:</span>
-                <span className="detail-info-value">{battery.batteryDetails?.cycleCount}</span>
+                <span className="detail-info-value">
+                  {battery.batteryDetails?.cycleCount}
+                </span>
               </div>
               <div className="detail-info-item">
                 <span className="detail-info-label">Warranty:</span>
-                <span className="detail-info-value">{battery.batteryDetails?.warranty}</span>
+                <span className="detail-info-value">
+                  {battery.batteryDetails?.warranty}
+                </span>
               </div>
               <div className="detail-info-item">
                 <span className="detail-info-label">Weight:</span>
-                <span className="detail-info-value">{battery.batteryDetails?.weight}</span>
+                <span className="detail-info-value">
+                  {battery.batteryDetails?.weight}
+                </span>
               </div>
             </div>
           </div>
@@ -320,21 +349,30 @@ export default function ElectricDetail() {
             <div className="detail-seller-info">
               <h3>Seller Information</h3>
               <div className="detail-seller-details">
-                <div className="detail-seller-name">{battery.sellerInfo?.name || battery.sellerName}</div>
+                <div className="detail-seller-name">
+                  {battery.sellerInfo?.name || battery.sellerName}
+                </div>
                 {battery.sellerInfo?.rating && (
                   <div className="detail-seller-rating">
                     <span className="detail-stars">★★★★★</span>
-                    <span className="detail-rating-text">({battery.sellerInfo.rating}/5)</span>
+                    <span className="detail-rating-text">
+                      ({battery.sellerInfo.rating}/5)
+                    </span>
                   </div>
                 )}
                 {battery.sellerInfo?.address && (
-                  <div className="detail-seller-location">{battery.sellerInfo.address}</div>
+                  <div className="detail-seller-location">
+                    {battery.sellerInfo.address}
+                  </div>
                 )}
               </div>
             </div>
 
             <div className="detail-contact-buttons">
-              <button className="detail-contact-btn primary" onClick={handleContactSeller}>
+              <button
+                className="detail-contact-btn primary"
+                onClick={handleContactSeller}
+              >
                 <span className="phone-icon">📞</span>
                 Contact Seller
               </button>

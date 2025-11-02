@@ -13,9 +13,10 @@ export default function MiniPost({
   onClick,
 }) {
   // Use the pre-formatted price string if it's already formatted, otherwise format as VND
-  const priceFmt = typeof price === 'string' && price.includes('$') 
-    ? price 
-    : new Intl.NumberFormat("vi-VN").format(price);
+  const priceFmt =
+    typeof price === "string" && price.includes("$")
+      ? price
+      : new Intl.NumberFormat("vi-VN").format(price);
 
   return (
     <article className="mini-card" onClick={onClick} role="button" tabIndex={0}>
@@ -32,12 +33,14 @@ export default function MiniPost({
           aria-label="favorite"
           title="Save to favorites"
         >
-          ♥
+          {isFavorite ? "♥" : "♡"}
         </button>
       </div>
 
       <div className="mini-body">
-        <h3 className="mini-title" title={productName}>{productName}</h3>
+        <h3 className="mini-title" title={productName}>
+          {productName}
+        </h3>
 
         <ul className="mini-specs">
           {basicInfo.map((t, i) => (
@@ -46,9 +49,13 @@ export default function MiniPost({
         </ul>
 
         <div className="mini-meta">
-          <span className="seller" title={sellerName}>{sellerName}</span>
+          <span className="seller" title={sellerName}>
+            {sellerName}
+          </span>
           <span className="price">
-            {typeof price === 'string' && price.includes('$') ? priceFmt : `${priceFmt} ₫`}
+            {typeof price === "string" && price.includes("$")
+              ? priceFmt
+              : `${priceFmt} ₫`}
           </span>
         </div>
       </div>

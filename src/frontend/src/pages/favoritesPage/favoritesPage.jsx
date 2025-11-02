@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import MiniPost from "../../components/miniPost/miniPost";
 import api from "../../config/api";
+import { favoriteService } from "../../services/favoriteService";
 import "./favoritesPage.css";
 
 const ITEMS_PER_PAGE = 12;
@@ -18,23 +19,14 @@ export default function FavoritesPage() {
     const fetchFavorites = async () => {
       setLoading(true);
       try {
-        const token = document.cookie
-          .split("; ")
-          .find((row) => row.startsWith("accessToken="))
-          ?.split("=")[1];
-
-        if (!token) {
+        if (!favoriteService.isUserLoggedIn()) {
           console.log("❌ No access token found - user not logged in");
           setFavorites([]);
           setLoading(false);
           return;
         }
 
-        const response = await api.get("/api/favorites", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await favoriteService.getFavorites();
 
         if (response.data && Array.isArray(response.data)) {
           // Map backend FavListResponse to frontend format
@@ -99,18 +91,9 @@ export default function FavoritesPage() {
   // Handle remove favorite
   const handleFavoriteClick = async (itemId) => {
     try {
-      const token = document.cookie
-        .split("; ")
-        .find((row) => row.startsWith("accessToken="))
-        ?.split("=")[1];
-
-      if (token) {
+      if (favoriteService.isUserLoggedIn()) {
         // Call API to remove from favorites
-        await api.delete(`/api/favorites/delete/${itemId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        await favoriteService.removeFromFavorites(itemId);
       }
 
       // Update local state

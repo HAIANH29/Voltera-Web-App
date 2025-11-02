@@ -418,12 +418,6 @@ export default function VehicleDetail() {
             <h1 className="detail-vehicle-title">
               {vehicle.brand} {vehicle.model} {vehicle.version}
             </h1>
-            <button
-              className={`detail-favorite-btn ${isFavorite ? "active" : ""}`}
-              onClick={handleFavoriteClick}
-            >
-              <span className="detail-heart-icon">♥</span>
-            </button>
           </div>
 
           <div className="detail-price-section">

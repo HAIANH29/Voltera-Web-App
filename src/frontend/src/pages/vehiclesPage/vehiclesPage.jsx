@@ -5,6 +5,7 @@ import Pagination from "../../components/pagination/pagination";
 import "./vehiclesPage.css";
 import { useNavigate } from "react-router-dom";
 import api from "../../config/api";
+import { favoriteService } from "../../services/favoriteService";
 
 /** Số thẻ mỗi trang */
 const ITEMS_PER_PAGE = 12;
@@ -118,7 +119,30 @@ export default function VehiclesPage() {
         console.log("[VehiclesPage] Loaded", items.length, "vehicle posts");
 
         const mapped = items.map(mapPostToCard);
-        setVehicles(mapped);
+
+        // Load user favorites to sync favorite status
+        if (favoriteService.isUserLoggedIn()) {
+          try {
+            const favResponse = await favoriteService.getFavorites();
+            const favoritePostIds = new Set(
+              favResponse.data?.map((fav) => String(fav.postId)) || []
+            );
+
+            // Update mapped vehicles with favorite status
+            const mappedWithFavorites = mapped.map((vehicle) => ({
+              ...vehicle,
+              isFavorite: favoritePostIds.has(vehicle.postID),
+            }));
+
+            setVehicles(mappedWithFavorites);
+          } catch (favError) {
+            console.error("Error loading favorites:", favError);
+            // Still set vehicles even if favorites loading failed
+            setVehicles(mapped);
+          }
+        } else {
+          setVehicles(mapped);
+        }
       } catch (e) {
         console.error("Load vehicles failed:", e);
         console.log("STATUS =", e?.response?.status);
@@ -266,12 +290,44 @@ export default function VehiclesPage() {
   const currentVehicles = filtered.slice(startIndex, endIndex);
 
   // ===================== HANDLERS UI =====================
-  const handleFavoriteClick = (postID) => {
-    setVehicles((prev) =>
-      prev.map((v) =>
-        v.postID === postID ? { ...v, isFavorite: !v.isFavorite } : v
-      )
-    );
+  const handleFavoriteClick = async (postID) => {
+    // Check if user is logged in
+    if (!favoriteService.isUserLoggedIn()) {
+      alert("Please log in to add favorites!");
+      return;
+    }
+
+    // Find the current vehicle to check its favorite status
+    const vehicle = vehicles.find((v) => v.postID === postID);
+    if (!vehicle) return;
+
+    try {
+      // Update UI immediately for better UX
+      setVehicles((prev) =>
+        prev.map((v) =>
+          v.postID === postID ? { ...v, isFavorite: !v.isFavorite } : v
+        )
+      );
+
+      // Call API based on current state
+      if (vehicle.isFavorite) {
+        // Currently favorited, so remove it
+        await favoriteService.removeFromFavorites(postID);
+      } else {
+        // Not favorited, so add it
+        await favoriteService.addToFavorites(postID);
+      }
+    } catch (error) {
+      // Revert UI change if API call failed
+      setVehicles((prev) =>
+        prev.map((v) =>
+          v.postID === postID ? { ...v, isFavorite: !v.isFavorite } : v
+        )
+      );
+
+      console.error("Error toggling favorite:", error);
+      alert("Failed to update favorites. Please try again.");
+    }
   };
 
   const handleCardClick = (vehicle) => {
@@ -1039,7 +1095,6 @@ export default function VehiclesPage() {
                   onClick={() => handleCardClick(v)}
                 />
                 {v.status === "new" && <div className="new-badge">NEW</div>}
-                {v.isFavorite && <div className="favorite-indicator">♥</div>}
               </div>
             ))}
 
