@@ -498,12 +498,20 @@
 }
 
 .response-author {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   font-weight: 600;
   color: #3b82f6;
   background: rgba(59, 130, 246, 0.1);
   padding: 0.25rem 0.75rem;
   border-radius: 6px;
   font-size: 0.875rem;
+}
+
+.response-author svg {
+  width: 1rem;
+  height: 1rem;
 }
 
 .response-date {
@@ -532,6 +540,31 @@
 .no-responses p {
   margin: 0;
   font-size: 1.125rem;
+}
+
+/* Loading State for Replies */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px;
+  color: #6b7280;
+  text-align: center;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #f3f4f6;
+  border-top: 3px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 15px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 /* ================ EMPTY & LOADING STATES ================ */
