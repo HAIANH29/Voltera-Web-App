@@ -3,6 +3,7 @@ package com.g_wuy.swp391.voltera.controller;
 import com.g_wuy.swp391.voltera.entity.Complaint;
 import com.g_wuy.swp391.voltera.model.request.ComplaintRequest;
 import com.g_wuy.swp391.voltera.service.ComplaintService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +19,7 @@ public class ComplaintController {
 
     @PostMapping
     public ResponseEntity<Complaint> createComplaint(
+            @Valid
             @RequestBody ComplaintRequest request,
             @RequestHeader("Authorization") String auth) {
         Complaint complaint = complaintService.createComplaint(request, auth);

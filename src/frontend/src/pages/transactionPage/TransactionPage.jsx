@@ -36,6 +36,7 @@ const TransactionPage = () => {
       }
 
       const response = await api.get(endpoint);
+      console.log("Fetched transactions:", response.data); // Debug log
       setTransactions(response.data);
     } catch (err) {
       console.error("Error fetching transactions:", err);
@@ -209,12 +210,83 @@ const TransactionPage = () => {
             {selectedTransaction.transactionStatus === "PENDING" && (
               <button
                 className="btn btn-primary"
-                onClick={() => {
-                  // Navigate to payment page
-                  navigate(`/payment?transactionId=${selectedTransaction.id}`);
+                onClick={async () => {
+                  try {
+                    setShowModal(false);
+                    console.log(
+                      "Selected transaction object:",
+                      selectedTransaction
+                    ); // Debug log
+
+                    // Try different possible ID fields
+                    const transactionId =
+                      selectedTransaction.id ||
+                      selectedTransaction.transactionId ||
+                      selectedTransaction.transactionid;
+                    console.log("Using transaction ID:", transactionId);
+
+                    if (!transactionId) {
+                      console.error("No transaction ID found!");
+                      alert(
+                        "Transaction ID not found. Cannot proceed with payment."
+                      );
+                      return;
+                    }
+
+                    // Call the fee payment API directly
+                    const response = await api.post(
+                      `/api/fee/create-payment/${transactionId}`
+                    );
+
+                    if (response.data && response.data.paymentUrl) {
+                      // Redirect to VNPay
+                      window.location.href = response.data.paymentUrl;
+                    } else {
+                      console.error(
+                        "No payment URL in response:",
+                        response.data
+                      );
+                      // Fallback to payment page with all necessary info
+                      const postId =
+                        selectedTransaction.post?.id ||
+                        selectedTransaction.postId ||
+                        "";
+                      const amount = selectedTransaction.price || "";
+                      const orderInfo = `Fee payment for: ${
+                        selectedTransaction.postTitle || "Post"
+                      }`;
+
+                      navigate(
+                        `/payment?transactionId=${transactionId}&postId=${postId}&amount=${amount}&orderInfo=${encodeURIComponent(
+                          orderInfo
+                        )}`
+                      );
+                    }
+                  } catch (error) {
+                    console.error("Error creating payment:", error);
+                    // Fallback to payment page with all necessary info
+                    const transactionId =
+                      selectedTransaction.id ||
+                      selectedTransaction.transactionId ||
+                      selectedTransaction.transactionid;
+                    const postId =
+                      selectedTransaction.post?.id ||
+                      selectedTransaction.postId ||
+                      "";
+                    const amount = selectedTransaction.price || "";
+                    const orderInfo = `Fee payment for: ${
+                      selectedTransaction.postTitle || "Post"
+                    }`;
+
+                    navigate(
+                      `/payment?transactionId=${transactionId}&postId=${postId}&amount=${amount}&orderInfo=${encodeURIComponent(
+                        orderInfo
+                      )}`
+                    );
+                  }
                 }}
               >
-                Pay Now
+                💳 Pay Fee
               </button>
             )}
           </div>
@@ -394,12 +466,71 @@ const TransactionPage = () => {
                         {transaction.transactionStatus === "PENDING" && (
                           <button
                             className="btn-action btn-pay"
-                            onClick={() =>
-                              navigate(
-                                `/payment?transactionId=${transaction.id}`
-                              )
-                            }
-                            title="Pay Now"
+                            onClick={async () => {
+                              try {
+                                console.log("Transaction object:", transaction); // Debug log
+
+                                // Try different possible ID fields
+                                const transactionId =
+                                  transaction.id ||
+                                  transaction.transactionId ||
+                                  transaction.transactionid;
+                                console.log(
+                                  "Using transaction ID:",
+                                  transactionId
+                                );
+
+                                if (!transactionId) {
+                                  console.error("No transaction ID found!");
+                                  setError(
+                                    "Transaction ID not found. Cannot proceed with payment."
+                                  );
+                                  return;
+                                }
+
+                                // Call the fee payment API directly
+                                const response = await api.post(
+                                  `/api/fee/create-payment/${transactionId}`
+                                );
+
+                                if (response.data && response.data.paymentUrl) {
+                                  // Redirect to VNPay
+                                  window.location.href =
+                                    response.data.paymentUrl;
+                                } else {
+                                  console.error(
+                                    "No payment URL in response:",
+                                    response.data
+                                  );
+                                  // Fallback to payment page
+                                  navigate(
+                                    `/payment?transactionId=${transactionId}`
+                                  );
+                                }
+                              } catch (error) {
+                                console.error("Error creating payment:", error);
+                                // Fallback to payment page with all necessary info
+                                const transactionId =
+                                  transaction.id ||
+                                  transaction.transactionId ||
+                                  transaction.transactionid;
+                                const postId =
+                                  transaction.post?.id ||
+                                  transaction.postId ||
+                                  "";
+                                const amount = transaction.price || "";
+                                const orderInfo = `Fee payment for: ${
+                                  transaction.postTitle || "Post"
+                                }`;
+
+                                navigate(
+                                  `/payment?transactionId=${transactionId}&postId=${postId}&amount=${amount}&orderInfo=${encodeURIComponent(
+                                    orderInfo
+                                  )}`
+                                );
+                              }
+                            }}
+                            title="Pay Fee"
                           >
                             💳
                           </button>

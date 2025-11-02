@@ -3,6 +3,7 @@ package com.g_wuy.swp391.voltera.controller;
 
 
 import com.g_wuy.swp391.voltera.entity.Post;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -34,6 +35,7 @@ public class PostController {
 
     @PostMapping("/create")
     public ResponseEntity<PostResponse> createPost(
+            @Valid
             @RequestHeader("Authorization") String authHeader,
             @RequestBody PostRequest dto) throws IOException {
 
@@ -181,5 +183,11 @@ public class PostController {
     public ResponseEntity<PostResponse> getPostDetail(@PathVariable Integer postId) {
         PostResponse response = postService.getPostDetail(postId);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<PostResponse>> getUserPosts(@PathVariable Integer userId) {
+        List<PostResponse> responses = postService.getPostsByUserId(userId);
+        return ResponseEntity.ok(responses);
     }
 }

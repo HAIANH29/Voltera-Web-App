@@ -5,6 +5,7 @@ import com.g_wuy.swp391.voltera.exception.BusinessException;
 import com.g_wuy.swp391.voltera.model.request.OtpRequest;
 import com.g_wuy.swp391.voltera.service.JwtService;
 import com.g_wuy.swp391.voltera.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -29,13 +30,13 @@ public class AuthController {
     @Autowired
     private JwtService  jwtService;
     @PostMapping("/register")
-    public ResponseEntity<RegisterResponse> register(@RequestBody RegisterRequest request){
+    public ResponseEntity<RegisterResponse> register(@Valid  @RequestBody RegisterRequest request){
         RegisterResponse registerResponse = accountService.register(request);
         return ResponseEntity.ok(registerResponse);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(userService.login(request));
     }
 

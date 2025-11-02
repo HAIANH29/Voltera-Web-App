@@ -255,6 +255,21 @@ const Icons = {
       />
     </svg>
   ),
+  DollarSign: () => (
+    <svg
+      className="w-5 h-5"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
+      />
+    </svg>
+  ),
   MessageCircle: () => (
     <svg
       className="w-5 h-5"
@@ -296,6 +311,17 @@ export default function DashboardAdmin() {
   const [postDetail, setPostDetail] = useState(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
 
+  // 💰 Fee Management States
+  const [fees, setFees] = useState([]);
+  const [feeLoading, setFeeLoading] = useState(false);
+  const [feeStats, setFeeStats] = useState({
+    totalFees: 0,
+    paidFees: 0,
+    pendingFees: 0,
+    expiredFees: 0,
+    totalRevenue: 0,
+  });
+
   // 🔗 Navigation Configuration
   const navigationItems = [
     {
@@ -323,6 +349,7 @@ export default function DashboardAdmin() {
           badge: pendingAccounts.length,
         },
         { id: "users", label: "Users", icon: Icons.Users },
+        { id: "fees", label: "Fee Management", icon: Icons.DollarSign },
         { id: "complaints", label: "Complaints", icon: Icons.MessageCircle },
       ],
     },
@@ -366,6 +393,9 @@ export default function DashboardAdmin() {
         break;
       case "complaints":
         loadComplaints();
+        break;
+      case "fees":
+        loadFees();
         break;
     }
   }, [activeSection]);
@@ -1049,59 +1079,77 @@ export default function DashboardAdmin() {
     try {
       setComplaintsLoading(true);
       console.log("📡 Loading complaints from API...");
-      
+
       // Try to get all complaints by trying different endpoints
       let response;
-      
+
       try {
         // Try unresolve complaints first (admin endpoint)
         response = await api.get("/api/reply-complaint/unresolve");
         console.log("✅ Unresolved complaints loaded:", response);
       } catch (error) {
-        console.warn("⚠️ Failed to get unresolve complaints, trying alternative endpoint:", error.message);
-        
+        console.warn(
+          "⚠️ Failed to get unresolve complaints, trying alternative endpoint:",
+          error.message
+        );
+
         // Fallback: try to get complaints by status
         try {
           response = await api.get("/api/complaints/status/PENDING");
           console.log("✅ Pending complaints loaded:", response);
         } catch (error2) {
-          console.warn("⚠️ Failed to get pending complaints, trying search endpoint:", error2.message);
-          
+          console.warn(
+            "⚠️ Failed to get pending complaints, trying search endpoint:",
+            error2.message
+          );
+
           // Fallback: try search with empty query to get all
           response = await api.get("/api/reply-complaint/search?problem=");
           console.log("✅ Search complaints loaded:", response);
         }
       }
-      
+
       if (response && response.data) {
         // Handle different possible response structures from backend
         let complaintsData = [];
-        
+
         if (Array.isArray(response.data)) {
           complaintsData = response.data;
         } else if (response.data.data && Array.isArray(response.data.data)) {
           complaintsData = response.data.data;
-        } else if (response.data.content && Array.isArray(response.data.content)) {
+        } else if (
+          response.data.content &&
+          Array.isArray(response.data.content)
+        ) {
           complaintsData = response.data.content;
         } else {
-          console.warn("⚠️ Unexpected complaints response format:", response.data);
+          console.warn(
+            "⚠️ Unexpected complaints response format:",
+            response.data
+          );
           console.warn("⚠️ Response structure:", Object.keys(response.data));
           complaintsData = [];
         }
-        
+
         // Transform data to match frontend expectations if needed
-        const transformedComplaints = complaintsData.map(complaint => {
+        const transformedComplaints = complaintsData.map((complaint) => {
           console.log("🔍 Processing complaint:", complaint);
-          
+
           // Extract user info from various possible paths
           let userName = "System User";
           let userEmail = "";
-          
+
           if (complaint.account) {
-            userName = complaint.account.name || complaint.account.username || complaint.account.fullName;
+            userName =
+              complaint.account.name ||
+              complaint.account.username ||
+              complaint.account.fullName;
             userEmail = complaint.account.email;
           } else if (complaint.user) {
-            userName = complaint.user.name || complaint.user.username || complaint.user.fullName;
+            userName =
+              complaint.user.name ||
+              complaint.user.username ||
+              complaint.user.fullName;
             userEmail = complaint.user.email;
           } else if (complaint.userName) {
             userName = complaint.userName;
@@ -1112,29 +1160,45 @@ export default function DashboardAdmin() {
           } else if (complaint.createdBy) {
             userName = complaint.createdBy;
           }
-          
+
           // If still no name, try to extract from email
           if (!userName && userEmail) {
-            userName = userEmail.split('@')[0];
+            userName = userEmail.split("@")[0];
           }
-          
+
           return {
             id: complaint.id || complaint.complaintId,
-            title: complaint.title || complaint.problem || complaint.subject || "Complaint #" + (complaint.id || complaint.complaintId),
-            description: complaint.description || complaint.content || complaint.message || "",
-            complaintType: complaint.complaintType || complaint.type || complaint.category || "GENERAL",
+            title:
+              complaint.title ||
+              complaint.problem ||
+              complaint.subject ||
+              "Complaint #" + (complaint.id || complaint.complaintId),
+            description:
+              complaint.description ||
+              complaint.content ||
+              complaint.message ||
+              "",
+            complaintType:
+              complaint.complaintType ||
+              complaint.type ||
+              complaint.category ||
+              "GENERAL",
             status: complaint.status || complaint.complaintStatus || "PENDING",
-            createdAt: complaint.createdAt || complaint.createDate || complaint.submittedAt || new Date().toISOString(),
+            createdAt:
+              complaint.createdAt ||
+              complaint.createDate ||
+              complaint.submittedAt ||
+              new Date().toISOString(),
             user: {
               name: userName,
-              email: userEmail || "no-email@system.local"
-            }
+              email: userEmail || "no-email@system.local",
+            },
           };
         });
-        
+
         console.log("📋 Processed complaints data:", transformedComplaints);
         setComplaints(transformedComplaints);
-        
+
         if (transformedComplaints.length === 0) {
           toast.info("No complaints found in the system.");
         } else {
@@ -1151,20 +1215,28 @@ export default function DashboardAdmin() {
         status: error.response?.status,
         statusText: error.response?.statusText,
         data: error.response?.data,
-        message: error.message
+        message: error.message,
       });
-      
+
       setComplaints([]);
-      
+
       // Show appropriate error message based on error type
       if (error.response?.status === 401) {
-        toast.error("Authentication failed. Please login again to access complaints.");
+        toast.error(
+          "Authentication failed. Please login again to access complaints."
+        );
       } else if (error.response?.status === 403) {
-        toast.error("Access denied. Admin privileges required to view complaints.");
+        toast.error(
+          "Access denied. Admin privileges required to view complaints."
+        );
       } else if (error.response?.status === 404) {
-        toast.error("Complaints API endpoints not found. Please check backend configuration.");
+        toast.error(
+          "Complaints API endpoints not found. Please check backend configuration."
+        );
       } else if (error.response?.status === 500) {
-        toast.error("Server error while loading complaints. Please try again later.");
+        toast.error(
+          "Server error while loading complaints. Please try again later."
+        );
       } else {
         toast.error(`Failed to load complaints from server: ${error.message}`);
       }
@@ -1177,26 +1249,29 @@ export default function DashboardAdmin() {
   const handleResolveComplaint = async (complaintId) => {
     try {
       console.log("🔄 Resolving complaint:", complaintId);
-      
+
       // Show confirmation
-      if (!window.confirm("Are you sure you want to mark this complaint as resolved? This action cannot be undone.")) {
+      if (
+        !window.confirm(
+          "Are you sure you want to mark this complaint as resolved? This action cannot be undone."
+        )
+      ) {
         return;
       }
-      
+
       setComplaintsLoading(true);
-      
+
       // Call API to resolve complaint (may need different endpoint)
       // Note: Backend may not have resolve endpoint, this might need backend update
       await api.put(`/api/complaints/resolve/${complaintId}`);
-      
+
       toast.success("Complaint marked as resolved successfully!");
-      
+
       // Reload complaints to remove resolved item
       await loadComplaints();
-      
     } catch (error) {
       console.error("❌ Failed to resolve complaint:", error);
-      
+
       if (error.response?.status === 401) {
         toast.error("Authentication failed. Please login again.");
       } else if (error.response?.status === 403) {
@@ -1211,6 +1286,68 @@ export default function DashboardAdmin() {
     }
   };
 
+  // 💰 Fee Management Functions
+  const loadFees = async () => {
+    try {
+      setFeeLoading(true);
+
+      console.log("📡 Loading real fee data from backend...");
+
+      // Load fee statistics
+      const statsResponse = await api.get("/api/fee/admin/stats");
+      if (statsResponse.data) {
+        setFeeStats({
+          totalFees: statsResponse.data.totalFees || 0,
+          paidFees: statsResponse.data.paidFees || 0,
+          pendingFees: statsResponse.data.pendingFees || 0,
+          expiredFees: statsResponse.data.expiredFees || 0,
+          totalRevenue: statsResponse.data.totalRevenue || 0,
+        });
+        console.log("✅ Fee statistics loaded:", statsResponse.data);
+      }
+
+      // Load fee list (limited to avoid large responses)
+      const feesResponse = await api.get("/api/fee/admin/all");
+      if (feesResponse.data && Array.isArray(feesResponse.data)) {
+        // Limit to most recent 50 fees to avoid performance issues
+        const limitedFees = feesResponse.data
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+          .slice(0, 50);
+
+        setFees(limitedFees);
+        console.log(`✅ Fee data loaded: ${limitedFees.length} fees`);
+      } else {
+        console.warn("⚠️ Unexpected fee data format, using empty array");
+        setFees([]);
+      }
+    } catch (err) {
+      console.error("❌ Error loading fees:", err);
+
+      // Fallback to mock data if API fails
+      console.log("🔄 Falling back to mock data...");
+      const mockFeeStats = {
+        totalFees: 0,
+        paidFees: 0,
+        pendingFees: 0,
+        expiredFees: 0,
+        totalRevenue: 0,
+      };
+
+      setFees([]);
+      setFeeStats(mockFeeStats);
+
+      if (err.response?.status === 401) {
+        toast.error("Authentication required for fee data");
+      } else if (err.response?.status === 403) {
+        toast.error("Admin access required for fee management");
+      } else {
+        toast.error("Failed to load fee data. Please try again.");
+      }
+    } finally {
+      setFeeLoading(false);
+    }
+  };
+
   // Handle Reply Complaint
   const handleReplyComplaint = async (complaint) => {
     setSelectedComplaint(complaint);
@@ -1221,7 +1358,7 @@ export default function DashboardAdmin() {
     console.log("🚀 Submit reply called, replyText:", replyText);
     console.log("🚀 Reply text length:", replyText.length);
     console.log("🚀 Trimmed text:", replyText.trim());
-    
+
     if (!replyText.trim()) {
       toast.error("Please enter a reply message.");
       return;
@@ -1232,25 +1369,31 @@ export default function DashboardAdmin() {
       console.log("📤 Submitting reply for complaint:", selectedComplaint.id);
 
       const replyRequest = {
-        message: replyText.trim()
+        message: replyText.trim(),
       };
 
-      await api.post(`/api/reply-complaint/create-reply/${selectedComplaint.id}`, replyRequest);
-      
+      await api.post(
+        `/api/reply-complaint/create-reply/${selectedComplaint.id}`,
+        replyRequest
+      );
+
       toast.success("Reply sent successfully!");
-      
+
       // Close modal and reload complaints
       setSelectedComplaint(null);
       setReplyText("");
       await loadComplaints();
-      
     } catch (error) {
       console.error("❌ Failed to send reply:", error);
       console.error("❌ Error response:", error.response?.data);
       console.error("❌ Request payload:", replyRequest);
-      
+
       if (error.response?.status === 400) {
-        toast.error(`Bad request: ${error.response?.data?.message || 'Invalid data format'}`);
+        toast.error(
+          `Bad request: ${
+            error.response?.data?.message || "Invalid data format"
+          }`
+        );
       } else if (error.response?.status === 401) {
         toast.error("Authentication failed. Please login again.");
       } else if (error.response?.status === 403) {
@@ -1921,6 +2064,152 @@ export default function DashboardAdmin() {
             </div>
           )}
 
+          {/* 💰 Fee Management Section */}
+          {activeSection === "fees" && (
+            <div className="fade-in">
+              <div className="content-card">
+                <div className="content-card-header">
+                  <div>
+                    <div className="content-card-title">
+                      Fee Management ({fees.length})
+                    </div>
+                    <div className="content-card-subtitle">
+                      View posting fees and revenue statistics
+                    </div>
+                  </div>
+                  <button
+                    className="modern-btn primary"
+                    onClick={loadFees}
+                    disabled={feeLoading}
+                  >
+                    {feeLoading ? "Loading..." : "Refresh"}
+                  </button>
+                </div>
+
+                {/* Fee Statistics */}
+                <div className="stats-grid">
+                  <div className="stat-card">
+                    <div className="stat-label">Total Fees</div>
+                    <div className="stat-value text-blue">
+                      {feeStats.totalFees}
+                    </div>
+                  </div>
+                  <div className="stat-card">
+                    <div className="stat-label">Paid</div>
+                    <div className="stat-value text-green">
+                      {feeStats.paidFees}
+                    </div>
+                  </div>
+                  <div className="stat-card">
+                    <div className="stat-label">Pending</div>
+                    <div className="stat-value text-yellow">
+                      {feeStats.pendingFees}
+                    </div>
+                  </div>
+                  <div className="stat-card">
+                    <div className="stat-label">Expired</div>
+                    <div className="stat-value text-red">
+                      {feeStats.expiredFees}
+                    </div>
+                  </div>
+                  <div className="stat-card">
+                    <div className="stat-label">Total Revenue</div>
+                    <div className="stat-value text-blue">
+                      {new Intl.NumberFormat("vi-VN", {
+                        style: "currency",
+                        currency: "VND",
+                      }).format(feeStats.totalRevenue)}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="content-card-body">
+                  {feeLoading ? (
+                    <div className="loading-state">
+                      <div className="loading-spinner"></div>
+                      <div className="loading-text">Loading fees...</div>
+                    </div>
+                  ) : fees.length > 0 ? (
+                    <div className="table-container">
+                      <table className="modern-table">
+                        <thead>
+                          <tr>
+                            <th>ID</th>
+                            <th>Post Title</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th>Expires</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {fees.map((fee) => (
+                            <tr key={fee.id}>
+                              <td>#{fee.id}</td>
+                              <td>
+                                {fee.post?.title || fee.description || "N/A"}
+                              </td>
+                              <td>
+                                {new Intl.NumberFormat("vi-VN", {
+                                  style: "currency",
+                                  currency: "VND",
+                                }).format(fee.amount || 0)}
+                              </td>
+                              <td>
+                                <span
+                                  className={`status-badge ${
+                                    fee.status?.toLowerCase() || "unknown"
+                                  }`}
+                                >
+                                  {fee.status || "UNKNOWN"}
+                                </span>
+                              </td>
+                              <td>
+                                {fee.createdAt
+                                  ? new Date(fee.createdAt).toLocaleDateString()
+                                  : "N/A"}
+                              </td>
+                              <td>
+                                {fee.expiredAt ? (
+                                  <span
+                                    className={
+                                      new Date(fee.expiredAt) < new Date()
+                                        ? "text-red"
+                                        : new Date(fee.expiredAt) <
+                                          new Date(
+                                            Date.now() + 3 * 24 * 60 * 60 * 1000
+                                          )
+                                        ? "text-yellow"
+                                        : ""
+                                    }
+                                  >
+                                    {new Date(
+                                      fee.expiredAt
+                                    ).toLocaleDateString()}
+                                  </span>
+                                ) : (
+                                  "N/A"
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <div className="empty-state">
+                      <Icons.DollarSign />
+                      <div className="empty-state-title">No Fees Found</div>
+                      <div className="empty-state-text">
+                        No posting fees have been created yet.
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
           {activeSection === "settings" && (
             <div className="fade-in">
               <div className="content-card">
@@ -1968,9 +2257,12 @@ export default function DashboardAdmin() {
                   ) : complaints.length === 0 ? (
                     <div className="empty-state">
                       <Icons.MessageCircle />
-                      <div className="empty-state-title">No Complaints Found</div>
+                      <div className="empty-state-title">
+                        No Complaints Found
+                      </div>
                       <div className="empty-state-text">
-                        All complaints have been resolved or no complaints submitted yet.
+                        All complaints have been resolved or no complaints
+                        submitted yet.
                       </div>
                     </div>
                   ) : (
@@ -1994,10 +2286,10 @@ export default function DashboardAdmin() {
                               <td>
                                 <div className="user-info">
                                   <div className="user-name">
-                                    {complaint.user?.name || 'Unknown User'}
+                                    {complaint.user?.name || "Unknown User"}
                                   </div>
                                   <div className="user-email">
-                                    {complaint.user?.email || 'No email'}
+                                    {complaint.user?.email || "No email"}
                                   </div>
                                 </div>
                               </td>
@@ -2006,47 +2298,58 @@ export default function DashboardAdmin() {
                                   {complaint.title}
                                 </div>
                                 <div className="complaint-desc">
-                                  {complaint.description?.length > 50 
-                                    ? complaint.description.substring(0, 50) + '...'
+                                  {complaint.description?.length > 50
+                                    ? complaint.description.substring(0, 50) +
+                                      "..."
                                     : complaint.description}
                                 </div>
                               </td>
                               <td>
-                                <span className={`type-badge ${complaint.complaintType.toLowerCase()}`}>
-                                  {complaint.complaintType.replace('_', ' ')}
+                                <span
+                                  className={`type-badge ${complaint.complaintType.toLowerCase()}`}
+                                >
+                                  {complaint.complaintType.replace("_", " ")}
                                 </span>
                               </td>
                               <td>
-                                <span className={`status-badge ${complaint.status.toLowerCase()}`}>
+                                <span
+                                  className={`status-badge ${complaint.status.toLowerCase()}`}
+                                >
                                   {complaint.status}
                                 </span>
                               </td>
                               <td className="text-muted">
-                                {new Date(complaint.createdAt).toLocaleDateString()}
+                                {new Date(
+                                  complaint.createdAt
+                                ).toLocaleDateString()}
                               </td>
                               <td>
                                 <div className="action-buttons-group">
-                                  {complaint.status === 'PENDING' ? (
+                                  {complaint.status === "PENDING" ? (
                                     <>
-                                      <button 
+                                      <button
                                         className="modern-btn-sm primary"
                                         title="Reply to complaint"
-                                        onClick={() => handleReplyComplaint(complaint)}
+                                        onClick={() =>
+                                          handleReplyComplaint(complaint)
+                                        }
                                       >
                                         <Icons.MessageCircle />
                                         <span>Reply</span>
                                       </button>
-                                      
-                                      <button 
+
+                                      <button
                                         className="modern-btn-sm success"
                                         title="Mark as resolved"
-                                        onClick={() => handleResolveComplaint(complaint.id)}
+                                        onClick={() =>
+                                          handleResolveComplaint(complaint.id)
+                                        }
                                       >
                                         <Icons.Check />
                                         <span>Resolved</span>
                                       </button>
                                     </>
-                                  ) : complaint.status === 'RESOLVED' ? (
+                                  ) : complaint.status === "RESOLVED" ? (
                                     <span className="action-status resolved">
                                       <Icons.Check />
                                       <span>Already Resolved</span>
@@ -2452,7 +2755,7 @@ export default function DashboardAdmin() {
                 <Icons.X />
               </button>
             </div>
-            
+
             <div className="modal-body reply-modal-body">
               {/* Complaint Info */}
               <div className="complaint-info-section">
@@ -2465,9 +2768,11 @@ export default function DashboardAdmin() {
                     <strong>Email:</strong> {selectedComplaint.user?.email}
                   </div>
                   <div className="summary-row">
-                    <strong>Type:</strong> 
-                    <span className={`type-badge ${selectedComplaint.complaintType.toLowerCase()}`}>
-                      {selectedComplaint.complaintType.replace('_', ' ')}
+                    <strong>Type:</strong>
+                    <span
+                      className={`type-badge ${selectedComplaint.complaintType.toLowerCase()}`}
+                    >
+                      {selectedComplaint.complaintType.replace("_", " ")}
                     </span>
                   </div>
                   <div className="summary-row">
@@ -2495,9 +2800,10 @@ export default function DashboardAdmin() {
                 />
                 <div className="character-count">
                   {replyText.length}/1000 characters
-                  {process.env.NODE_ENV === 'development' && (
-                    <span style={{marginLeft: '10px', color: '#ef4444'}}>
-                      | Debug: isEmpty={replyText.trim().length === 0} | loading={replyLoading}
+                  {process.env.NODE_ENV === "development" && (
+                    <span style={{ marginLeft: "10px", color: "#ef4444" }}>
+                      | Debug: isEmpty={replyText.trim().length === 0} |
+                      loading={replyLoading}
                     </span>
                   )}
                 </div>
@@ -2533,7 +2839,7 @@ export default function DashboardAdmin() {
           </div>
         </div>
       )}
-      
+
       {/* Inline Styles for Complaints Actions */}
       <style jsx>{`
         .action-buttons-group {
@@ -2543,7 +2849,7 @@ export default function DashboardAdmin() {
           justify-content: flex-start;
           flex-wrap: wrap;
         }
-        
+
         .modern-btn-sm {
           display: flex;
           align-items: center;
@@ -2560,27 +2866,27 @@ export default function DashboardAdmin() {
           min-width: 60px;
           justify-content: center;
         }
-        
+
         .modern-btn-sm.primary {
           background: #3b82f6;
           color: white;
         }
-        
+
         .modern-btn-sm.primary:hover {
           background: #2563eb;
           transform: translateY(-1px);
         }
-        
+
         .modern-btn-sm.success {
           background: #10b981;
           color: white;
         }
-        
+
         .modern-btn-sm.success:hover {
           background: #059669;
           transform: translateY(-1px);
         }
-        
+
         .action-status {
           display: flex;
           align-items: center;
@@ -2590,17 +2896,17 @@ export default function DashboardAdmin() {
           font-size: 11px;
           font-weight: 500;
         }
-        
+
         .action-status.resolved {
           background: #dcfce7;
           color: #166534;
         }
-        
+
         .action-status.rejected {
           background: #fef2f2;
           color: #dc2626;
         }
-        
+
         .type-badge {
           padding: 2px 8px;
           border-radius: 12px;
@@ -2608,27 +2914,27 @@ export default function DashboardAdmin() {
           font-weight: 500;
           text-transform: uppercase;
         }
-        
+
         .type-badge.billing {
           background: #fef3c7;
           color: #92400e;
         }
-        
+
         .type-badge.account_problem {
           background: #fee2e2;
           color: #991b1b;
         }
-        
+
         .type-badge.product_issue {
           background: #ddd6fe;
           color: #5b21b6;
         }
-        
+
         .type-badge.general {
           background: #e5e7eb;
           color: #374151;
         }
-        
+
         .status-badge {
           padding: 3px 10px;
           border-radius: 12px;
@@ -2636,46 +2942,46 @@ export default function DashboardAdmin() {
           font-weight: 500;
           text-transform: uppercase;
         }
-        
+
         .status-badge.pending {
           background: #fef3c7;
           color: #92400e;
         }
-        
+
         .status-badge.resolved {
           background: #dcfce7;
           color: #166534;
         }
-        
+
         .status-badge.rejected {
           background: #fef2f2;
           color: #dc2626;
         }
-        
+
         .user-info {
           display: flex;
           flex-direction: column;
           gap: 2px;
         }
-        
+
         .user-name {
           font-weight: 500;
           font-size: 13px;
           color: #1f2937;
         }
-        
+
         .user-email {
           font-size: 11px;
           color: #6b7280;
         }
-        
+
         .complaint-title {
           font-weight: 500;
           font-size: 13px;
           color: #1f2937;
           margin-bottom: 2px;
         }
-        
+
         .complaint-desc {
           font-size: 11px;
           color: #6b7280;
@@ -2787,7 +3093,9 @@ export default function DashboardAdmin() {
         }
 
         @keyframes spin {
-          to { transform: rotate(360deg); }
+          to {
+            transform: rotate(360deg);
+          }
         }
 
         .modern-btn {
@@ -2817,6 +3125,122 @@ export default function DashboardAdmin() {
 
         .modern-btn.primary:not(:disabled):hover {
           background: #2563eb;
+        }
+
+        /* Fee Management Status Badges */
+        .status-badge {
+          padding: 4px 8px;
+          border-radius: 12px;
+          font-size: 11px;
+          font-weight: 500;
+          text-transform: uppercase;
+          letter-spacing: 0.025em;
+        }
+
+        .status-badge.paid {
+          background: #dcfce7;
+          color: #166534;
+        }
+
+        .status-badge.pending {
+          background: #fef3c7;
+          color: #92400e;
+        }
+
+        .status-badge.expired {
+          background: #fee2e2;
+          color: #991b1b;
+        }
+
+        .status-badge.cancelled,
+        .status-badge.unknown {
+          background: #f3f4f6;
+          color: #374151;
+        }
+
+        /* Fee Table Styles */
+        .table-container {
+          overflow-x: auto;
+          border-radius: 8px;
+          box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        .modern-table {
+          width: 100%;
+          border-collapse: collapse;
+          background: white;
+          border-radius: 8px;
+          overflow: hidden;
+        }
+
+        .modern-table th {
+          background: #f8fafc;
+          padding: 12px 16px;
+          text-align: left;
+          font-weight: 600;
+          color: #475569;
+          font-size: 13px;
+          border-bottom: 1px solid #e2e8f0;
+        }
+
+        .modern-table td {
+          padding: 12px 16px;
+          border-bottom: 1px solid #f1f5f9;
+          color: #64748b;
+          font-size: 14px;
+        }
+
+        .modern-table tr:hover {
+          background: #f8fafc;
+        }
+
+        .modern-table tr:last-child td {
+          border-bottom: none;
+        }
+
+        /* Stats Grid for Fees */
+        .stats-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: 20px;
+          margin: 20px 0;
+        }
+
+        .stat-card {
+          background: white;
+          padding: 20px;
+          border-radius: 12px;
+          box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+          border: 1px solid #f1f5f9;
+        }
+
+        .stat-label {
+          font-size: 13px;
+          color: #64748b;
+          margin-bottom: 8px;
+          font-weight: 500;
+        }
+
+        .stat-value {
+          font-size: 24px;
+          font-weight: 700;
+          margin: 0;
+        }
+
+        .stat-value.text-blue {
+          color: #3b82f6;
+        }
+
+        .stat-value.text-green {
+          color: #10b981;
+        }
+
+        .stat-value.text-yellow {
+          color: #f59e0b;
+        }
+
+        .stat-value.text-red {
+          color: #ef4444;
         }
       `}</style>
     </div>

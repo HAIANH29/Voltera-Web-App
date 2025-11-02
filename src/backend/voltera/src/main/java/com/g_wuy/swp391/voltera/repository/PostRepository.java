@@ -15,11 +15,13 @@ import java.util.Optional;
 
 public interface PostRepository extends JpaRepository<Post, Integer>, JpaSpecificationExecutor<Post> {
     List<Post> findByStatus(String status);
+    
+    List<Post> findBySellerIdIdOrderByCreatedAtDesc(Integer sellerId);
+    
     @Modifying
     @Transactional
     @Query("UPDATE Post p SET p.status = :status, p.updatedAt = CURRENT_TIMESTAMP WHERE p.id = :id")
     int updateStatusById(@Param("id") Integer id, @Param("status")String status);
-    Optional<Post> findById(Integer id);
 
     @Query("SELECT p FROM Post p WHERE p.status = :status")
     List<Post> getAllPostByStatus(@Param("status") String status);
