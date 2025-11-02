@@ -52,6 +52,7 @@ public class Post {
     private Instant updatedAt;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<Transaction> transactions;
 
     @OneToOne(mappedBy = "post", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

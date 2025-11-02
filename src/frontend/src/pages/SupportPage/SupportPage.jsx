@@ -86,12 +86,21 @@ function isTokenValid(token) {
  *  Support API dual-mode (real → mock)
  *  ========================= */
 async function submitSupportDual(payload) {
-  // payload: { reason, description, meta }
+  // payload: { reason, description, meta } → transform to ComplaintRequest
   if (canUseRealApi()) {
     try {
-      const res = await api.post("support/create", payload);
-      return res.data?.data || { ok: true };
-    } catch {
+      // Transform payload to match backend ComplaintRequest
+      const complaintPayload = {
+        title: `${payload.reason} - Support Request`,
+        description: payload.description,
+        complaintType: payload.reason.toUpperCase(),
+        // Add other required fields based on backend model
+      };
+
+      const res = await api.post("/api/complaints", complaintPayload);
+      return res.data || { ok: true };
+    } catch (error) {
+      console.error("Real API failed, falling back to mock:", error);
       return submitSupportMock(payload);
     }
   }
@@ -108,6 +117,42 @@ function submitSupportMock(payload) {
   );
 }
 
+async function loadMyComplaintsDual() {
+  if (canUseRealApi()) {
+    try {
+      const res = await api.get("/api/complaints/my-complaints");
+      return res.data || [];
+    } catch (error) {
+      console.error("Failed to load complaints:", error);
+      return loadMyComplaintsMock();
+    }
+  }
+  return loadMyComplaintsMock();
+}
+
+function loadMyComplaintsMock() {
+  return new Promise((resolve) =>
+    setTimeout(() => {
+      resolve([
+        {
+          id: 1,
+          title: "Report - Fraudulent Listing",
+          status: "PENDING",
+          createdAt: "2024-11-01T10:00:00Z",
+          description: "Suspicious vehicle listing with fake photos",
+        },
+        {
+          id: 2,
+          title: "Need Support - Account Issue",
+          status: "RESOLVED",
+          createdAt: "2024-10-28T15:30:00Z",
+          description: "Cannot access my dashboard",
+        },
+      ]);
+    }, 400)
+  );
+}
+
 /** =========================
  *  Component chính
  *  ========================= */
@@ -115,6 +160,9 @@ export default function SupportPage() {
   const [reason, setReason] = useState("");
   const [description, setDescription] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [myComplaints, setMyComplaints] = useState([]);
+  const [loadingComplaints, setLoadingComplaints] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
 
   // auth state tự nhận
   const [currentUser, setCurrentUser] = useState(() => getStoredUser());
@@ -204,6 +252,8 @@ export default function SupportPage() {
       toast.success("Support request submitted successfully.");
       setReason("");
       setDescription("");
+      // Refresh complaint history
+      loadComplaints();
     } catch (err) {
       const msg =
         err?.response?.data?.message ||
@@ -212,6 +262,25 @@ export default function SupportPage() {
       toast.error(msg);
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const loadComplaints = async () => {
+    setLoadingComplaints(true);
+    try {
+      const complaints = await loadMyComplaintsDual();
+      setMyComplaints(complaints);
+    } catch (error) {
+      console.error("Failed to load complaints:", error);
+    } finally {
+      setLoadingComplaints(false);
+    }
+  };
+
+  const toggleHistory = () => {
+    setShowHistory(!showHistory);
+    if (!showHistory && myComplaints.length === 0) {
+      loadComplaints();
     }
   };
 
@@ -347,6 +416,69 @@ export default function SupportPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </section>
+
+        {/* Complaint History Section */}
+        <section className="card">
+          <div className="card-hd">
+            <div className="card-ttl">
+              <MessageSquare className="ic-20" />
+              <span>My Support Requests</span>
+            </div>
+            <p className="card-desc">
+              View your previous support requests and their status.
+            </p>
+          </div>
+
+          <div className="card-bd">
+            <div className="act">
+              <button
+                className="btn btn-outline"
+                type="button"
+                onClick={toggleHistory}
+                disabled={loadingComplaints}
+              >
+                {loadingComplaints
+                  ? "Loading..."
+                  : showHistory
+                  ? "Hide History"
+                  : "Show History"}
+              </button>
+            </div>
+
+            {showHistory && (
+              <div className="complaint-history">
+                {myComplaints.length === 0 ? (
+                  <div className="empty-state">
+                    <p className="muted">No support requests found.</p>
+                  </div>
+                ) : (
+                  <div className="complaint-list">
+                    {myComplaints.map((complaint) => (
+                      <div key={complaint.id} className="complaint-item">
+                        <div className="complaint-header">
+                          <h4 className="complaint-title">{complaint.title}</h4>
+                          <span
+                            className={`status-badge ${complaint.status.toLowerCase()}`}
+                          >
+                            {complaint.status}
+                          </span>
+                        </div>
+                        <p className="complaint-desc">
+                          {complaint.description}
+                        </p>
+                        <div className="complaint-meta">
+                          <span className="muted">
+                            {new Date(complaint.createdAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </section>
 

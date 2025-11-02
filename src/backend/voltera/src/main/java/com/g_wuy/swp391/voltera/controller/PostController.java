@@ -65,8 +65,8 @@ public class PostController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/admin/pending")
-    public ResponseEntity<List<Post>> getPendingPosts() {
-        return ResponseEntity.ok(postService.getPostByStatus("PENDING"));
+    public ResponseEntity<List<PostResponse>> getPendingPosts() {
+        return ResponseEntity.ok(postService.getAllPost("PENDING"));
     }
 
 
