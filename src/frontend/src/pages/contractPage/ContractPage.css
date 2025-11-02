@@ -1,6 +1,7 @@
+/* Contract Page CSS - No Bootstrap/Tailwind */
 :root {
     --bg: #f8fafc;
-    --card: #fff;
+    --card: #ffffff;
     --line: #e5e7eb;
     --ink: #0f172a;
     --muted: #6b7280;
@@ -8,33 +9,518 @@
     --accent-light: #3b82f6;
     --success: #16a34a;
     --danger: #ef4444;
+    --warning: #f59e0b;
     --radius: 12px;
-    --shadow: 0 4px 12px rgba(0, 0, 0, .08);
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 8px 25px rgba(0, 0, 0, 0.12);
 }
 
-.contract-inner {
+/* Main Container */
+.contract-page {
     background: var(--bg);
-    color: var(--ink);
     min-height: 100vh;
-    padding: 32px 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 24px;
+    padding: 24px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-.contract-header {
+/* Header Section */
+.contract-header-section {
+    margin-bottom: 32px;
+    background: #3b82f6;
+    padding: 24px 0;
+    border-radius: var(--radius);
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+.header-left {
     display: flex;
     align-items: center;
     gap: 16px;
-    margin-bottom: 12px;
-}
-
-.contract-header h2 {
-    font-size: 2rem;
-    font-weight: 700;
     color: white;
 }
+
+.header-text h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: white;
+    margin: 0 0 4px 0;
+}
+
+.header-text p {
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Contracts Container */
+.contracts-container {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    max-width: 1200px;
+    margin: 0 auto;
+    overflow: hidden;
+}
+
+.contracts-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--line);
+    background: #fafbfc;
+}
+
+.contracts-header h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--ink);
+    margin: 0;
+}
+
+.contracts-content {
+    padding: 0;
+}
+
+/* Table Styling */
+.contracts-table {
+    width: 100%;
+    overflow: hidden;
+}
+
+.contracts-table table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--card);
+}
+
+.contracts-table th {
+    background: #3b82f6;
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    color: white;
+    border-bottom: 1px solid var(--line);
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.contracts-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--line);
+    color: var(--ink);
+    font-size: 14px;
+    vertical-align: middle;
+}
+
+.contracts-table tr:hover {
+    background: #f8fafc;
+}
+
+/* Status Badge Styling */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.badge.success {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.badge.secondary {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.badge.danger {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+/* Signed Status Column */
+.signed-status {
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.signed-status div {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-right: 8px;
+}
+
+/* Button Styling */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    gap: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-primary {
+    background: var(--accent);
+    color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: var(--accent-light);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+}
+
+.btn-secondary {
+    background: #f1f5f9;
+    color: var(--ink);
+    border: 1px solid var(--line);
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background: #e2e8f0;
+    border-color: #cbd5e1;
+}
+
+.btn-refresh {
+    background: #3b82f6;
+    color: white;
+}
+
+.btn-refresh:hover:not(:disabled) {
+    background: #2563eb;
+    transform: translateY(-1px);
+}
+
+.btn-sign {
+    background: #22c55e;
+    color: white;
+}
+
+.btn-sign:hover:not(:disabled) {
+    background: #16a34a;
+    transform: translateY(-1px);
+}
+
+.btn-cancel {
+    background: #ef4444;
+    color: white;
+}
+
+.btn-cancel:hover:not(:disabled) {
+    background: #dc2626;
+    transform: translateY(-1px);
+}
+
+.btn-view {
+    background: #f59e0b;
+    color: white;
+}
+
+.btn-view:hover:not(:disabled) {
+    background: #d97706;
+    transform: translateY(-1px);
+}
+
+/* Action Buttons Container */
+.action-buttons {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 60px 24px;
+    color: var(--muted);
+}
+
+.empty-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+
+.empty-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 8px 0;
+    color: var(--ink);
+}
+
+.empty-text {
+    font-size: 14px;
+    margin: 0;
+    color: var(--muted);
+}
+
+/* Loading State */
+.loading-state {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 60px 24px;
+    gap: 12px;
+}
+
+.loading-spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid var(--line);
+    border-top: 3px solid var(--accent);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.loading-text {
+    font-size: 14px;
+    color: var(--muted);
+    font-weight: 500;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Contract Detail Section */
+.contract-detail-section {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* Vehicle Information Section */
+.vehicle-info-section {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+.vehicle-info-header {
+    background: #f8fafc;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--line);
+}
+
+.vehicle-info-header h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--ink);
+    margin: 0;
+}
+
+.vehicle-info-content {
+    padding: 24px;
+}
+
+.vehicle-details-grid {
+    display: grid;
+    gap: 32px;
+}
+
+.vehicle-basic-info,
+.vehicle-specs-info,
+.vehicle-images-info {
+    background: #fafbfc;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.vehicle-basic-info h4,
+.vehicle-specs-info h4,
+.vehicle-images-info h4 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink);
+    margin: 0 0 16px 0;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--line);
+}
+
+.vehicle-description {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.vehicle-description h5 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+    margin: 0 0 8px 0;
+}
+
+.vehicle-description p {
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--muted);
+    margin: 0;
+    background: white;
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px solid #f0f0f0;
+}
+
+.info-grid,
+.specs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 12px;
+}
+
+.info-item,
+.spec-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: white;
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
+}
+
+.info-item .label,
+.spec-item .label {
+    font-weight: 600;
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.info-item .value,
+.spec-item .value {
+    font-weight: 500;
+    color: var(--ink);
+    font-size: 14px;
+    text-align: right;
+}
+
+/* Vehicle Images Grid */
+.images-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 16px;
+}
+
+.image-item {
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    aspect-ratio: 16/9;
+}
+
+.image-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.2s ease;
+}
+
+.image-item:hover img {
+    transform: scale(1.05);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .contract-page {
+        padding: 16px;
+    }
+    
+    .header-content {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+    
+    .header-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+    
+    .contracts-table {
+        font-size: 13px;
+    }
+    
+    .contracts-table th,
+    .contracts-table td {
+        padding: 12px 16px;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .btn {
+        padding: 6px 12px;
+        font-size: 13px;
+    }
+
+    .vehicle-info-content {
+        padding: 16px;
+    }
+
+    .info-grid,
+    .specs-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .info-item,
+    .spec-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+
+    .info-item .value,
+    .spec-item .value {
+        text-align: left;
+    }
+
+    .images-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    }
+}
+
+
 
 .card {
     background: var(--card);

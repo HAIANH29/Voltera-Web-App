@@ -140,7 +140,7 @@ function App() {
       ),
     },
     {
-      path: routes.contractView,
+      path: routes.contract,
       element: (
         <MainLayout>
           <ContractPage />
