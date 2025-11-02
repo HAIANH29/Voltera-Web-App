@@ -628,6 +628,10 @@ export default function DashboardAdmin() {
       console.log("📝 Pending listings response type:", typeof response.data);
 
       if (response.data && Array.isArray(response.data)) {
+        console.log(
+          "🔍 First pending listing item structure:",
+          response.data[0]
+        );
         setPendingListings(response.data);
       } else {
         console.warn("⚠️ Expected array but got:", typeof response.data);
@@ -1126,7 +1130,7 @@ export default function DashboardAdmin() {
 
   const handleViewPost = async (post) => {
     setSelectedPost(post);
-    await loadPostDetail(post.id);
+    await loadPostDetail(post.postId || post.id);
   };
 
   // 🎨 RENDER UI
@@ -1377,7 +1381,7 @@ export default function DashboardAdmin() {
                       </thead>
                       <tbody>
                         {pendingListings.map((post, index) => (
-                          <tr key={post.id}>
+                          <tr key={post.postId || post.id || index}>
                             <td>#{String(index + 1).padStart(3, "0")}</td>
                             <td>{post.title || "Untitled"}</td>
                             <td>
@@ -1418,13 +1422,17 @@ export default function DashboardAdmin() {
                                 </button>
                                 <button
                                   className="modern-btn success"
-                                  onClick={() => handleApprovePost(post.id)}
+                                  onClick={() =>
+                                    handleApprovePost(post.postId || post.id)
+                                  }
                                 >
                                   <Icons.Check />
                                 </button>
                                 <button
                                   className="modern-btn danger"
-                                  onClick={() => handleRejectPost(post.id)}
+                                  onClick={() =>
+                                    handleRejectPost(post.postId || post.id)
+                                  }
                                 >
                                   <Icons.X />
                                 </button>
@@ -2016,7 +2024,7 @@ export default function DashboardAdmin() {
               <button
                 className="modern-btn danger"
                 onClick={() => {
-                  handleRejectPost(selectedPost.id);
+                  handleRejectPost(selectedPost.postId || selectedPost.id);
                   setSelectedPost(null);
                   setPostDetail(null);
                 }}
@@ -2028,7 +2036,7 @@ export default function DashboardAdmin() {
               <button
                 className="modern-btn success"
                 onClick={() => {
-                  handleApprovePost(selectedPost.id);
+                  handleApprovePost(selectedPost.postId || selectedPost.id);
                   setSelectedPost(null);
                   setPostDetail(null);
                 }}
