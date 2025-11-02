@@ -20,12 +20,16 @@ const PaymentPage = () => {
     const amountParam = searchParams.get("amount");
     const contractId = searchParams.get("contractId");
     const transactionId = searchParams.get("transactionId");
+    const paymentType = searchParams.get("paymentType"); // fee or contract
+    const orderInfoParam = searchParams.get("orderInfo");
 
     console.log("PaymentPage URL params:", {
       postIdParam,
       amountParam,
       contractId,
       transactionId,
+      paymentType,
+      orderInfoParam,
     });
 
     if (postIdParam) {
@@ -37,6 +41,9 @@ const PaymentPage = () => {
     }
     if (contractId) {
       setOrderInfo(`Payment for contract #${contractId}`);
+    }
+    if (orderInfoParam) {
+      setOrderInfo(decodeURIComponent(orderInfoParam));
     }
   }, [searchParams]);
 
@@ -67,33 +74,41 @@ const PaymentPage = () => {
 
     try {
       const transactionId = searchParams.get("transactionId");
+      const paymentType = searchParams.get("paymentType"); // fee or contract
 
-      console.log("Creating VNPay payment with:", {
+      console.log("Creating payment with:", {
         amount: parseInt(amount),
         orderInfo,
         postId: parseInt(postId),
         transactionId: transactionId,
+        paymentType: paymentType,
       });
 
       let apiUrl;
       let requestBody;
 
-      if (
-        transactionId &&
-        transactionId !== "undefined" &&
-        transactionId !== "null"
-      ) {
-        // Fee payment for posts
+      if (paymentType === "fee") {
+        // Fee payment: Seller → Admin
+        if (
+          !transactionId ||
+          transactionId === "undefined" ||
+          transactionId === "null"
+        ) {
+          setError("Transaction ID is required for fee payment.");
+          return;
+        }
         apiUrl = `/api/fee/create-payment/${transactionId}`;
         requestBody = {}; // Fee API might not need body
+        console.log("Processing FEE payment for seller");
       } else {
-        // Regular contract payment
+        // Contract payment: Buyer → Seller
         apiUrl = "/api/vnpay/create-payment";
         requestBody = {
           amount: parseInt(amount),
           orderInfo,
           postId: parseInt(postId),
         };
+        console.log("Processing CONTRACT payment for buyer");
       }
 
       console.log("API URL:", apiUrl);
@@ -149,7 +164,22 @@ const PaymentPage = () => {
   return (
     <div className="payment-container">
       <div className="payment-card">
-        <h1 className="payment-title">Payment via VNPAY</h1>
+        {/* Payment Type Header */}
+        {searchParams.get("paymentType") === "fee" ? (
+          <div className="payment-type-header fee-payment">
+            <h1 className="payment-title">🏛️ Fee Payment - Seller to Admin</h1>
+            <p className="payment-subtitle">
+              Pay posting fee to publish your listing
+            </p>
+          </div>
+        ) : (
+          <div className="payment-type-header contract-payment">
+            <h1 className="payment-title">
+              💳 Contract Payment - Buyer to Seller
+            </h1>
+            <p className="payment-subtitle">Complete your vehicle purchase</p>
+          </div>
+        )}
 
         {/* Test Environment Notice */}
         <div className="test-notice">

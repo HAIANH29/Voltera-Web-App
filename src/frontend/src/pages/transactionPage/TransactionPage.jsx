@@ -257,7 +257,7 @@ const TransactionPage = () => {
                       }`;
 
                       navigate(
-                        `/payment?transactionId=${transactionId}&postId=${postId}&amount=${amount}&orderInfo=${encodeURIComponent(
+                        `/payment?paymentType=fee&transactionId=${transactionId}&postId=${postId}&amount=${amount}&orderInfo=${encodeURIComponent(
                           orderInfo
                         )}`
                       );
@@ -279,7 +279,7 @@ const TransactionPage = () => {
                     }`;
 
                     navigate(
-                      `/payment?transactionId=${transactionId}&postId=${postId}&amount=${amount}&orderInfo=${encodeURIComponent(
+                      `/payment?paymentType=fee&transactionId=${transactionId}&postId=${postId}&amount=${amount}&orderInfo=${encodeURIComponent(
                         orderInfo
                       )}`
                     );
@@ -504,7 +504,7 @@ const TransactionPage = () => {
                                   );
                                   // Fallback to payment page
                                   navigate(
-                                    `/payment?transactionId=${transactionId}`
+                                    `/payment?paymentType=fee&transactionId=${transactionId}`
                                   );
                                 }
                               } catch (error) {
@@ -524,7 +524,7 @@ const TransactionPage = () => {
                                 }`;
 
                                 navigate(
-                                  `/payment?transactionId=${transactionId}&postId=${postId}&amount=${amount}&orderInfo=${encodeURIComponent(
+                                  `/payment?paymentType=fee&transactionId=${transactionId}&postId=${postId}&amount=${amount}&orderInfo=${encodeURIComponent(
                                     orderInfo
                                   )}`
                                 );
