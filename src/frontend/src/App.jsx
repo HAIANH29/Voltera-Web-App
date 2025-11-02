@@ -32,6 +32,7 @@ import PaymentPage from "./pages/paymentPage/PaymentPage";
 import PaymentCallback from "./pages/paymentPage/PaymentCallback";
 import ContractPage from "./pages/contractPage/contractPage";
 import ContractsPage from "./pages/contractsPage/contractsPage";
+import TransactionPage from "./pages/transactionPage/TransactionPage";
 
 console.log("routes:", routes);
 console.log("postVehicles:", routes.postVehicles);
@@ -151,6 +152,14 @@ function App() {
       element: (
         <MainLayout>
           <ContractsPage />
+        </MainLayout>
+      ),
+    },
+    {
+      path: routes.transactions,
+      element: (
+        <MainLayout>
+          <TransactionPage />
         </MainLayout>
       ),
     },

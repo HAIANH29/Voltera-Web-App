@@ -30,7 +30,7 @@ const PaymentCallback = () => {
         orderInfo,
         transactionNo,
         bankCode,
-        payDate: payDate ? formatPayDate(payDate) : null
+        payDate: payDate ? formatPayDate(payDate) : null,
       });
 
       if (responseCode === "00") {
@@ -55,7 +55,7 @@ const PaymentCallback = () => {
     const hour = payDate.substring(8, 10);
     const minute = payDate.substring(10, 12);
     const second = payDate.substring(12, 14);
-    
+
     return `${day}/${month}/${year} ${hour}:${minute}:${second}`;
   };
 
@@ -63,18 +63,18 @@ const PaymentCallback = () => {
     const errorMessages = {
       "07": "Transaction is being processed. Please wait.",
       "09": "Your card/account is not registered for Internet Banking service.",
-      "10": "Card/account authentication failed 3 times.",
-      "11": "Transaction timeout. Please try again.",
-      "12": "Card/account is locked.",
-      "13": "Invalid OTP.",
-      "24": "User cancelled the transaction.",
-      "51": "Insufficient account balance.",
-      "65": "Account has exceeded daily transaction limit.",
-      "75": "Payment bank is under maintenance.",
-      "79": "Transaction amount exceeds limit for the transaction.",
-      "99": "Unknown error. Please try again."
+      10: "Card/account authentication failed 3 times.",
+      11: "Transaction timeout. Please try again.",
+      12: "Card/account is locked.",
+      13: "Invalid OTP.",
+      24: "User cancelled the transaction.",
+      51: "Insufficient account balance.",
+      65: "Account has exceeded daily transaction limit.",
+      75: "Payment bank is under maintenance.",
+      79: "Transaction amount exceeds limit for the transaction.",
+      99: "Unknown error. Please try again.",
     };
-    
+
     return errorMessages[code] || `Transaction failed with code: ${code}`;
   };
 
@@ -90,7 +90,7 @@ const PaymentCallback = () => {
             ? "⚠️ Processing Error"
             : "⏳ Processing Payment"}
         </h1>
-        
+
         <div className="callback-message">
           <p>{message}</p>
         </div>
@@ -101,7 +101,9 @@ const PaymentCallback = () => {
             <h3>Transaction Details:</h3>
             <div className="detail-row">
               <span>Amount:</span>
-              <span className="amount">{transactionDetails.amount.toLocaleString()} VND</span>
+              <span className="amount">
+                {transactionDetails.amount.toLocaleString()} VND
+              </span>
             </div>
             <div className="detail-row">
               <span>Reference:</span>
@@ -134,12 +136,20 @@ const PaymentCallback = () => {
 
         <div className="callback-actions">
           {status === "success" && (
-            <button
-              onClick={() => navigate("/contracts")}
-              className="payment-button"
-            >
-              View Contracts
-            </button>
+            <>
+              <button
+                onClick={() => navigate("/contracts")}
+                className="payment-button"
+              >
+                View Contracts
+              </button>
+              <button
+                onClick={() => navigate("/transactions")}
+                className="payment-button secondary"
+              >
+                View Transactions
+              </button>
+            </>
           )}
           {status === "failed" && (
             <button

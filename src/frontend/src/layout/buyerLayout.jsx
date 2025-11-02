@@ -36,6 +36,12 @@ const BuyerLayout = ({ children }) => {
           <NavLink to="/favorites" className="nav-link">
             ❤️ {!sidebarCollapsed && "Favorites"}
           </NavLink>
+          <NavLink to="/contracts" className="nav-link">
+            📋 {!sidebarCollapsed && "Contracts"}
+          </NavLink>
+          <NavLink to="/transactions" className="nav-link">
+            💳 {!sidebarCollapsed && "Transactions"}
+          </NavLink>
           <NavLink to="/my-orders" className="nav-link">
             📦 {!sidebarCollapsed && "My Orders"}
           </NavLink>
@@ -53,9 +59,9 @@ const BuyerLayout = ({ children }) => {
           <button onClick={() => setSidebarCollapsed(!sidebarCollapsed)}>
             ☰
           </button>
-          
+
           <div className="buyer-user-menu">
-            <button 
+            <button
               className="user-button"
               onClick={() => setShowUserMenu(!showUserMenu)}
             >

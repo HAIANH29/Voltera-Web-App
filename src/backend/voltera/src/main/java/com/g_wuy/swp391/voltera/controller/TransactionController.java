@@ -21,4 +21,11 @@ public class TransactionController {
             @PathVariable("transactionStatus") String transactionStatus) {
         return ResponseEntity.ok(transactionService.getTransactionByStatus(transactionStatus, token).getBody());
     }
+
+    @GetMapping("/detail/{transactionId}")
+    public ResponseEntity<TransactionResponse> getTransactionDetail(
+            @RequestHeader("Authorization") String token,
+            @PathVariable("transactionId") Integer transactionId) {
+        return transactionService.getTransactionDetail(transactionId, token);
+    }
 }

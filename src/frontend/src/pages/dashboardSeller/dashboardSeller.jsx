@@ -34,7 +34,8 @@ const DashboardSeller = () => {
           <div className="action-buttons">
             <button className="action-btn">List New Product</button>
             <button className="action-btn">Manage Inventory</button>
-            <button className="action-btn">View Orders</button>
+            <button className="action-btn">View Contracts</button>
+            <button className="action-btn">View Transactions</button>
             <button className="action-btn">Analytics</button>
           </div>
         </div>

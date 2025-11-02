@@ -25,6 +25,7 @@ export const routes = {
   contractDetail: "/contract/post/:postId",
   contractView: "/contract",
   contracts: "/contracts",
+  transactions: "/transactions",
 
   // Admin routes
   adminUsers: "/admin/users",

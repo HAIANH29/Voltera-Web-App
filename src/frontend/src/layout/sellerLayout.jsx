@@ -9,7 +9,8 @@ export default function SellerLayout({ children }) {
         <nav className="seller-nav">
           <a href="/dashboard-seller">Dashboard</a>
           <a href="/post/vehicles">List Product</a>
-          <a href="/contract">Contracts</a>
+          <a href="/contracts">Contracts</a>
+          <a href="/transactions">Transactions</a>
           <a href="/profile">Profile</a>
         </nav>
       </header>
@@ -23,7 +24,10 @@ export default function SellerLayout({ children }) {
               <a href="/post/vehicles">List Product</a>
             </li>
             <li>
-              <a href="/contract">Contracts</a>
+              <a href="/contracts">Contracts</a>
+            </li>
+            <li>
+              <a href="/transactions">Transactions</a>
             </li>
             <li>
               <a href="/profile">Profile</a>

@@ -35,7 +35,7 @@ export default function ContractPage() {
 
   // Contract viewing/creation states
   const postId = searchParams.get("postId");
-  const action = searchParams.get("action");  
+  const action = searchParams.get("action");
   const contractId = searchParams.get("contractId");
   const [viewingContract, setViewingContract] = useState(null);
   const [showContractPreview, setShowContractPreview] = useState(false);
@@ -77,7 +77,9 @@ export default function ContractPage() {
     setError("");
     try {
       // Backend expects { postId: Integer }
-      await api.post("/api/contract/create", { postId: parseInt(form.vehicleId) });
+      await api.post("/api/contract/create", {
+        postId: parseInt(form.vehicleId),
+      });
       setShowCreate(false);
       setForm({ vehicleId: "", buyerId: "", sellerId: "", price: "" });
       fetchContracts();
@@ -126,7 +128,9 @@ export default function ContractPage() {
     console.log("✅ Contract created:", newContractData);
     setShowContractPreview(false);
     fetchContracts();
-    alert(`🎉 Hợp đồng #${newContractData.contractId} đã được tạo và ký thành công!`);
+    alert(
+      `🎉 Contract #${newContractData.contractId} has been created and signed successfully!`
+    );
   };
 
   return (
@@ -141,7 +145,7 @@ export default function ContractPage() {
         )}
         {postId && (
           <button className="btn" onClick={() => setShowContractPreview(true)}>
-            📋 Tạo hợp đồng cho bài đăng #{postId}
+            📋 Create Contract for Post #{postId}
           </button>
         )}
         {viewingContract && (
@@ -149,11 +153,11 @@ export default function ContractPage() {
             ⬅️ Back to Contract List
           </button>
         )}
-        <button 
-          className="btn" 
+        <button
+          className="btn"
           onClick={fetchContracts}
           disabled={loading}
-          style={{marginLeft: '8px', backgroundColor: '#6b7280'}}
+          style={{ marginLeft: "8px", backgroundColor: "#6b7280" }}
         >
           🔄 {loading ? "Loading..." : "Refresh"}
         </button>
@@ -162,8 +166,9 @@ export default function ContractPage() {
       {!viewingContract && showCreate && (
         <form className="contract-form card" onSubmit={handleCreate}>
           <h3>Create New Contract (Manual)</h3>
-          <p style={{color: '#6b7280', fontSize: '14px'}}>
-            Note: Use "Tạo hợp đồng" from vehicle detail page for better experience
+          <p style={{ color: "#6b7280", fontSize: "14px" }}>
+            Note: Use "Tạo hợp đồng" from vehicle detail page for better
+            experience
           </p>
           <div className="form-row">
             <label>Post ID:</label>
@@ -182,100 +187,110 @@ export default function ContractPage() {
       )}
       {!viewingContract && (
         <div className="card contract-list">
-        <h3>Your Contracts ({contracts.length})</h3>
-        {error && (
-          <div style={{color: 'red', padding: '10px', marginBottom: '10px', backgroundColor: '#fef2f2', border: '1px solid #fecaca', borderRadius: '6px'}}>
-            ❌ {error}
-          </div>
-        )}
-        {loading ? (
-          <div className="loading-state">
-            <div className="loading-spinner" />
-            <div className="loading-text">Loading...</div>
-          </div>
-        ) : contracts.length === 0 ? (
-          <div className="empty-state">
-            <div className="empty-icon">📄</div>
-            <div className="empty-title">No contracts found</div>
-            <div className="empty-text">
-              You have not created or received any purchase contracts.
+          <h3>Your Contracts ({contracts.length})</h3>
+          {error && (
+            <div
+              style={{
+                color: "red",
+                padding: "10px",
+                marginBottom: "10px",
+                backgroundColor: "#fef2f2",
+                border: "1px solid #fecaca",
+                borderRadius: "6px",
+              }}
+            >
+              ❌ {error}
             </div>
-          </div>
-        ) : (
-          <table>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Post Title</th>
-                <th>Buyer</th>
-                <th>Seller</th>
-                <th>Status</th>
-                <th>Signed Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {contracts.map((contract) => (
-                <tr key={contract.contractId}>
-                  <td>#{contract.contractId}</td>
-                  <td>{contract.postTitle || "N/A"}</td>
-                  <td>{contract.buyerName || "N/A"}</td>
-                  <td>{contract.sellerName || "N/A"}</td>
-                  <td>
-                    <span
-                      className={`badge ${
-                        contract.contractStatus === "SIGNED"
-                          ? "success"
-                          : contract.contractStatus === "CANCELLED" || contract.contractStatus === "CANCEL"
-                          ? "danger"
-                          : "secondary"
-                      }`}
-                    >
-                      {contract.contractStatus}
-                    </span>
-                  </td>
-                  <td style={{fontSize: '12px'}}>
-                    <div>Buyer: {contract.signedByBuyer ? "✅" : "❌"}</div>
-                    <div>Seller: {contract.signedBySeller ? "✅" : "❌"}</div>
-                  </td>
-                  <td className="action-buttons">
-                    {contract.contractStatus === "PENDING" && (
-                      <>
-                        <button
-                          className="btn"
-                          disabled={actionLoading}
-                          onClick={() => handleSign(contract.contractId)}
-                        >
-                          Sign
-                        </button>
-                        <button
-                          className="btn danger"
-                          disabled={actionLoading}
-                          onClick={() => handleCancel(contract.contractId)}
-                        >
-                          Cancel
-                        </button>
-                      </>
-                    )}
-                    <button
-                      className="btn"
-                      onClick={() => handleViewContract(contract.contractId)}
-                      style={{marginTop: '4px', fontSize: '12px'}}
-                    >
-                      View
-                    </button>
-                  </td>
+          )}
+          {loading ? (
+            <div className="loading-state">
+              <div className="loading-spinner" />
+              <div className="loading-text">Loading...</div>
+            </div>
+          ) : contracts.length === 0 ? (
+            <div className="empty-state">
+              <div className="empty-icon">📄</div>
+              <div className="empty-title">No contracts found</div>
+              <div className="empty-text">
+                You have not created or received any purchase contracts.
+              </div>
+            </div>
+          ) : (
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Post Title</th>
+                  <th>Buyer</th>
+                  <th>Seller</th>
+                  <th>Status</th>
+                  <th>Signed Status</th>
+                  <th>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+              </thead>
+              <tbody>
+                {contracts.map((contract) => (
+                  <tr key={contract.contractId}>
+                    <td>#{contract.contractId}</td>
+                    <td>{contract.postTitle || "N/A"}</td>
+                    <td>{contract.buyerName || "N/A"}</td>
+                    <td>{contract.sellerName || "N/A"}</td>
+                    <td>
+                      <span
+                        className={`badge ${
+                          contract.contractStatus === "SIGNED"
+                            ? "success"
+                            : contract.contractStatus === "CANCELLED" ||
+                              contract.contractStatus === "CANCEL"
+                            ? "danger"
+                            : "secondary"
+                        }`}
+                      >
+                        {contract.contractStatus}
+                      </span>
+                    </td>
+                    <td style={{ fontSize: "12px" }}>
+                      <div>Buyer: {contract.signedByBuyer ? "✅" : "❌"}</div>
+                      <div>Seller: {contract.signedBySeller ? "✅" : "❌"}</div>
+                    </td>
+                    <td className="action-buttons">
+                      {contract.contractStatus === "PENDING" && (
+                        <>
+                          <button
+                            className="btn"
+                            disabled={actionLoading}
+                            onClick={() => handleSign(contract.contractId)}
+                          >
+                            Sign
+                          </button>
+                          <button
+                            className="btn danger"
+                            disabled={actionLoading}
+                            onClick={() => handleCancel(contract.contractId)}
+                          >
+                            Cancel
+                          </button>
+                        </>
+                      )}
+                      <button
+                        className="btn"
+                        onClick={() => handleViewContract(contract.contractId)}
+                        style={{ marginTop: "4px", fontSize: "12px" }}
+                      >
+                        View
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       )}
 
       {/* Contract Detail View */}
       {viewingContract && (
-        <ContractPreview 
+        <ContractPreview
           contractId={viewingContract}
           onClose={() => setViewingContract(null)}
         />
