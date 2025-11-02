@@ -1894,7 +1894,7 @@ export default function DashboardAdmin() {
                           <strong>Type:</strong>
                           <span>
                             {postDetail.battery.batteryTypeId?.name ||
-                              postDetail.battery.batteryTypeId ||
+                              postDetail.battery.batteryTypeId?.typename ||
                               "N/A"}
                           </span>
                         </div>
