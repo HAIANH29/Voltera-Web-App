@@ -131,8 +131,10 @@ const PaymentPage = () => {
         ...(postId && { postId: parseInt(postId) }) // Only include postId if available
       };
 
-      let apiUrl;
-      let requestBody;
+      // Use transaction ID if available (from contract), otherwise create regular payment
+      const apiUrl = transactionId
+        ? `/api/vnpay/create-payment/${transactionId}`
+        : "/api/vnpay/create-payment";
 
       const response = await api.post(apiUrl, paymentData);
 
