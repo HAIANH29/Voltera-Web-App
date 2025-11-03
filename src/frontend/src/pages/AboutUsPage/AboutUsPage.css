@@ -1,6 +1,6 @@
 .vt-about {
-    color: #111;
-    background: #fafbfc;
+    color: #1c1e21;
+    background: #f0f2f5;
     min-height: 100vh;
 }
 
@@ -13,7 +13,7 @@
 /* HERO */
 .vt-hero {
     padding: 80px 0 40px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #1877F2 0%, #42A5F5 100%);
     color: white;
     position: relative;
     overflow: hidden;
@@ -172,8 +172,8 @@
 
 .vt-list li {
     padding: 16px 20px;
-    border-left: 4px solid #667eea;
-    background: #f7fafc;
+    border-left: 4px solid #1877F2;
+    background: #f7f8fa;
     margin-bottom: 12px;
     border-radius: 0 8px 8px 0;
     transition: all 0.3s ease;
@@ -188,7 +188,7 @@
     transform: translateY(-50%);
     width: 20px;
     height: 20px;
-    background: #667eea;
+    background: #1877F2;
     color: white;
     border-radius: 50%;
     display: flex;
@@ -228,7 +228,7 @@
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(90deg, #667eea, #764ba2);
+    background: linear-gradient(90deg, #1877F2, #42A5F5);
 }
 
 .vt-card:hover {
@@ -267,7 +267,7 @@
     content: '→';
     position: absolute;
     left: 0;
-    color: #667eea;
+    color: #1877F2;
     font-weight: bold;
 }
 
@@ -275,7 +275,7 @@
 /* Feature */
 .vt-feature {
     padding: 80px 0;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #1877F2 0%, #42A5F5 100%);
     color: white;
     position: relative;
 }
@@ -393,7 +393,7 @@
 }
 
 .vt-cta-card {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #1877F2 0%, #42A5F5 100%);
     color: white;
     padding: 40px;
     border-radius: 24px;
@@ -451,12 +451,12 @@
 
 .vt-btn.primary {
     background: white;
-    color: #667eea;
+    color: #1877F2;
     border-color: white;
 }
 
 .vt-btn.primary:hover {
-    background: #f7fafc;
+    background: #f7f8fa;
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
@@ -506,7 +506,7 @@
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(90deg, #667eea, #764ba2);
+    background: linear-gradient(90deg, #1877F2, #42A5F5);
 }
 
 .vt-values-list li:hover {
@@ -531,7 +531,7 @@
     transform: translateX(-50%);
     width: 40px;
     height: 3px;
-    background: linear-gradient(90deg, #667eea, #764ba2);
+    background: linear-gradient(90deg, #1877F2, #42A5F5);
     border-radius: 2px;
 }
 

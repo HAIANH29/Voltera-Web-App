@@ -413,40 +413,6 @@ const ElectricsPage = () => {
               </select>
             </div>
 
-            <div className="filter-group">
-              <label className="filter-label">Capacity Range (kWh)</label>
-              <div className="range-group">
-                <input
-                  type="number"
-                  placeholder="Min kWh"
-                  className="range-input"
-                />
-                <span className="range-separator">to</span>
-                <input
-                  type="number"
-                  placeholder="Max kWh"
-                  className="range-input"
-                />
-              </div>
-            </div>
-
-            <div className="filter-group">
-              <label className="filter-label">Price Range ($)</label>
-              <div className="range-group">
-                <input
-                  type="number"
-                  placeholder="Min Price"
-                  className="range-input"
-                />
-                <span className="range-separator">to</span>
-                <input
-                  type="number"
-                  placeholder="Max Price"
-                  className="range-input"
-                />
-              </div>
-            </div>
-
             <button className="apply-filters-btn">Apply Filters</button>
           </aside>
 

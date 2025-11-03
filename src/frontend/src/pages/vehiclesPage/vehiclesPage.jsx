@@ -58,8 +58,8 @@ const mapPostToCard = (p) => {
     color: v?.color || "",
     origin: v?.origin || "",
 
-    // số chỗ và odo - field name khác nhau trong DTO
-    numberOfSeat: Number(v?.numberofseat ?? 0),
+    // số chỗ và odo - field name từ DTO
+    numberOfSeat: Number(v?.numberOfSeat ?? 0),
     odo: Number(v?.odo ?? 0),
     status: Number(v?.odo ?? 0) > 0 ? "old" : "new",
 
@@ -349,13 +349,33 @@ export default function VehiclesPage() {
   };
 
   // ===================== FORMAT HIỂN THỊ =====================
-  const formatBasicInfo = (v) =>
-    [
-      v.batteryCapacity || "Điện",
-      `${v.numberOfSeat} chỗ`,
-      v.range || "",
-      v.odo > 0 ? `${v.odo.toLocaleString()} km` : "New",
-    ].filter(Boolean); // Loại bỏ các giá trị rỗng
+  const formatBasicInfo = (v) => {
+    const info = [];
+
+    // Battery capacity
+    if (v.batteryCapacity) {
+      info.push(v.batteryCapacity);
+    }
+
+    // Number of seats
+    if (v.numberOfSeat && v.numberOfSeat > 0) {
+      info.push(`${v.numberOfSeat} seats`);
+    }
+
+    // Range
+    if (v.range) {
+      info.push(v.range);
+    }
+
+    // Odometer/Status
+    if (v.odo > 0) {
+      info.push(`${v.odo.toLocaleString()} km`);
+    } else {
+      info.push("New");
+    }
+
+    return info.filter(Boolean);
+  };
 
   const formatProductName = (v) => `${v.brand} ${v.model} ${v.version}`.trim();
 
@@ -801,52 +821,6 @@ export default function VehiclesPage() {
                 </option>
               ))}
             </select>
-          </div>
-
-          <div className="filter-group">
-            <label className="filter-label">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <line x1="12" y1="1" x2="12" y2="23" />
-                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-              </svg>
-              Price Range (VND)
-            </label>
-            <div className="price-inputs">
-              <div className="price-input-group">
-                <input
-                  type="number"
-                  placeholder="Min price"
-                  value={draftFilters.minPrice}
-                  onChange={(e) =>
-                    setDraftFilters({
-                      ...draftFilters,
-                      minPrice: e.target.value,
-                    })
-                  }
-                />
-              </div>
-              <span className="price-separator">to</span>
-              <div className="price-input-group">
-                <input
-                  type="number"
-                  placeholder="Max price"
-                  value={draftFilters.maxPrice}
-                  onChange={(e) =>
-                    setDraftFilters({
-                      ...draftFilters,
-                      maxPrice: e.target.value,
-                    })
-                  }
-                />
-              </div>
-            </div>
           </div>
 
           <div className="filter-group">
