@@ -46,6 +46,13 @@ const ComplaintForm = ({ onSuccess, onCancel }) => {
   });
   const [loading, setLoading] = useState(false);
 
+  // Helper function to check if form is valid
+  const isFormValid = () => {
+    return !loading && 
+           formData.problem.trim().length > 0 && 
+           formData.description.trim().length >= 20;
+  };
+
   const complaintTypes = [
     { value: 'TECHNICAL_ISSUE', label: 'Technical Issue', icon: '⚙️' },
     { value: 'PAYMENT_PROBLEM', label: 'Payment Problem', icon: '💳' },
@@ -76,7 +83,7 @@ const ComplaintForm = ({ onSuccess, onCancel }) => {
       const complaintPayload = {
         problem: formData.problem.trim(),
         description: formData.description.trim(),
-        complaintType: formData.complaintType,
+        complaintType: formData.complaintType, // Add back for backend compatibility
         priority: 'MEDIUM' // Default priority
       };
 
@@ -92,7 +99,14 @@ const ComplaintForm = ({ onSuccess, onCancel }) => {
       if (error.response?.status === 401) {
         toast.error('Please login to submit a complaint');
       } else if (error.response?.status === 400) {
-        toast.error(error.response.data.message || 'Invalid complaint data');
+        const errorMessage = error.response?.data?.message || 
+                           error.response?.data?.error || 
+                           'Invalid complaint data';
+        toast.error(errorMessage);
+      } else if (error.response?.status === 500) {
+        toast.error('Server error. Please try again later.');
+      } else if (error.code === 'NETWORK_ERROR' || !error.response) {
+        toast.error('Cannot connect to server. Please check if the backend is running.');
       } else {
         toast.error('Failed to submit complaint. Please try again.');
       }
@@ -225,7 +239,7 @@ const ComplaintForm = ({ onSuccess, onCancel }) => {
                 <button
                   type="submit"
                   className="submit-btn"
-                  disabled={loading || !formData.problem.trim() || !formData.description.trim() || formData.description.length < 20}
+                  disabled={!isFormValid()}
                 >
                   {loading ? (
                     <>
