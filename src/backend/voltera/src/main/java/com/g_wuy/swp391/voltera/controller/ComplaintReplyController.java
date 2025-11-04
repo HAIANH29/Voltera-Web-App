@@ -5,6 +5,7 @@ import com.g_wuy.swp391.voltera.model.request.ReplyComplaintRequest;
 import com.g_wuy.swp391.voltera.model.response.ComplaintReplyResponse;
 import com.g_wuy.swp391.voltera.model.response.ComplaintResponse;
 import com.g_wuy.swp391.voltera.service.ComplaintReplyService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,6 +21,7 @@ public class ComplaintReplyController {
 
     @PostMapping("/create-reply/{complaintId}")
     public ResponseEntity<ComplaintReply> createComplaint(
+            @Valid
             @PathVariable("complaintId") Integer complaintId,
             @RequestBody ReplyComplaintRequest request,
             @RequestHeader("Authorization") String token) {

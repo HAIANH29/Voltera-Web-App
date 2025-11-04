@@ -13,8 +13,7 @@ public class ComplaintRequest {
     @NotBlank(message = "Description is required")
     @Size(max = 1000, message = "Description cannot exceed 1000 characters")
     private String description;
-    
-    // Optional fields that frontend might send
+
     private String complaintType;
     private String priority;
 }
