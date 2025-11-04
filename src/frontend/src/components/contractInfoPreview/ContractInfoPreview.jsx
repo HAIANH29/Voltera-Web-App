@@ -38,6 +38,38 @@ const mapVehicleData = (vehicleData) => {
   };
 };
 
+// Map and format battery data (similar to ContractPage.jsx)
+const mapBatteryData = (batteryData) => {
+  const b = batteryData || {};
+  
+  return {
+    ...b,
+    // Format battery fields with proper fallbacks
+    serialNumber: b.serialNumber || "Not assigned",
+    originCapacity: b.originCapacity != null ? b.originCapacity : null,
+    originCapacityDisplay: b.originCapacity != null ? `${b.originCapacity} kWh` : "Not specified",
+    
+    remainingCapacity: b.remainingCapacity != null ? b.remainingCapacity : null,
+    remainingCapacityDisplay: b.remainingCapacity != null ? `${b.remainingCapacity} kWh` : "Not specified",
+    
+    voltage: b.voltage != null ? b.voltage : null,
+    voltageDisplay: b.voltage != null ? `${b.voltage}V` : "Not specified",
+    
+    cycleCount: b.cycleCount != null ? b.cycleCount : 0,
+    
+    mileageCovered: b.mileageCovered != null ? b.mileageCovered : 0,
+    mileageCoveredDisplay: b.mileageCovered != null ? `${b.mileageCovered} km` : "New battery",
+    
+    warranty: b.warranty || "No warranty information",
+    weight: b.weight != null ? `${b.weight} kg` : "Not specified",
+    lifeCycle: b.lifeCycle != null ? `${b.lifeCycle} cycles` : "Not specified",
+    
+    batteryType: b.batteryTypeId?.typename || "Li-ion",
+    technical: b.batteryTypeId?.technical || "",
+    description: b.batteryTypeId?.description || "",
+  };
+};
+
 export default function ContractInfoPreview({
   postId,
   vehicleData, // Optional - nhận vehicleData từ vehicleDetail hoặc fetch từ API
@@ -167,19 +199,44 @@ export default function ContractInfoPreview({
           });
           clearTimeout(timeoutId);
 
-          // Map vehicle data with proper formatting
+          // Map data with proper formatting based on type
           const rawData = postResponse.data;
-          const mappedData = {
-            ...rawData,
-            vehicle: rawData.vehicle ? mapVehicleData(rawData.vehicle) : null
-          };
+          let mappedData;
+          
+          if (rawData.battery) {
+            // Battery post
+            mappedData = {
+              ...rawData,
+              battery: mapBatteryData(rawData.battery),
+              type: 'battery'
+            };
+            console.log("✅ Battery post data loaded:", rawData);
+            console.log("✅ Mapped battery data:", mappedData);
+            console.log("🔍 Battery mapping comparison:");
+            console.log("- Raw battery:", rawData.battery);
+            console.log("- Mapped battery:", mappedData.battery);
+          } else if (rawData.vehicle) {
+            // Vehicle post
+            mappedData = {
+              ...rawData,
+              vehicle: mapVehicleData(rawData.vehicle),
+              type: 'vehicle'
+            };
+            console.log("✅ Vehicle post data loaded:", rawData);
+            console.log("✅ Mapped vehicle data:", mappedData);
+            console.log("🔍 Vehicle mapping comparison:");
+            console.log("- Raw vehicle:", rawData.vehicle);
+            console.log("- Mapped vehicle:", mappedData.vehicle);
+          } else {
+            // Unknown post type
+            mappedData = {
+              ...rawData,
+              type: 'unknown'
+            };
+            console.warn("⚠️ Unknown post type - no vehicle or battery data found");
+          }
 
           setPostData(mappedData);
-          console.log("✅ Post data loaded:", rawData);
-          console.log("✅ Mapped post data:", mappedData);
-          console.log("🔍 Vehicle mapping comparison:");
-          console.log("- Raw vehicle:", rawData.vehicle);
-          console.log("- Mapped vehicle:", mappedData.vehicle);
 
           // Get buyer information from token
           const currentUser = getBuyerInfo();
@@ -300,6 +357,9 @@ export default function ContractInfoPreview({
 
   // Sử dụng postData đã fetch
   const vehicle = postData.vehicle || {};
+  const battery = postData.battery || {};
+  const isVehicle = postData.type === 'vehicle' || !!postData.vehicle;
+  const isBattery = postData.type === 'battery' || !!postData.battery;
 
   // Create seller data from postData
   const sellerData = {
@@ -318,7 +378,7 @@ export default function ContractInfoPreview({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="contract-preview-header">
-          <h2>📋 Vehicle Purchase Contract Information</h2>
+          <h2>📋 {isBattery ? 'Battery' : 'Vehicle'} Purchase Contract Information</h2>
           <button className="modal-close" onClick={onCancel}>
             ✕
           </button>
@@ -327,78 +387,123 @@ export default function ContractInfoPreview({
         <div className="contract-preview-content">
           {error && (
             <div className="error-banner">
-              <strong>⚠️ Lỗi:</strong> {error}
+              <strong>⚠️ Error:</strong> {error}
             </div>
           )}
 
           <div className="contract-sections">
-            {/* Vehicle Information */}
+            {/* Vehicle/Battery Information */}
             <div className="contract-section">
               <div className="section-header">
-                <h3>🚗 Vehicle Information</h3>
+                <h3>{isBattery ? '� Battery Information' : '�🚗 Vehicle Information'}</h3>
               </div>
               <div className="section-content">
                 <div className="info-row">
                   <span className="label">Tiêu đề:</span>
                   <span className="value">
                     {postData.title ||
-                      (vehicle.brand && vehicle.model
-                        ? `${vehicle.brand} ${vehicle.model} ${
-                            vehicle.version || ""
-                          }`.trim()
-                        : "Thông tin xe")}
+                      (isBattery 
+                        ? `${battery.batteryType || 'Battery'} Pack`
+                        : isVehicle && vehicle.brand && vehicle.model
+                        ? `${vehicle.brand} ${vehicle.model} ${vehicle.version || ""}`.trim()
+                        : "Product information")}
                   </span>
                 </div>
+
+                {/* Battery-specific information */}
+                {isBattery && (
+                  <>
+                    <div className="info-row">
+                      <span className="label">Battery Type:</span>
+                      <span className="value">{battery.batteryType}</span>
+                    </div>
+                    <div className="info-row">
+                      <span className="label">Serial Number:</span>
+                      <span className="value">{battery.serialNumber}</span>
+                    </div>
+                    <div className="info-row">
+                      <span className="label">Original Capacity:</span>
+                      <span className="value">{battery.originCapacityDisplay}</span>
+                    </div>
+                    <div className="info-row">
+                      <span className="label">Remaining Capacity:</span>
+                      <span className="value">{battery.remainingCapacityDisplay}</span>
+                    </div>
+                    <div className="info-row">
+                      <span className="label">Voltage:</span>
+                      <span className="value">{battery.voltageDisplay}</span>
+                    </div>
+                    <div className="info-row">
+                      <span className="label">Cycle Count:</span>
+                      <span className="value">{battery.cycleCount}</span>
+                    </div>
+                    <div className="info-row">
+                      <span className="label">Mileage Covered:</span>
+                      <span className="value">{battery.mileageCoveredDisplay}</span>
+                    </div>
+                    <div className="info-row">
+                      <span className="label">Warranty:</span>
+                      <span className="value">{battery.warranty}</span>
+                    </div>
+                    <div className="info-row">
+                      <span className="label">Weight:</span>
+                      <span className="value">{battery.weight}</span>
+                    </div>
+                  </>
+                )}
+
+                {/* Vehicle-specific information */}
+                {isVehicle && (
+                  <>
+                    <div className="info-row">
+                      <span className="label">Brand:</span>
+                      <span className="value">{vehicle.brand}</span>
+                    </div>
+                    <div className="info-row">
+                      <span className="label">Model:</span>
+                      <span className="value">{vehicle.model}</span>
+                    </div>
+                    <div className="info-row">
+                      <span className="label">Version:</span>
+                      <span className="value">{vehicle.version}</span>
+                    </div>
+                    <div className="info-row">
+                      <span className="label">Year:</span>
+                      <span className="value">{vehicle.yearmanufacture}</span>
+                    </div>
+                    <div className="info-row">
+                      <span className="label">Color:</span>
+                      <span className="value">{vehicle.color}</span>
+                    </div>
+                    <div className="info-row">
+                      <span className="label">Mileage:</span>
+                      <span className="value">
+                        {vehicle.odo
+                          ? `${Number(vehicle.odo).toLocaleString()} km`
+                          : "New vehicle"}
+                      </span>
+                    </div>
+                    <div className="info-row">
+                      <span className="label">Battery Capacity:</span>
+                      <span className="value">{vehicle.batterycapacityDisplay}</span>
+                    </div>
+                    <div className="info-row">
+                      <span className="label">Range:</span>
+                      <span className="value">{vehicle.rangeDisplay}</span>
+                    </div>
+                    <div className="info-row">
+                      <span className="label">Charging Time:</span>
+                      <span className="value">{vehicle.chargingtimeDisplay}</span>
+                    </div>
+                    <div className="info-row">
+                      <span className="label">Seats:</span>
+                      <span className="value">{vehicle.numberofseat || "N/A"}</span>
+                    </div>
+                  </>
+                )}
+
                 <div className="info-row">
-                  <span className="label">Brand:</span>
-                  <span className="value">{vehicle.brand}</span>
-                </div>
-                <div className="info-row">
-                  <span className="label">Mẫu xe:</span>
-                  <span className="value">{vehicle.model}</span>
-                </div>
-                <div className="info-row">
-                  <span className="label">Phiên bản:</span>
-                  <span className="value">{vehicle.version}</span>
-                </div>
-                <div className="info-row">
-                  <span className="label">Year:</span>
-                  <span className="value">{vehicle.yearmanufacture}</span>
-                </div>
-                <div className="info-row">
-                  <span className="label">Màu sắc:</span>
-                  <span className="value">{vehicle.color}</span>
-                </div>
-                <div className="info-row">
-                  <span className="label">Mileage:</span>
-                  <span className="value">
-                    {vehicle.odo
-                      ? `${Number(vehicle.odo).toLocaleString()} km`
-                      : "New vehicle"}
-                  </span>
-                </div>
-                <div className="info-row">
-                  <span className="label">Dung lượng pin:</span>
-                  <span className="value">{vehicle.batterycapacityDisplay}</span>
-                </div>
-                <div className="info-row">
-                  <span className="label">Range:</span>
-                  <span className="value">{vehicle.rangeDisplay}</span>
-                </div>
-                <div className="info-row">
-                  <span className="label">Thời gian sạc:</span>
-                  <span className="value">{vehicle.chargingtimeDisplay}</span>
-                </div>
-                <div className="info-row">
-                  <span className="label">Số ghế:</span>
-                  <span className="value">{vehicle.numberofseatDisplay}</span>
-                </div>
-                <div className="info-row">
-                  <span className="label">Seats:</span>
-                  <span className="value">{vehicle.numberofseat || "N/A"}</span>
-                </div>
-                <div className="info-row">
-                  <span className="label">Địa điểm:</span>
+                  <span className="label">Location:</span>
                   <span className="value">{postData.location || "N/A"}</span>
                 </div>
                 <div className="info-row price-row">
@@ -431,10 +536,6 @@ export default function ContractInfoPreview({
                 <div className="info-row">
                   <span className="label">Phone Number:</span>
                   <span className="value">{sellerData?.phone || "N/A"}</span>
-                </div>
-                <div className="info-row">
-                  <span className="label">Địa chỉ:</span>
-                  <span className="value">{sellerData.address}</span>
                 </div>
               </div>
             </div>

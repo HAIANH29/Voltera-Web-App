@@ -269,48 +269,6 @@ const ElectricsPage = () => {
 
   return (
     <div className="electrics-page modern-enhanced">
-      {/* Enhanced Top Search Bar */}
-      <div className="enhanced-topbar">
-        <div className="topbar-content">
-          <select className="location-select" defaultValue="">
-            <option value="">All Cities</option>
-            <option>Hà Nội</option>
-            <option>TP. HCM</option>
-            <option>Đà Nẵng</option>
-          </select>
-
-          <div className="search-input-group">
-            <svg
-              className="search-icon"
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <circle cx="11" cy="11" r="8" />
-              <path d="m21 21-4.35-4.35" />
-            </svg>
-            <input
-              className="search-input"
-              placeholder="Search by Battery Type, Capacity..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              onKeyPress={(e) => {
-                if (e.key === "Enter") {
-                  // Trigger search on Enter
-                }
-              }}
-            />
-          </div>
-
-          <button className="search-btn" onClick={() => {}}>
-            Search
-          </button>
-        </div>
-      </div>
-
       {/* Compact Header */}
       <div className="compact-header">
         <h1>Electric Batteries</h1>

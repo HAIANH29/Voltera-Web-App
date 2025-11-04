@@ -180,9 +180,14 @@ export default function ContractPreview({ postId, contractId, onClose }) {
       console.log("📋 Contract Data:", contractData);
       console.log("🚗 Post Data:", postData);
 
-      // 2️⃣ Get template from public/templates  
-      console.log("🔍 Fetching DOCX template from:", "/templates/contract/VehicleContract.docx");
-      const fileRes = await fetch("/templates/contract/VehicleContract.docx", {
+      // 2️⃣ Determine contract type and get appropriate template
+      const isBattery = postData?.battery || postData?.type === 'battery';
+      const templatePath = isBattery 
+        ? "/templates/contract/ElectricContract.docx"
+        : "/templates/contract/VehicleContract.docx";
+      
+      console.log("🔍 Fetching DOCX template from:", templatePath);
+      const fileRes = await fetch(templatePath, {
         method: 'GET',
         headers: {
           'Cache-Control': 'no-cache'
@@ -224,41 +229,72 @@ export default function ContractPreview({ postId, contractId, onClose }) {
 
       // 3️⃣ Prepare data for rendering - Comprehensive data mapping
       const vehicle = postData?.vehicle || {};
-      const renderData = {
-        // Contract info
-        contractId: contractData.contractId || "N/A",
-        contractSigningDate: contractData.signedDate
-          ? new Date(contractData.signedDate).toLocaleDateString("vi-VN")
-          : new Date().toLocaleDateString("vi-VN"),
+      const battery = postData?.battery || {};
+      
+      let renderData;
+      
+      if (isBattery) {
+        // Battery contract data mapping
+        renderData = {
+          // Contract info
+          contractId: contractData.contractId || "N/A",
+          signedDate: contractData.signedDate
+            ? new Date(contractData.signedDate).toLocaleDateString("en-US")
+            : new Date().toLocaleDateString("en-US"),
 
-        // Seller info  
-        sellerName: contractData.sellerName || "N/A",
-        sellerEmail: "seller@voltera.com",
+          // Seller info  
+          sellerName: contractData.sellerName || "N/A",
+          sellerEmail: "seller@voltera.com",
 
-        // Buyer info
-        buyerName: contractData.buyerName || "N/A", 
-        buyerEmail: "buyer@voltera.com",
+          // Buyer info
+          buyerName: contractData.buyerName || "N/A", 
+          buyerEmail: "buyer@voltera.com",
 
-        // Vehicle info
-        title: contractData.postTitle || postData?.title || "N/A",
-        batteryCapacity: vehicle.batterycapacity
-          ? `${vehicle.batterycapacity} kWh`
-          : "N/A",
-        odo: vehicle.odo ? `${vehicle.odo} km` : "N/A",
-        price: postData?.price
-          ? new Intl.NumberFormat("vi-VN").format(postData.price) + " VND"
-          : "N/A",
+          // Battery info
+          title: contractData.postTitle || postData?.title || "Battery Pack",
+          serialNumber: battery.serialNumber || "N/A",
+          originalCapacity: battery.originCapacity || "N/A",
+          remainingCapacity: battery.remainingCapacity || "N/A",
+          price: postData?.price ? `${postData.price.toLocaleString()}` : "Contact for price",
+        };
+      } else {
+        // Vehicle contract data mapping
+        renderData = {
+          // Contract info
+          contractId: contractData.contractId || "N/A",
+          contractSigningDate: contractData.signedDate
+            ? new Date(contractData.signedDate).toLocaleDateString("vi-VN")
+            : new Date().toLocaleDateString("vi-VN"),
 
-        // Additional fields that might be in template
-        brand: vehicle.brand || "N/A",
-        model: vehicle.model || "N/A", 
-        year: vehicle.yearManufacture || "N/A",
-        color: vehicle.color || "N/A",
-        
-        // Current date
-        date: new Date().toLocaleDateString("vi-VN"),
-        currentDate: new Date().toLocaleDateString("vi-VN"),
-      };
+          // Seller info  
+          sellerName: contractData.sellerName || "N/A",
+          sellerEmail: "seller@voltera.com",
+
+          // Buyer info
+          buyerName: contractData.buyerName || "N/A", 
+          buyerEmail: "buyer@voltera.com",
+
+          // Vehicle info
+          title: contractData.postTitle || postData?.title || "N/A",
+          batteryCapacity: vehicle.batterycapacity
+            ? `${vehicle.batterycapacity} kWh`
+            : "N/A",
+          odo: vehicle.odo ? `${vehicle.odo} km` : "N/A",
+          price: postData?.price
+            ? new Intl.NumberFormat("vi-VN").format(postData.price) + " VND"
+            : "N/A",
+
+          // Additional fields that might be in template
+          brand: vehicle.brand || "N/A",
+          model: vehicle.model || "N/A", 
+          year: vehicle.yearManufacture || "N/A",
+          color: vehicle.color || "N/A",
+          
+          // Current date
+          date: new Date().toLocaleDateString("vi-VN"),
+          currentDate: new Date().toLocaleDateString("vi-VN"),
+        };
+      }
 
       console.log("🎯 Render data for contract:", renderData);
 

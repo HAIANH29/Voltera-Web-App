@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import Cookies from "../../utils/cookies";
+import { routes } from "../../routes";
 import "./electricDetail.css";
 
 // Mock data for electric batteries
@@ -98,6 +100,43 @@ export default function ElectricDetail() {
     if (battery?.sellerInfo?.phone) {
       window.open(`tel:${battery.sellerInfo.phone}`);
     }
+  };
+
+  const handlePurchase = () => {
+    // Check if user is logged in
+    const token = Cookies.get("accessToken");
+    if (!token) {
+      alert("Please log in to purchase a battery.");
+      navigate("/login");
+      return;
+    }
+
+    // Navigate to contract page with postId for battery
+    navigate(`/contract?postId=${postID}&action=create&type=battery`);
+  };
+
+  const handleCreateContract = () => {
+    // Check if user is logged in
+    const token = Cookies.get("accessToken");
+    if (!token) {
+      alert("Please log in to create a contract.");
+      navigate("/login");
+      return;
+    }
+
+    // Check if battery data is available
+    if (!battery) {
+      alert("Battery information has not been loaded. Please try again.");
+      return;
+    }
+
+    // Debug: Log battery data
+    console.log("🔍 Battery data:", battery);
+    console.log("🔍 Battery name:", battery.productName);
+    console.log("🔍 Battery price:", battery.price);
+
+    // Navigate to contract page to create contract for battery
+    navigate(`/contract?postId=${postID}&action=create&type=battery`);
   };
 
   const formatPrice = (price) => {
@@ -370,15 +409,25 @@ export default function ElectricDetail() {
 
             <div className="detail-contact-buttons">
               <button
-                className="detail-contact-btn primary"
+                className="detail-contact-btn secondary"
                 onClick={handleContactSeller}
               >
                 <span className="phone-icon">📞</span>
                 Contact Seller
               </button>
-              <button className="detail-contact-btn secondary">
-                <span className="buy-icon">🛒</span>
-                Buy
+              <button
+                className="detail-contact-btn primary"
+                onClick={handleCreateContract}
+              >
+                <span className="contract-icon">📋</span>
+                Create Contract
+              </button>
+              <button
+                className="detail-contact-btn success"
+                onClick={handlePurchase}
+              >
+                <span className="buy-icon">�</span>
+                Buy Now
               </button>
             </div>
           </div>

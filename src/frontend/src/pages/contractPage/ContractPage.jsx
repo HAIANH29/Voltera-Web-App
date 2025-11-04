@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import api from "../../config/api";
 import ContractPreview from "../../components/contract/contractPreview";
+import ContractInfoPreview from "../../components/contractInfoPreview/ContractInfoPreview";
 import "./ContractPage.css";
 
 // Icon SVGs (tương tự dashboardAdmin)
@@ -29,10 +30,12 @@ export default function ContractPage() {
   // Contract viewing/creation states
   const postId = searchParams.get("postId");
   const action = searchParams.get("action");
+  const contractType = searchParams.get("type"); // "vehicle" or "battery"
   const contractId = searchParams.get("contractId");
   const [viewingContract, setViewingContract] = useState(null);
   const [showContractPreview, setShowContractPreview] = useState(false);
   const [vehicleDetail, setVehicleDetail] = useState(null);
+  const [batteryDetail, setBatteryDetail] = useState(null);
   const [loadingVehicle, setLoadingVehicle] = useState(false);
 
   // Fetch contract list
@@ -42,8 +45,6 @@ export default function ContractPage() {
     try {
       const res = await api.get("/api/contract/list");
       setContracts(res.data);
-      console.log("✅ Contracts loaded:", res.data);
-      console.log("🔍 First contract structure:", res.data[0]);
     } catch (err) {
       console.error("❌ Error loading contracts:", err);
       setError(err.response?.data?.message || "Failed to load contracts");
@@ -98,20 +99,25 @@ export default function ContractPage() {
 
   // Handle viewing contract detail
   const handleViewContract = async (contractId) => {
-    console.log("🔍 Viewing contract:", contractId);
-    console.log("🔍 Available contracts:", contracts);
-    
     setViewingContract(contractId);
     
     // Tìm contract để lấy postId
     const contract = contracts.find(c => c.contractId === contractId);
-    console.log("🔍 Found contract:", contract);
     
     if (contract && contract.postId) {
-      console.log("🔍 Fetching vehicle for postId:", contract.postId);
-      await fetchVehicleDetail(contract.postId);
-    } else {
-      console.warn("❌ Contract not found or missing postId");
+      // Check if contract is for battery or vehicle based on post data
+      try {
+        const response = await api.get(`/api/post/detail/${contract.postId}`);
+        if (response.data.battery) {
+          await fetchBatteryDetail(contract.postId);
+        } else if (response.data.vehicle) {
+          await fetchVehicleDetail(contract.postId);
+        }
+      } catch (error) {
+        console.error("Error determining contract type:", error);
+        // Fallback to vehicle for backward compatibility
+        await fetchVehicleDetail(contract.postId);
+      }
     }
   };
 
@@ -147,6 +153,41 @@ export default function ContractPage() {
     };
   };
 
+  // Map and format battery data (similar to electricDetail.jsx)
+  const mapBatteryData = (postData) => {
+    const b = postData?.battery || {};
+    
+    return {
+      ...postData,
+      battery: {
+        ...b,
+        // Format battery fields with proper fallbacks
+        serialNumber: b?.serialNumber || "Not assigned",
+        originCapacity: b?.originCapacity != null ? b.originCapacity : null,
+        originCapacityDisplay: b?.originCapacity != null ? `${b.originCapacity} kWh` : "Not specified",
+        
+        remainingCapacity: b?.remainingCapacity != null ? b.remainingCapacity : null,
+        remainingCapacityDisplay: b?.remainingCapacity != null ? `${b.remainingCapacity} kWh` : "Not specified",
+        
+        voltage: b?.voltage != null ? b.voltage : null,
+        voltageDisplay: b?.voltage != null ? `${b.voltage}V` : "Not specified",
+        
+        cycleCount: b?.cycleCount != null ? b.cycleCount : 0,
+        
+        mileageCovered: b?.mileageCovered != null ? b.mileageCovered : 0,
+        mileageCoveredDisplay: b?.mileageCovered != null ? `${b.mileageCovered} km` : "New battery",
+        
+        warranty: b?.warranty || "No warranty information",
+        weight: b?.weight != null ? `${b.weight} kg` : "Not specified",
+        lifeCycle: b?.lifeCycle != null ? `${b.lifeCycle} cycles` : "Not specified",
+        
+        batteryType: b?.batteryTypeId?.typename || "Li-ion",
+        technical: b?.batteryTypeId?.technical || "",
+        description: b?.batteryTypeId?.description || "",
+      }
+    };
+  };
+
   // Fetch vehicle detail from post
   const fetchVehicleDetail = async (postId) => {
     setLoadingVehicle(true);
@@ -154,31 +195,6 @@ export default function ContractPage() {
       const response = await api.get(`/api/post/detail/${postId}`);
       const mappedData = mapVehicleData(response.data);
       setVehicleDetail(mappedData);
-      console.log("✅ Vehicle detail loaded:", response.data);
-      console.log("✅ Mapped vehicle data:", mappedData);
-      console.log("🔍 Vehicle data:", response.data.vehicle);
-      console.log("🔍 Image URLs:", response.data.imageUrls);
-      
-      // Debug individual fields (using actual backend field names)
-      const vehicle = response.data.vehicle;
-      if (vehicle) {
-        console.log("🔍 DEBUG Vehicle Fields (Backend Format):");
-        console.log("- brand:", vehicle.brand, typeof vehicle.brand);
-        console.log("- model:", vehicle.model, typeof vehicle.model);
-        console.log("- version:", vehicle.version, typeof vehicle.version);
-        console.log("- yearmanufacture:", vehicle.yearmanufacture, typeof vehicle.yearmanufacture);
-        console.log("- color:", vehicle.color, typeof vehicle.color);
-        console.log("- odo:", vehicle.odo, typeof vehicle.odo);
-        console.log("- batterycapacity:", vehicle.batterycapacity, typeof vehicle.batterycapacity);
-        console.log("- range:", vehicle.range, typeof vehicle.range);
-        console.log("- chargingtime:", vehicle.chargingtime, typeof vehicle.chargingtime);
-        console.log("- numberofseat:", vehicle.numberofseat, typeof vehicle.numberofseat);
-        console.log("- style:", vehicle.style, typeof vehicle.style);
-        console.log("- origin:", vehicle.origin, typeof vehicle.origin);
-        console.log("- licenseplate:", vehicle.licenseplate, typeof vehicle.licenseplate);
-        console.log("- bodyinsurance:", vehicle.bodyinsurance, typeof vehicle.bodyinsurance);
-        console.log("- vehicleinspection:", vehicle.vehicleinspection, typeof vehicle.vehicleinspection);
-      }
     } catch (error) {
       console.error("❌ Error loading vehicle detail:", error);
       setVehicleDetail(null);
@@ -186,9 +202,22 @@ export default function ContractPage() {
     setLoadingVehicle(false);
   };
 
+  // Fetch battery detail from post
+  const fetchBatteryDetail = async (postId) => {
+    setLoadingVehicle(true); // Reuse the same loading state
+    try {
+      const response = await api.get(`/api/post/detail/${postId}`);
+      const mappedData = mapBatteryData(response.data);
+      setBatteryDetail(mappedData);
+    } catch (error) {
+      console.error("❌ Error loading battery detail:", error);
+      setBatteryDetail(null);
+    }
+    setLoadingVehicle(false);
+  };
+
   // Handle contract created from preview modal
   const handleContractCreated = (newContractData) => {
-    console.log("✅ Contract created:", newContractData);
     setShowContractPreview(false);
     fetchContracts();
     alert(
@@ -208,13 +237,19 @@ export default function ContractPage() {
             </div>
           </div>
           <div className="header-actions">
-            {postId && (
-              <button className="btn btn-primary" onClick={() => setShowContractPreview(true)}>
-                📋 Create Contract for Post #{postId}
-              </button>
-            )}
             {viewingContract && (
-              <button className="btn btn-secondary" onClick={() => setViewingContract(null)}>
+              <button 
+                className="btn btn-secondary" 
+                onClick={() => {
+                  try {
+                    setViewingContract(null);
+                    setVehicleDetail(null);
+                  } catch (error) {
+                    console.error("Error going back:", error);
+                    window.location.reload();
+                  }
+                }}
+              >
                 ⬅️ Back to Contract List
               </button>
             )}
@@ -342,32 +377,123 @@ export default function ContractPage() {
           <ContractPreview
             contractId={viewingContract}
             onClose={() => {
-              setViewingContract(null);
-              setVehicleDetail(null);
+              try {
+                setViewingContract(null);
+                setVehicleDetail(null);
+              } catch (error) {
+                console.error("Error closing contract preview:", error);
+                window.location.reload();
+              }
             }}
           />
           
-          {/* Vehicle Information Section */}
+          {/* Vehicle/Battery Information Section */}
           <div className="vehicle-info-section">
             <div className="vehicle-info-header">
-              <h3>🚗 Vehicle Information</h3>
-              <p style={{fontSize: "12px", color: "#666"}}>
-                Debug: vehicleDetail = {vehicleDetail ? "EXISTS" : "NULL"}, 
-                Loading = {loadingVehicle ? "YES" : "NO"}
-              </p>
-              {vehicleDetail && (
-                <div style={{fontSize: "10px", color: "#999", background: "#f5f5f5", padding: "8px", borderRadius: "4px", marginTop: "8px"}}>
-                  <strong>Raw Vehicle Object Keys:</strong> {Object.keys(vehicleDetail.vehicle || {}).join(", ")}
-                  <br />
-                  <strong>Vehicle Object:</strong> {JSON.stringify(vehicleDetail.vehicle, null, 2)}
-                </div>
-              )}
+              <h3>{batteryDetail ? "� Battery Information" : "�🚗 Vehicle Information"}</h3>
             </div>
             <div className="vehicle-info-content">
               {loadingVehicle ? (
                 <div className="loading-state">
                   <div className="loading-spinner" />
-                  <div className="loading-text">Loading vehicle details...</div>
+                  <div className="loading-text">Loading {batteryDetail || contractType === 'battery' ? 'battery' : 'vehicle'} details...</div>
+                </div>
+              ) : batteryDetail ? (
+                <div className="battery-details-grid">
+                  <div className="battery-basic-info">
+                    <h4>Basic Information</h4>
+                    <div className="info-grid">
+                      <div className="info-item">
+                        <span className="label">Title:</span>
+                        <span className="value">{batteryDetail.title || "N/A"}</span>
+                      </div>
+                      <div className="info-item">
+                        <span className="label">Price:</span>
+                        <span className="value">
+                          ${batteryDetail.price?.toLocaleString() || "Contact for price"}
+                        </span>
+                      </div>
+                      <div className="info-item">
+                        <span className="label">Location:</span>
+                        <span className="value">{batteryDetail.location || "N/A"}</span>
+                      </div>
+                    </div>
+                    
+                    {batteryDetail.description && (
+                      <div className="battery-description">
+                        <h5>Description</h5>
+                        <p>{batteryDetail.description}</p>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {batteryDetail.battery && (
+                    <div className="battery-specs-info">
+                      <h4>Battery Specifications</h4>
+                      <div className="specs-grid">
+                        <div className="spec-item">
+                          <span className="label">Battery Type:</span>
+                          <span className="value">{batteryDetail.battery.batteryType || "N/A"}</span>
+                        </div>
+                        <div className="spec-item">
+                          <span className="label">Serial Number:</span>
+                          <span className="value">{batteryDetail.battery.serialNumber}</span>
+                        </div>
+                        <div className="spec-item">
+                          <span className="label">Original Capacity:</span>
+                          <span className="value">{batteryDetail.battery.originCapacityDisplay}</span>
+                        </div>
+                        <div className="spec-item">
+                          <span className="label">Remaining Capacity:</span>
+                          <span className="value">{batteryDetail.battery.remainingCapacityDisplay}</span>
+                        </div>
+                        <div className="spec-item">
+                          <span className="label">Voltage:</span>
+                          <span className="value">{batteryDetail.battery.voltageDisplay}</span>
+                        </div>
+                        <div className="spec-item">
+                          <span className="label">Cycle Count:</span>
+                          <span className="value">{batteryDetail.battery.cycleCount}</span>
+                        </div>
+                        <div className="spec-item">
+                          <span className="label">Mileage Covered:</span>
+                          <span className="value">{batteryDetail.battery.mileageCoveredDisplay}</span>
+                        </div>
+                        <div className="spec-item">
+                          <span className="label">Warranty:</span>
+                          <span className="value">{batteryDetail.battery.warranty}</span>
+                        </div>
+                        <div className="spec-item">
+                          <span className="label">Weight:</span>
+                          <span className="value">{batteryDetail.battery.weight}</span>
+                        </div>
+                        <div className="spec-item">
+                          <span className="label">Life Cycle:</span>
+                          <span className="value">{batteryDetail.battery.lifeCycle}</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Battery Images */}
+                  {batteryDetail.imageUrls && batteryDetail.imageUrls.length > 0 && (
+                    <div className="battery-images-info">
+                      <h4>Battery Images</h4>
+                      <div className="images-grid">
+                        {batteryDetail.imageUrls.map((imageUrl, index) => (
+                          <div key={index} className="image-item">
+                            <img 
+                              src={imageUrl} 
+                              alt={`Battery ${index + 1}`}
+                              onError={(e) => {
+                                e.target.src = "/placeholder-battery.jpg";
+                              }}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               ) : vehicleDetail ? (
                 <div className="vehicle-details-grid">
@@ -388,10 +514,6 @@ export default function ContractPage() {
                         <span className="label">Location:</span>
                         <span className="value">{vehicleDetail.location || "N/A"}</span>
                       </div>
-                      <div className="info-item">
-                        <span className="label">Status:</span>
-                        <span className="value">{vehicleDetail.status || "Available"}</span>
-                      </div>
                     </div>
                     
                     {vehicleDetail.description && (
@@ -408,30 +530,15 @@ export default function ContractPage() {
                       <div className="specs-grid">
                         <div className="spec-item">
                           <span className="label">Brand:</span>
-                          <span className="value">
-                            {vehicleDetail.vehicle.brand || "N/A"} 
-                            <span style={{fontSize: "10px", color: "#999"}}>
-                              ({typeof vehicleDetail.vehicle.brand}: {JSON.stringify(vehicleDetail.vehicle.brand)})
-                            </span>
-                          </span>
+                          <span className="value">{vehicleDetail.vehicle.brand || "N/A"}</span>
                         </div>
                         <div className="spec-item">
                           <span className="label">Model:</span>
-                          <span className="value">
-                            {vehicleDetail.vehicle.model || "N/A"}
-                            <span style={{fontSize: "10px", color: "#999"}}>
-                              ({typeof vehicleDetail.vehicle.model}: {JSON.stringify(vehicleDetail.vehicle.model)})
-                            </span>
-                          </span>
+                          <span className="value">{vehicleDetail.vehicle.model || "N/A"}</span>
                         </div>
                         <div className="spec-item">
                           <span className="label">Version:</span>
-                          <span className="value">
-                            {vehicleDetail.vehicle.version || "N/A"}
-                            <span style={{fontSize: "10px", color: "#999"}}>
-                              ({typeof vehicleDetail.vehicle.version}: {JSON.stringify(vehicleDetail.vehicle.version)})
-                            </span>
-                          </span>
+                          <span className="value">{vehicleDetail.vehicle.version || "N/A"}</span>
                         </div>
                         <div className="spec-item">
                           <span className="label">Year:</span>
@@ -453,21 +560,11 @@ export default function ContractPage() {
                         </div>
                         <div className="spec-item">
                           <span className="label">Battery Capacity:</span>
-                          <span className="value">
-                            {vehicleDetail.vehicle.batterycapacityDisplay}
-                            <span style={{fontSize: "10px", color: "#999"}}>
-                              (Raw: {JSON.stringify(vehicleDetail.vehicle.batterycapacity)})
-                            </span>
-                          </span>
+                          <span className="value">{vehicleDetail.vehicle.batterycapacityDisplay}</span>
                         </div>
                         <div className="spec-item">
                           <span className="label">Range:</span>
-                          <span className="value">
-                            {vehicleDetail.vehicle.rangeDisplay}
-                            <span style={{fontSize: "10px", color: "#999"}}>
-                              (Raw: {JSON.stringify(vehicleDetail.vehicle.range)})
-                            </span>
-                          </span>
+                          <span className="value">{vehicleDetail.vehicle.rangeDisplay}</span>
                         </div>
                         <div className="spec-item">
                           <span className="label">Charging Time:</span>
@@ -487,21 +584,11 @@ export default function ContractPage() {
                         </div>
                         <div className="spec-item">
                           <span className="label">Origin:</span>
-                          <span className="value">
-                            {vehicleDetail.vehicle.origin}
-                            <span style={{fontSize: "10px", color: "#999"}}>
-                              (Raw: {JSON.stringify(vehicleDetail.vehicle.origin)})
-                            </span>
-                          </span>
+                          <span className="value">{vehicleDetail.vehicle.origin}</span>
                         </div>
                         <div className="spec-item">
                           <span className="label">License Plate:</span>
-                          <span className="value">
-                            {vehicleDetail.vehicle.licenseplate}
-                            <span style={{fontSize: "10px", color: "#999"}}>
-                              (Raw: {JSON.stringify(vehicleDetail.vehicle.licenseplate)})
-                            </span>
-                          </span>
+                          <span className="value">{vehicleDetail.vehicle.licenseplate}</span>
                         </div>
                         <div className="spec-item">
                           <span className="label">Body Insurance:</span>
@@ -541,12 +628,22 @@ export default function ContractPage() {
                 </div>
               ) : (
                 <div className="no-vehicle-data">
-                  <p>No vehicle data available. Contract may not have postId.</p>
+                  <p>No {batteryDetail || contractType === 'battery' ? 'battery' : 'vehicle'} data available. Contract may not have postId.</p>
                 </div>
               )}
             </div>
           </div>
         </div>
+      )}
+
+      {/* Contract Info Preview Modal */}
+      {showContractPreview && postId && (
+        <ContractInfoPreview
+          postId={postId}
+          show={showContractPreview}
+          onCreateContract={handleContractCreated}
+          onCancel={() => setShowContractPreview(false)}
+        />
       )}
     </div>
   );

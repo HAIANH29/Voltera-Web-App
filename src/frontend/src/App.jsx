@@ -29,7 +29,7 @@ import DashboardBuyer from "./pages/dashboardBuyer/dashboardBuyer";
 import Dashboard from "./components/Dashboard";
 import PaymentPage from "./pages/paymentPage/PaymentPage";
 import PaymentCallback from "./pages/paymentPage/PaymentCallback";
-import ContractPage from "./pages/contractPage/contractPage";
+import ContractPage from "./pages/contractPage/ContractPage";
 import ContractsPage from "./pages/contractsPage/contractsPage";
 import TransactionPage from "./pages/transactionPage/TransactionPage";
 import { ComplaintPage, AdminComplaintManagement } from "./pages/complaintPage";
