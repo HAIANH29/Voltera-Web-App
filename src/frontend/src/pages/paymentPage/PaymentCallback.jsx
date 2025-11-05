@@ -138,7 +138,7 @@ const PaymentCallback = () => {
           {status === "success" && (
             <>
               <button
-                onClick={() => navigate("/contracts")}
+                onClick={() => navigate("/contract")}
                 className="payment-button"
               >
                 View Contracts

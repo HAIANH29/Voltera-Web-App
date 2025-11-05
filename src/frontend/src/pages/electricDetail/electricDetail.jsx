@@ -1,10 +1,100 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import api from "../../config/api";
 import Cookies from "../../utils/cookies";
 import { routes } from "../../routes";
 import "./electricDetail.css";
 
-// Mock data for electric batteries
+/**
+ * Map PostResponse (backend) -> detail view model for battery
+ * Keep the returned shape minimal and defensive (fields may be null)
+ */
+const mapPostToDetail = (p) => {
+  const b = p?.battery || {};
+  const priceNumber = p?.price != null ? Number(p.price) : 0;
+
+  const images =
+    Array.isArray(p?.imageUrls) && p.imageUrls.length > 0
+      ? p.imageUrls
+      : p?.thumbnail
+      ? [p.thumbnail]
+      : [];
+
+  return {
+    postID: String(p?.postId ?? ""),
+    title: p?.title || `${b?.batteryTypeId?.typename || "Battery"} Pack`,
+    description:
+      p?.description || "High-quality battery with advanced technology and durability.",
+    price: priceNumber,
+    status: (p?.status || "").toLowerCase(),
+
+    // battery specific - matching BatteryDTO field names
+    productName: p?.title || `${b?.batteryTypeId?.typename || "Battery"} Pack`,
+    isNew: (b?.cycleCount || 0) < 100, // Consider low cycle count as "new"
+
+    // images
+    images,
+    image: images[0] || "/placeholder-battery.jpg",
+
+    // seller/location (backend only sets location string currently)
+    seller: {
+      address: p?.location || null,
+    },
+    sellerName: p?.location || "Battery Seller",
+
+    // battery details from BatteryDTO
+    batteryDetails: {
+      serialNumber: b?.serialNumber,
+      batteryType: b?.batteryTypeId?.typename,
+      originalCapacity: b?.originCapacity ? `${b.originCapacity}kWh` : null,
+      remainingCapacity: b?.remainingCapacity ? `${b.remainingCapacity}kWh` : null,
+      mileageCovered: b?.mileageCovered ? `${b.mileageCovered}km` : null,
+      voltage: b?.voltage ? `${b.voltage}V` : null,
+      cycleCount: b?.cycleCount || 0,
+      warranty: b?.warranty,
+      weight: b?.weight ? `${b.weight}kg` : null,
+      lifeCycle: b?.lifeCycle ? `${b.lifeCycle} cycles` : "8000 cycles",
+      technical: b?.batteryTypeId?.technical,
+      description: b?.batteryTypeId?.description,
+    },
+
+    // seller info (mock for now, can be enhanced later)
+    sellerInfo: {
+      name: p?.location || "Battery Seller",
+      address: p?.location,
+      rating: 4.8,
+      totalSales: 50,
+    },
+
+    // features (derived from battery type or default)
+    features: [
+      "Advanced battery technology",
+      "Long-lasting performance", 
+      "Fast charging capability",
+      "Environmentally friendly",
+      "Professional warranty support",
+      "High energy density",
+    ],
+
+    // specifications (derived from battery data)
+    specifications: {
+      "Battery Type": b?.batteryTypeId?.typename || "N/A",
+      "Serial Number": b?.serialNumber || "N/A", 
+      "Original Capacity": b?.originCapacity ? `${b.originCapacity} kWh` : "N/A",
+      "Current Capacity": b?.remainingCapacity ? `${b.remainingCapacity} kWh` : "N/A",
+      "Voltage": b?.voltage ? `${b.voltage}V` : "N/A",
+      "Cycle Count": b?.cycleCount ? `${b.cycleCount}` : "N/A",
+      "Mileage Covered": b?.mileageCovered ? `${b.mileageCovered}km` : "N/A",
+      "Weight": b?.weight ? `${b.weight}kg` : "N/A",
+      "Life Cycle": b?.lifeCycle ? `${b.lifeCycle} cycles` : "N/A",
+      "Warranty": b?.warranty || "N/A",
+    },
+
+    isFavorite: false,
+  };
+};
+
+// Mock data for fallback (development only)
 const mockBatteriesData = [
   {
     postID: 1,
@@ -74,19 +164,63 @@ export default function ElectricDetail() {
 
   useEffect(() => {
     const fetchBattery = async () => {
-      setLoading(true);
-      console.log("📌 Battery ID từ URL:", postID);
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 800));
+      if (!postID) return;
 
-      const foundBattery = mockBatteriesData.find(
-        (b) => b.postID === parseInt(postID)
-      );
-      if (foundBattery) {
-        setBattery(foundBattery);
-        setIsFavorite(foundBattery.isFavorite);
+      setLoading(true);
+      console.log("� Fetching battery detail for postID:", postID);
+
+      try {
+        const response = await api.get(`/api/post/detail/${postID}`);
+        const postData = response.data;
+
+        // Kiểm tra xem post có chứa battery không
+        if (!postData?.battery) {
+          console.warn("Post không chứa thông tin battery");
+          // Fallback to mock data in development
+          if (process.env.NODE_ENV === "development") {
+            const foundBattery = mockBatteriesData.find(
+              (b) => b.postID === parseInt(postID)
+            );
+            if (foundBattery) {
+              setBattery(foundBattery);
+              setIsFavorite(foundBattery.isFavorite);
+            } else {
+              setBattery(null);
+            }
+          } else {
+            setBattery(null);
+          }
+          return;
+        }
+
+        const mappedBattery = mapPostToDetail(postData);
+        setBattery(mappedBattery);
+        setIsFavorite(mappedBattery.isFavorite);
+
+        console.log("✅ Battery detail loaded:", mappedBattery);
+      } catch (error) {
+        console.error("❌ Failed to fetch battery detail:", error);
+        console.log("STATUS =", error?.response?.status);
+        console.log("DATA   =", error?.response?.data);
+        
+        // Fallback to mock data in development
+        if (process.env.NODE_ENV === "development") {
+          console.log("🔄 Using mock data as fallback");
+          const foundBattery = mockBatteriesData.find(
+            (b) => b.postID === parseInt(postID)
+          );
+          if (foundBattery) {
+            setBattery(foundBattery);
+            setIsFavorite(foundBattery.isFavorite);
+          } else {
+            setBattery(null);
+          }
+        } else {
+          setBattery(null);
+        }
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     fetchBattery();
@@ -99,6 +233,8 @@ export default function ElectricDetail() {
   const handleContactSeller = () => {
     if (battery?.sellerInfo?.phone) {
       window.open(`tel:${battery.sellerInfo.phone}`);
+    } else {
+      alert("Contact information not available. Please check back later.");
     }
   };
 
@@ -140,23 +276,30 @@ export default function ElectricDetail() {
   };
 
   const formatPrice = (price) => {
-    return new Intl.NumberFormat("vi-VN", {
+    if (!price || price === 0) return "Contact for Price";
+    return new Intl.NumberFormat("en-US", {
       style: "currency",
-      currency: "VND",
+      currency: "USD",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
     }).format(price);
   };
 
   const calculateBatteryHealth = () => {
-    if (!battery?.batteryDetails) return 0;
+    if (!battery?.batteryDetails?.originalCapacity || !battery?.batteryDetails?.remainingCapacity) {
+      return 95; // Default health percentage
+    }
     const original = parseFloat(battery.batteryDetails.originalCapacity);
     const remaining = parseFloat(battery.batteryDetails.remainingCapacity);
+    if (isNaN(original) || isNaN(remaining) || original === 0) return 95;
     return ((remaining / original) * 100).toFixed(1);
   };
 
   const getCycleStatus = () => {
-    if (!battery?.batteryDetails) return "excellent";
+    if (!battery?.batteryDetails?.cycleCount) return "excellent";
     const used = battery.batteryDetails.cycleCount;
-    const total = parseInt(battery.batteryDetails.lifeCycle);
+    const totalLifeCycle = battery.batteryDetails.lifeCycle;
+    const total = totalLifeCycle ? parseInt(totalLifeCycle) : 8000; // Default lifecycle
     const percentage = (used / total) * 100;
 
     if (percentage < 25) return "excellent";
@@ -179,12 +322,12 @@ export default function ElectricDetail() {
     return (
       <div className="electric-detail-page">
         <div className="detail-not-found">
-          <h2>Product Not Found</h2>
+          <h2>Battery Not Found</h2>
           <button
-            onClick={() => navigate("/batteries")}
+            onClick={() => navigate("/electrics")}
             className="detail-back-btn"
           >
-            Back to List
+            Back to Batteries
           </button>
         </div>
       </div>
@@ -202,13 +345,13 @@ export default function ElectricDetail() {
         </span>
         <span className="breadcrumb-separator">/</span>
         <span
-          onClick={() => navigate("/batteries")}
+          onClick={() => navigate("/electrics")}
           className="breadcrumb-link"
         >
-          Batteries
+          Electric Batteries
         </span>
         <span className="breadcrumb-separator">/</span>
-        <span className="breadcrumb-current">{battery.productName}</span>
+        <span className="breadcrumb-current">{battery.productName || battery.title}</span>
       </div>
 
       <div className="detail-main-container">
@@ -221,7 +364,7 @@ export default function ElectricDetail() {
                 battery.image ||
                 "/placeholder-battery.jpg"
               }
-              alt={battery.productName}
+              alt={battery.productName || battery.title}
               onError={(e) => {
                 e.target.src = "/placeholder-battery.jpg";
               }}
@@ -281,14 +424,14 @@ export default function ElectricDetail() {
                   <div className="detail-content-section">
                     <h2>Specifications</h2>
                     <div className="detail-specifications-table">
-                      {Object.entries(battery.specifications).map(
-                        ([key, value]) => (
+                      {Object.entries(battery.specifications)
+                        .filter(([key, value]) => value && value !== "N/A")
+                        .map(([key, value]) => (
                           <div key={key} className="detail-spec-row">
                             <div className="detail-spec-label">{key}</div>
                             <div className="detail-spec-value">{value}</div>
                           </div>
-                        )
-                      )}
+                        ))}
                     </div>
                   </div>
                 )}
@@ -300,7 +443,7 @@ export default function ElectricDetail() {
         {/* Right Column - Details */}
         <div className="detail-info-section">
           <div className="detail-battery-header">
-            <h1 className="detail-battery-title">{battery.productName}</h1>
+            <h1 className="detail-battery-title">{battery.productName || battery.title}</h1>
           </div>
 
           <div className="detail-price-section">

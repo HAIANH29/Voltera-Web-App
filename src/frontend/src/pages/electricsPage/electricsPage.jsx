@@ -7,111 +7,128 @@ import api from "../../config/api";
 import { favoriteService } from "../../services/favoriteService";
 import "./electricsPage.css";
 
+/** Số thẻ mỗi trang */
+const ITEMS_PER_PAGE = 12;
+
+/**
+ * Map 1 PostResponse từ BE -> cấu trúc card MiniPost cho battery
+ * - PostResponse chứa: postId, title, description, price, battery, imageUrls, location, thumbnail
+ */
+const mapPostToCard = (p) => {
+  const b = p?.battery || {}; // BatteryDTO từ BE
+
+  // Ưu tiên thumbnail, sau đó imageUrls
+  const firstImg =
+    p?.thumbnail ||
+    (Array.isArray(p?.imageUrls) && p.imageUrls.length > 0
+      ? p.imageUrls[0]
+      : "");
+
+  // Handle price conversion more carefully
+  let processedPrice = 0;
+  if (p.price !== null && p.price !== undefined) {
+    if (typeof p.price === "string") {
+      processedPrice = parseFloat(p.price.replace(/[^\d.]/g, "")) || 0;
+    } else {
+      processedPrice = Number(p.price) || 0;
+    }
+  }
+
+  return {
+    // id bài đăng
+    postID: String(p?.postId ?? ""),
+
+    // thông tin hiển thị của battery
+    image: firstImg || "https://via.placeholder.com/400x300/667eea/ffffff?text=Battery+Pack",
+    productName: p.title || `${b?.batteryTypeId?.typename || "Battery"} Pack`,
+    basicInfo: [
+      b?.batteryTypeId?.typename || "Li-ion",
+      b?.originCapacity ? `${b.originCapacity}kWh` : "N/A",
+      b?.voltage ? `${b.voltage}V` : "N/A",
+      b?.cycleCount ? `${b.cycleCount} cycles` : "N/A",
+    ],
+    sellerName: p?.location || "Battery Seller",
+    price: processedPrice,
+    isNew: (b?.cycleCount || 0) < 100, // Consider low cycle count as "new"
+
+    // Additional battery info for detail view
+    batteryDetails: {
+      serialNumber: b?.serialNumber,
+      originCapacity: b?.originCapacity,
+      remainingCapacity: b?.remainingCapacity,
+      mileageCovered: b?.mileageCovered,
+      voltage: b?.voltage,
+      cycleCount: b?.cycleCount,
+      warranty: b?.warranty,
+      weight: b?.weight,
+      lifeCycle: b?.lifeCycle,
+      batteryType: b?.batteryTypeId?.typename,
+      technical: b?.batteryTypeId?.technical,
+      description: b?.batteryTypeId?.description,
+    },
+
+    // FE state
+    isFavorite: false,
+  };
+};
+
 const ElectricsPage = () => {
+  // ===================== STATE CHÍNH =====================
   const navigate = useNavigate();
-  const [batteries, setBatteries] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [batteries, setBatteries] = useState([]); // danh sách pin đã map
+  const [loading, setLoading] = useState(true); // trạng thái loading
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const itemsPerPage = 12;
-
-  // Fetch batteries with comprehensive error handling
+  // ===================== FETCH API TỪ BE =====================
   useEffect(() => {
     const fetchBatteries = async () => {
       try {
         setLoading(true);
-        console.log("� Fetching batteries from API...");
+        console.log("🔋 Fetching batteries from API...");
 
+        // Sử dụng endpoint chuyên cho batteries đã được approved
         const response = await api.get("/api/post/public/batteries");
 
         console.log("✅ Battery API Response:", response.data);
 
-        if (response.data && Array.isArray(response.data)) {
-          const mappedData = response.data.map((post) => {
-            // Handle price conversion more carefully
-            let processedPrice = 0;
-            if (post.price !== null && post.price !== undefined) {
-              if (typeof post.price === "string") {
-                processedPrice =
-                  parseFloat(post.price.replace(/[^\d.]/g, "")) || 0;
-              } else {
-                processedPrice = Number(post.price) || 0;
-              }
-            }
+        // BE trả list PostResponse chỉ chứa batteries
+        const items = Array.isArray(response.data) ? response.data : [];
 
-            return {
-              postID: String(post.postId || ""),
-              image:
-                post.thumbnail ||
-                (post.imageUrls && post.imageUrls[0]) ||
-                "https://via.placeholder.com/400x300/667eea/ffffff?text=Battery+Pack",
-              productName:
-                post.title ||
-                `${post.battery?.batteryTypeId?.typename || "Battery"} Pack`,
-              basicInfo: [
-                post.battery?.batteryTypeId?.typename || "Li-ion",
-                post.battery?.originCapacity
-                  ? `${post.battery.originCapacity}kWh`
-                  : "N/A",
-                post.battery?.voltage ? `${post.battery.voltage}V` : "N/A",
-                post.battery?.cycleCount
-                  ? `${post.battery.cycleCount} cycles`
-                  : "N/A",
-              ],
-              sellerName: post.location || "Battery Seller",
-              price: processedPrice,
-              isNew: (post.battery?.cycleCount || 0) < 100, // Consider low cycle count as "new"
-              isFavorite: false,
-              // Additional battery info for detail view
-              batteryDetails: {
-                serialNumber: post.battery?.serialNumber,
-                originCapacity: post.battery?.originCapacity,
-                remainingCapacity: post.battery?.remainingCapacity,
-                mileageCovered: post.battery?.mileageCovered,
-                voltage: post.battery?.voltage,
-                cycleCount: post.battery?.cycleCount,
-                warranty: post.battery?.warranty,
-                weight: post.battery?.weight,
-                lifeCycle: post.battery?.lifeCycle,
-                batteryType: post.battery?.batteryTypeId?.typename,
-                technical: post.battery?.batteryTypeId?.technical,
-                description: post.battery?.batteryTypeId?.description,
-              },
-            };
-          });
+        console.log("[ElectricsPage] Loaded", items.length, "battery posts");
 
-          // Load user favorites to sync favorite status
-          if (favoriteService.isUserLoggedIn()) {
-            try {
-              const favResponse = await favoriteService.getFavorites();
-              const favoritePostIds = new Set(
-                favResponse.data?.map((fav) => String(fav.postId)) || []
-              );
+        const mapped = items.map(mapPostToCard);
 
-              // Update mapped batteries with favorite status
-              const mappedWithFavorites = mappedData.map((battery) => ({
-                ...battery,
-                isFavorite: favoritePostIds.has(battery.postID),
-              }));
+        // Load user favorites to sync favorite status
+        if (favoriteService.isUserLoggedIn()) {
+          try {
+            const favResponse = await favoriteService.getFavorites();
+            const favoritePostIds = new Set(
+              favResponse.data?.map((fav) => String(fav.postId)) || []
+            );
 
-              setBatteries(mappedWithFavorites);
-            } catch (favError) {
-              console.error("Error loading favorites:", favError);
-              // Still set batteries even if favorites loading failed
-              setBatteries(mappedData);
-            }
-          } else {
-            setBatteries(mappedData);
+            // Update mapped batteries with favorite status
+            const mappedWithFavorites = mapped.map((battery) => ({
+              ...battery,
+              isFavorite: favoritePostIds.has(battery.postID),
+            }));
+
+            setBatteries(mappedWithFavorites);
+          } catch (favError) {
+            console.error("Error loading favorites:", favError);
+            // Still set batteries even if favorites loading failed
+            setBatteries(mapped);
           }
-
-          console.log("✅ Batteries loaded:", mappedData.length);
         } else {
-          console.warn("⚠️ No battery data received from API");
-          setBatteries([]);
+          setBatteries(mapped);
         }
+
+        console.log("✅ Batteries loaded:", mapped.length);
       } catch (error) {
         console.error("❌ Error fetching batteries:", error);
+        console.log("STATUS =", error?.response?.status);
+        console.log("DATA   =", error?.response?.data);
+        
         // Only show test data in development
         if (process.env.NODE_ENV === "development") {
           const testData = [
@@ -176,18 +193,13 @@ const ElectricsPage = () => {
     );
   }, [batteries, searchTerm]);
 
-  // Optimized pagination calculations
-  const paginationData = useMemo(() => {
-    const totalPages = Math.ceil(filteredBatteries.length / itemsPerPage);
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const currentBatteries = filteredBatteries.slice(
-      startIndex,
-      startIndex + itemsPerPage
-    );
+  // ===================== PHÂN TRANG =====================
+  const totalPages = Math.ceil(filteredBatteries.length / ITEMS_PER_PAGE) || 1;
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const currentBatteries = filteredBatteries.slice(startIndex, endIndex);
 
-    return { totalPages, startIndex, currentBatteries };
-  }, [filteredBatteries, currentPage, itemsPerPage]);
-
+  // ===================== HANDLERS UI =====================
   const handlePageChange = useCallback((page) => {
     setCurrentPage(page);
     // Smooth scroll to top on page change
@@ -244,6 +256,7 @@ const ElectricsPage = () => {
     [batteries]
   );
 
+  // ===================== FORMAT HIỂN THỊ =====================
   const formatPrice = (price) => {
     if (!price || price === null || price === undefined)
       return "Contact for Price";
@@ -267,6 +280,18 @@ const ElectricsPage = () => {
     }).format(numPrice);
   };
 
+  // ===================== RENDER =====================
+  if (loading) {
+    return (
+      <div className="electrics-page modern-enhanced">
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <p>Loading batteries...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="electrics-page modern-enhanced">
       {/* Compact Header */}
@@ -275,16 +300,8 @@ const ElectricsPage = () => {
         <p>Quality batteries for electric vehicles</p>
       </div>
 
-      {/* Loading State */}
-      {loading && (
-        <div className="loading-container">
-          <div className="loading-spinner"></div>
-          <p>Loading batteries...</p>
-        </div>
-      )}
-
       {/* Results Header */}
-      {!loading && (
+      <div className="results-header">
         <div className="results-header">
           <div className="results-info">
             <h2>Electric Battery Collection</h2>
@@ -320,121 +337,116 @@ const ElectricsPage = () => {
             </button>
           </div>
         </div>
-      )}
+      </div>
 
       {/* Main Layout */}
-      {!loading && (
-        <div className="layout enhanced-layout">
-          {/* Sidebar Filters */}
-          <aside className="filters modern-filters">
-            <div className="filters-header">
-              <h3>
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46" />
-                </svg>
-                Battery Filters
-              </h3>
-              <button
-                className="clear-filters"
-                onClick={() => setSearchTerm("")}
+      <div className="layout enhanced-layout">
+        {/* Sidebar Filters */}
+        <aside className="filters modern-filters">
+          <div className="filters-header">
+            <h3>
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
               >
-                Clear All
-              </button>
-            </div>
+                <polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46" />
+              </svg>
+              Battery Filters
+            </h3>
+            <button
+              className="clear-filters"
+              onClick={() => setSearchTerm("")}
+            >
+              Clear All
+            </button>
+          </div>
 
-            <div className="filter-group">
-              <label className="filter-label">
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <path d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z" />
-                </svg>
-                Battery Type
-              </label>
-              <select className="filter-select">
-                <option value="">All Types</option>
-                <option value="Lithium-ion">Lithium-ion</option>
-                <option value="LiFePO4">LiFePO4</option>
-                <option value="NiMH">NiMH</option>
-              </select>
-            </div>
+          <div className="filter-group">
+            <label className="filter-label">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z" />
+              </svg>
+              Battery Type
+            </label>
+            <select className="filter-select">
+              <option value="">All Types</option>
+              <option value="Lithium-ion">Lithium-ion</option>
+              <option value="LiFePO4">LiFePO4</option>
+              <option value="NiMH">NiMH</option>
+            </select>
+          </div>
 
-            <button className="apply-filters-btn">Apply Filters</button>
-          </aside>
+          <button className="apply-filters-btn">Apply Filters</button>
+        </aside>
 
-          {/* Main Content Grid */}
-          <main className="grid-container">
-            <div className="grid">
-              {paginationData.currentBatteries.map((battery) => (
-                <MiniPost
-                  key={battery.postID}
-                  image={battery.image}
-                  productName={battery.productName}
-                  basicInfo={battery.basicInfo}
-                  sellerName={battery.sellerName}
-                  price={formatPrice(battery.price)}
-                  isNew={battery.isNew}
-                  isFavorite={battery.isFavorite}
-                  onFavoriteClick={() => handleFavoriteClick(battery.postID)}
-                  onClick={() => handleBatteryClick(battery)}
-                />
-              ))}
+        {/* Main Content Grid */}
+        <main className="grid-container">
+          <div className="grid">
+            {currentBatteries.map((battery) => (
+              <MiniPost
+                key={battery.postID}
+                image={battery.image}
+                productName={battery.productName}
+                basicInfo={battery.basicInfo}
+                sellerName={battery.sellerName}
+                price={formatPrice(battery.price)}
+                isNew={battery.isNew}
+                isFavorite={battery.isFavorite}
+                onFavoriteClick={() => handleFavoriteClick(battery.postID)}
+                onClick={() => handleBatteryClick(battery)}
+              />
+            ))}
 
-              {paginationData.currentBatteries.length === 0 && (
-                <div className="empty-state">
-                  <div className="empty-icon">
-                    <svg
-                      width="64"
-                      height="64"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1"
-                    >
-                      <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
-                      <line x1="3" y1="6" x2="21" y2="6" />
-                      <path d="M16 10a4 4 0 0 1-8 0" />
-                    </svg>
-                  </div>
-                  <h3>No batteries found</h3>
-                  <p>Try adjusting your search or filter criteria</p>
+            {currentBatteries.length === 0 && (
+              <div className="empty-state">
+                <div className="empty-icon">
+                  <svg
+                    width="64"
+                    height="64"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1"
+                  >
+                    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+                    <line x1="3" y1="6" x2="21" y2="6" />
+                    <path d="M16 10a4 4 0 0 1-8 0" />
+                  </svg>
                 </div>
-              )}
-            </div>
-
-            {/* Pagination */}
-            {paginationData.totalPages > 1 && (
-              <div className="pagination-container">
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={paginationData.totalPages}
-                  onPageChange={handlePageChange}
-                />
-                <div className="pagination-info">
-                  Showing {paginationData.startIndex + 1}-
-                  {Math.min(
-                    paginationData.startIndex + itemsPerPage,
-                    filteredBatteries.length
-                  )}{" "}
-                  of {filteredBatteries.length} batteries
-                </div>
+                <h3>No batteries found</h3>
+                <p>Try adjusting your search or filter criteria</p>
               </div>
             )}
-          </main>
-        </div>
-      )}
+          </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="pagination-container">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+              />
+              <div className="pagination-info">
+                Showing {startIndex + 1}-
+                {Math.min(endIndex, filteredBatteries.length)}{" "}
+                of {filteredBatteries.length} batteries
+              </div>
+            </div>
+          )}
+        </main>
+      </div>
     </div>
   );
 };
