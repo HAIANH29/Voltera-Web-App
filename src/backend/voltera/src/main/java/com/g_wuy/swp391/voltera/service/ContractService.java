@@ -58,8 +58,6 @@ public class ContractService {
         return contractMapper.toResponse(contract);
     }
 
-
-
     @Transactional
     public ContractResponse signContract(String username, Integer contractId) {
         User user = userRepository.findUserByUsername(username);

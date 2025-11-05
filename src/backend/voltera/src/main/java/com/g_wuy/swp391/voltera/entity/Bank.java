@@ -3,17 +3,20 @@ package com.g_wuy.swp391.voltera.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "bank")
 public class Bank {
@@ -26,35 +29,53 @@ public class Bank {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "userid", nullable = false)
-    private User userid;
+    private User user;
 
     @Size(max = 150)
     @NotNull
     @Column(name = "bankname", nullable = false, length = 150)
-    private String bankname;
+    private String bankName;
 
     @Size(max = 50)
     @NotNull
     @Column(name = "accountnumber", nullable = false, length = 50)
-    private String accountnumber;
+    private String bankNumber;
 
     @Size(max = 200)
     @NotNull
     @Column(name = "accountname", nullable = false, length = 200)
-    private String accountname;
+    private String accountName;
 
     @Column(name = "securitycode")
-    private Integer securitycode;
+    private Integer securityCode;
 
     @Column(name = "expdate")
-    private LocalDate expdate;
+    private LocalDate expDate;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "createdat")
-    private Instant createdat;
+    private Instant createdAt;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "updatedat")
-    private Instant updatedat;
+    private Instant updatedAt;
 
+    @Size(max = 20)
+    @Column(name = "status", length = 20)
+    private String status;
+
+    @ColumnDefault("0")
+    @Column(name = "balance", precision = 12, scale = 2)
+    private BigDecimal balance;
+
+    @PrePersist
+    public void onCreate() {
+        this.createdAt = Instant.now();
+        updatedAt = Instant.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = Instant.now();
+    }
 }

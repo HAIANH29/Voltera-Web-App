@@ -11,9 +11,6 @@ import org.springframework.web.bind.annotation.*;
 
 import com.g_wuy.swp391.voltera.model.request.PostRequest;
 import com.g_wuy.swp391.voltera.model.request.RejectPostRequest;
-import com.g_wuy.swp391.voltera.model.response.ModerationResponse;
-import com.g_wuy.swp391.voltera.model.response.PostResponse;
-import com.g_wuy.swp391.voltera.model.response.RejectResponse;
 import com.g_wuy.swp391.voltera.service.JwtService;
 import com.g_wuy.swp391.voltera.service.PostService;
 

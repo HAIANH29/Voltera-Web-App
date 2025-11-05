@@ -1,5 +1,4 @@
 package com.g_wuy.swp391.voltera.controller;
-import com.g_wuy.swp391.voltera.model.response.ReportResponse;
 import com.g_wuy.swp391.voltera.service.ReportService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;

@@ -24,14 +24,14 @@ public class RefundImage {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "refundid", nullable = false)
-    private Refund refundid;
+    private Refund refund;
 
     @NotNull
     @Column(name = "imageurl", nullable = false, length = Integer.MAX_VALUE)
-    private String imageurl;
+    private String imageUrl;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "uploadedat")
-    private Instant uploadedat;
+    private Instant uploadedAt;
 
 }

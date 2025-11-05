@@ -5,7 +5,6 @@ import java.util.List;
 import org.mapstruct.Mapper;
 
 import com.g_wuy.swp391.voltera.entity.FavoriteList;
-import com.g_wuy.swp391.voltera.model.response.FavListResponse;
 import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")

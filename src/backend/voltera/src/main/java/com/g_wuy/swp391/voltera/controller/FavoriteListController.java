@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.g_wuy.swp391.voltera.entity.FavoriteList;
 import com.g_wuy.swp391.voltera.entity.User;
 import com.g_wuy.swp391.voltera.exception.BusinessException;
-import com.g_wuy.swp391.voltera.model.response.FavListResponse;
 import com.g_wuy.swp391.voltera.service.FavoriteService;
 import com.g_wuy.swp391.voltera.service.JwtService;
 import com.g_wuy.swp391.voltera.service.UserService;

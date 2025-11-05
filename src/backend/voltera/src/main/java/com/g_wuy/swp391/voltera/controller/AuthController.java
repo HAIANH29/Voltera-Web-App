@@ -2,7 +2,6 @@ package com.g_wuy.swp391.voltera.controller;
 
 
 import com.g_wuy.swp391.voltera.exception.BusinessException;
-import com.g_wuy.swp391.voltera.model.request.OtpRequest;
 import com.g_wuy.swp391.voltera.service.JwtService;
 import com.g_wuy.swp391.voltera.service.UserService;
 import jakarta.validation.Valid;
@@ -14,8 +13,6 @@ import org.springframework.web.bind.annotation.*;
 
 import com.g_wuy.swp391.voltera.model.request.LoginRequest;
 import com.g_wuy.swp391.voltera.model.request.RegisterRequest;
-import com.g_wuy.swp391.voltera.model.response.LoginResponse;
-import com.g_wuy.swp391.voltera.model.response.RegisterResponse;
 import com.g_wuy.swp391.voltera.service.AccountService;
 
 @RestController

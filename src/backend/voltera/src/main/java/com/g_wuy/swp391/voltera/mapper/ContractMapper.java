@@ -2,10 +2,8 @@ package com.g_wuy.swp391.voltera.mapper;
 
 import com.g_wuy.swp391.voltera.entity.Contract;
 import com.g_wuy.swp391.voltera.entity.Post;
-import com.g_wuy.swp391.voltera.entity.Transaction;
 import com.g_wuy.swp391.voltera.entity.User;
 import com.g_wuy.swp391.voltera.model.request.ContractRequest;
-import com.g_wuy.swp391.voltera.model.response.ContractResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

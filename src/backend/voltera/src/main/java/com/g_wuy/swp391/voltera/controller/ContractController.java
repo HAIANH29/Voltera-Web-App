@@ -1,8 +1,6 @@
 package com.g_wuy.swp391.voltera.controller;
 
 import com.g_wuy.swp391.voltera.model.request.ContractRequest;
-import com.g_wuy.swp391.voltera.model.response.ContractResponse;
-import com.g_wuy.swp391.voltera.model.response.TransactionResponse;
 import com.g_wuy.swp391.voltera.service.ContractService;
 import com.g_wuy.swp391.voltera.service.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;

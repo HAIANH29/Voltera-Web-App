@@ -25,22 +25,22 @@ public class Refund {
     @ManyToOne(fetch = FetchType.LAZY)
     @OnDelete(action = OnDeleteAction.SET_NULL)
     @JoinColumn(name = "paymentid")
-    private Payment paymentid;
+    private Payment payment;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @OnDelete(action = OnDeleteAction.SET_NULL)
     @JoinColumn(name = "transactionid")
-    private Transaction transactionid;
+    private Transaction transaction;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @OnDelete(action = OnDeleteAction.SET_NULL)
     @JoinColumn(name = "senderid")
-    private User senderid;
+    private User sender;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @OnDelete(action = OnDeleteAction.SET_NULL)
     @JoinColumn(name = "receiverid")
-    private User receiverid;
+    private User receiver;
 
     @NotNull
     @Column(name = "amount", nullable = false, precision = 12, scale = 2)
@@ -52,14 +52,14 @@ public class Refund {
     @Size(max = 20)
     @ColumnDefault("'REQUESTED'")
     @Column(name = "refundstatus", length = 20)
-    private String refundstatus;
+    private String refundStatus;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "createdat")
-    private Instant createdat;
+    private Instant createdAt;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "updatedat")
-    private Instant updatedat;
+    private Instant updatedAt;
 
 }

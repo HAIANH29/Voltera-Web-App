@@ -25,17 +25,22 @@ public class BankTransfer {
     @ManyToOne(fetch = FetchType.LAZY)
     @OnDelete(action = OnDeleteAction.SET_NULL)
     @JoinColumn(name = "paymentid")
-    private Payment paymentid;
+    private Payment payment;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @OnDelete(action = OnDeleteAction.SET_NULL)
     @JoinColumn(name = "transactionid")
-    private Transaction transactionid;
+    private Transaction transaction;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @OnDelete(action = OnDeleteAction.SET_NULL)
     @JoinColumn(name = "sellerid")
-    private User sellerid;
+    private User seller;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @OnDelete(action = OnDeleteAction.SET_NULL)
+    @JoinColumn(name = "bankid")
+    private Bank bank;
 
     @NotNull
     @Column(name = "amount", nullable = false, precision = 12, scale = 2)
@@ -48,9 +53,9 @@ public class BankTransfer {
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "initiatedat")
-    private Instant initiatedat;
+    private Instant initiatedAt;
 
     @Column(name = "completedat")
-    private Instant completedat;
+    private Instant completedAt;
 
 }

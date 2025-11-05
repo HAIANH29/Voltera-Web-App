@@ -7,8 +7,6 @@ import org.mapstruct.*;
 
 import com.g_wuy.swp391.voltera.entity.Battery;
 import com.g_wuy.swp391.voltera.entity.Vehicle;
-import com.g_wuy.swp391.voltera.model.response.PostResponse;
-import com.g_wuy.swp391.voltera.model.response.RejectResponse;
 
 import java.util.List;
 

@@ -20,8 +20,6 @@ import com.g_wuy.swp391.voltera.exception.BusinessException;
 import com.g_wuy.swp391.voltera.mapper.AccountMapper;
 import com.g_wuy.swp391.voltera.mapper.UserMapper;
 import com.g_wuy.swp391.voltera.model.request.ProfileRequest;
-import com.g_wuy.swp391.voltera.model.response.ApproveResponse;
-import com.g_wuy.swp391.voltera.model.response.ProfileResponse;
 import com.g_wuy.swp391.voltera.service.AccountService;
 import com.g_wuy.swp391.voltera.service.UserService;
 

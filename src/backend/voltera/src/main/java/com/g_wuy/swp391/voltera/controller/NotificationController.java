@@ -2,7 +2,6 @@ package com.g_wuy.swp391.voltera.controller;
 
 import com.g_wuy.swp391.voltera.entity.Notification;
 import com.g_wuy.swp391.voltera.entity.User;
-import com.g_wuy.swp391.voltera.model.response.NotificationResponse;
 import com.g_wuy.swp391.voltera.repository.NotificationRepository;
 import com.g_wuy.swp391.voltera.repository.UserRepository;
 import com.g_wuy.swp391.voltera.service.JwtService;

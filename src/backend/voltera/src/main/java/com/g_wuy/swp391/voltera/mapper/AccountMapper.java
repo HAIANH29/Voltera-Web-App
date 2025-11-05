@@ -5,9 +5,6 @@ import org.mapstruct.Mapping;
 
 import com.g_wuy.swp391.voltera.entity.Account;
 import com.g_wuy.swp391.voltera.model.request.RegisterRequest;
-import com.g_wuy.swp391.voltera.model.response.ApproveResponse;
-import com.g_wuy.swp391.voltera.model.response.LoginResponse;
-import com.g_wuy.swp391.voltera.model.response.RegisterResponse;
 
 @Mapper(componentModel = "spring")
 public interface AccountMapper {
