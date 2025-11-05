@@ -42,7 +42,7 @@ public class ContractService {
     @Autowired
     private TransactionMapper transactionMapper;
     @Autowired
-    private JwtService jwtService;
+    private NotificationService notificationService;
 
     @Transactional
     public ContractResponse createContract(ContractRequest request,String username) {
@@ -95,6 +95,7 @@ public class ContractService {
         }
 
         contractRepository.save(contract);
+        notificationService.sendForEvent(contract);
         return contractMapper.toResponse(contract);
     }
 
@@ -187,13 +188,13 @@ public class ContractService {
         Contract contract = contractRepository.findById(contractId)
                 .orElseThrow(() -> new RuntimeException("Contract not found"));
 
-        // Kiểm tra quyền truy cập
+
         if (!contract.getBuyerid().getId().equals(user.getId()) &&
                 !contract.getSellerid().getId().equals(user.getId())) {
             throw new RuntimeException("Access denied to this contract");
         }
 
-        // Kiểm tra contract đã được ký bởi cả hai bên
+
         if (!"SIGNED".equals(contract.getContractstatus()) ||
                 !Boolean.TRUE.equals(contract.getBuyersigned()) ||
                 !Boolean.TRUE.equals(contract.getSellersigned())) {

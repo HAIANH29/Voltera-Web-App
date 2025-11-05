@@ -40,6 +40,8 @@ public class VNPayService {
 
     @Autowired
     private FeeRepository feeRepository;
+    @Autowired
+    private NotificationService notificationService;
 
     public VNPayResponse createPayment(VNPayRequest request, HttpServletRequest httpRequest, Integer transactionId) {
         try {
@@ -141,7 +143,8 @@ public class VNPayService {
 
             paymentRepository.save(payment);
             transactionRepository.save(transaction);
-
+            notificationService.sendForEvent(payment);
+            notificationService.sendForEvent(transaction);
             return "Giao dịch " + transaction.getTransactionStatus().toLowerCase() + "!";
         } catch (Exception e) {
             log.error("Error handling VNPay return", e);

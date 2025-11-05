@@ -21,8 +21,6 @@ public class UserDetailImplementService implements UserDetailsService {
         Account account = accountRepository.findByUsername(username)
                 .orElseThrow(() -> new BusinessException("Account not found" ));
 
-        // Trả về Account trực tiếp vì nó đã implement UserDetails
-        // và có getAuthorities() đúng format "ROLE_ADMIN"
         return account;
     }
 }
