@@ -1,5 +1,6 @@
 package com.g_wuy.swp391.voltera.controller;
 
+import com.g_wuy.swp391.voltera.model.response.ContractResponse;
 import com.g_wuy.swp391.voltera.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

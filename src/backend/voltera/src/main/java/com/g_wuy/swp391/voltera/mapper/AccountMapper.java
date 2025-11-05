@@ -1,5 +1,8 @@
 package com.g_wuy.swp391.voltera.mapper;
 
+import com.g_wuy.swp391.voltera.model.response.ApproveResponse;
+import com.g_wuy.swp391.voltera.model.response.LoginResponse;
+import com.g_wuy.swp391.voltera.model.response.RegisterResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

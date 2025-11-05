@@ -2,6 +2,8 @@ package com.g_wuy.swp391.voltera.controller;
 
 
 import com.g_wuy.swp391.voltera.exception.BusinessException;
+import com.g_wuy.swp391.voltera.model.response.LoginResponse;
+import com.g_wuy.swp391.voltera.model.response.RegisterResponse;
 import com.g_wuy.swp391.voltera.service.JwtService;
 import com.g_wuy.swp391.voltera.service.UserService;
 import jakarta.validation.Valid;

@@ -2,6 +2,8 @@ package com.g_wuy.swp391.voltera.controller;
 
 import com.g_wuy.swp391.voltera.entity.ComplaintReply;
 import com.g_wuy.swp391.voltera.model.request.ReplyComplaintRequest;
+import com.g_wuy.swp391.voltera.model.response.ComplaintReplyResponse;
+import com.g_wuy.swp391.voltera.model.response.ComplaintResponse;
 import com.g_wuy.swp391.voltera.service.ComplaintReplyService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;

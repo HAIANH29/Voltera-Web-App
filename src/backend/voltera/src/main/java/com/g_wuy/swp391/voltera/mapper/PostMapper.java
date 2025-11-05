@@ -1,6 +1,8 @@
 package com.g_wuy.swp391.voltera.mapper;
 
 import com.g_wuy.swp391.voltera.entity.Post;
+import com.g_wuy.swp391.voltera.model.response.PostResponse;
+import com.g_wuy.swp391.voltera.model.response.RejectResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.*;

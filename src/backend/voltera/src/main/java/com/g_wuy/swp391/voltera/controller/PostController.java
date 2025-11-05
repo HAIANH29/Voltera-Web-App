@@ -3,6 +3,9 @@ package com.g_wuy.swp391.voltera.controller;
 
 
 import com.g_wuy.swp391.voltera.entity.Post;
+import com.g_wuy.swp391.voltera.model.response.ModerationResponse;
+import com.g_wuy.swp391.voltera.model.response.PostResponse;
+import com.g_wuy.swp391.voltera.model.response.RejectResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

@@ -2,6 +2,7 @@ package com.g_wuy.swp391.voltera.controller;
 
 import java.util.List;
 
+import com.g_wuy.swp391.voltera.model.response.FavListResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;

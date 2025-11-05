@@ -1,6 +1,7 @@
 package com.g_wuy.swp391.voltera.controller;
 
 import com.g_wuy.swp391.voltera.model.request.BankRequest;
+import com.g_wuy.swp391.voltera.model.response.BankResponse;
 import com.g_wuy.swp391.voltera.service.BankService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

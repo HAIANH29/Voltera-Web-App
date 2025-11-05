@@ -1,6 +1,7 @@
 package com.g_wuy.swp391.voltera.mapper;
 
 import com.g_wuy.swp391.voltera.entity.Bank;
+import com.g_wuy.swp391.voltera.model.response.BankResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
