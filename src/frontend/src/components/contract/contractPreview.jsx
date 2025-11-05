@@ -5,6 +5,7 @@ import PizZip from "pizzip";
 import Docxtemplater from "docxtemplater";
 import { saveAs } from "file-saver";
 import ContractInfoPreview from "../contractInfoPreview/ContractInfoPreview";
+import PostInfo from "../postInfo/postInfo";
 import "./contractPreview.css";
 
 export default function ContractPreview({ postId, contractId, onClose }) {
@@ -20,12 +21,18 @@ export default function ContractPreview({ postId, contractId, onClose }) {
   // Get token from cookies like in headerAfter
   const token = Cookies.get("accessToken");
 
-  // Fetch contract data for preview
+  // Fetch contract data for preview with cleanup
   useEffect(() => {
+    // Reset state when contractId or postId changes
+    setContractData(null);
+    setPostData(null);
+    setLoading(false);
+    
+    console.log("🔄 ContractPreview useEffect triggered:", { contractId, postId });
+    
     if (contractId) {
       fetchContractData();
-    }
-    if (postId) {
+    } else if (postId) {
       fetchPostData();
     }
   }, [contractId, postId]);
@@ -34,7 +41,44 @@ export default function ContractPreview({ postId, contractId, onClose }) {
     try {
       setLoading(true);
       const res = await api.get(`/api/contract/${contractId}`);
-      setContractData(res.data);
+      const contractInfo = res.data;
+      setContractData(contractInfo);
+      
+      console.log("📋 Contract data loaded:", {
+        contractId: contractInfo.contractId,
+        postId: contractInfo.postId,
+        contractType: contractInfo.contractType,
+        postTitle: contractInfo.postTitle,
+        sellerName: contractInfo.sellerName,
+        buyerName: contractInfo.buyerName
+      });
+      
+      // If contract has postId, always fetch fresh post data to ensure correct display
+      if (contractInfo.postId) {
+        console.log("🔄 Fetching post data for contract:", contractInfo.postId);
+        try {
+          const postRes = await api.get(`/api/post/detail/${contractInfo.postId}`);
+          const rawPostData = postRes.data;
+          
+          // Add type detection to postData
+          const enhancedData = {
+            ...rawPostData,
+            type: rawPostData.battery ? 'battery' : rawPostData.vehicle ? 'vehicle' : 'unknown'
+          };
+          
+          console.log("📊 Post data loaded from contract:", {
+            postId: contractInfo.postId,
+            hasBattery: !!rawPostData.battery,
+            hasVehicle: !!rawPostData.vehicle,
+            detectedType: enhancedData.type,
+            rawData: rawPostData
+          });
+          
+          setPostData(enhancedData);
+        } catch (postErr) {
+          console.error("Error fetching post data from contract:", postErr);
+        }
+      }
     } catch (err) {
       console.error("Error fetching contract:", err);
       alert("Unable to load contract information.");
@@ -46,7 +90,23 @@ export default function ContractPreview({ postId, contractId, onClose }) {
   const fetchPostData = async () => {
     try {
       const res = await api.get(`/api/post/detail/${postId}`);
-      setPostData(res.data);
+      const rawData = res.data;
+      
+      // Add type detection to postData
+      const enhancedData = {
+        ...rawData,
+        type: rawData.battery ? 'battery' : rawData.vehicle ? 'vehicle' : 'unknown'
+      };
+      
+      console.log("📊 Post data loaded:", {
+        postId: postId,
+        hasBattery: !!rawData.battery,
+        hasVehicle: !!rawData.vehicle,
+        detectedType: enhancedData.type,
+        rawData: rawData
+      });
+      
+      setPostData(enhancedData);
     } catch (err) {
       console.error("Error fetching post data:", err);
     }
@@ -181,10 +241,37 @@ export default function ContractPreview({ postId, contractId, onClose }) {
       console.log("🚗 Post Data:", postData);
 
       // 2️⃣ Determine contract type and get appropriate template
-      const isBattery = postData?.battery || postData?.type === 'battery';
+      // Enhanced detection: check contractData for post type as well
+      const hasBatteryInPost = !!postData?.battery;
+      const postType = postData?.type;
+      const contractPostTitle = contractData?.postTitle || postData?.title || '';
+      const isBatteryByTitle = contractPostTitle.toLowerCase().includes('battery') || 
+                               contractPostTitle.toLowerCase().includes('pin') ||
+                               contractPostTitle.toLowerCase().includes('electric battery');
+      
+      // Multiple ways to detect battery contract
+      const isBattery = hasBatteryInPost || 
+                        postType === 'battery' || 
+                        isBatteryByTitle ||
+                        (contractData?.contractType && contractData.contractType === 'battery');
+      
       const templatePath = isBattery 
         ? "/templates/contract/ElectricContract.docx"
         : "/templates/contract/VehicleContract.docx";
+      
+      console.log("🔍 Enhanced contract type detection:", {
+        postData: postData,
+        contractData: contractData,
+        hasBatteryInPost: hasBatteryInPost,
+        postType: postType,
+        contractPostTitle: contractPostTitle,
+        isBatteryByTitle: isBatteryByTitle,
+        contractType: contractData?.contractType,
+        finalIsBattery: isBattery,
+        templatePath: templatePath,
+        postDataKeys: postData ? Object.keys(postData) : 'no postData',
+        batteryData: postData?.battery ? 'has battery data' : 'no battery data'
+      });
       
       console.log("🔍 Fetching DOCX template from:", templatePath);
       const fileRes = await fetch(templatePath, {
@@ -231,6 +318,17 @@ export default function ContractPreview({ postId, contractId, onClose }) {
       const vehicle = postData?.vehicle || {};
       const battery = postData?.battery || {};
       
+      console.log("📋 Raw contract data for mapping:", {
+        contractData: contractData,
+        postData: postData,
+        vehicle: vehicle,
+        battery: battery,
+        emails: {
+          sellerEmail: contractData?.sellerEmail,
+          buyerEmail: contractData?.buyerEmail
+        }
+      });
+      
       let renderData;
       
       if (isBattery) {
@@ -244,18 +342,28 @@ export default function ContractPreview({ postId, contractId, onClose }) {
 
           // Seller info  
           sellerName: contractData.sellerName || "N/A",
-          sellerEmail: "seller@voltera.com",
+          sellerEmail: contractData.sellerEmail || "seller@voltera.com",
 
           // Buyer info
           buyerName: contractData.buyerName || "N/A", 
-          buyerEmail: "buyer@voltera.com",
+          buyerEmail: contractData.buyerEmail || "buyer@voltera.com",
 
-          // Battery info
+          // Battery info (handle both originCapacity and originalCapacity)
           title: contractData.postTitle || postData?.title || "Battery Pack",
           serialNumber: battery.serialNumber || "N/A",
-          originalCapacity: battery.originCapacity || "N/A",
+          originalCapacity: battery.originCapacity || battery.originalCapacity || "N/A",
           remainingCapacity: battery.remainingCapacity || "N/A",
-          price: postData?.price ? `${postData.price.toLocaleString()}` : "Contact for price",
+          voltage: battery.voltage || "N/A",
+          cycleCount: battery.cycleCount || "0",
+          warranty: battery.warranty || "N/A",
+          weight: battery.weight || "N/A",
+          mileageCovered: battery.mileageCovered || "0",
+          batteryType: battery.batteryTypeId?.typename || battery.batteryType || "Li-ion",
+          price: postData?.price ? `$${postData.price.toLocaleString()}` : "Contact for price",
+          
+          // Current date
+          date: new Date().toLocaleDateString("en-US"),
+          currentDate: new Date().toLocaleDateString("en-US"),
         };
       } else {
         // Vehicle contract data mapping
@@ -268,11 +376,11 @@ export default function ContractPreview({ postId, contractId, onClose }) {
 
           // Seller info  
           sellerName: contractData.sellerName || "N/A",
-          sellerEmail: "seller@voltera.com",
+          sellerEmail: contractData.sellerEmail || "seller@voltera.com",
 
           // Buyer info
           buyerName: contractData.buyerName || "N/A", 
-          buyerEmail: "buyer@voltera.com",
+          buyerEmail: contractData.buyerEmail || "buyer@voltera.com",
 
           // Vehicle info
           title: contractData.postTitle || postData?.title || "N/A",
@@ -338,15 +446,15 @@ export default function ContractPreview({ postId, contractId, onClose }) {
         throw new Error("Generated DOCX file is empty");
       }
 
-      const fileName = `VehicleSalesContract_${contractData.contractId}_${
-        new Date().toISOString().split("T")[0]  
-      }.docx`;
+      const fileName = isBattery 
+        ? `BatterySalesContract_${contractData.contractId}_${new Date().toISOString().split("T")[0]}.docx`
+        : `VehicleSalesContract_${contractData.contractId}_${new Date().toISOString().split("T")[0]}.docx`;
       
       console.log("📄 Saving file as:", fileName);
       saveAs(blob, fileName);
       
       console.log("🎉 DOCX download completed successfully!");
-      alert("Contract downloaded successfully!");
+      alert(`${isBattery ? 'Battery' : 'Vehicle'} contract downloaded successfully!`);
       
     } catch (err) {
       console.error("❌ Error downloading DOCX contract:", err);
@@ -384,13 +492,32 @@ export default function ContractPreview({ postId, contractId, onClose }) {
       }
 
       const vehicle = postData?.vehicle || {};
+      const battery = postData?.battery || {};
+      
+      // Use same enhanced detection logic as DOCX download
+      const hasBatteryInPost = !!postData?.battery;
+      const postType = postData?.type;
+      const contractPostTitle = contractData?.postTitle || postData?.title || '';
+      const isBatteryByTitle = contractPostTitle.toLowerCase().includes('battery') || 
+                               contractPostTitle.toLowerCase().includes('pin') ||
+                               contractPostTitle.toLowerCase().includes('electric battery');
+      
+      const isBattery = hasBatteryInPost || 
+                        postType === 'battery' || 
+                        isBatteryByTitle ||
+                        (contractData?.contractType && contractData.contractType === 'battery');
+      
+      console.log("📄 Text contract type detection:", {
+        hasBatteryInPost, postType, isBatteryByTitle, 
+        finalIsBattery: isBattery, contractPostTitle
+      });
 
       const contractText = `
 SOCIALIST REPUBLIC OF VIETNAM
 Independence - Freedom - Happiness
 ----------------------------------
 
-ELECTRIC VEHICLE SALES CONTRACT
+${isBattery ? 'ELECTRIC BATTERY SALES CONTRACT' : 'ELECTRIC VEHICLE SALES CONTRACT'}
 
 Today, ${
         contractData.signedDate
@@ -399,17 +526,29 @@ Today, ${
       }, through the Voltera system, we include:
 
 SELLER (Party A):
-• Full name: ${contractData.sellerName || "N/A"}
-• Email: seller@example.com
-• Post owner: ${contractData.postTitle || postData?.title || "N/A"}
+Full name: ${contractData.sellerName || "N/A"}
+Email: ${contractData.sellerEmail || "seller@voltera.com"}
+Post owner: ${contractData.postTitle || postData?.title || "N/A"}
 
 BUYER (Party B):
-• Full name: ${contractData.buyerName || "N/A"}
-• Email: buyer@example.com
+Full name: ${contractData.buyerName || "N/A"}
+Email: ${contractData.buyerEmail || "buyer@voltera.com"}
 
-Together agreed to sign an electric vehicle sales contract with the following terms:
+Together agreed to sign an ${isBattery ? 'electric battery' : 'electric vehicle'} sales contract with the following terms:
 
-Article 1. Electric vehicle information
+${isBattery ? `Article 1. Electric battery information
+• Battery name: ${contractData.postTitle || postData?.title || "N/A"}
+• Serial number: ${battery.serialNumber || "N/A"}
+• Original capacity: ${battery.originCapacity || battery.originalCapacity || "N/A"} kWh
+• Remaining capacity: ${battery.remainingCapacity || "N/A"} kWh
+• Voltage: ${battery.voltage || "N/A"}V
+• Cycle count: ${battery.cycleCount || "0"}
+• Mileage covered: ${battery.mileageCovered || "0"} km
+• Sale price: ${
+        postData?.price
+          ? new Intl.NumberFormat("en-US").format(postData.price)
+          : "N/A"
+      } USD` : `Article 1. Electric vehicle information
 • Vehicle name: ${contractData.postTitle || postData?.title || "N/A"}
 • Battery capacity: ${
         vehicle.batterycapacity ? `${vehicle.batterycapacity} kWh` : "N/A"
@@ -419,17 +558,17 @@ Article 1. Electric vehicle information
         postData?.price
           ? new Intl.NumberFormat("en-US").format(postData.price)
           : "N/A"
-      } VND
+      } USD`}
 
 Article 2. Rights and obligations of the Seller
-1. The seller commits that the electric vehicle is legally owned, without disputes, mortgages, or pledges.
-2. The seller is responsible for providing all documents proving the origin and condition of the vehicle.
-3. The seller must deliver the vehicle on time and as described in the listing.
+1. The seller commits that the ${isBattery ? 'electric battery' : 'electric vehicle'} is legally owned, without disputes, mortgages, or pledges.
+2. The seller is responsible for providing all documents proving the origin and condition of the ${isBattery ? 'battery' : 'vehicle'}.
+3. The seller must deliver the ${isBattery ? 'battery' : 'vehicle'} on time and as described in the listing.
 
 Article 3. Rights and obligations of the Buyer
 1. The buyer is responsible for full and timely payment as agreed.
-2. The buyer is responsible for carefully inspecting the vehicle condition before taking delivery.
-3. The buyer bears full responsibility for the vehicle after completing the transaction.
+2. The buyer is responsible for carefully inspecting the ${isBattery ? 'battery' : 'vehicle'} condition before taking delivery.
+3. The buyer bears full responsibility for the ${isBattery ? 'battery' : 'vehicle'} after completing the transaction.
 
 Article 4. General terms
 1. Both parties commit to fully comply with all terms of this contract.
@@ -454,12 +593,12 @@ Created by Voltera system
       const blob = new Blob([contractText], {
         type: "text/plain;charset=utf-8",
       });
-      saveAs(
-        blob,
-        `VehicleSalesContract_${contractData.contractId}_${
-          new Date().toISOString().split("T")[0]
-        }.txt`
-      );
+      const fileName = isBattery 
+        ? `BatterySalesContract_${contractData.contractId}_${new Date().toISOString().split("T")[0]}.txt`
+        : `VehicleSalesContract_${contractData.contractId}_${new Date().toISOString().split("T")[0]}.txt`;
+      
+      saveAs(blob, fileName);
+      alert(`${isBattery ? 'Battery' : 'Vehicle'} contract text downloaded successfully!`);
     } catch (err) {
       console.error("Error creating text contract:", err);
       alert("Unable to create contract. Please try again.");
@@ -486,24 +625,12 @@ Created by Voltera system
 
   return (
     <div className="contract-preview">
-      <div className="contract-header" style={{ position: "relative" }}>
+      <div className="contract-header contract-header--relative">
         <h2>Contract Information</h2>
         {onClose && (
           <button
             onClick={onClose}
             className="contract-close-btn"
-            style={{
-              position: "absolute",
-              top: "10px",
-              right: "10px",
-              background: "#ef4444",
-              color: "white",
-              border: "none",
-              borderRadius: "6px",
-              padding: "8px 12px",
-              cursor: "pointer",
-              fontSize: "14px",
-            }}
           >
             ✕ Close
           </button>
@@ -542,42 +669,8 @@ Created by Voltera system
                       {contractData.postTitle}
                     </span>
                   </div>
-                  {postData && (
-                    <>
-                      <div className="contract-info-item">
-                        <span className="contract-info-label">
-                          Vehicle Price
-                        </span>
-                        <span className="contract-info-value">
-                          {postData.price
-                            ? new Intl.NumberFormat("en-US").format(
-                                postData.price
-                              ) + " VND"
-                            : "N/A"}
-                        </span>
-                      </div>
-                      {postData.vehicle && (
-                        <>
-                          <div className="contract-info-item">
-                            <span className="contract-info-label">
-                              Battery Capacity
-                            </span>
-                            <span className="contract-info-value">
-                              {postData.vehicle.batterycapacity
-                                ? `${postData.vehicle.batterycapacity} kWh`
-                                : "N/A"}
-                            </span>
-                          </div>
-                          <div className="contract-info-item">
-                            <span className="contract-info-label">Mileage</span>
-                            <span className="contract-info-value">
-                              {postData.vehicle.odo || 0} km
-                            </span>
-                          </div>
-                        </>
-                      )}
-                    </>
-                  )}
+                  {/* Post Information - Using PostInfo Component */}
+                  <PostInfo postData={postData} contractData={contractData} />
                 </div>
                 <div className="contract-info-section">
                   <div className="contract-info-item">
@@ -767,8 +860,7 @@ Created by Voltera system
                     }
                   }}
                   disabled={isCanceling}
-                  className="contract-btn danger"
-                  style={{ border: "2px solid red" }} // Debug style
+                  className="contract-btn danger contract-btn--debug"
                 >
                   {isCanceling && <div className="contract-btn-spinner"></div>}
                   {isCanceling ? "Canceling..." : "❌ Cancel Contract"}

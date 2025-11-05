@@ -271,10 +271,23 @@ export default function ContractInfoPreview({
       setError("");
 
       console.log("🔄 Creating contract for post:", postId);
+      console.log("🔄 Post data for contract creation:", postData);
 
-      // 1. Create contract
+      // Determine contract type from postData
+      const isBattery = postData?.battery || postData?.type === 'battery';
+      const contractType = isBattery ? 'battery' : 'vehicle';
+      
+      console.log("🔍 Contract type for creation:", {
+        isBattery,
+        contractType,
+        hasBatteryData: !!postData?.battery,
+        postType: postData?.type
+      });
+
+      // 1. Create contract with type information
       const contractResponse = await api.post("/api/contract/create", {
         postId: parseInt(postId),
+        contractType: contractType
       });
 
       console.log("✅ Contract created:", contractResponse.data);

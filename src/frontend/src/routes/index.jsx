@@ -23,7 +23,6 @@ export const routes = {
   paymentCallback: "/payment/callback",
   contractDetail: "/contract/post/:postId",
   contract: "/contract",
-  contracts: "/contracts",
   transactions: "/transactions",
   
   // Complaint routes

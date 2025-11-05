@@ -99,22 +99,36 @@ export default function ContractPage() {
 
   // Handle viewing contract detail
   const handleViewContract = async (contractId) => {
+    // Clear previous states first
+    setVehicleDetail(null);
+    setBatteryDetail(null);
+    console.log("🔄 Cleared previous contract states, viewing contract:", contractId);
+    
     setViewingContract(contractId);
     
     // Tìm contract để lấy postId
     const contract = contracts.find(c => c.contractId === contractId);
+    console.log("📋 Found contract:", contract);
     
     if (contract && contract.postId) {
       // Check if contract is for battery or vehicle based on post data
       try {
+        console.log("🔍 Fetching post detail for postId:", contract.postId);
         const response = await api.get(`/api/post/detail/${contract.postId}`);
+        console.log("📄 Post data received:", response.data);
+        
         if (response.data.battery) {
+          console.log("🔋 Detected battery contract, fetching battery detail");
           await fetchBatteryDetail(contract.postId);
         } else if (response.data.vehicle) {
+          console.log("🚗 Detected vehicle contract, fetching vehicle detail");
+          await fetchVehicleDetail(contract.postId);
+        } else {
+          console.log("❓ Unknown contract type, defaulting to vehicle");
           await fetchVehicleDetail(contract.postId);
         }
       } catch (error) {
-        console.error("Error determining contract type:", error);
+        console.error("❌ Error determining contract type:", error);
         // Fallback to vehicle for backward compatibility
         await fetchVehicleDetail(contract.postId);
       }
@@ -190,10 +204,14 @@ export default function ContractPage() {
 
   // Fetch vehicle detail from post
   const fetchVehicleDetail = async (postId) => {
+    console.log("🚗 Fetching vehicle detail for postId:", postId);
+    // Clear battery detail to avoid cross-contamination
+    setBatteryDetail(null);
     setLoadingVehicle(true);
     try {
       const response = await api.get(`/api/post/detail/${postId}`);
       const mappedData = mapVehicleData(response.data);
+      console.log("🚗 Setting vehicle detail:", mappedData);
       setVehicleDetail(mappedData);
     } catch (error) {
       console.error("❌ Error loading vehicle detail:", error);
@@ -204,10 +222,14 @@ export default function ContractPage() {
 
   // Fetch battery detail from post
   const fetchBatteryDetail = async (postId) => {
+    console.log("🔋 Fetching battery detail for postId:", postId);
+    // Clear vehicle detail to avoid cross-contamination
+    setVehicleDetail(null);
     setLoadingVehicle(true); // Reuse the same loading state
     try {
       const response = await api.get(`/api/post/detail/${postId}`);
       const mappedData = mapBatteryData(response.data);
+      console.log("🔋 Setting battery detail:", mappedData);
       setBatteryDetail(mappedData);
     } catch (error) {
       console.error("❌ Error loading battery detail:", error);
@@ -373,13 +395,16 @@ export default function ContractPage() {
 
       {/* Contract Detail View */}
       {viewingContract && (
-        <div className="contract-detail-section">
+        <div className="contract-detail-section" key={`contract-${viewingContract}`}>
           <ContractPreview
+            key={`preview-${viewingContract}`}
             contractId={viewingContract}
             onClose={() => {
               try {
                 setViewingContract(null);
                 setVehicleDetail(null);
+                setBatteryDetail(null);
+                console.log("🔄 Cleared all contract detail states");
               } catch (error) {
                 console.error("Error closing contract preview:", error);
                 window.location.reload();
@@ -388,9 +413,9 @@ export default function ContractPage() {
           />
           
           {/* Vehicle/Battery Information Section */}
-          <div className="vehicle-info-section">
+          <div className="vehicle-info-section" key={`info-${viewingContract}-${batteryDetail ? 'battery' : 'vehicle'}`}>
             <div className="vehicle-info-header">
-              <h3>{batteryDetail ? "� Battery Information" : "�🚗 Vehicle Information"}</h3>
+              <h3>{batteryDetail ? "🔋 Battery Information" : "🚗 Vehicle Information"}</h3>
             </div>
             <div className="vehicle-info-content">
               {loadingVehicle ? (
@@ -398,7 +423,7 @@ export default function ContractPage() {
                   <div className="loading-spinner" />
                   <div className="loading-text">Loading {batteryDetail || contractType === 'battery' ? 'battery' : 'vehicle'} details...</div>
                 </div>
-              ) : batteryDetail ? (
+              ) : batteryDetail && !vehicleDetail ? (
                 <div className="battery-details-grid">
                   <div className="battery-basic-info">
                     <h4>Basic Information</h4>
@@ -495,7 +520,7 @@ export default function ContractPage() {
                     </div>
                   )}
                 </div>
-              ) : vehicleDetail ? (
+              ) : vehicleDetail && !batteryDetail ? (
                 <div className="vehicle-details-grid">
                   <div className="vehicle-basic-info">
                     <h4>Basic Information</h4>
@@ -628,7 +653,15 @@ export default function ContractPage() {
                 </div>
               ) : (
                 <div className="no-vehicle-data">
-                  <p>No {batteryDetail || contractType === 'battery' ? 'battery' : 'vehicle'} data available. Contract may not have postId.</p>
+                  <p>
+                    {batteryDetail && vehicleDetail 
+                      ? "⚠️ Both battery and vehicle data loaded - this indicates a state management issue."
+                      : `No ${batteryDetail ? 'battery' : vehicleDetail ? 'vehicle' : 'contract'} data available. Contract may not have postId or data is still loading.`
+                    }
+                  </p>
+                  <div className="debug-info" style={{fontSize: '0.8em', color: '#666', marginTop: '10px'}}>
+                    Debug: batteryDetail={batteryDetail ? 'loaded' : 'null'}, vehicleDetail={vehicleDetail ? 'loaded' : 'null'}, contractId={viewingContract}
+                  </div>
                 </div>
               )}
             </div>
