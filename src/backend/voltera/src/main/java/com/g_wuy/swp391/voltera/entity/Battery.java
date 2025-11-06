@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -67,5 +68,10 @@ public class Battery {
     @OneToMany(mappedBy = "battery", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BatteryImage> images = new ArrayList<>();
 
+
+    @Size(max = 20)
+    @ColumnDefault("'AVAILABLE'")
+    @Column(name = "status", length = 20)
+    private String status;
 
 }

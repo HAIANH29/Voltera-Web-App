@@ -1,6 +1,7 @@
 package com.g_wuy.swp391.voltera.controller;
 
 import com.g_wuy.swp391.voltera.model.response.ContractResponse;
+import com.g_wuy.swp391.voltera.repository.RefundRepository;
 import com.g_wuy.swp391.voltera.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -24,6 +25,8 @@ public class UploadController {
     private ContractService contractService;
     @Autowired
     private ComplaintImageService complaintImageService;
+    @Autowired
+    private RefundImageService refundImageService;
 
     @PostMapping("/product")
     public ResponseEntity<List<String>> uploadFiles(
@@ -71,6 +74,14 @@ public class UploadController {
             @PathVariable Integer complaintId,
             @RequestParam("files") MultipartFile[] files) {
         List<String> urls = complaintImageService.uploadComplaintImages(complaintId, files);
+        return ResponseEntity.ok(urls);
+    }
+
+    @PostMapping("/{refundId}/images")
+    public ResponseEntity<List<String>> uploadRefundImages(
+            @PathVariable Integer refundId,
+            @RequestParam("files") MultipartFile[] files) {
+        List<String> urls = refundImageService.uploadComplaintImages(refundId, files);
         return ResponseEntity.ok(urls);
     }
 }

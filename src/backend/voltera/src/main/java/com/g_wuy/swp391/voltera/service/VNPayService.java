@@ -1,19 +1,13 @@
 package com.g_wuy.swp391.voltera.service;
 
 import com.g_wuy.swp391.voltera.configuration.VNPayConfiguration;
-import com.g_wuy.swp391.voltera.entity.Fee;
-import com.g_wuy.swp391.voltera.entity.Payment;
-import com.g_wuy.swp391.voltera.entity.Transaction;
-import com.g_wuy.swp391.voltera.entity.User;
+import com.g_wuy.swp391.voltera.entity.*;
 import com.g_wuy.swp391.voltera.model.request.RefundRequest;
 import com.g_wuy.swp391.voltera.model.request.VNPayRefundRequest;
 import com.g_wuy.swp391.voltera.model.request.VNPayRequest;
 import com.g_wuy.swp391.voltera.model.response.PaymentPrepareResponse;
 import com.g_wuy.swp391.voltera.model.response.VNPayResponse;
-import com.g_wuy.swp391.voltera.repository.FeeRepository;
-import com.g_wuy.swp391.voltera.repository.PaymentRepository;
-import com.g_wuy.swp391.voltera.repository.TransactionRepository;
-import com.g_wuy.swp391.voltera.repository.UserRepository;
+import com.g_wuy.swp391.voltera.repository.*;
 import com.nimbusds.jose.shaded.gson.JsonObject;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
@@ -64,6 +58,12 @@ public class VNPayService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private VehicleRepository vehicleRepository;
+
+    @Autowired
+    private BatteryRepository batteryRepository;
 
     public VNPayResponse createPayment(VNPayRequest request, HttpServletRequest httpRequest, Integer transactionId) {
         try {
@@ -157,6 +157,11 @@ public class VNPayService {
                 transaction.setTransactionStatus("DONE");
                 payment.setPaymentStatus("COMPLETED");
                 fee.setFeeStatus("PAID");
+                transaction.getPost().getVehicle().setStatus("SOLD");
+                transaction.getPost().getVehicle().setStatus("SOLD");
+                vehicleRepository.save(transaction.getPost().getVehicle());
+                batteryRepository.save(transaction.getPost().getBattery());
+
             } else {
                 transaction.setTransactionStatus("FAILED");
                 payment.setPaymentStatus("FAILED");

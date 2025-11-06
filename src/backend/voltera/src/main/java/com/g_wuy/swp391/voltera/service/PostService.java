@@ -149,6 +149,7 @@ public class PostService {
                     .warranty(dto.getBattery().getWarranty())
                     .weight(dto.getBattery().getWeight())
                     .lifecycle(dto.getBattery().getLifecycle())
+                    .status("AVAILABLE")
                     .build());
 
             //Lưu ảnh pin (nếu có)
