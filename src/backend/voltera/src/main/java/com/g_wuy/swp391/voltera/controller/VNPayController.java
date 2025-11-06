@@ -1,6 +1,9 @@
 package com.g_wuy.swp391.voltera.controller;
 
+import com.g_wuy.swp391.voltera.model.request.RefundRequest;
+import com.g_wuy.swp391.voltera.model.request.VNPayRefundRequest;
 import com.g_wuy.swp391.voltera.model.request.VNPayRequest;
+import com.g_wuy.swp391.voltera.model.response.VNPayRefundResponse;
 import com.g_wuy.swp391.voltera.model.response.VNPayResponse;
 import com.g_wuy.swp391.voltera.service.VNPayService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -33,9 +36,10 @@ public class VNPayController {
     public void handleReturn(
             @RequestParam Map<String, String> params,
             @PathVariable("transactionId") Integer transactionId,
-            HttpServletResponse response) throws java.io.IOException {
+            HttpServletResponse response,
+            @RequestHeader("Authorization") String token) throws java.io.IOException {
 
-        vnPayService.handleReturn(params, transactionId);
+        vnPayService.handleReturn(params, transactionId, token);
 
         StringBuilder frontendUrl = new StringBuilder("http://localhost:5173/payment/callback");
         frontendUrl.append("?");
@@ -49,5 +53,13 @@ public class VNPayController {
         }
 
         response.sendRedirect(frontendUrl.toString());
+    }
+
+    @PostMapping("/refund/{refundId}")
+    public ResponseEntity<VNPayRefundResponse> refund(
+            @RequestBody RefundRequest refundRequest,
+            @PathVariable("refundId") Integer refundId,
+            HttpServletRequest request) {
+        return ResponseEntity.ok(vnPayService.refund(request, refundRequest, refundId));
     }
 }

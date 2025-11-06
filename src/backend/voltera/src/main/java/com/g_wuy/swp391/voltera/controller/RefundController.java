@@ -36,4 +36,12 @@ public class RefundController {
             @PathVariable("refundStatus") String status) {
         return ResponseEntity.ok(refundService.findRefundsByReceiverId(token, status).getBody());
     }
+
+    @PutMapping("/update-status/{refundId}/{status}")
+    public ResponseEntity<RefundResponse> updateRefundStatus(
+            @PathVariable Integer refundId,
+            @PathVariable String status,
+            @RequestHeader("Authorization") String token) {
+        return refundService.updateRefundStatusAndGetMoneyFromSeller(refundId, status, token);
+    }
 }

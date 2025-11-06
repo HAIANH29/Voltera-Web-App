@@ -24,5 +24,5 @@ public interface BankRepository extends JpaRepository<Bank, Integer> {
             "FROM Bank b")
     List<BankResponse> getAllBank();
 
-
+    Bank findBankByUserId(Integer userId);
 }

@@ -6,6 +6,7 @@ import com.g_wuy.swp391.voltera.model.request.RefundRequest;
 import com.g_wuy.swp391.voltera.model.request.VNPayRefundRequest;
 import com.g_wuy.swp391.voltera.model.request.VNPayRequest;
 import com.g_wuy.swp391.voltera.model.response.PaymentPrepareResponse;
+import com.g_wuy.swp391.voltera.model.response.VNPayRefundResponse;
 import com.g_wuy.swp391.voltera.model.response.VNPayResponse;
 import com.g_wuy.swp391.voltera.repository.*;
 import com.nimbusds.jose.shaded.gson.JsonObject;
@@ -65,6 +66,15 @@ public class VNPayService {
     @Autowired
     private BatteryRepository batteryRepository;
 
+    @Autowired
+    private BankRepository bankRepository;
+
+    @Autowired
+    private BankTransferRepository bankTransferRepository;
+
+    @Autowired
+    private RefundRepository refundRepository;
+
     public VNPayResponse createPayment(VNPayRequest request, HttpServletRequest httpRequest, Integer transactionId) {
         try {
             String vnp_TxnRef = VNPayConfiguration.getRandomNumber(8);
@@ -118,7 +128,7 @@ public class VNPayService {
         }
     }
 
-    public String handleReturn(Map<String, String> params, Integer transactionId) {
+    public String handleReturn(Map<String, String> params, Integer transactionId, String token) {
         try {
             String vnpSecureHash = params.get("vnp_SecureHash");
             params.remove("vnp_SecureHash");
@@ -161,7 +171,26 @@ public class VNPayService {
                 transaction.getPost().getVehicle().setStatus("SOLD");
                 vehicleRepository.save(transaction.getPost().getVehicle());
                 batteryRepository.save(transaction.getPost().getBattery());
-
+                //chuyển tiền cho seller
+                User seller = transaction.getPost().getSellerId();
+                Bank bankSeller = bankRepository.findBankByUserId(seller.getId());
+                BigDecimal balance = bankSeller.getBalance();
+                bankSeller.setBalance(balance.add(amount));
+                bankRepository.save(bankSeller);
+                User buyer = userRepository.findUserByUsername(jwtService.extractUsername(token));
+                //track lại giả lập ngân hàng
+                BankTransfer bankTransfer = BankTransfer.builder()
+                        .payment(payment)
+                        .transaction(transaction)
+                        .seller(seller)
+                        .bank(bankSeller)
+                        .amount(amount)
+                        .transferStatus("COMPLETED")
+                        .initiatedAt(Instant.now())
+                        .completedAt(Instant.now())
+                        .description("Transfer from " + buyer.getFullname() + " in posting " + transaction.getPost().getTitle())
+                        .build();
+                bankTransferRepository.save(bankTransfer);
             } else {
                 transaction.setTransactionStatus("FAILED");
                 payment.setPaymentStatus("FAILED");
@@ -186,62 +215,66 @@ public class VNPayService {
         return paymentRepository.findPaymentByTransactionId(transactionId, user.getId());
     }
 
-    public VNPayResponse refundPayment(RefundRequest req, HttpServletRequest httpRequest) {
+    public VNPayRefundResponse refund(HttpServletRequest httpRequest, RefundRequest request, Integer refundId) {
         try {
             String vnp_RequestId = VNPayConfiguration.getRandomNumber(8);
-            String vnp_Version = vnPayConfig.getVnpVersion();
+            String vnp_Version = "2.1.0";
             String vnp_Command = "refund";
             String vnp_TmnCode = vnPayConfig.getVnpTmnCode();
-            String vnp_TransactionType = req.getTranType();
-            String vnp_TxnRef = req.getOrderId();
-            long amount = req.getAmount() * 100; // VNPay yêu cầu *100
-            String vnp_Amount = String.valueOf(amount);
-            String vnp_OrderInfo = "Hoàn tiền giao dịch OrderId: " + vnp_TxnRef;
-            String vnp_TransactionNo = ""; // nếu không có mã giao dịch VNPay
-            String vnp_TransactionDate = req.getTransDate();
-            String vnp_CreateBy = req.getUser();
-
-            Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
-            SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
-            String vnp_CreateDate = formatter.format(cld.getTime());
-
             String vnp_IpAddr = VNPayConfiguration.getIpAddress(httpRequest);
 
-            JsonObject vnp_Params = new JsonObject();
-            vnp_Params.addProperty("vnp_RequestId", vnp_RequestId);
-            vnp_Params.addProperty("vnp_Version", vnp_Version);
-            vnp_Params.addProperty("vnp_Command", vnp_Command);
-            vnp_Params.addProperty("vnp_TmnCode", vnp_TmnCode);
-            vnp_Params.addProperty("vnp_TransactionType", vnp_TransactionType);
-            vnp_Params.addProperty("vnp_TxnRef", vnp_TxnRef);
-            vnp_Params.addProperty("vnp_Amount", vnp_Amount);
-            vnp_Params.addProperty("vnp_OrderInfo", vnp_OrderInfo);
-            vnp_Params.addProperty("vnp_TransactionDate", vnp_TransactionDate);
-            vnp_Params.addProperty("vnp_CreateBy", vnp_CreateBy);
-            vnp_Params.addProperty("vnp_CreateDate", vnp_CreateDate);
-            vnp_Params.addProperty("vnp_IpAddr", vnp_IpAddr);
+            String vnp_CreateDate = new SimpleDateFormat("yyyyMMddHHmmss")
+                    .format(Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7")).getTime());
 
-            // Chuỗi dữ liệu cần ký
-            String hash_Data = String.join("|",
+            String vnp_TransactionType = "02";
+            String vnp_TxnRef = VNPayConfiguration.getRandomNumber(8);
+
+            Refund refund = refundRepository.findById(refundId)
+                    .orElseThrow(() -> new RuntimeException("Refund not found"));
+            BigDecimal amount = refund.getAmount();
+
+            Payment payment = paymentRepository.findPaymentByTransactionId(refund.getTransaction().getTransactionid());
+
+            String vnp_TransactionNo = payment.getVnpTransactionNo();
+
+            String vnp_OrderInfo = (request.getOrderInfo() != null && !request.getOrderInfo().isEmpty())
+                    ? request.getOrderInfo()
+                    : (refund.getReason() != null
+                    ? refund.getReason()
+                    : "Full refund for transaction " + refundId);
+
+            String hashData = String.join("|",
                     vnp_RequestId,
                     vnp_Version,
                     vnp_Command,
                     vnp_TmnCode,
                     vnp_TransactionType,
                     vnp_TxnRef,
-                    vnp_Amount,
+                    String.valueOf(amount.multiply(BigDecimal.valueOf(100)).intValue()),
                     vnp_TransactionNo,
-                    vnp_TransactionDate,
-                    vnp_CreateBy,
+                    vnp_CreateDate,
+                    "",
                     vnp_CreateDate,
                     vnp_IpAddr,
                     vnp_OrderInfo
             );
 
-            String vnp_SecureHash = vnPayConfig.hmacSHA512(vnPayConfig.getSecretKey(), hash_Data);
+            String vnp_SecureHash = vnPayConfig.hmacSHA512(vnPayConfig.getSecretKey(), hashData);
+
+            com.nimbusds.jose.shaded.gson.JsonObject vnp_Params = new com.nimbusds.jose.shaded.gson.JsonObject();
+            vnp_Params.addProperty("vnp_RequestId", vnp_RequestId);
+            vnp_Params.addProperty("vnp_Version", vnp_Version);
+            vnp_Params.addProperty("vnp_Command", vnp_Command);
+            vnp_Params.addProperty("vnp_TmnCode", vnp_TmnCode);
+            vnp_Params.addProperty("vnp_TransactionType", vnp_TransactionType);
+            vnp_Params.addProperty("vnp_TxnRef", vnp_TxnRef);
+            vnp_Params.addProperty("vnp_Amount", String.valueOf(amount.multiply(BigDecimal.valueOf(100)).intValue()));
+            vnp_Params.addProperty("vnp_OrderInfo", vnp_OrderInfo);
+            vnp_Params.addProperty("vnp_TransactionDate", vnp_CreateDate);
+            vnp_Params.addProperty("vnp_CreateDate", vnp_CreateDate);
+            vnp_Params.addProperty("vnp_IpAddr", vnp_IpAddr);
             vnp_Params.addProperty("vnp_SecureHash", vnp_SecureHash);
 
-            // Gửi request tới VNPay API
             URL url = new URL(vnPayConfig.getVnpApiUrl());
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("POST");
@@ -253,7 +286,6 @@ public class VNPayService {
                 wr.flush();
             }
 
-            int responseCode = con.getResponseCode();
             BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
             StringBuilder response = new StringBuilder();
             String line;
@@ -262,18 +294,25 @@ public class VNPayService {
             }
             in.close();
 
-            log.info("Refund Response Code: {}", responseCode);
-            log.info("Refund Response Body: {}", response);
+            log.info("Refund response: {}", response);
 
-            return VNPayResponse.builder()
-                    .code(String.valueOf(responseCode))
-                    .message("Refund request sent successfully")
-                    .paymentUrl(response.toString())
+            com.google.gson.JsonObject jsonResponse =
+                    com.google.gson.JsonParser.parseString(response.toString()).getAsJsonObject();
+
+            return VNPayRefundResponse.builder()
+                    .code(jsonResponse.get("vnp_ResponseCode").getAsString())
+                    .message(jsonResponse.get("vnp_Message").getAsString())
+                    .responseId(jsonResponse.get("vnp_ResponseId").getAsString())
+                    .txnRef(jsonResponse.get("vnp_TxnRef").getAsString())
+                    .amount(jsonResponse.get("vnp_Amount").getAsString())
+                    .bankCode(jsonResponse.get("vnp_BankCode").getAsString())
+                    .transactionNo(jsonResponse.get("vnp_TransactionNo").getAsString())
+                    .transactionStatus(jsonResponse.get("vnp_TransactionStatus").getAsString())
                     .build();
 
         } catch (Exception e) {
-            log.error("Error while refunding payment", e);
-            return VNPayResponse.builder()
+            log.error("Refund error", e);
+            return VNPayRefundResponse.builder()
                     .code("99")
                     .message("Error: " + e.getMessage())
                     .build();

@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface RefundRepository extends JpaRepository<Refund, Integer> {
@@ -41,4 +42,7 @@ public interface RefundRepository extends JpaRepository<Refund, Integer> {
             "JOIN Transaction t ON r.transaction.transactionid = t.transactionid " +
             "WHERE r.receiver.id = :receiverId")
     List<RefundResponse> getRefundByReceiverId(@Param("receiverId") Integer receiverId);
+
+
+    Refund findRefundById(Integer refundId);
 }

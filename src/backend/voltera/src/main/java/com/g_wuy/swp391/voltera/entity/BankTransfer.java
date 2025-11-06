@@ -3,8 +3,7 @@ package com.g_wuy.swp391.voltera.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
@@ -14,6 +13,9 @@ import java.time.Instant;
 
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "bank_transfer")
 public class BankTransfer {
@@ -57,5 +59,8 @@ public class BankTransfer {
 
     @Column(name = "completedat")
     private Instant completedAt;
+
+    @Column(name = "description", length = Integer.MAX_VALUE)
+    private String description;
 
 }
