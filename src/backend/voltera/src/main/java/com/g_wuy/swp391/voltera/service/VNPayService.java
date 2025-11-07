@@ -2,21 +2,17 @@ package com.g_wuy.swp391.voltera.service;
 
 import com.g_wuy.swp391.voltera.configuration.VNPayConfiguration;
 import com.g_wuy.swp391.voltera.entity.*;
-import com.g_wuy.swp391.voltera.model.request.RefundRequest;
-import com.g_wuy.swp391.voltera.model.request.VNPayRefundRequest;
 import com.g_wuy.swp391.voltera.model.request.VNPayRequest;
 import com.g_wuy.swp391.voltera.model.response.PaymentPrepareResponse;
 import com.g_wuy.swp391.voltera.model.response.VNPayRefundResponse;
 import com.g_wuy.swp391.voltera.model.response.VNPayResponse;
 import com.g_wuy.swp391.voltera.repository.*;
-import com.nimbusds.jose.shaded.gson.JsonObject;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestHeader;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -51,6 +47,7 @@ public class VNPayService {
 
     @Autowired
     private FeeRepository feeRepository;
+
     @Autowired
     private NotificationService notificationService;
 
@@ -215,7 +212,7 @@ public class VNPayService {
         return paymentRepository.findPaymentByTransactionId(transactionId, user.getId());
     }
 
-    public VNPayRefundResponse refund(HttpServletRequest httpRequest, RefundRequest request, Integer refundId) {
+    public VNPayRefundResponse refund(HttpServletRequest httpRequest, Integer refundId) {
         try {
             String vnp_RequestId = VNPayConfiguration.getRandomNumber(8);
             String vnp_Version = "2.1.0";
@@ -237,11 +234,9 @@ public class VNPayService {
 
             String vnp_TransactionNo = payment.getVnpTransactionNo();
 
-            String vnp_OrderInfo = (request.getOrderInfo() != null && !request.getOrderInfo().isEmpty())
-                    ? request.getOrderInfo()
-                    : (refund.getReason() != null
+            String vnp_OrderInfo = (refund.getReason() != null && !refund.getReason().isEmpty())
                     ? refund.getReason()
-                    : "Full refund for transaction " + refundId);
+                    : "Refund for transaction " + refundId;
 
             String hashData = String.join("|",
                     vnp_RequestId,

@@ -1,7 +1,5 @@
 package com.g_wuy.swp391.voltera.controller;
 
-import com.g_wuy.swp391.voltera.model.request.RefundRequest;
-import com.g_wuy.swp391.voltera.model.request.VNPayRefundRequest;
 import com.g_wuy.swp391.voltera.model.request.VNPayRequest;
 import com.g_wuy.swp391.voltera.model.response.VNPayRefundResponse;
 import com.g_wuy.swp391.voltera.model.response.VNPayResponse;
@@ -57,9 +55,8 @@ public class VNPayController {
 
     @PostMapping("/refund/{refundId}")
     public ResponseEntity<VNPayRefundResponse> refund(
-            @RequestBody RefundRequest refundRequest,
             @PathVariable("refundId") Integer refundId,
             HttpServletRequest request) {
-        return ResponseEntity.ok(vnPayService.refund(request, refundRequest, refundId));
+        return ResponseEntity.ok(vnPayService.refund(request, refundId));
     }
 }
