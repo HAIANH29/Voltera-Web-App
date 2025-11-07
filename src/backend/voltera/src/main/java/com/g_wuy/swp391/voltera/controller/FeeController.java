@@ -55,7 +55,6 @@ public class FeeController {
         response.sendRedirect(frontendUrl.toString());
     }
 
-    // Admin endpoints to get fee statistics and list
     @GetMapping("/admin/all")
     public ResponseEntity<List<Object>> getAllFees() {
         try {
