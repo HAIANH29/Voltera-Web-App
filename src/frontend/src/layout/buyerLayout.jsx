@@ -42,6 +42,9 @@ const BuyerLayout = ({ children }) => {
           <NavLink to="/transactions" className="nav-link">
             💳 {!sidebarCollapsed && "Transactions"}
           </NavLink>
+          <NavLink to="/refunds" className="nav-link">
+            💰 {!sidebarCollapsed && "Refunds"}
+          </NavLink>
           <NavLink to="/my-orders" className="nav-link">
             📦 {!sidebarCollapsed && "My Orders"}
           </NavLink>

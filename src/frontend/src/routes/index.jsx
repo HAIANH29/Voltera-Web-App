@@ -24,7 +24,7 @@ export const routes = {
   contractDetail: "/contract/post/:postId",
   contract: "/contract",
   transactions: "/transactions",
-  
+
   // Complaint routes
   complaints: "/complaints",
   adminComplaints: "/admin/complaints",
@@ -37,4 +37,8 @@ export const routes = {
   adminSettings: "/admin/settings",
   adminProfile: "/admin/profile",
   adminAccount: "/admin/account",
+
+  // Bank and refund routes
+  bankRegistration: "/bank-registration",
+  refunds: "/refunds",
 };

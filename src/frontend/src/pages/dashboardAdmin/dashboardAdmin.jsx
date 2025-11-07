@@ -1,5 +1,6 @@
 // ⚡ MODERN ADMIN DASHBOARD - ALL-IN-ONE FILE ⚡
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../../config/api";
 import "./modernDashboard.css";
 import toast from "react-hot-toast";
@@ -288,7 +289,10 @@ const Icons = {
 };
 
 export default function DashboardAdmin() {
-  // 📊 States
+  // � Hooks
+  const navigate = useNavigate();
+
+  // �📊 States
   const [activeSection, setActiveSection] = useState("overview");
   const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState({
@@ -1648,7 +1652,7 @@ export default function DashboardAdmin() {
                   <div className="stat-card-value">{stats.pendingAccounts}</div>
                   <div className="stat-card-change negative">
                     <Icons.ChevronDown />
-                    <span>-2.1%</span>
+                    <span>-3.2%</span>
                   </div>
                 </div>
               </div>
@@ -1693,6 +1697,7 @@ export default function DashboardAdmin() {
                         <Icons.Users />
                         Manage Users
                       </button>
+
                       <button
                         className="modern-btn secondary"
                         onClick={() => setActiveSection("analytics")}

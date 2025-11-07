@@ -231,4 +231,10 @@ public class UserService {
         account.setStatus("ACTIVE");
         accountRepository.save(account);
     }
+    
+    public User findByUsername(String username) {
+        Account account = accountRepository.findByUsername(username)
+            .orElseThrow(() -> new BusinessException("Account not found with username: " + username));
+        return account.getUser();
+    }
 }

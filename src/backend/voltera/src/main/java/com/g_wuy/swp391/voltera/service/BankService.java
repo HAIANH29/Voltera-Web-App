@@ -4,6 +4,7 @@ import com.g_wuy.swp391.voltera.entity.Bank;
 import com.g_wuy.swp391.voltera.entity.User;
 import com.g_wuy.swp391.voltera.exception.BusinessException;
 import com.g_wuy.swp391.voltera.mapper.BankMapper;
+import com.g_wuy.swp391.voltera.model.dto.BankRegistrationDTO;
 import com.g_wuy.swp391.voltera.model.request.BankRequest;
 import com.g_wuy.swp391.voltera.model.response.BankResponse;
 import com.g_wuy.swp391.voltera.repository.BankRepository;
@@ -81,5 +82,29 @@ public class BankService {
             bankResponses = bankRepository.findAllByStatus(status);
         }
         return ResponseEntity.ok(bankResponses);
+    }
+    
+    public boolean existsByUserId(Integer userId) {
+        return bankRepository.findByUserId(userId) != null;
+    }
+    
+    public Bank findByUserId(Integer userId) {
+        return bankRepository.findByUserId(userId);
+    }
+    
+    public Bank createSellerBankAccount(User user, BankRegistrationDTO bankDTO) {
+        Bank bank = new Bank();
+        bank.setUser(user);
+        bank.setBankName(bankDTO.getBankName());
+        bank.setBankNumber(bankDTO.getBankNumber());
+        bank.setAccountName(bankDTO.getAccountName());
+        bank.setSecurityCode(Integer.parseInt(bankDTO.getSecurityCode()));
+        bank.setExpDate(bankDTO.getExpDate());
+        bank.setBalance(BigDecimal.valueOf(0.0));
+        bank.setStatus("ACTIVE");
+        bank.setCreatedAt(Instant.now());
+        bank.setUpdatedAt(Instant.now());
+        
+        return bankRepository.save(bank);
     }
 }

@@ -155,11 +155,14 @@ const HeaderAfter = ({ user: userProp }) => {
           });
           console.log("Backend logout successful");
         } catch (apiError) {
-          console.error(
-            "Backend logout failed:",
-            apiError.response?.data || apiError.message
+          // Logout errors are not critical - user can still be logged out client-side
+          console.warn(
+            "Backend logout failed (non-critical):",
+            apiError.response?.status === 403
+              ? "Token expired or unauthorized"
+              : apiError.message
           );
-          // Continue with client cleanup even if API fails
+          // Continue with client cleanup - logout should still work
         }
       } else {
         console.log("No valid username found, skipping backend logout API");
@@ -518,6 +521,28 @@ const HeaderAfter = ({ user: userProp }) => {
                         />
                       </svg>
                       My Contracts
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      to="/refunds"
+                      className="dropdown-item"
+                      onClick={() => setShowUserMenu(false)}
+                    >
+                      <svg
+                        className="dropdown-icon"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                      My Refunds
                     </Link>
                   </li>
                   <li>

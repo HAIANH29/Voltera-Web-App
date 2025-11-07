@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../config/api";
+import refundService from "../../services/refundService";
 import "./TransactionPage.css";
 
 const TransactionPage = () => {
@@ -17,6 +18,12 @@ const TransactionPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [showModal, setShowModal] = useState(false);
+
+  // Refund states
+  const [showRefundModal, setShowRefundModal] = useState(false);
+  const [refundTransaction, setRefundTransaction] = useState(null);
+  const [refundReason, setRefundReason] = useState("");
+  const [refundImages, setRefundImages] = useState([]);
 
   const ITEMS_PER_PAGE = 10;
 
@@ -147,6 +154,60 @@ const TransactionPage = () => {
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
+  };
+
+  const handleRequestRefund = (transaction) => {
+    setRefundTransaction(transaction);
+    setShowRefundModal(true);
+    setRefundReason("");
+    setRefundImages([]);
+  };
+
+  const handleSubmitRefund = async () => {
+    if (!refundReason.trim()) {
+      alert("Please provide a reason for the refund");
+      return;
+    }
+
+    try {
+      const transactionId =
+        refundTransaction.id ||
+        refundTransaction.transactionId ||
+        refundTransaction.transactionid;
+
+      console.log("🔍 Refund Debug Info:", {
+        refundTransaction,
+        transactionId,
+        refundReason,
+        imagesCount: refundImages.length,
+      });
+
+      // Create refund request
+      const refund = await refundService.createRefund(
+        transactionId,
+        refundReason
+      );
+
+      // If images are selected, upload them
+      if (refundImages.length > 0) {
+        await refundService.uploadRefundImages(refund.id, refundImages);
+      }
+
+      alert("Refund request submitted successfully!");
+      setShowRefundModal(false);
+      setRefundTransaction(null);
+      setRefundReason("");
+      setRefundImages([]);
+
+      // Optionally navigate to refunds page
+      navigate("/refunds");
+    } catch (error) {
+      console.error("Error submitting refund request:", error);
+      alert(
+        "Failed to submit refund request: " +
+          (error.response?.data || error.message)
+      );
+    }
   };
 
   const TransactionModal = () => {
@@ -287,6 +348,18 @@ const TransactionPage = () => {
                 }}
               >
                 💳 Pay Fee
+              </button>
+            )}
+            {selectedTransaction.transactionStatus === "DONE" && (
+              <button
+                className="btn btn-warning"
+                onClick={() => {
+                  setShowModal(false);
+                  setRefundTransaction(selectedTransaction);
+                  setShowRefundModal(true);
+                }}
+              >
+                🔄 Request Refund
               </button>
             )}
           </div>
@@ -535,6 +608,15 @@ const TransactionPage = () => {
                             💳
                           </button>
                         )}
+                        {transaction.transactionStatus === "DONE" && (
+                          <button
+                            className="btn-action btn-refund"
+                            onClick={() => handleRequestRefund(transaction)}
+                            title="Request Refund"
+                          >
+                            🔄
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -583,6 +665,103 @@ const TransactionPage = () => {
 
       {/* Modal */}
       {showModal && <TransactionModal />}
+
+      {/* Refund Modal */}
+      {showRefundModal && (
+        <div
+          className="modal-overlay"
+          onClick={() => setShowRefundModal(false)}
+        >
+          <div
+            className="modal-content refund-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="modal-header">
+              <h2>Request Refund</h2>
+              <button
+                className="modal-close"
+                onClick={() => setShowRefundModal(false)}
+              >
+                ×
+              </button>
+            </div>
+            <div className="modal-body">
+              {refundTransaction && (
+                <div className="refund-form">
+                  <div className="transaction-summary">
+                    <h3>Transaction Details</h3>
+                    <p>
+                      <strong>ID:</strong> #{refundTransaction.id}
+                    </p>
+                    <p>
+                      <strong>Product:</strong> {refundTransaction.postTitle}
+                    </p>
+                    <p>
+                      <strong>Amount:</strong>{" "}
+                      {formatCurrency(refundTransaction.price)}
+                    </p>
+                    <p>
+                      <strong>Date:</strong>{" "}
+                      {formatDate(refundTransaction.createAt)}
+                    </p>
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="refund-reason">Reason for Refund *</label>
+                    <textarea
+                      id="refund-reason"
+                      value={refundReason}
+                      onChange={(e) => setRefundReason(e.target.value)}
+                      placeholder="Please explain why you are requesting a refund..."
+                      rows="4"
+                      required
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="refund-images">
+                      Supporting Images (Optional)
+                    </label>
+                    <input
+                      type="file"
+                      id="refund-images"
+                      multiple
+                      accept="image/*"
+                      onChange={(e) =>
+                        setRefundImages(Array.from(e.target.files))
+                      }
+                    />
+                    <p className="form-help">
+                      Upload photos to support your refund request (product
+                      damage, etc.)
+                    </p>
+                    {refundImages.length > 0 && (
+                      <p className="selected-files">
+                        {refundImages.length} file(s) selected
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="modal-footer">
+              <button
+                className="btn btn-secondary"
+                onClick={() => setShowRefundModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={handleSubmitRefund}
+                disabled={!refundReason.trim()}
+              >
+                Submit Refund Request
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

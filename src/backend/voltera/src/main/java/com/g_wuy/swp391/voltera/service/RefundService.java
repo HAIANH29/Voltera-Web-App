@@ -5,17 +5,19 @@ import com.g_wuy.swp391.voltera.exception.BusinessException;
 import com.g_wuy.swp391.voltera.mapper.RefundMapper;
 import com.g_wuy.swp391.voltera.model.response.RefundResponse;
 import com.g_wuy.swp391.voltera.repository.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 
 @Service
+@Slf4j
 public class RefundService {
 
     @Autowired
@@ -34,14 +36,20 @@ public class RefundService {
     private PaymentRepository paymentRepository;
     @Autowired
     private BankTransferRepository bankTransferRepository;
+    @Autowired
+    private RefundImageRepository refundImageRepository;
 
     public ResponseEntity<RefundResponse> createRefund(String reason, Integer transactionId, @RequestHeader("Authorization") String token) {
         User sender = getUserByToken(token);
+        log.info("Creating refund: senderId={}, transactionId={}, reason={}", sender.getId(), transactionId, reason);
 
         Transaction transaction = transactionRepository.findById(transactionId)
                 .orElseThrow(() -> new BusinessException("Transaction not found"));
+        
+        log.info("Transaction found: id={}, status={}", transaction.getTransactionid(), transaction.getTransactionStatus());
 
         if (!"DONE".equalsIgnoreCase(transaction.getTransactionStatus())) {
+            log.warn("Transaction status is not DONE: {}", transaction.getTransactionStatus());
             throw new  BusinessException("This transaction haven't been done");
         }
 
@@ -89,6 +97,21 @@ public class RefundService {
             refundResponses = refundRepository.getRefundByReceiverIdAndStatus(receiver.getId(), status);
         }
         return ResponseEntity.ok(refundResponses);
+    }
+
+    public boolean isRefundClaimed(Integer refundId, String token) {
+        User user = getUserByToken(token);
+        
+        Refund refund = refundRepository.findById(refundId)
+            .orElseThrow(() -> new BusinessException("Refund not found"));
+            
+        Transaction transaction = refund.getTransaction();
+        
+        // Check if there's already a BankTransfer record for this refund claim
+        List<BankTransfer> existingTransfers = bankTransferRepository
+            .findByTransactionAndDescriptionContaining(transaction, "Refund claim for");
+        
+        return !existingTransfers.isEmpty();
     }
 
     public ResponseEntity<RefundResponse> updateRefundStatusAndGetMoneyFromSeller(
@@ -165,5 +188,274 @@ public class RefundService {
         }
 
         return userRepository.findUserByUsername(username);
+    }
+    
+    public void uploadRefundImages(Integer refundId, MultipartFile[] images, String token) {
+        User user = getUserByToken(token);
+        
+        Refund refund = refundRepository.findById(refundId)
+            .orElseThrow(() -> new BusinessException("Refund not found"));
+            
+        // Verify user owns this refund
+        if (!refund.getSender().getId().equals(user.getId())) {
+            throw new BusinessException("You don't have permission to upload images for this refund");
+        }
+        
+        // Save images (simplified - in real app you'd upload to cloud storage)
+        for (MultipartFile image : images) {
+            if (!image.isEmpty()) {
+                RefundImage refundImage = new RefundImage();
+                refundImage.setRefund(refund);
+                refundImage.setImageUrl("uploads/refunds/" + refundId + "/" + image.getOriginalFilename());
+                refundImage.setUploadedAt(Instant.now());
+                refundImageRepository.save(refundImage);
+            }
+        }
+    }
+    
+    public void acceptRefund(Integer refundId, String token) {
+        User seller = getUserByToken(token);
+        
+        Refund refund = refundRepository.findById(refundId)
+            .orElseThrow(() -> new BusinessException("Refund not found"));
+            
+        // Verify seller owns the post
+        if (!refund.getReceiver().getId().equals(seller.getId())) {
+            throw new BusinessException("You don't have permission to accept this refund");
+        }
+        
+        if (!"REQUESTED".equalsIgnoreCase(refund.getRefundStatus())) {
+            throw new BusinessException("Refund is not in requested status");
+        }
+        
+        // Deduct money from seller's bank account
+        Bank sellerBank = bankRepository.findBankByUserId(seller.getId());
+        if (sellerBank == null) {
+            throw new BusinessException("Seller bank account not found");
+        }
+        
+        Transaction transaction = refund.getTransaction();
+        BigDecimal refundAmount = transaction.getPrice();
+        
+        if (sellerBank.getBalance().compareTo(refundAmount) < 0) {
+            throw new BusinessException("Insufficient balance in seller account");
+        }
+        
+        // Deduct money from seller
+        sellerBank.setBalance(sellerBank.getBalance().subtract(refundAmount));
+        bankRepository.save(sellerBank);
+        
+        // Update refund status
+        refund.setRefundStatus("APPROVED");
+        refund.setUpdatedAt(Instant.now());
+        refundRepository.save(refund);
+        
+        log.info("Refund {} accepted by seller {}. Amount {} deducted from seller account.", 
+            refundId, seller.getId(), refundAmount);
+    }
+    
+    public void rejectRefund(Integer refundId, String token) {
+        User seller = getUserByToken(token);
+        
+        Refund refund = refundRepository.findById(refundId)
+            .orElseThrow(() -> new BusinessException("Refund not found"));
+            
+        // Verify seller owns the post
+        if (!refund.getReceiver().getId().equals(seller.getId())) {
+            throw new BusinessException("You don't have permission to reject this refund");
+        }
+        
+        if (!"REQUESTED".equalsIgnoreCase(refund.getRefundStatus())) {
+            throw new BusinessException("Refund is not in requested status");
+        }
+        
+        // Update refund status
+        refund.setRefundStatus("REJECTED");
+        refund.setUpdatedAt(Instant.now());
+        refundRepository.save(refund);
+        
+        log.info("Refund {} rejected by seller {}", refundId, seller.getId());
+    }
+    
+    public String claimRefundMoney(Integer refundId, String token) {
+        log.info("Starting claim refund money process for refund ID: {}", refundId);
+        
+        User buyer = getUserByToken(token);
+        log.info("User claiming refund: ID={}, Email={}, FullName={}", 
+            buyer.getId(), buyer.getEmail(), buyer.getFullname());
+        
+        Refund refund = refundRepository.findById(refundId)
+            .orElseThrow(() -> new BusinessException("Refund not found"));
+            
+        log.info("Found refund: ID={}, Status={}, Sender={}, Receiver={}", 
+            refund.getId(), refund.getRefundStatus(), refund.getSender().getId(), refund.getReceiver().getId());
+            
+        // Verify buyer owns this refund
+        if (!refund.getSender().getId().equals(buyer.getId())) {
+            log.error("Permission denied: Buyer ID {} trying to claim refund owned by {}", 
+                buyer.getId(), refund.getSender().getId());
+            throw new BusinessException("You don't have permission to claim this refund");
+        }
+        
+        if (!"APPROVED".equalsIgnoreCase(refund.getRefundStatus())) {
+            log.error("Refund {} status is {} but expected APPROVED", refundId, refund.getRefundStatus());
+            throw new BusinessException("Refund is not approved yet. Current status: " + refund.getRefundStatus());
+        }
+        
+        Transaction transaction = refund.getTransaction();
+        
+        log.info("Processing refund money claim for refund {} with amount {}", refundId, transaction.getPrice());
+        
+        // Check if refund has already been claimed by checking existing BankTransfer records
+        List<BankTransfer> existingTransfers = bankTransferRepository.findByTransaction(transaction);
+        boolean alreadyClaimed = existingTransfers.stream()
+            .anyMatch(transfer -> transfer.getDescription() != null && 
+                     transfer.getDescription().contains("Refund claim for " + buyer.getFullname()));
+        
+        if (alreadyClaimed) {
+            log.warn("Refund {} has already been claimed by buyer {}", refundId, buyer.getId());
+            return "This refund has already been claimed successfully.";
+        }
+        
+        log.info("Processing refund claim - buyer: {}, transaction: {}", buyer.getId(), transaction.getTransactionid());
+        
+        try {
+            // Add buyer to bank account (simulate refund to buyer's account)  
+            Bank buyerBank = bankRepository.findBankByUserId(buyer.getId());
+            if (buyerBank != null) {
+                BigDecimal currentBalance = buyerBank.getBalance() != null ? buyerBank.getBalance() : BigDecimal.ZERO;
+                buyerBank.setBalance(currentBalance.add(transaction.getPrice()));
+                bankRepository.save(buyerBank);
+                
+                // Create bank transfer record for refund tracking
+                BankTransfer refundTransfer = BankTransfer.builder()
+                    .payment(paymentRepository.findPaymentByTransactionId(transaction.getTransactionid()))
+                    .transaction(transaction)
+                    .seller(refund.getReceiver()) // Original seller
+                    .bank(buyerBank)
+                    .amount(transaction.getPrice())
+                    .transferStatus("COMPLETED")
+                    .initiatedAt(Instant.now())
+                    .completedAt(Instant.now())
+                    .description("Refund claim for " + buyer.getFullname() + " - Transaction " + transaction.getTransactionid())
+                    .build();
+                bankTransferRepository.save(refundTransfer);
+                
+                log.info("Refund {} processed successfully. Amount {} added to buyer {} bank account.", 
+                    refundId, transaction.getPrice(), buyer.getId());
+                    
+                return "Refund processed successfully. Amount " + transaction.getPrice() + " VND has been credited to your bank account.";
+            } else {
+                log.info("Refund {} processed successfully for buyer {} but no bank account found.", 
+                    refundId, buyer.getId());
+                    
+                return "Refund processed successfully. Please contact support to receive your refund amount of " + transaction.getPrice() + " VND.";
+            }
+                
+        } catch (Exception e) {
+            log.error("Error processing refund for refund {}: {}", refundId, e.getMessage(), e);
+            throw new BusinessException("Failed to process refund: " + e.getMessage());
+        }
+    }
+    
+    // Admin methods
+    public ResponseEntity<List<RefundResponse>> findAllBuyerRefundsByStatus(String status) {
+        List<Refund> refunds;
+        if ("ALL".equalsIgnoreCase(status)) {
+            refunds = refundRepository.findAllBuyerRefunds();
+        } else {
+            refunds = refundRepository.findAllBuyerRefundsByStatus(status);
+        }
+        
+        List<RefundResponse> responses = refunds.stream()
+            .map(refundMapper::toRefundResponse)
+            .toList();
+            
+        return ResponseEntity.ok(responses);
+    }
+    
+    public ResponseEntity<List<RefundResponse>> findAllSellerRefundsByStatus(String status) {
+        List<Refund> refunds;
+        if ("ALL".equalsIgnoreCase(status)) {
+            refunds = refundRepository.findAllSellerRefunds();
+        } else {
+            refunds = refundRepository.findAllSellerRefundsByStatus(status);
+        }
+        
+        List<RefundResponse> responses = refunds.stream()
+            .map(refundMapper::toRefundResponse)
+            .toList();
+            
+        return ResponseEntity.ok(responses);
+    }
+    
+    public ResponseEntity<List<RefundResponse>> findAllRefundsByStatus(String status) {
+        List<Refund> refunds;
+        if ("ALL".equalsIgnoreCase(status)) {
+            refunds = refundRepository.findAll();
+        } else {
+            refunds = refundRepository.findByRefundStatus(status);
+        }
+        
+        List<RefundResponse> responses = refunds.stream()
+            .map(refundMapper::toRefundResponse)
+            .toList();
+            
+        return ResponseEntity.ok(responses);
+    }
+    
+    public void adminAcceptRefund(Integer refundId, String token) {
+        User admin = getUserByToken(token);
+        
+        Refund refund = refundRepository.findById(refundId)
+            .orElseThrow(() -> new BusinessException("Refund not found"));
+            
+        if (!"REQUESTED".equalsIgnoreCase(refund.getRefundStatus())) {
+            throw new BusinessException("Refund is not in requested status");
+        }
+        
+        // Get seller bank account
+        Bank sellerBank = bankRepository.findByUserId(refund.getReceiver().getId());
+        if (sellerBank == null) {
+            throw new BusinessException("Seller bank account not found");
+        }
+            
+        // Check if seller has enough balance
+        Transaction transaction = refund.getTransaction();
+        BigDecimal refundAmount = transaction.getPrice();
+        
+        if (sellerBank.getBalance().compareTo(refundAmount) < 0) {
+            throw new BusinessException("Seller doesn't have enough balance for refund");
+        }
+        
+        // Deduct money from seller
+        sellerBank.setBalance(sellerBank.getBalance().subtract(refundAmount));
+        bankRepository.save(sellerBank);
+        
+        // Update refund status
+        refund.setRefundStatus("APPROVED");
+        refund.setUpdatedAt(Instant.now());
+        refundRepository.save(refund);
+        
+        log.info("Refund {} accepted by admin {}. Amount {} deducted from seller {}", 
+            refundId, admin.getId(), refundAmount, refund.getReceiver().getId());
+    }
+    
+    public void adminRejectRefund(Integer refundId, String token) {
+        User admin = getUserByToken(token);
+        
+        Refund refund = refundRepository.findById(refundId)
+            .orElseThrow(() -> new BusinessException("Refund not found"));
+            
+        if (!"REQUESTED".equalsIgnoreCase(refund.getRefundStatus())) {
+            throw new BusinessException("Refund is not in requested status");
+        }
+        
+        // Update refund status
+        refund.setRefundStatus("REJECTED");
+        refund.setUpdatedAt(Instant.now());
+        refundRepository.save(refund);
+        
+        log.info("Refund {} rejected by admin {}", refundId, admin.getId());
     }
 }

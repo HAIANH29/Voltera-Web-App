@@ -102,11 +102,21 @@ const PaymentPage = () => {
         console.log("Processing FEE payment for seller");
       } else {
         // Contract payment: Buyer → Seller
-        apiUrl = "/api/vnpay/create-payment";
+        if (
+          !transactionId ||
+          transactionId === "undefined" ||
+          transactionId === "null"
+        ) {
+          setError("Transaction ID is required for contract payment.");
+          return;
+        }
+        apiUrl = `/api/vnpay/create-payment/${transactionId}`;
         requestBody = {
           amount: parseInt(amount),
           orderInfo,
           postId: parseInt(postId),
+          orderType: "other",
+          language: "vn",
         };
         console.log("Processing CONTRACT payment for buyer");
       }

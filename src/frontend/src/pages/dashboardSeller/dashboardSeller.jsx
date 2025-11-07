@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 import api from "../../config/api";
+import refundService from "../../services/refundService";
 import "./dashboardSeller.css";
 
 // 🎨 Modern SVG Icons (same as admin)
@@ -116,15 +118,49 @@ const Icons = {
       />
     </svg>
   ),
+  Refund: () => (
+    <svg
+      className="w-5 h-5"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
+      />
+    </svg>
+  ),
+  Bank: () => (
+    <svg
+      className="w-5 h-5"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+      />
+    </svg>
+  ),
 };
 
 const DashboardSeller = () => {
-  // 📊 States
+  // � Hooks
+  const navigate = useNavigate();
+
+  // �📊 States
   const [stats, setStats] = useState({
     totalPosts: 0,
     activePosts: 0,
     pendingPosts: 0,
     walletBalance: 0,
+    pendingRefunds: 0,
   });
   const [recentPosts, setRecentPosts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -178,11 +214,22 @@ const DashboardSeller = () => {
         console.log("📝 Posts response:", postsRes.data);
         const posts = postsRes.data || [];
 
+        // Get pending refunds for seller (REQUESTED status means pending)
+        let pendingRefunds = 0;
+        try {
+          const refundsRes = await refundService.getSellerRefunds("REQUESTED");
+          const allRefunds = refundsRes || [];
+          pendingRefunds = allRefunds.length;
+        } catch (error) {
+          console.error("❌ Error loading refunds:", error);
+        }
+
         setStats({
           totalPosts: posts.length,
           activePosts: posts.filter((p) => p.status === "APPROVED").length,
           pendingPosts: posts.filter((p) => p.status === "PENDING").length,
           walletBalance: 0, // Set to 0 for now
+          pendingRefunds: pendingRefunds,
         });
 
         console.log("📊 Final stats:", {
@@ -316,6 +363,19 @@ const DashboardSeller = () => {
               <span>In review</span>
             </div>
           </div>
+
+          <div className="stat-card">
+            <div className="stat-card-header">
+              <div className="stat-card-title">Pending Refunds</div>
+              <div className="stat-card-icon red">
+                <Icons.Refund />
+              </div>
+            </div>
+            <div className="stat-card-value">{stats.pendingRefunds}</div>
+            <div className="stat-card-change warning">
+              <span>Need review</span>
+            </div>
+          </div>
         </div>
 
         {/* Content Grid */}
@@ -353,6 +413,20 @@ const DashboardSeller = () => {
               >
                 <Icons.TrendingUp />
                 <span>Pay Fees</span>
+              </button>
+              <button
+                className="action-btn warning"
+                onClick={() => navigate("/refunds")}
+              >
+                <Icons.Refund />
+                <span>Manage Refunds</span>
+              </button>
+              <button
+                className="action-btn secondary"
+                onClick={() => navigate("/bank-registration")}
+              >
+                <Icons.Bank />
+                <span>Register Bank</span>
               </button>
             </div>
           </div>

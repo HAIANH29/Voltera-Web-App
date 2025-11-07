@@ -24,7 +24,8 @@ const mapPostToDetail = (p) => {
     postID: String(p?.postId ?? ""),
     title: p?.title || `${b?.batteryTypeId?.typename || "Battery"} Pack`,
     description:
-      p?.description || "High-quality battery with advanced technology and durability.",
+      p?.description ||
+      "High-quality battery with advanced technology and durability.",
     price: priceNumber,
     status: (p?.status || "").toLowerCase(),
 
@@ -47,7 +48,9 @@ const mapPostToDetail = (p) => {
       serialNumber: b?.serialNumber,
       batteryType: b?.batteryTypeId?.typename,
       originalCapacity: b?.originCapacity ? `${b.originCapacity}kWh` : null,
-      remainingCapacity: b?.remainingCapacity ? `${b.remainingCapacity}kWh` : null,
+      remainingCapacity: b?.remainingCapacity
+        ? `${b.remainingCapacity}kWh`
+        : null,
       mileageCovered: b?.mileageCovered ? `${b.mileageCovered}km` : null,
       voltage: b?.voltage ? `${b.voltage}V` : null,
       cycleCount: b?.cycleCount || 0,
@@ -69,7 +72,7 @@ const mapPostToDetail = (p) => {
     // features (derived from battery type or default)
     features: [
       "Advanced battery technology",
-      "Long-lasting performance", 
+      "Long-lasting performance",
       "Fast charging capability",
       "Environmentally friendly",
       "Professional warranty support",
@@ -79,15 +82,19 @@ const mapPostToDetail = (p) => {
     // specifications (derived from battery data)
     specifications: {
       "Battery Type": b?.batteryTypeId?.typename || "N/A",
-      "Serial Number": b?.serialNumber || "N/A", 
-      "Original Capacity": b?.originCapacity ? `${b.originCapacity} kWh` : "N/A",
-      "Current Capacity": b?.remainingCapacity ? `${b.remainingCapacity} kWh` : "N/A",
-      "Voltage": b?.voltage ? `${b.voltage}V` : "N/A",
+      "Serial Number": b?.serialNumber || "N/A",
+      "Original Capacity": b?.originCapacity
+        ? `${b.originCapacity} kWh`
+        : "N/A",
+      "Current Capacity": b?.remainingCapacity
+        ? `${b.remainingCapacity} kWh`
+        : "N/A",
+      Voltage: b?.voltage ? `${b.voltage}V` : "N/A",
       "Cycle Count": b?.cycleCount ? `${b.cycleCount}` : "N/A",
       "Mileage Covered": b?.mileageCovered ? `${b.mileageCovered}km` : "N/A",
-      "Weight": b?.weight ? `${b.weight}kg` : "N/A",
+      Weight: b?.weight ? `${b.weight}kg` : "N/A",
       "Life Cycle": b?.lifeCycle ? `${b.lifeCycle} cycles` : "N/A",
-      "Warranty": b?.warranty || "N/A",
+      Warranty: b?.warranty || "N/A",
     },
 
     isFavorite: false,
@@ -202,7 +209,7 @@ export default function ElectricDetail() {
         console.error("❌ Failed to fetch battery detail:", error);
         console.log("STATUS =", error?.response?.status);
         console.log("DATA   =", error?.response?.data);
-        
+
         // Fallback to mock data in development
         if (process.env.NODE_ENV === "development") {
           console.log("🔄 Using mock data as fallback");
@@ -236,19 +243,6 @@ export default function ElectricDetail() {
     } else {
       alert("Contact information not available. Please check back later.");
     }
-  };
-
-  const handlePurchase = () => {
-    // Check if user is logged in
-    const token = Cookies.get("accessToken");
-    if (!token) {
-      alert("Please log in to purchase a battery.");
-      navigate("/login");
-      return;
-    }
-
-    // Navigate to contract page with postId for battery
-    navigate(`/contract?postId=${postID}&action=create&type=battery`);
   };
 
   const handleCreateContract = () => {
@@ -286,7 +280,10 @@ export default function ElectricDetail() {
   };
 
   const calculateBatteryHealth = () => {
-    if (!battery?.batteryDetails?.originalCapacity || !battery?.batteryDetails?.remainingCapacity) {
+    if (
+      !battery?.batteryDetails?.originalCapacity ||
+      !battery?.batteryDetails?.remainingCapacity
+    ) {
       return 95; // Default health percentage
     }
     const original = parseFloat(battery.batteryDetails.originalCapacity);
@@ -351,7 +348,9 @@ export default function ElectricDetail() {
           Electric Batteries
         </span>
         <span className="breadcrumb-separator">/</span>
-        <span className="breadcrumb-current">{battery.productName || battery.title}</span>
+        <span className="breadcrumb-current">
+          {battery.productName || battery.title}
+        </span>
       </div>
 
       <div className="detail-main-container">
@@ -443,7 +442,9 @@ export default function ElectricDetail() {
         {/* Right Column - Details */}
         <div className="detail-info-section">
           <div className="detail-battery-header">
-            <h1 className="detail-battery-title">{battery.productName || battery.title}</h1>
+            <h1 className="detail-battery-title">
+              {battery.productName || battery.title}
+            </h1>
           </div>
 
           <div className="detail-price-section">
@@ -564,13 +565,6 @@ export default function ElectricDetail() {
               >
                 <span className="contract-icon">📋</span>
                 Create Contract
-              </button>
-              <button
-                className="detail-contact-btn success"
-                onClick={handlePurchase}
-              >
-                <span className="buy-icon">�</span>
-                Buy Now
               </button>
             </div>
           </div>

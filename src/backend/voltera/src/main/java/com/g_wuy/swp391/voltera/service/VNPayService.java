@@ -164,30 +164,45 @@ public class VNPayService {
                 transaction.setTransactionStatus("DONE");
                 payment.setPaymentStatus("COMPLETED");
                 fee.setFeeStatus("PAID");
-                transaction.getPost().getVehicle().setStatus("SOLD");
+                
+                // Update vehicle status only once
                 transaction.getPost().getVehicle().setStatus("SOLD");
                 vehicleRepository.save(transaction.getPost().getVehicle());
-                batteryRepository.save(transaction.getPost().getBattery());
+                
+                // Save battery only if it exists
+                if (transaction.getPost().getBattery() != null) {
+                    batteryRepository.save(transaction.getPost().getBattery());
+                }
                 //chuyển tiền cho seller
                 User seller = transaction.getPost().getSellerId();
                 Bank bankSeller = bankRepository.findBankByUserId(seller.getId());
-                BigDecimal balance = bankSeller.getBalance();
-                bankSeller.setBalance(balance.add(amount));
-                bankRepository.save(bankSeller);
-                User buyer = userRepository.findUserByUsername(jwtService.extractUsername(token));
-                //track lại giả lập ngân hàng
-                BankTransfer bankTransfer = BankTransfer.builder()
-                        .payment(payment)
-                        .transaction(transaction)
-                        .seller(seller)
-                        .bank(bankSeller)
-                        .amount(amount)
-                        .transferStatus("COMPLETED")
-                        .initiatedAt(Instant.now())
-                        .completedAt(Instant.now())
-                        .description("Transfer from " + buyer.getFullname() + " in posting " + transaction.getPost().getTitle())
-                        .build();
-                bankTransferRepository.save(bankTransfer);
+                
+                if (bankSeller != null) {
+                    BigDecimal balance = bankSeller.getBalance() != null ? bankSeller.getBalance() : BigDecimal.ZERO;
+                    bankSeller.setBalance(balance.add(amount));
+                    bankRepository.save(bankSeller);
+                } else {
+                    log.warn("Seller {} has no bank account registered, skipping money transfer", seller.getId());
+                }
+                
+                User buyer = transaction.getBuyerid();  // Get buyer directly from transaction
+                
+                // Only create bank transfer if seller has bank account
+                if (bankSeller != null && buyer != null) {
+                    //track lại giả lập ngân hàng
+                    BankTransfer bankTransfer = BankTransfer.builder()
+                            .payment(payment)
+                            .transaction(transaction)
+                            .seller(seller)
+                            .bank(bankSeller)
+                            .amount(amount)
+                            .transferStatus("COMPLETED")
+                            .initiatedAt(Instant.now())
+                            .completedAt(Instant.now())
+                            .description("Transfer from " + buyer.getFullname() + " in posting " + transaction.getPost().getTitle())
+                            .build();
+                    bankTransferRepository.save(bankTransfer);
+                }
             } else {
                 transaction.setTransactionStatus("FAILED");
                 payment.setPaymentStatus("FAILED");
@@ -196,6 +211,7 @@ public class VNPayService {
 
             paymentRepository.save(payment);
             transactionRepository.save(transaction);
+            feeRepository.save(fee);  // Save fee status changes
             notificationService.sendForEvent(payment);
             notificationService.sendForEvent(transaction);
             return "Giao dịch " + transaction.getTransactionStatus().toLowerCase() + "!";

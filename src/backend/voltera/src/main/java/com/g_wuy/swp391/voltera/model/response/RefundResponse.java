@@ -13,6 +13,7 @@ import java.time.Instant;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RefundResponse {
+    private Integer id;
     private String senderName;
     private String receiverName;
     private BigDecimal amount;

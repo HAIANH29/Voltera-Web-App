@@ -26,18 +26,47 @@ public class VNPayController {
             @RequestBody VNPayRequest request,
             HttpServletRequest httpRequest,
             @PathVariable("transactionId") Integer transactionId) {
-        VNPayResponse response = vnPayService.createPayment(request, httpRequest, transactionId);
-        return ResponseEntity.ok(response);
+        try {
+            VNPayResponse response = vnPayService.createPayment(request, httpRequest, transactionId);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("Error creating VNPay payment: ", e);
+            VNPayResponse errorResponse = new VNPayResponse();
+            errorResponse.setCode("99");
+            errorResponse.setMessage("Error creating payment: " + e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
     }
 
     @GetMapping("/return/{transactionId}")
     public void handleReturn(
             @RequestParam Map<String, String> params,
             @PathVariable("transactionId") Integer transactionId,
-            HttpServletResponse response,
-            @RequestHeader("Authorization") String token) throws java.io.IOException {
+            HttpServletRequest request,
+            HttpServletResponse response) throws java.io.IOException {
 
-        vnPayService.handleReturn(params, transactionId, token);
+        // Log incoming request details to help diagnose any issues
+        try {
+            StringBuilder headers = new StringBuilder();
+            var headerNames = request.getHeaderNames();
+            if (headerNames != null) {
+                while (headerNames.hasMoreElements()) {
+                    String name = headerNames.nextElement();
+                    headers.append(name).append(": ").append(request.getHeader(name)).append("; ");
+                }
+            }
+
+            log.info("VNPay return endpoint invoked: transactionId={} remoteAddr={} method={} headers={} params={}",
+                    transactionId,
+                    request.getRemoteAddr(),
+                    request.getMethod(),
+                    headers.toString(),
+                    params.toString());
+        } catch (Exception e) {
+            log.warn("Failed to log VNPay return request details", e);
+        }
+
+        vnPayService.handleReturn(params, transactionId, null);
 
         StringBuilder frontendUrl = new StringBuilder("http://localhost:5173/payment/callback");
         frontendUrl.append("?");

@@ -147,6 +147,10 @@
     background: linear-gradient(135deg, #f59e0b, #d97706);
 }
 
+.stat-card-icon.red {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
 .stat-card-value {
     font-size: 2rem;
     font-weight: 700;
@@ -172,6 +176,10 @@
 
 .stat-card-change.neutral {
     color: #6b7280;
+}
+
+.stat-card-change.warning {
+    color: #f59e0b;
 }
 
 /* ==================== CONTENT GRID ==================== */
@@ -287,6 +295,17 @@
     background: #f9fafb;
     color: #374151;
     border-color: #d1d5db;
+}
+
+.action-btn.warning {
+    background: #f59e0b;
+    color: white;
+    border: 1px solid #f59e0b;
+}
+
+.action-btn.warning:hover {
+    background: #d97706;
+    border-color: #d97706;
 }
 
 /* ==================== RECENT POSTS ==================== */

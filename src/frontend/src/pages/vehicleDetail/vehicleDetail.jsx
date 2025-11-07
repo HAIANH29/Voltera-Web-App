@@ -174,19 +174,6 @@ export default function VehicleDetail() {
     }
   };
 
-  const handlePurchase = () => {
-    // Check if user is logged in
-    const token = Cookies.get("accessToken");
-    if (!token) {
-      alert("Please log in to purchase a vehicle.");
-      navigate("/login");
-      return;
-    }
-
-    // Navigate to contract page with postId
-    navigate(routes.contractDetail.replace(":postId", postID));
-  };
-
   const handleCreateContract = () => {
     // Check if user is logged in
     const token = Cookies.get("accessToken");
@@ -462,13 +449,6 @@ export default function VehicleDetail() {
               >
                 <span className="contract-icon">📋</span>
                 Create Contract
-              </button>
-              <button
-                className="detail-contact-btn success"
-                onClick={handlePurchase}
-              >
-                <span className="buy-icon">🚗</span>
-                Buy Now
               </button>
             </div>
           </div>

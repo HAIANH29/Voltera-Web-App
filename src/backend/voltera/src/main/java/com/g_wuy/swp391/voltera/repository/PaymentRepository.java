@@ -25,5 +25,6 @@ public interface PaymentRepository extends JpaRepository<Payment, Integer> {
             "WHERE t.transactionid = :transactionId AND po.sellerId.id = :sellerId")
     ResponseEntity<PaymentPrepareResponse> findPaymentByTransactionId(@Param("transactionId") Integer transactionId, @Param("sellerId") Integer sellerId);
 
-    Payment findPaymentByTransactionId(Integer transactionId);
+    @Query("SELECT pa FROM Payment pa WHERE pa.transaction.transactionid = :transactionId")
+    Payment findPaymentByTransactionId(@Param("transactionId") Integer transactionId);
 }
