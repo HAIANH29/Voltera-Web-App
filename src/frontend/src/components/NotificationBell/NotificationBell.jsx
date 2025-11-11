@@ -47,21 +47,6 @@ const NotificationBell = () => {
     navigate(routes.notifications);
   };
 
-  const getNotificationIcon = (type) => {
-    switch (type) {
-      case 'contract-signed':
-        return '✅';
-      case 'contract-cancelled':
-        return '❌';
-      case 'payment-success':
-        return '💰';
-      case 'payment-failed':
-        return '⚠️';
-      default:
-        return '🔔';
-    }
-  };
-
   return (
     <div className="notification-bell-container">
       <button 
@@ -105,9 +90,6 @@ const NotificationBell = () => {
                       className={`notification-item ${!notification.readStatus ? 'unread' : ''}`}
                       onClick={() => handleNotificationClick(notification)}
                     >
-                      <div className="notification-icon">
-                        {getNotificationIcon(type)}
-                      </div>
                       <div className="notification-content">
                         <div className="notification-title">
                           {notification.title}

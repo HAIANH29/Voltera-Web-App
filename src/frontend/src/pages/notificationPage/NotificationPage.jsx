@@ -7,7 +7,7 @@ const NotificationPage = () => {
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('all'); // all, unread, contract, payment
+  const [filter, setFilter] = useState('all'); // all, unread, contract, payment, transaction
   const [error, setError] = useState(null);
 
   // Fetch notifications from backend
@@ -65,44 +65,6 @@ const NotificationPage = () => {
   // Get notification type from title/message
   const getNotificationType = (title, message) => {
     return notificationService.getNotificationType(title, message);
-  };
-
-  // Get notification icon based on type
-  const getNotificationIcon = (type) => {
-    switch (type) {
-      case 'contract-signed':
-        return (
-          <svg className="notification-icon contract-signed" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M9 16.17l-3.59-3.58L4 14l5 5 11-11-1.41-1.41L9 16.17z"/>
-            <path d="M19 3H5c-1.11 0-2 .89-2 2v14c0 1.11.89 2 2 2h14c1.11 0 2-.89 2-2V5c0-1.11-.89-2-2-2z" opacity="0.3"/>
-          </svg>
-        );
-      case 'contract-cancelled':
-        return (
-          <svg className="notification-icon contract-cancelled" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-            <path d="M19 3H5c-1.11 0-2 .89-2 2v14c0 1.11.89 2 2 2h14c1.11 0 2-.89 2-2V5c0-1.11-.89-2-2-2z" opacity="0.3"/>
-          </svg>
-        );
-      case 'payment-success':
-        return (
-          <svg className="notification-icon payment-success" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-          </svg>
-        );
-      case 'payment-failed':
-        return (
-          <svg className="notification-icon payment-failed" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
-          </svg>
-        );
-      default:
-        return (
-          <svg className="notification-icon general" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
-          </svg>
-        );
-    }
   };
 
   // Filter notifications
@@ -219,6 +181,12 @@ const NotificationPage = () => {
           >
             Payments
           </button>
+          <button 
+            className={`filter-btn ${filter === 'transaction' ? 'active' : ''}`}
+            onClick={() => setFilter('transaction')}
+          >
+            Transactions
+          </button>
         </div>
 
         {/* Notifications List */}
@@ -236,7 +204,9 @@ const NotificationPage = () => {
                   ? 'You have read all notifications.'
                   : filter === 'contract'
                   ? 'No contract notifications.'
-                  : 'No payment notifications.'
+                  : filter === 'payment'
+                  ? 'No payment notifications.'
+                  : 'No transaction notifications.'
                 }
               </p>
             </div>
@@ -250,10 +220,7 @@ const NotificationPage = () => {
                   className={`notification-item ${!notification.readStatus ? 'unread' : ''} ${type}`}
                   onClick={() => !notification.readStatus && markAsRead(notification.id)}
                 >
-                  <div className="notification-icon-container">
-                    {getNotificationIcon(type)}
-                    {!notification.readStatus && <div className="unread-indicator"></div>}
-                  </div>
+                  {!notification.readStatus && <div className="unread-indicator"></div>}
                   
                   <div className="notification-content">
                     <div className="notification-header">

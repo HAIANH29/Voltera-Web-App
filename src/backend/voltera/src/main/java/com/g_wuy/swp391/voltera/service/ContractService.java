@@ -67,6 +67,7 @@ public class ContractService {
         if (contract.getExpirationdate() != null && contract.getExpirationdate().isBefore(LocalDate.now())) {
             contract.setContractstatus("CANCELLED");
             contractRepository.save(contract);
+            notificationService.sendForEvent(contract);
             throw new RuntimeException("This contract has expired and cannot be signed");
         }
         if (user.getId().equals(contract.getBuyerid().getId())) {
@@ -87,6 +88,7 @@ public class ContractService {
                     .transactionStatus("PENDING")
                     .price(contract.getPostid().getPrice())
                     .createAt(Instant.now())
+                    .buyerid(contract.getBuyerid())
                     .build();
 
             transactionRepository.save(tx);
@@ -115,6 +117,7 @@ public class ContractService {
 
         contract.setContractstatus("CANCELLED");
         contractRepository.save(contract);
+        notificationService.sendForEvent(contract);
         return contractMapper.toResponse(contract);
     }
     @Scheduled(cron = "0 0 0 * * ?")
@@ -131,6 +134,7 @@ public class ContractService {
             if (!(buyerSigned && sellerSigned)) {
                 contract.setContractstatus("CANCELLED");
                 contractRepository.save(contract);
+                notificationService.sendForEvent(contract);
             }
         }
 
@@ -186,13 +190,13 @@ public class ContractService {
         Contract contract = contractRepository.findById(contractId)
                 .orElseThrow(() -> new RuntimeException("Contract not found"));
 
-
+        // Kiểm tra quyền truy cập
         if (!contract.getBuyerid().getId().equals(user.getId()) &&
                 !contract.getSellerid().getId().equals(user.getId())) {
             throw new RuntimeException("Access denied to this contract");
         }
 
-
+        // Kiểm tra contract đã được ký bởi cả hai bên
         if (!"SIGNED".equals(contract.getContractstatus()) ||
                 !Boolean.TRUE.equals(contract.getBuyersigned()) ||
                 !Boolean.TRUE.equals(contract.getSellersigned())) {
@@ -214,6 +218,7 @@ public class ContractService {
                     .transactionStatus("PENDING")
                     .price(contract.getPostid().getPrice())
                     .createAt(Instant.now())
+                    .buyerid(contract.getBuyerid())
                     .build();
             
             transaction = transactionRepository.save(transaction);
