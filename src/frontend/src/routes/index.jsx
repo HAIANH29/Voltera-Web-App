@@ -13,6 +13,7 @@ export const routes = {
   vehicles: "/vehicles",
   electrics: "/electrics",
   favorites: "/favorites",
+  notifications: "/notifications",
   aboutUs: "/about",
   profile: "/profile",
   postVehicles: "/post/vehicles",

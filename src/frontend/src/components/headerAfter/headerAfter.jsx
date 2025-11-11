@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import api from "../../config/api";
+import NotificationBell from "../NotificationBell/NotificationBell";
 import "./headerAfter.css";
 
 /**
@@ -18,7 +19,6 @@ const HeaderAfter = ({ user: userProp }) => {
   // ----- state -----
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showPostMenu, setShowPostMenu] = useState(false);
-  const [cartItemsCount] = useState(3); // mock
   const [userProfile, setUserProfile] = useState(null);
 
   // ----- refs cho click outside -----
@@ -364,28 +364,8 @@ const HeaderAfter = ({ user: userProp }) => {
             )}
           </div>
 
-          {/* Cart */}
-          <Link to="/cart" className="cart-link" aria-label="Cart">
-            <div className="cart-icon-container">
-              <svg
-                className="cart-icon"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5L9 21h8M9 21a2 2 0 100-4 2 2 0 000 4zm8 0a2 2 0 100-4 2 2 0 000 4z"
-                />
-              </svg>
-              {cartItemsCount > 0 && (
-                <span className="cart-badge">{cartItemsCount}</span>
-              )}
-            </div>
-          </Link>
+          {/* Notifications */}
+          <NotificationBell />
 
           {/* User dropdown */}
           <div className="user-menu-container" ref={userMenuRef}>
