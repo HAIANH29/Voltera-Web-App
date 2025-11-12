@@ -105,7 +105,7 @@ const TransactionPage = () => {
   const getStatusBadge = (status) => {
     const statusConfig = {
       PENDING: { label: "Pending", class: "status-pending" },
-      DONE: { label: "Completed", class: "status-completed" },
+      DONE: { label: "Done", class: "status-completed" },
       FAILED: { label: "Failed", class: "status-failed" },
       CANCELLED: { label: "Cancelled", class: "status-cancelled" },
     };
@@ -203,10 +203,29 @@ const TransactionPage = () => {
       navigate("/refunds");
     } catch (error) {
       console.error("Error submitting refund request:", error);
-      alert(
-        "Failed to submit refund request: " +
-          (error.response?.data || error.message)
-      );
+
+      let errorMessage = "Failed to submit refund request.";
+
+      if (error.response?.data?.message) {
+        // Backend returned a specific error message
+        errorMessage = error.response.data.message;
+      } else if (error.response?.data?.error) {
+        // Backend returned error in "error" field
+        errorMessage = error.response.data.error;
+      } else if (typeof error.response?.data === "string") {
+        // Backend returned error data as string
+        errorMessage = error.response.data;
+      } else if (error.message) {
+        // Generic error message
+        errorMessage = error.message;
+      }
+
+      console.log("📋 Error details:", {
+        errorResponse: error.response?.data,
+        errorMessage: errorMessage,
+      });
+
+      alert(errorMessage);
     }
   };
 
@@ -398,7 +417,7 @@ const TransactionPage = () => {
             <div className="stat-icon">✅</div>
             <div className="stat-info">
               <h3>{stats.completed}</h3>
-              <p>Completed</p>
+              <p>Done</p>
             </div>
           </div>
 
@@ -414,7 +433,7 @@ const TransactionPage = () => {
             <div className="stat-icon">💰</div>
             <div className="stat-info">
               <h3>{formatCurrency(stats.totalAmount)}</h3>
-              <p>Tổng giá trị</p>
+              <p>Total Value</p>
             </div>
           </div>
         </div>
@@ -432,7 +451,7 @@ const TransactionPage = () => {
             >
               <option value="ALL">All</option>
               <option value="PENDING">Pending</option>
-              <option value="DONE">Completed</option>
+              <option value="DONE">Done</option>
               <option value="FAILED">Failed</option>
             </select>
           </div>

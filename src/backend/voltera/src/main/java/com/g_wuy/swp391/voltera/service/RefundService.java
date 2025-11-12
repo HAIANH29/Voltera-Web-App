@@ -14,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Service
@@ -48,9 +49,43 @@ public class RefundService {
         
         log.info("Transaction found: id={}, status={}", transaction.getTransactionid(), transaction.getTransactionStatus());
 
+        // Check transaction status - must be DONE to allow refund creation
         if (!"DONE".equalsIgnoreCase(transaction.getTransactionStatus())) {
-            log.warn("Transaction status is not DONE: {}", transaction.getTransactionStatus());
-            throw new  BusinessException("This transaction haven't been done");
+            if ("FAILED".equalsIgnoreCase(transaction.getTransactionStatus())) {
+                log.warn("Transaction {} has FAILED status - already refunded", transactionId);
+                throw new BusinessException("This transaction has already been refunded");
+            } else {
+                log.warn("Transaction status is not DONE: {}", transaction.getTransactionStatus());
+                throw new BusinessException("This transaction haven't been completed yet");
+            }
+        }
+
+        // Check if there's already an existing refund for this transaction
+        List<Refund> existingRefunds = refundRepository.findByTransaction(transaction);
+        if (!existingRefunds.isEmpty()) {
+            Refund existingRefund = existingRefunds.get(0);
+            log.warn("Refund already exists for transaction {}: refundId={}, status={}", 
+                transactionId, existingRefund.getId(), existingRefund.getRefundStatus());
+            
+            String userMessage;
+            switch (existingRefund.getRefundStatus().toUpperCase()) {
+                case "REQUESTED":
+                    userMessage = "A refund request is already pending for this transaction. Please wait for seller approval.";
+                    break;
+                case "APPROVED":
+                    userMessage = "A refund has been approved for this transaction. You can claim your money on the refund page.";
+                    break;
+                case "REJECTED":
+                    userMessage = "A refund request for this transaction was previously rejected by the seller.";
+                    break;
+                case "REFUNDED":
+                    userMessage = "This transaction has already been fully refunded. No further refund is possible.";
+                    break;
+                default:
+                    userMessage = "A refund request already exists for this transaction with status: " + existingRefund.getRefundStatus();
+            }
+            
+            throw new BusinessException(userMessage);
         }
 
         User receiver = transaction.getPost().getSellerId();
@@ -76,7 +111,7 @@ public class RefundService {
 
         User sender = getUserByToken(token);
 
-        if ("".equalsIgnoreCase(status) || status == null) {
+        if ("".equalsIgnoreCase(status) || status == null || "ALL".equalsIgnoreCase(status)) {
             refundResponses = refundRepository.getAllRefundBySenderId(sender.getId());
         }
         else {
@@ -90,7 +125,7 @@ public class RefundService {
         User receiver = getUserByToken(token);
 
 
-        if ("".equalsIgnoreCase(status) || status == null) {
+        if ("".equalsIgnoreCase(status) || status == null || "ALL".equalsIgnoreCase(status)) {
             refundResponses = refundRepository.getRefundByReceiverId(receiver.getId());
         }
         else {
@@ -104,14 +139,14 @@ public class RefundService {
         
         Refund refund = refundRepository.findById(refundId)
             .orElseThrow(() -> new BusinessException("Refund not found"));
-            
-        Transaction transaction = refund.getTransaction();
         
-        // Check if there's already a BankTransfer record for this refund claim
-        List<BankTransfer> existingTransfers = bankTransferRepository
-            .findByTransactionAndDescriptionContaining(transaction, "Refund claim for");
+        // Verify user owns this refund
+        if (!refund.getSender().getId().equals(user.getId())) {
+            throw new BusinessException("You don't have permission to check this refund");
+        }
         
-        return !existingTransfers.isEmpty();
+        // Check if refund has been claimed by checking claimedAt field
+        return refund.getClaimedAt() != null;
     }
 
     public ResponseEntity<RefundResponse> updateRefundStatusAndGetMoneyFromSeller(
@@ -306,14 +341,9 @@ public class RefundService {
         
         log.info("Processing refund money claim for refund {} with amount {}", refundId, transaction.getPrice());
         
-        // Check if refund has already been claimed by checking existing BankTransfer records
-        List<BankTransfer> existingTransfers = bankTransferRepository.findByTransaction(transaction);
-        boolean alreadyClaimed = existingTransfers.stream()
-            .anyMatch(transfer -> transfer.getDescription() != null && 
-                     transfer.getDescription().contains("Refund claim for " + buyer.getFullname()));
-        
-        if (alreadyClaimed) {
-            log.warn("Refund {} has already been claimed by buyer {}", refundId, buyer.getId());
+        // Check if refund has already been claimed by checking claimedAt field
+        if (refund.getClaimedAt() != null) {
+            log.warn("Refund {} has already been claimed by buyer {} at {}", refundId, buyer.getId(), refund.getClaimedAt());
             return "This refund has already been claimed successfully.";
         }
         
@@ -328,8 +358,11 @@ public class RefundService {
                 bankRepository.save(buyerBank);
                 
                 // Create bank transfer record for refund tracking
+                Payment payment = paymentRepository.findPaymentByTransactionId(transaction.getTransactionid());
+                log.info("Payment found for transaction {}: {}", transaction.getTransactionid(), payment != null);
+                
                 BankTransfer refundTransfer = BankTransfer.builder()
-                    .payment(paymentRepository.findPaymentByTransactionId(transaction.getTransactionid()))
+                    .payment(payment) // Can be null
                     .transaction(transaction)
                     .seller(refund.getReceiver()) // Original seller
                     .bank(buyerBank)
@@ -341,11 +374,33 @@ public class RefundService {
                     .build();
                 bankTransferRepository.save(refundTransfer);
                 
+                // Update refund status to REFUNDED and set claimedAt timestamp
+                refund.setRefundStatus("REFUNDED");
+                refund.setClaimedAt(OffsetDateTime.now());
+                refundRepository.save(refund);
+                
+                // Update transaction status to FAILED to indicate it has been refunded
+                transaction.setTransactionStatus("FAILED");
+                transactionRepository.save(transaction);
+                
+                log.info("Refund {} claim processed successfully, refund status updated to REFUNDED, transaction status updated to FAILED, claimed at {}", refundId, refund.getClaimedAt());
+                
                 log.info("Refund {} processed successfully. Amount {} added to buyer {} bank account.", 
                     refundId, transaction.getPrice(), buyer.getId());
                     
                 return "Refund processed successfully. Amount " + transaction.getPrice() + " VND has been credited to your bank account.";
             } else {
+                // Update refund status to REFUNDED and set claimedAt timestamp even without bank account
+                refund.setRefundStatus("REFUNDED");
+                refund.setClaimedAt(OffsetDateTime.now());
+                refundRepository.save(refund);
+                
+                // Update transaction status to FAILED to indicate it has been refunded
+                transaction.setTransactionStatus("FAILED");
+                transactionRepository.save(transaction);
+                
+                log.info("Refund {} processed successfully but no bank account found, refund and transaction status updated to REFUNDED/FAILED, claimed at {}", refund.getClaimedAt());
+                
                 log.info("Refund {} processed successfully for buyer {} but no bank account found.", 
                     refundId, buyer.getId());
                     

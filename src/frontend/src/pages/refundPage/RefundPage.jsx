@@ -42,16 +42,16 @@ const RefundPage = () => {
     }
   }, [statusFilter, activeTab, userRole]);
 
-  // Auto-refresh refunds every 10 seconds for real-time updates
-  useEffect(() => {
-    if (userRole) {
-      const interval = setInterval(() => {
-        loadRefunds();
-      }, 10000); // Refresh every 10 seconds
+  // Auto-refresh disabled - users can manually refresh if needed
+  // useEffect(() => {
+  //   if (userRole) {
+  //     const interval = setInterval(() => {
+  //       loadRefunds();
+  //     }, 10000); // Refresh every 10 seconds
 
-      return () => clearInterval(interval);
-    }
-  }, [statusFilter, activeTab, userRole]);
+  //     return () => clearInterval(interval);
+  //   }
+  // }, [statusFilter, activeTab, userRole]);
 
   const loadRefunds = async () => {
     setLoading(true);
@@ -199,8 +199,10 @@ const RefundPage = () => {
         return "#27ae60";
       case "rejected":
         return "#e74c3c";
-      case "completed":
+      case "refunded":
         return "#2ecc71";
+      case "cancelled":
+        return "#95a5a6";
       default:
         return "#95a5a6";
     }
@@ -282,7 +284,8 @@ const RefundPage = () => {
           <option value="REQUESTED">Pending</option>
           <option value="APPROVED">Approved</option>
           <option value="REJECTED">Rejected</option>
-          <option value="COMPLETED">Completed</option>
+          <option value="REFUNDED">Refunded</option>
+          <option value="CANCELLED">Cancelled</option>
         </select>
         <button
           className="refresh-btn"

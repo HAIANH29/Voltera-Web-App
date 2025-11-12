@@ -39,9 +39,6 @@ export default function ComparisonPage() {
   };
 
   const handleItemSelect = (item) => {
-    console.log("Selected item:", item);
-    console.log("Item vehicle data:", item.vehicle);
-    console.log("Item battery data:", item.battery);
     const newSelectedItems = [...selectedItems];
     newSelectedItems[currentSlotIndex] = item;
     setSelectedItems(newSelectedItems);
@@ -68,27 +65,21 @@ export default function ComparisonPage() {
 
   // Helper function to get nested property value
   const getNestedValue = (obj, path) => {
-    console.log(`Getting value for path: ${path}`, { obj, path });
-
     const pathParts = path.split(".");
     let current = obj;
 
     for (let i = 0; i < pathParts.length; i++) {
       const key = pathParts[i];
-      console.log(`Step ${i}: key="${key}", current:`, current);
 
       if (current && current[key] !== undefined) {
         current = current[key];
       } else {
-        console.log(`Failed at step ${i}, key="${key}" not found in:`, current);
         return null;
       }
     }
 
-    console.log(`Final value for path ${path}:`, current);
     return current;
   };
-
   const renderComparisonSlot = (index) => {
     const item = selectedItems[index];
 
@@ -289,7 +280,7 @@ export default function ComparisonPage() {
                               value === undefined ||
                               value === ""
                             ) {
-                              return "N/A";
+                              return "Not specified";
                             }
                             // For numbers, show 0 as valid value
                             if (typeof value === "number") {
