@@ -3,6 +3,8 @@ package com.g_wuy.swp391.voltera.mapper;
 import com.g_wuy.swp391.voltera.entity.Post;
 import com.g_wuy.swp391.voltera.model.response.PostResponse;
 import com.g_wuy.swp391.voltera.model.response.RejectResponse;
+import com.g_wuy.swp391.voltera.model.dto.VehicleDTO;
+import com.g_wuy.swp391.voltera.model.dto.BatteryDTO;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.*;
@@ -23,7 +25,17 @@ public interface PostMapper {
     @Mapping(source = "post.description", target = "description")
     @Mapping(source = "post.price", target = "price")
     @Mapping(source = "post.status", target = "status")
+    @Mapping(source = "vehicle", target = "vehicle")
+    @Mapping(source = "battery", target = "battery")
+    @Mapping(target = "location", ignore = true)
+    @Mapping(target = "thumbnail", ignore = true)
     PostResponse toPostResponse(Post post, Battery battery, Vehicle vehicle, List<String> imageUrls);
+
+    // Vehicle entity to VehicleDTO mapping
+    VehicleDTO toVehicleDTO(Vehicle vehicle);
+
+    // Battery entity to BatteryDTO mapping  
+    BatteryDTO toBatteryDTO(Battery battery);
 
 
     @AfterMapping

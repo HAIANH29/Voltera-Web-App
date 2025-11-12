@@ -85,6 +85,19 @@ export const notificationService = {
       return 'payment';
     }
     
+    if (content.includes('transaction')) {
+      if (content.includes('completed') || content.includes('done') || content.includes('successfully')) {
+        return 'transaction-completed';
+      }
+      if (content.includes('failed') || content.includes('fail')) {
+        return 'transaction-failed';
+      }
+      if (content.includes('pending') || content.includes('processing')) {
+        return 'transaction-pending';
+      }
+      return 'transaction';
+    }
+    
     return 'general';
   },
 
@@ -131,6 +144,11 @@ export const notificationService = {
         return notifications.filter(n => {
           const type = this.getNotificationType(n.title, n.message);
           return type.includes('payment');
+        });
+      case 'transaction':
+        return notifications.filter(n => {
+          const type = this.getNotificationType(n.title, n.message);
+          return type.includes('transaction');
         });
       default:
         return notifications;

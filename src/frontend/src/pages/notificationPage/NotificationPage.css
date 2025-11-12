@@ -204,49 +204,10 @@
   background: linear-gradient(135deg, rgba(24, 119, 242, 0.05) 0%, rgba(66, 165, 245, 0.05) 100%);
 }
 
-/* Notification Icon */
-.notification-icon-container {
-  position: relative;
-  flex-shrink: 0;
-}
-
-.notification-icon {
-  width: 40px;
-  height: 40px;
-  padding: 8px;
-  border-radius: 50%;
-  background: var(--bg-light);
-}
-
-.notification-icon.contract-signed {
-  background: linear-gradient(135deg, #42b883 0%, #36d399 100%);
-  color: white;
-}
-
-.notification-icon.contract-cancelled {
-  background: linear-gradient(135deg, #fa3e3e 0%, #ff6b6b 100%);
-  color: white;
-}
-
-.notification-icon.payment-success {
-  background: linear-gradient(135deg, #42b883 0%, #36d399 100%);
-  color: white;
-}
-
-.notification-icon.payment-failed {
-  background: linear-gradient(135deg, #fa3e3e 0%, #ff6b6b 100%);
-  color: white;
-}
-
-.notification-icon.general {
-  background: linear-gradient(135deg, #1877F2 0%, #42A5F5 100%);
-  color: white;
-}
-
 .unread-indicator {
   position: absolute;
-  top: -2px;
-  right: -2px;
+  top: 8px;
+  left: 8px;
   width: 12px;
   height: 12px;
   background: var(--primary);

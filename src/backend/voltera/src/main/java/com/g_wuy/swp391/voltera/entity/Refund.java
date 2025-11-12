@@ -10,6 +10,7 @@ import org.hibernate.annotations.OnDeleteAction;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.OffsetDateTime;
 
 @Getter
 @Setter
@@ -58,5 +59,8 @@ public class Refund {
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "updatedat")
     private Instant updatedAt;
+
+    @Column(name = "claimedat")
+    private OffsetDateTime claimedAt;
 
 }
