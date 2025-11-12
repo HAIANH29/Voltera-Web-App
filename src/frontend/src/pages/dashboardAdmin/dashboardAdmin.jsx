@@ -331,10 +331,7 @@ export default function DashboardAdmin() {
     {
       section: "main",
       title: "Main",
-      items: [
-        { id: "overview", label: "Overview", icon: Icons.Dashboard },
-        { id: "analytics", label: "Analytics", icon: Icons.Analytics },
-      ],
+      items: [{ id: "overview", label: "Overview", icon: Icons.Dashboard }],
     },
     {
       section: "management",
@@ -356,11 +353,6 @@ export default function DashboardAdmin() {
         { id: "fees", label: "Fee Management", icon: Icons.DollarSign },
         { id: "complaints", label: "Complaints", icon: Icons.MessageCircle },
       ],
-    },
-    {
-      section: "system",
-      title: "System",
-      items: [{ id: "settings", label: "Settings", icon: Icons.Settings }],
     },
   ];
 
@@ -1662,33 +1654,6 @@ export default function DashboardAdmin() {
                         <Icons.Users />
                         Manage Users
                       </button>
-
-                      <button
-                        className="modern-btn secondary"
-                        onClick={() => setActiveSection("analytics")}
-                      >
-                        <Icons.Analytics />
-                        View Analytics
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                <div className="content-card">
-                  <div className="content-card-header">
-                    <div>
-                      <div className="content-card-title">Recent Activity</div>
-                      <div className="content-card-subtitle">
-                        Latest system activities
-                      </div>
-                    </div>
-                  </div>
-                  <div className="content-card-body">
-                    <div className="empty-state">
-                      <div className="empty-state-icon">📊</div>
-                      <div className="empty-state-title">Activity Feed</div>
-                      <div className="empty-state-text">
-                        Recent admin activities will appear here
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -2004,37 +1969,7 @@ export default function DashboardAdmin() {
             </div>
           )}
 
-          {/* 📊 Analytics & Settings - Empty States */}
-          {activeSection === "analytics" && (
-            <div className="fade-in">
-              <div className="content-card">
-                <div className="content-card-header">
-                  <div>
-                    <div className="content-card-title">
-                      Analytics Dashboard
-                    </div>
-                    <div className="content-card-subtitle">
-                      System performance and user metrics
-                    </div>
-                  </div>
-                </div>
-                <div className="content-card-body">
-                  <div className="empty-state">
-                    <div className="empty-state-icon">📊</div>
-                    <div className="empty-state-title">
-                      Analytics Coming Soon
-                    </div>
-                    <div className="empty-state-text">
-                      Advanced analytics and reporting features will be
-                      available here
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* 💰 Fee Management Section */}
+          {/*  Fee Management Section */}
           {activeSection === "fees" && (
             <div className="fade-in">
               <div className="content-card">
@@ -2175,30 +2110,6 @@ export default function DashboardAdmin() {
                       </div>
                     </div>
                   )}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeSection === "settings" && (
-            <div className="fade-in">
-              <div className="content-card">
-                <div className="content-card-header">
-                  <div>
-                    <div className="content-card-title">System Settings</div>
-                    <div className="content-card-subtitle">
-                      Configure system preferences and options
-                    </div>
-                  </div>
-                </div>
-                <div className="content-card-body">
-                  <div className="empty-state">
-                    <div className="empty-state-icon">⚙️</div>
-                    <div className="empty-state-title">Settings Panel</div>
-                    <div className="empty-state-text">
-                      System configuration options will be available here
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
