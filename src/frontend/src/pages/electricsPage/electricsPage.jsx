@@ -25,14 +25,30 @@ const mapPostToCard = (p) => {
       : "");
 
   // Handle price conversion more carefully
+  console.log("🔍 Processing price for post:", p?.postId, "Price value:", p.price, "Type:", typeof p.price);
+  
   let processedPrice = 0;
-  if (p.price !== null && p.price !== undefined) {
+  
+  // Check if price exists and is valid
+  if (p.price !== null && p.price !== undefined && p.price !== "") {
     if (typeof p.price === "string") {
-      processedPrice = parseFloat(p.price.replace(/[^\d.]/g, "")) || 0;
+      const cleanedPrice = p.price.replace(/[^\d.]/g, "");
+      processedPrice = parseFloat(cleanedPrice);
+      if (isNaN(processedPrice)) {
+        processedPrice = 0;
+      }
+    } else if (typeof p.price === "number") {
+      processedPrice = p.price;
     } else {
-      processedPrice = Number(p.price) || 0;
+      console.warn("⚠️ Unexpected price type:", typeof p.price, p.price);
+      processedPrice = 0;
     }
+  } else {
+    console.log("❌ Price is missing, null, undefined, or empty for post:", p?.postId);
+    processedPrice = 0;
   }
+  
+  console.log("💰 Final processed price:", processedPrice);
 
   return {
     // id bài đăng
@@ -72,13 +88,31 @@ const mapPostToCard = (p) => {
   };
 };
 
+/** State bộ lọc ban đầu cho batteries */
+const initialFilters = {
+  batteryType: "",
+  minCapacity: "",
+  maxCapacity: "",
+  minVoltage: "",
+  maxVoltage: "",
+  minPrice: "",
+  maxPrice: "",
+  condition: "", // "new" | "used"
+};
+
 const ElectricsPage = () => {
   // ===================== STATE CHÍNH =====================
   const navigate = useNavigate();
   const [batteries, setBatteries] = useState([]); // danh sách pin đã map
   const [loading, setLoading] = useState(true); // trạng thái loading
   const [currentPage, setCurrentPage] = useState(1);
-  const [searchTerm, setSearchTerm] = useState("");
+  
+  // Tách input tìm kiếm/bộ lọc (draft) và bộ lọc áp dụng (applied)
+  const [draftSearch, setDraftSearch] = useState("");
+  const [appliedSearch, setAppliedSearch] = useState("");
+  
+  const [draftFilters, setDraftFilters] = useState(initialFilters);
+  const [appliedFilters, setAppliedFilters] = useState(initialFilters);
 
   // ===================== FETCH API TỪ BE =====================
   useEffect(() => {
@@ -91,11 +125,17 @@ const ElectricsPage = () => {
         const response = await api.get("/api/post/public/batteries");
 
         console.log("✅ Battery API Response:", response.data);
+        console.log("🔥 Hot reload trigger - MiniPost should be updated now");
 
         // BE trả list PostResponse chỉ chứa batteries
         const items = Array.isArray(response.data) ? response.data : [];
 
         console.log("[ElectricsPage] Loaded", items.length, "battery posts");
+        
+        // Debug first item to see structure
+        if (items.length > 0) {
+          console.log("🔍 First battery post structure:", JSON.stringify(items[0], null, 2));
+        }
 
         const mapped = items.map(mapPostToCard);
 
@@ -178,20 +218,70 @@ const ElectricsPage = () => {
     fetchBatteries();
   }, []);
 
-  // Optimized filtering with useMemo for performance
-  const filteredBatteries = useMemo(() => {
-    if (!searchTerm.trim()) return batteries;
+  // ===================== OPTIONS CHO BỘ LỌC (derive từ data) =====================
+  const batteryTypes = useMemo(
+    () => Array.from(new Set(batteries.map((b) => b.batteryDetails?.batteryType).filter(Boolean))).sort(),
+    [batteries]
+  );
 
-    const searchLower = searchTerm.toLowerCase();
-    return batteries.filter(
-      (battery) =>
-        battery.productName?.toLowerCase().includes(searchLower) ||
+  // ===================== LỌC THEO APPLIED =====================
+  const filteredBatteries = useMemo(() => {
+    const s = appliedSearch.trim().toLowerCase();
+    const f = appliedFilters;
+
+    return batteries.filter((battery) => {
+      // tìm kiếm toàn văn đơn giản
+      const matchSearch =
+        !s ||
+        battery.productName?.toLowerCase().includes(s) ||
         battery.basicInfo?.some((info) =>
-          info?.toLowerCase().includes(searchLower)
+          info?.toLowerCase().includes(s)
         ) ||
-        battery.sellerName?.toLowerCase().includes(searchLower)
-    );
-  }, [batteries, searchTerm]);
+        battery.sellerName?.toLowerCase().includes(s);
+
+      // từng điều kiện đơn
+      const inBatteryType = !f.batteryType || battery.batteryDetails?.batteryType === f.batteryType;
+      const inCondition = !f.condition || 
+        (f.condition === "new" && battery.isNew) ||
+        (f.condition === "used" && !battery.isNew);
+
+      // khoảng giá
+      const minPriceOK = !f.minPrice || battery.price >= Number(f.minPrice);
+      const maxPriceOK = !f.maxPrice || battery.price <= Number(f.maxPrice);
+
+      // khoảng capacity
+      const minCapacityOK = !f.minCapacity || 
+        (battery.batteryDetails?.originCapacity && battery.batteryDetails.originCapacity >= Number(f.minCapacity));
+      const maxCapacityOK = !f.maxCapacity || 
+        (battery.batteryDetails?.originCapacity && battery.batteryDetails.originCapacity <= Number(f.maxCapacity));
+
+      // khoảng voltage
+      const minVoltageOK = !f.minVoltage || 
+        (battery.batteryDetails?.voltage && battery.batteryDetails.voltage >= Number(f.minVoltage));
+      const maxVoltageOK = !f.maxVoltage || 
+        (battery.batteryDetails?.voltage && battery.batteryDetails.voltage <= Number(f.maxVoltage));
+
+      return (
+        matchSearch &&
+        inBatteryType &&
+        inCondition &&
+        minPriceOK &&
+        maxPriceOK &&
+        minCapacityOK &&
+        maxCapacityOK &&
+        minVoltageOK &&
+        maxVoltageOK
+      );
+    });
+  }, [batteries, appliedSearch, appliedFilters]);
+
+  const resetFilters = () => {
+    setDraftFilters(initialFilters);
+    setDraftSearch("");
+    setAppliedFilters(initialFilters);
+    setAppliedSearch("");
+    setCurrentPage(1);
+  };
 
   // ===================== PHÂN TRANG =====================
   const totalPages = Math.ceil(filteredBatteries.length / ITEMS_PER_PAGE) || 1;
@@ -258,8 +348,12 @@ const ElectricsPage = () => {
 
   // ===================== FORMAT HIỂN THỊ =====================
   const formatPrice = (price) => {
-    if (!price || price === null || price === undefined)
+    console.log("💰 Formatting price:", price, "Type:", typeof price);
+    
+    if (!price || price === null || price === undefined) {
+      console.log("❌ Price is null/undefined, showing Contact for Price");
       return "Contact for Price";
+    }
 
     let numPrice;
     if (typeof price === "string") {
@@ -270,14 +364,23 @@ const ElectricsPage = () => {
       numPrice = Number(price);
     }
 
-    if (isNaN(numPrice) || numPrice === 0) return "Contact for Price";
+    console.log("🔢 Converted price to number:", numPrice);
 
-    return new Intl.NumberFormat("en-US", {
+    if (isNaN(numPrice) || numPrice === 0) {
+      console.log("❌ Price is NaN or 0, showing Contact for Price");
+      return "Contact for Price";
+    }
+
+    // Use VND formatting like vehicles page
+    const formatted = new Intl.NumberFormat("vi-VN", {
       style: "currency",
-      currency: "USD",
+      currency: "VND",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(numPrice);
+    
+    console.log("✅ Formatted price:", formatted);
+    return formatted;
   };
 
   // ===================== RENDER =====================
@@ -314,8 +417,8 @@ const ElectricsPage = () => {
                   (filtered from {batteries.length})
                 </span>
               )}
-              {searchTerm && (
-                <span className="search-term"> for "{searchTerm}"</span>
+              {appliedSearch && (
+                <span className="search-term"> for "{appliedSearch}"</span>
               )}
             </p>
           </div>
@@ -355,12 +458,9 @@ const ElectricsPage = () => {
               >
                 <polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46" />
               </svg>
-              Battery Filters
+              Filters
             </h3>
-            <button
-              className="clear-filters"
-              onClick={() => setSearchTerm("")}
-            >
+            <button className="clear-filters" onClick={resetFilters}>
               Clear All
             </button>
           </div>
@@ -379,15 +479,175 @@ const ElectricsPage = () => {
               </svg>
               Battery Type
             </label>
-            <select className="filter-select">
+            <select 
+              className="filter-select"
+              value={draftFilters.batteryType}
+              onChange={(e) =>
+                setDraftFilters({ ...draftFilters, batteryType: e.target.value })
+              }
+            >
               <option value="">All Types</option>
-              <option value="Lithium-ion">Lithium-ion</option>
-              <option value="LiFePO4">LiFePO4</option>
-              <option value="NiMH">NiMH</option>
+              {batteryTypes.map((type) => (
+                <option key={type} value={type}>
+                  {type}
+                </option>
+              ))}
             </select>
           </div>
 
-          <button className="apply-filters-btn">Apply Filters</button>
+          <div className="filter-group">
+            <label className="filter-label">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 6v6l4 2" />
+              </svg>
+              Condition
+            </label>
+            <div className="status-buttons">
+              <button
+                className={`status-btn ${
+                  draftFilters.condition === "" ? "active" : ""
+                }`}
+                onClick={() => setDraftFilters({ ...draftFilters, condition: "" })}
+              >
+                All
+              </button>
+              <button
+                className={`status-btn ${
+                  draftFilters.condition === "new" ? "active" : ""
+                }`}
+                onClick={() =>
+                  setDraftFilters({ ...draftFilters, condition: "new" })
+                }
+              >
+                New
+              </button>
+              <button
+                className={`status-btn ${
+                  draftFilters.condition === "used" ? "active" : ""
+                }`}
+                onClick={() =>
+                  setDraftFilters({ ...draftFilters, condition: "used" })
+                }
+              >
+                Used
+              </button>
+            </div>
+          </div>
+
+          <div className="filter-group">
+            <label className="filter-label">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M4 7h16l-1 10H5L4 7z" />
+                <path d="M4 7L2 3h2l2 4z" />
+              </svg>
+              Price Range (VND)
+            </label>
+            
+            <div className="simple-price-inputs">
+              <input
+                type="text"
+                placeholder="Min Price (VND) - e.g. 10,000,000"
+                value={draftFilters.minPrice}
+                onChange={(e) => {
+                  console.log('Min price input changed:', e.target.value);
+                  const value = e.target.value.replace(/[^0-9]/g, '');
+                  setDraftFilters({ ...draftFilters, minPrice: value });
+                }}
+                style={{ pointerEvents: 'auto' }}
+              />
+              <input
+                type="text"
+                placeholder="Max Price (VND) - e.g. 50,000,000"
+                value={draftFilters.maxPrice}
+                onChange={(e) => {
+                  console.log('Max price input changed:', e.target.value);
+                  const value = e.target.value.replace(/[^0-9]/g, '');
+                  setDraftFilters({ ...draftFilters, maxPrice: value });
+                }}
+                style={{ pointerEvents: 'auto' }}
+              />
+            </div>
+          </div>
+
+          <div className="filter-group">
+            <label className="filter-label">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <rect x="1" y="6" width="18" height="12" rx="2" ry="2" />
+                <path d="m22 10-2-2v8l2-2" />
+              </svg>
+              Capacity Range (kWh)
+            </label>
+            
+            <div className="simple-price-inputs">
+              <input
+                type="text"
+                placeholder="Min Capacity (kWh) - e.g. 20"
+                value={draftFilters.minCapacity}
+                onChange={(e) => {
+                  console.log('Min capacity input changed:', e.target.value);
+                  const value = e.target.value.replace(/[^0-9.]/g, '');
+                  setDraftFilters({ ...draftFilters, minCapacity: value });
+                }}
+                style={{ pointerEvents: 'auto' }}
+              />
+              <input
+                type="text"
+                placeholder="Max Capacity (kWh) - e.g. 100"
+                value={draftFilters.maxCapacity}
+                onChange={(e) => {
+                  console.log('Max capacity input changed:', e.target.value);
+                  const value = e.target.value.replace(/[^0-9.]/g, '');
+                  setDraftFilters({ ...draftFilters, maxCapacity: value });
+                }}
+                style={{ pointerEvents: 'auto' }}
+              />
+            </div>
+          </div>
+
+          <div className="filter-actions">
+            <button
+              className="apply-filters-btn"
+              onClick={() => {
+                setAppliedFilters(draftFilters);
+                setAppliedSearch(draftSearch);
+                setCurrentPage(1);
+              }}
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <polyline points="20,6 9,17 4,12" />
+              </svg>
+              Apply Filters
+            </button>
+          </div>
         </aside>
 
         {/* Main Content Grid */}
@@ -425,7 +685,30 @@ const ElectricsPage = () => {
                   </svg>
                 </div>
                 <h3>No batteries found</h3>
-                <p>Try adjusting your search or filter criteria</p>
+                <p className="empty-message">
+                  {batteries.length === 0
+                    ? "No approved battery listings available at the moment"
+                    : "Try adjusting your search criteria or filters"}
+                </p>
+                {(appliedSearch ||
+                  Object.values(appliedFilters).some((v) => v)) && (
+                  <button className="reset-btn" onClick={resetFilters}>
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                      <path d="M21 3v5h-5" />
+                      <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+                      <path d="M3 21v-5h5" />
+                    </svg>
+                    Clear All Filters
+                  </button>
+                )}
               </div>
             )}
           </div>
