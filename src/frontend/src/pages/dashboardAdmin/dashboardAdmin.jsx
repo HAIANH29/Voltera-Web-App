@@ -1562,42 +1562,7 @@ export default function DashboardAdmin() {
 
       {/* 💻 Main Content */}
       <div className="main-content">
-        {/* 🔝 Topbar */}
-        <div className="topbar">
-          <div className="topbar-left">
-            <h1 className="topbar-title">
-              {navigationItems
-                .flatMap((section) => section.items)
-                .find((item) => item.id === activeSection)?.label ||
-                "Dashboard"}
-            </h1>
-            <div className="topbar-breadcrumb">
-              Admin Panel / {activeSection}
-            </div>
-          </div>
-          <div className="topbar-right">
-            <div className="topbar-search">
-              <Icons.Search />
-              <input type="text" placeholder="Search..." />
-            </div>
-            <div className="topbar-actions">
-              <button className="topbar-btn">
-                <Icons.Bell />
-                <span className="topbar-btn-badge">3</span>
-              </button>
-              <div className="topbar-profile">
-                <div className="topbar-avatar">A</div>
-                <div className="topbar-profile-info">
-                  <div className="topbar-profile-name">Admin</div>
-                  <div className="topbar-profile-role">Administrator</div>
-                </div>
-                <Icons.ChevronDown />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* 📊 Dashboard Content */}
+        {/*  Dashboard Content */}
         <div className="dashboard-content">
           {/* 📈 Overview Section */}
           {activeSection === "overview" && (
