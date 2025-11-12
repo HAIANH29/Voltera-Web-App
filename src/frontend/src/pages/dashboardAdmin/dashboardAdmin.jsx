@@ -1960,7 +1960,7 @@ export default function DashboardAdmin() {
                 </div>
                 <div className="content-card-body">
                   <div className="filter-tabs">
-                    {["ALL", "ADMIN", "USER", "SELLER"].map((role) => (
+                    {["ALL", "ADMIN", "BUYER", "SELLER"].map((role) => (
                       <button
                         key={role}
                         onClick={() => handleRoleFilter(role)}

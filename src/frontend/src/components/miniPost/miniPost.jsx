@@ -12,11 +12,18 @@ export default function MiniPost({
   onFavoriteClick,
   onClick,
 }) {
-  // Use the pre-formatted price string if it's already formatted, otherwise format as USD
-  const priceFmt =
-    typeof price === "string" && price.includes("$")
-      ? price
-      : new Intl.NumberFormat("en-US").format(price);
+  // Format price as VND
+  const formatPriceVND = (price) => {
+    if (typeof price === "string" && price.includes("VND")) {
+      return price; // Already formatted
+    }
+    const numPrice = typeof price === "string" ? parseFloat(price) : price;
+    if (!numPrice || numPrice === 0) return "Contact for price";
+    
+    return new Intl.NumberFormat("vi-VN").format(numPrice) + " VND";
+  };
+
+  const priceFmt = formatPriceVND(price);
 
   return (
     <article className="mini-card" onClick={onClick} role="button" tabIndex={0}>
@@ -53,9 +60,7 @@ export default function MiniPost({
             {sellerName}
           </span>
           <span className="price">
-            {typeof price === "string" && price.includes("$")
-              ? priceFmt
-              : `$${priceFmt}`}
+            {priceFmt}
           </span>
         </div>
       </div>

@@ -446,7 +446,7 @@ export default function VehiclesPage() {
       </div>
 
       <div className="layout enhanced-layout">
-        {/* Enhanced Sidebar filters */}
+        {/* Simple Sidebar filters - Essential Only */}
         <aside className="filters modern-filters">
           <div className="filters-header">
             <h3>
@@ -460,7 +460,7 @@ export default function VehiclesPage() {
               >
                 <polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46" />
               </svg>
-              Advanced Filters
+              Filters
             </h3>
             <button className="clear-filters" onClick={resetFilters}>
               Clear All
@@ -524,7 +524,6 @@ export default function VehiclesPage() {
                 setDraftFilters({
                   ...draftFilters,
                   model: e.target.value,
-                  version: "",
                 })
               }
             >
@@ -540,52 +539,6 @@ export default function VehiclesPage() {
                 .map((m) => (
                   <option key={m} value={m}>
                     {m}
-                  </option>
-                ))}
-            </select>
-          </div>
-
-          <div className="filter-group">
-            <label className="filter-label">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path d="M12 2L2 7v10c0 5.55 3.84 10 9 11 5.16-1 9-5.45 9-11V7l-10-5z" />
-              </svg>
-              Version
-            </label>
-            <select
-              className="filter-select"
-              value={draftFilters.version}
-              onChange={(e) =>
-                setDraftFilters({ ...draftFilters, version: e.target.value })
-              }
-            >
-              <option value="">All Versions</option>
-              {versions
-                .filter(
-                  (v) =>
-                    (!draftFilters.brand ||
-                      vehicles.some(
-                        (vehicle) =>
-                          vehicle.brand === draftFilters.brand &&
-                          vehicle.version === v
-                      )) &&
-                    (!draftFilters.model ||
-                      vehicles.some(
-                        (vehicle) =>
-                          vehicle.model === draftFilters.model &&
-                          vehicle.version === v
-                      ))
-                )
-                .map((v) => (
-                  <option key={v} value={v}>
-                    {v}
                   </option>
                 ))}
             </select>
@@ -648,111 +601,6 @@ export default function VehiclesPage() {
                 stroke="currentColor"
                 strokeWidth="2"
               >
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                <circle cx="9" cy="7" r="4" />
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-              </svg>
-              Seats
-            </label>
-            <div className="seats-grid">
-              <button
-                className={`seat-btn ${
-                  draftFilters.seats === "" ? "active" : ""
-                }`}
-                onClick={() => setDraftFilters({ ...draftFilters, seats: "" })}
-              >
-                All
-              </button>
-              {seats.map((s) => (
-                <button
-                  key={s}
-                  className={`seat-btn ${
-                    draftFilters.seats === String(s) ? "active" : ""
-                  }`}
-                  onClick={() =>
-                    setDraftFilters({ ...draftFilters, seats: String(s) })
-                  }
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="filter-row">
-            <div className="filter-group half-width">
-              <label className="filter-label">
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <circle cx="12" cy="12" r="3" />
-                  <path d="M12 1v6m0 6v6" />
-                </svg>
-                Color
-              </label>
-              <select
-                className="filter-select"
-                value={draftFilters.color}
-                onChange={(e) =>
-                  setDraftFilters({ ...draftFilters, color: e.target.value })
-                }
-              >
-                <option value="">All Colors</option>
-                {colors.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="filter-group half-width">
-              <label className="filter-label">
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <path d="M19 14c0-1.1-.9-2-2-2h-1l-1-6H9L8 12H7c-1.1 0-2 .9-2 2v4c0 .6.4 1 1 1h1c.6 0 1-.4 1-1v-1h8v1c0 .6.4 1 1 1h1c.6 0 1-.4 1-1v-4z" />
-                </svg>
-                Style
-              </label>
-              <select
-                className="filter-select"
-                value={draftFilters.style}
-                onChange={(e) =>
-                  setDraftFilters({ ...draftFilters, style: e.target.value })
-                }
-              >
-                <option value="">All Styles</option>
-                {styles.map((s) => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div className="filter-group">
-            <label className="filter-label">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
                 <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
                 <circle cx="12" cy="10" r="3" />
               </svg>
@@ -784,178 +632,35 @@ export default function VehiclesPage() {
                 stroke="currentColor"
                 strokeWidth="2"
               >
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                <line x1="16" y1="2" x2="16" y2="6" />
-                <line x1="8" y1="2" x2="8" y2="6" />
-                <line x1="3" y1="10" x2="21" y2="10" />
+                <path d="M4 7h16l-1 10H5L4 7z" />
+                <path d="M4 7L2 3h2l2 4z" />
               </svg>
-              Year of Manufacture
+              Price Range (VND)
             </label>
-            <select
-              className="filter-select"
-              value={draftFilters.year}
-              onChange={(e) =>
-                setDraftFilters({ ...draftFilters, year: e.target.value })
-              }
-            >
-              <option value="">All Years</option>
-              {years.map((y) => (
-                <option key={y} value={y}>
-                  {y}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="filter-group">
-            <label className="filter-label">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path d="M12 2v4" />
-                <path d="M16 6l-4 6-4-6" />
-                <path d="M8 18l4-6 4 6" />
-                <path d="M12 18v4" />
-              </svg>
-              Odometer Range (km)
-            </label>
-            <div className="range-inputs">
+            
+            <div className="simple-price-inputs">
               <input
-                type="number"
-                placeholder="Min ODO"
-                value={draftFilters.minOdo}
-                onChange={(e) =>
-                  setDraftFilters({ ...draftFilters, minOdo: e.target.value })
-                }
-                className="range-input"
+                type="text"
+                placeholder="Min Price (e.g. 500000000)"
+                value={draftFilters.minPrice}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^0-9]/g, '');
+                  console.log("Min price changed:", value);
+                  setDraftFilters({ ...draftFilters, minPrice: value });
+                }}
+                className="simple-price-input"
               />
-              <span className="range-separator">-</span>
               <input
-                type="number"
-                placeholder="Max ODO"
-                value={draftFilters.maxOdo}
-                onChange={(e) =>
-                  setDraftFilters({ ...draftFilters, maxOdo: e.target.value })
-                }
-                className="range-input"
+                type="text"
+                placeholder="Max Price (e.g. 1000000000)"
+                value={draftFilters.maxPrice}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^0-9]/g, '');
+                  console.log("Max price changed:", value);
+                  setDraftFilters({ ...draftFilters, maxPrice: value });
+                }}
+                className="simple-price-input"
               />
-            </div>
-          </div>
-
-          <div className="filter-group">
-            <label className="filter-label">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
-              </svg>
-              Electric Range (km)
-            </label>
-            <div className="range-inputs">
-              <input
-                type="number"
-                placeholder="Min Range"
-                value={draftFilters.minRange}
-                onChange={(e) =>
-                  setDraftFilters({ ...draftFilters, minRange: e.target.value })
-                }
-                className="range-input"
-              />
-              <span className="range-separator">-</span>
-              <input
-                type="number"
-                placeholder="Max Range"
-                value={draftFilters.maxRange}
-                onChange={(e) =>
-                  setDraftFilters({ ...draftFilters, maxRange: e.target.value })
-                }
-                className="range-input"
-              />
-            </div>
-          </div>
-
-          <div className="filter-group">
-            <label className="filter-label">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <rect x="1" y="6" width="18" height="12" rx="2" ry="2" />
-                <path d="m22 10-2-2v8l2-2" />
-              </svg>
-              Min Battery Capacity (kWh)
-            </label>
-            <input
-              type="number"
-              placeholder="e.g. 50"
-              value={draftFilters.minBatteryCapacity}
-              onChange={(e) =>
-                setDraftFilters({
-                  ...draftFilters,
-                  minBatteryCapacity: e.target.value,
-                })
-              }
-              className="filter-select"
-            />
-          </div>
-
-          <div className="filter-group">
-            <label className="filter-label">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path d="M9 12l2 2 4-4" />
-                <path d="M21 12c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1z" />
-                <circle cx="12" cy="12" r="10" />
-              </svg>
-              Insurance & Inspection
-            </label>
-            <div className="checkbox-group">
-              <label className="checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={draftFilters.bodyInsurance === "true"}
-                  onChange={(e) =>
-                    setDraftFilters({
-                      ...draftFilters,
-                      bodyInsurance: e.target.checked ? "true" : "",
-                    })
-                  }
-                />
-                Body Insurance
-              </label>
-              <label className="checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={draftFilters.vehicleInspection === "true"}
-                  onChange={(e) =>
-                    setDraftFilters({
-                      ...draftFilters,
-                      vehicleInspection: e.target.checked ? "true" : "",
-                    })
-                  }
-                />
-                Vehicle Inspection
-              </label>
             </div>
           </div>
 
