@@ -12,11 +12,34 @@ export default function MiniPost({
   onFavoriteClick,
   onClick,
 }) {
-  // Use the pre-formatted price string if it's already formatted, otherwise format as USD
-  const priceFmt =
-    typeof price === "string" && price.includes("$")
-      ? price
-      : new Intl.NumberFormat("en-US").format(price);
+  // Format price as VND - check for both VND and ₫ symbols
+  const formatPriceVND = (price) => {
+    console.log("🏷️ MiniPost formatting price:", price, "Type:", typeof price);
+    
+    // If already formatted with VND or ₫ symbol, return as-is
+    if (typeof price === "string" && (price.includes("VND") || price.includes("₫") || price.includes("Contact"))) {
+      console.log("✅ Price already formatted:", price);
+      return price;
+    }
+    
+    const numPrice = typeof price === "string" ? parseFloat(price.replace(/[^\d.]/g, "")) : price;
+    if (!numPrice || numPrice === 0) {
+      console.log("❌ Price is 0 or invalid, showing Contact for price");
+      return "Contact for price";
+    }
+    
+    const formatted = new Intl.NumberFormat("vi-VN", {
+      style: "currency", 
+      currency: "VND",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(numPrice);
+    
+    console.log("✅ MiniPost formatted price:", formatted);
+    return formatted;
+  };
+
+  const priceFmt = formatPriceVND(price);
 
   return (
     <article className="mini-card" onClick={onClick} role="button" tabIndex={0}>
@@ -53,9 +76,7 @@ export default function MiniPost({
             {sellerName}
           </span>
           <span className="price">
-            {typeof price === "string" && price.includes("$")
-              ? priceFmt
-              : `$${priceFmt}`}
+            {priceFmt}
           </span>
         </div>
       </div>

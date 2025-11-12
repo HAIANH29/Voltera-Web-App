@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { otpService } from "../../services/otpService.jsx";
+import api from "../../config/api";
 import "./VerifyEmailPage.css";
 
 const CODE_LENGTH = 6;
@@ -10,6 +11,7 @@ export default function VerifyEmailPage() {
   const { state } = useLocation();
   const email = state?.email || "";
   const purpose = state?.purpose || "signup"; // "signup" | "reset"
+  const registrationData = state?.registrationData || null; // Dữ liệu register
   const navigate = useNavigate();
 
   const [code, setCode] = useState(Array(CODE_LENGTH).fill(""));
@@ -93,9 +95,28 @@ export default function VerifyEmailPage() {
 
     try {
       if (purpose === "signup") {
-        const res = await otpService.verifyOtp(email, joined);
+        // Bước 1: Verify OTP bằng endpoint mới
+        const res = await otpService.verifyRegisterOtp(email, joined);
         console.log("OTP verify response:", res);
-        navigate("/login", { replace: true });
+
+        // Bước 2: Nếu có dữ liệu registration, tạo account sau khi verify thành công
+        if (registrationData) {
+          console.log("Creating account after OTP verification...");
+          const registerRes = await api.post(
+            "/api/v1/auth/register",
+            registrationData
+          );
+          console.log("Account created successfully:", registerRes.data);
+        }
+
+        navigate("/login", {
+          replace: true,
+          state: {
+            message:
+              "Registration successful! Please wait for admin approval to login.",
+            type: "success",
+          },
+        });
       } else {
         // reset password flow - xác thực OTP với backend trước khi chuyển bước
         // Gọi verifyOtp, nếu đúng thì chuyển sang bước đổi mật khẩu

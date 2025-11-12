@@ -45,67 +45,21 @@ export default function RegisterPage() {
       setServerError("");
       setSubmitting(true);
       try {
-        // payload khớp RegisterRequest backend: {username, password, role}
-        const payload = {
-          username: values.email.trim(), // Backend expect username field
-          password: values.password,
-          role: values.role, // Use selected role from form
-        };
-
-        console.log("Sending register request:", payload);
-
-        // BE path: /api/v1/auth/register  (baseURL là http://localhost:8080)
-        const res = await api.post("/api/v1/auth/register", payload);
-
-        console.log("Register response:", res.data);
-
-        // hỗ trợ cả 2 kiểu response: { ... } hoặc { data: {...} }
-        const body = res?.data?.data ?? res?.data ?? {};
-
-        // Nếu BE trả token (ít gặp ở register), tự lưu và cho vào app luôn
-        const accessToken = body.accessToken;
-        const refreshToken = body.refreshToken;
-
-        if (accessToken) {
-          Cookies.set("accessToken", accessToken, { expires: 1 });
-          if (refreshToken)
-            Cookies.set("refreshToken", refreshToken, { expires: 7 });
-          // Nếu có trả kèm user, bạn có thể lưu:
-          if (body.user || body.profile) {
-            const userInfo = body.user || body.profile;
-            localStorage.setItem(
-              "currentUser",
-              JSON.stringify({
-                ...userInfo,
-                email: values.email.trim(),
-                username: values.email.trim(),
-              })
-            );
-          } else {
-            // Fallback: lưu thông tin cơ bản từ form
-            localStorage.setItem(
-              "currentUser",
-              JSON.stringify({
-                email: values.email.trim(),
-                username: values.email.trim(),
-                role: values.role, // Use selected role
-              })
-            );
-          }
-          navigate("/", { replace: true });
-          return;
-        }
-
-        // Đăng ký thành công -> gửi OTP để verify email
-        console.log("Registration successful, sending OTP...");
+        // Chỉ gửi OTP trước, chưa tạo account
+        console.log("Sending OTP for registration...");
         await otpService.requestOtp(values.email.trim());
         console.log("OTP sent successfully");
 
-        // Chuyển đến trang verify email
+        // Chuyển đến trang verify email với thông tin registration
         navigate("/verify-email", {
           state: {
             email: values.email.trim(),
             purpose: "signup",
+            registrationData: {
+              username: values.email.trim(),
+              password: values.password,
+              role: values.role,
+            },
           },
         });
       } catch (err) {

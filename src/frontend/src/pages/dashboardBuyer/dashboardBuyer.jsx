@@ -68,9 +68,6 @@ const DashboardBuyer = () => {
       <div className="content-section">
         <h2>Quick Actions</h2>
         <div className="actions-grid">
-          <Link to="/browse-posts" className="action-item">
-            🛒 Browse Products
-          </Link>
           <Link to="/favorites" className="action-item">
             ❤️ My Favorites
           </Link>
@@ -79,12 +76,6 @@ const DashboardBuyer = () => {
           </Link>
           <Link to="/transactions" className="action-item">
             💳 Transactions
-          </Link>
-          <Link to="/my-orders" className="action-item">
-            📦 Order History
-          </Link>
-          <Link to="/buyer/settings" className="action-item">
-            ⚙️ Settings
           </Link>
         </div>
       </div>

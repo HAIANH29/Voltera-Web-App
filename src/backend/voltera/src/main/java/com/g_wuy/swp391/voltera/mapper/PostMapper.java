@@ -25,6 +25,8 @@ public interface PostMapper {
     @Mapping(source = "post.description", target = "description")
     @Mapping(source = "post.price", target = "price")
     @Mapping(source = "post.status", target = "status")
+    @Mapping(source = "post.createdAt", target = "createdAt")
+    @Mapping(source = "post.updatedAt", target = "updatedAt")
     @Mapping(source = "vehicle", target = "vehicle")
     @Mapping(source = "battery", target = "battery")
     @Mapping(target = "location", ignore = true)

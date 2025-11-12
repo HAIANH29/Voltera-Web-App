@@ -29,4 +29,7 @@ public interface FeeRepository extends JpaRepository<Fee,Integer> {
 
     @Query("SELECT f FROM Fee f WHERE f.transaction.transactionid = :transactionId")
     Fee findByTransactionId(@Param("transactionId") Integer transactionId);
+    
+    @Query("SELECT f FROM Fee f WHERE f.post.id = :postId ORDER BY f.createdAt DESC")
+    List<Fee> findFeesByPostIdOrderByCreatedAtDesc(@Param("postId") Integer postId);
 }

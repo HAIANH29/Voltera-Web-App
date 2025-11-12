@@ -25,6 +25,9 @@ public interface PostRepository extends JpaRepository<Post, Integer>, JpaSpecifi
 
     @Query("SELECT p FROM Post p WHERE p.status = :status")
     List<Post> getAllPostByStatus(@Param("status") String status);
+    
+    @Query("SELECT p FROM Post p JOIN Fee f ON p.id = f.post.id WHERE p.status = 'PENDING' AND f.feeStatus = 'PAID'")
+    List<Post> getPendingPostsWithPaidFee();
 
     @Query("SELECT p FROM Post p WHERE p.id = :id")
     Post findPostById(@Param("id") Integer id);

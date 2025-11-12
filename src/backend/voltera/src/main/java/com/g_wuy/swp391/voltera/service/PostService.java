@@ -46,6 +46,8 @@ public class PostService {
     private BatteryImageRepository batteryImageRepository;
     @Autowired
     private TransactionRepository transactionRepository;
+    @Autowired
+    private FeeRepository feeRepository;
 
     @Transactional
     public PostResponse createPost(PostRequest dto, String username) {
@@ -209,6 +211,21 @@ public class PostService {
     public RejectResponse rejectPost(Integer postId, RejectPostRequest request) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
+        
+        // Find and refund the paid fee
+        List<Fee> fees = feeRepository.findAll().stream()
+            .filter(f -> f.getPost() != null && f.getPost().getId().equals(postId))
+            .filter(f -> "PAID".equals(f.getFeeStatus()))
+            .toList();
+        
+        for (Fee fee : fees) {
+            // Change fee status to CANCELLED to remove it from total revenue
+            fee.setFeeStatus("CANCELLED");
+            feeRepository.save(fee);
+            System.out.println("Fee refunded for rejected post ID: " + postId + 
+                             ", amount: " + fee.getAmount());
+        }
+        
         post.setStatus("REJECT");
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -330,11 +347,56 @@ public class PostService {
 
             PostResponse response = postMapper.toPostResponse(post, battery, vehicle, allImages);
             response.setLocation(post.getSellerId().getAddress());
+            
+            // Get fee status for this post
+            try {
+                // Get the most recent fee for this post
+                List<Fee> fees = feeRepository.findFeesByPostIdOrderByCreatedAtDesc(post.getId());
+                if (!fees.isEmpty()) {
+                    response.setFeeStatus(fees.get(0).getFeeStatus());
+                } else {
+                    response.setFeeStatus("PENDING"); // Default to PENDING if no fee record exists
+                }
+            } catch (Exception e) {
+                System.out.println("Error getting fee for post " + post.getId() + ": " + e.getMessage());
+                response.setFeeStatus("PENDING"); // Default to PENDING on error
+            }
+            
             responses.add(response);
         }
 
         return responses;
     }
+
+    public List<PostResponse> getPendingPostsWithPaidFee() {
+        List<Post> posts = postRepository.getPendingPostsWithPaidFee();
+        List<PostResponse> responses = new ArrayList<>();
+
+        for (Post post : posts) {
+            List<String> allImages = new ArrayList<>();
+            Vehicle vehicle = vehicleRepository.findByPost(post).orElse(null);
+            Battery battery = batteryRepository.findByPost(post).orElse(null);
+
+            if (vehicle != null) {
+                List<String> vImages = vehicleImageRepository.findByVehicle(vehicle)
+                        .stream().map(VehicleImage::getImageUrl).toList();
+                allImages.addAll(vImages);
+            }
+
+            if (battery != null) {
+                List<String> bImages = batteryImageRepository.findByBattery(battery)
+                        .stream().map(BatteryImage::getImageUrl).toList();
+                allImages.addAll(bImages);
+            }
+
+            PostResponse response = postMapper.toPostResponse(post, battery, vehicle, allImages);
+            response.setLocation(post.getSellerId().getAddress());
+            responses.add(response);
+        }
+
+        return responses;
+    }
+
     public List<PostResponse> getAllVehiclePosts() {
         List<Post> posts = postRepository.findAllVehiclePosts();
         List<PostResponse> responses = new ArrayList<>();
