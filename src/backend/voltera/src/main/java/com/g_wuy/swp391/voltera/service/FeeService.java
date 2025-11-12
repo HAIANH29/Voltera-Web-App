@@ -155,6 +155,9 @@ public class FeeService {
             if ("00".equals(params.get("vnp_ResponseCode"))) {
                 transaction.setTransactionStatus("DONE");
                 payment.setPaymentStatus("COMPLETED");
+                Post post = transaction.getPost();
+                post.setStatus("PENDING");
+                postRepository.save(post);
                 fee.setFeeStatus("PAID");
                 // 💰 Logic cũ: Post giữ nguyên status "PENDING", chỉ cập nhật fee status
             } else {

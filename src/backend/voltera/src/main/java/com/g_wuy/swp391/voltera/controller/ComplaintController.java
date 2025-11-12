@@ -1,7 +1,9 @@
 package com.g_wuy.swp391.voltera.controller;
 
 import com.g_wuy.swp391.voltera.entity.Complaint;
+import com.g_wuy.swp391.voltera.mapper.ComplaintMapper;
 import com.g_wuy.swp391.voltera.model.request.ComplaintRequest;
+import com.g_wuy.swp391.voltera.model.response.ComplaintResponse;
 import com.g_wuy.swp391.voltera.service.ComplaintService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +18,9 @@ public class ComplaintController {
 
     @Autowired
     private ComplaintService complaintService;
+
+    @Autowired
+    private ComplaintMapper complaintMapper;
 
     @PostMapping
     public ResponseEntity<Complaint> createComplaint(
@@ -46,5 +51,12 @@ public class ComplaintController {
         return complaintService.detailComplaint(complaintId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/{complaintId}/{complaintStatus}")
+    public ResponseEntity<ComplaintResponse> updateComplaintStatus(
+            @PathVariable("complaintId") Integer complaintId,
+            @PathVariable("complaintStatus") String complaintStatus) {
+        return ResponseEntity.ok(complaintMapper.toComplaintResponse(complaintService.updateComplaintStatusById(complaintId, complaintStatus).getBody()));
     }
 }
