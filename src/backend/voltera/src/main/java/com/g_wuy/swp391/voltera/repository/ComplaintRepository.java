@@ -22,4 +22,5 @@ public interface ComplaintRepository extends JpaRepository<Complaint, Integer> {
 
     @Query("SELECT c FROM Complaint c WHERE c.senderId = :senderId")
     Optional<Complaint> findBySenderId(Integer senderId);
+    Complaint findComplaintById(Integer complaintId);
 }

@@ -6,6 +6,7 @@ import com.g_wuy.swp391.voltera.entity.User;
 import com.g_wuy.swp391.voltera.exception.BusinessException;
 import com.g_wuy.swp391.voltera.mapper.ComplaintMapper;
 import com.g_wuy.swp391.voltera.model.request.ComplaintRequest;
+import com.g_wuy.swp391.voltera.model.response.ComplaintResponse;
 import com.g_wuy.swp391.voltera.repository.AccountRepository;
 import com.g_wuy.swp391.voltera.repository.ComplaintRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +14,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestHeader;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -73,12 +73,13 @@ public class ComplaintService {
         return complaint;
     }
 
-    public Optional<Complaint> updateComplaintStatusById(Integer complaintId, String status) {
-        Optional<Complaint> complaint = complaintRepository.findById(complaintId);
-        if (complaint.isPresent()) {
-            complaint.get().setStatus(status);
-            complaintRepository.save(complaint.get());
+    public ResponseEntity<Complaint> updateComplaintStatusById(Integer complaintId, String status) {
+        Complaint complaint = complaintRepository.findComplaintById(complaintId);
+        if (complaint != null) {
+            complaint.setStatus(status);
+            complaintRepository.save(complaint);
         }
-        return complaint;
+
+        return ResponseEntity.ok(complaint);
     }
 }

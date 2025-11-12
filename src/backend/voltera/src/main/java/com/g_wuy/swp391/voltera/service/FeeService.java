@@ -155,6 +155,9 @@ public class FeeService {
             if ("00".equals(params.get("vnp_ResponseCode"))) {
                 transaction.setTransactionStatus("DONE");
                 payment.setPaymentStatus("COMPLETED");
+                Post post = transaction.getPost();
+                post.setStatus("PENDING");
+                postRepository.save(post);
                 fee.setFeeStatus("PAID");
             } else {
                 transaction.setTransactionStatus("FAILED");
