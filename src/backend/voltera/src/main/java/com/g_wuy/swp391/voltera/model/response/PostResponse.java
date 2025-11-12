@@ -23,4 +23,5 @@ public class PostResponse {
     private List<String> imageUrls;
     private String location;
     private String thumbnail;
+    private String feeStatus;
 }

@@ -1742,6 +1742,7 @@ export default function DashboardAdmin() {
                           <th>Title</th>
                           <th>Type</th>
                           <th>Price (VND)</th>
+                          <th>Fee Status</th>
                           <th>Created / Post ID</th>
                           <th>Actions</th>
                         </tr>
@@ -1789,6 +1790,23 @@ export default function DashboardAdmin() {
                                     maximumFractionDigits: 0,
                                   }).format(post.price)
                                 : "N/A"}
+                            </td>
+                            <td>
+                              <span
+                                className={`modern-badge ${
+                                  post.feeStatus === "PAID"
+                                    ? "success"
+                                    : post.feeStatus === "PENDING"
+                                    ? "warning" 
+                                    : post.feeStatus === "CANCELLED"
+                                    ? "danger"
+                                    : post.feeStatus === "NO_FEE"
+                                    ? "secondary"
+                                    : "info"
+                                }`}
+                              >
+                                {post.feeStatus || "Unknown"}
+                              </span>
                             </td>
                             <td>
                               {(() => {
