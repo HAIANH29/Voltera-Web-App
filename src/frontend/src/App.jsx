@@ -34,6 +34,7 @@ import TransactionPage from "./pages/transactionPage/TransactionPage";
 import { ComplaintPage, AdminComplaintManagement } from "./pages/complaintPage";
 import BankRegistration from "./pages/bankRegistration/BankRegistration";
 import RefundPage from "./pages/refundPage/RefundPage";
+import NotificationPage from "./pages/notificationPage/NotificationPage";
 
 console.log("routes:", routes);
 console.log("postVehicles:", routes.postVehicles);
@@ -80,6 +81,14 @@ function App() {
       element: (
         <MainLayout>
           <FavoritesPage />
+        </MainLayout>
+      ),
+    },
+    {
+      path: routes.notifications,
+      element: (
+        <MainLayout>
+          <NotificationPage />
         </MainLayout>
       ),
     },

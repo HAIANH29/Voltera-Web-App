@@ -63,6 +63,23 @@ export default function ComparisonPage() {
     }).format(price);
   };
 
+  // Helper function to get nested property value
+  const getNestedValue = (obj, path) => {
+    const pathParts = path.split(".");
+    let current = obj;
+
+    for (let i = 0; i < pathParts.length; i++) {
+      const key = pathParts[i];
+
+      if (current && current[key] !== undefined) {
+        current = current[key];
+      } else {
+        return null;
+      }
+    }
+
+    return current;
+  };
   const renderComparisonSlot = (index) => {
     const item = selectedItems[index];
 
@@ -96,7 +113,9 @@ export default function ComparisonPage() {
         <div className="item-info">
           <h3>{item.title}</h3>
           <p className="price">{formatPrice(item.price)}</p>
-          <div className="seller">By {item.sellerName || "Seller"}</div>
+          <div className="location">
+            {item.location || "Location not specified"}
+          </div>
         </div>
       </div>
     );
@@ -158,26 +177,79 @@ export default function ComparisonPage() {
     const specifications =
       comparisonType === "vehicles"
         ? [
-            { key: "brand", label: "Brand" },
-            { key: "model", label: "Model" },
-            { key: "year", label: "Year" },
-            { key: "range", label: "Range (km)" },
-            { key: "batteryCapacity", label: "Battery Capacity (kWh)" },
-            { key: "chargingTime", label: "Charging Time (hours)" },
-            { key: "topSpeed", label: "Top Speed (km/h)" },
-            { key: "seatingCapacity", label: "Seating Capacity" },
-            { key: "price", label: "Price" },
+            { key: "vehicle.brand", label: "Brand", path: "vehicle.brand" },
+            { key: "vehicle.model", label: "Model", path: "vehicle.model" },
+            {
+              key: "vehicle.yearManufacture",
+              label: "Year",
+              path: "vehicle.yearManufacture",
+            },
+            {
+              key: "vehicle.range",
+              label: "Range (km)",
+              path: "vehicle.range",
+            },
+            {
+              key: "vehicle.batteryCapacity",
+              label: "Battery Capacity (kWh)",
+              path: "vehicle.batteryCapacity",
+            },
+            {
+              key: "vehicle.chargingTime",
+              label: "Charging Time (hours)",
+              path: "vehicle.chargingTime",
+            },
+            {
+              key: "vehicle.numberOfSeat",
+              label: "Seating Capacity",
+              path: "vehicle.numberOfSeat",
+            },
+            { key: "vehicle.color", label: "Color", path: "vehicle.color" },
+            { key: "vehicle.origin", label: "Origin", path: "vehicle.origin" },
+            { key: "price", label: "Price", path: "price" },
           ]
         : [
-            { key: "brand", label: "Brand" },
-            { key: "model", label: "Model" },
-            { key: "capacity", label: "Capacity (kWh)" },
-            { key: "voltage", label: "Voltage (V)" },
-            { key: "chemistry", label: "Chemistry" },
-            { key: "cycleLife", label: "Cycle Life" },
-            { key: "warranty", label: "Warranty (years)" },
-            { key: "weight", label: "Weight (kg)" },
-            { key: "price", label: "Price" },
+            {
+              key: "battery.serialNumber",
+              label: "Serial Number",
+              path: "battery.serialNumber",
+            },
+            {
+              key: "battery.originCapacity",
+              label: "Origin Capacity (kWh)",
+              path: "battery.originCapacity",
+            },
+            {
+              key: "battery.remainingCapacity",
+              label: "Remaining Capacity (kWh)",
+              path: "battery.remainingCapacity",
+            },
+            {
+              key: "battery.voltage",
+              label: "Voltage (V)",
+              path: "battery.voltage",
+            },
+            {
+              key: "battery.cycleCount",
+              label: "Cycle Count",
+              path: "battery.cycleCount",
+            },
+            {
+              key: "battery.warranty",
+              label: "Warranty",
+              path: "battery.warranty",
+            },
+            {
+              key: "battery.weight",
+              label: "Weight (kg)",
+              path: "battery.weight",
+            },
+            {
+              key: "battery.lifecycle",
+              label: "Lifecycle",
+              path: "battery.lifecycle",
+            },
+            { key: "price", label: "Price", path: "price" },
           ];
 
     return (
@@ -200,7 +272,26 @@ export default function ComparisonPage() {
                     {item
                       ? spec.key === "price"
                         ? formatPrice(item.price)
-                        : item[spec.key] || "N/A"
+                        : (() => {
+                            const value = getNestedValue(item, spec.path);
+                            // Check for various "empty" values
+                            if (
+                              value === null ||
+                              value === undefined ||
+                              value === ""
+                            ) {
+                              return "Not specified";
+                            }
+                            // For numbers, show 0 as valid value
+                            if (typeof value === "number") {
+                              return value.toString();
+                            }
+                            // For booleans, show Yes/No
+                            if (typeof value === "boolean") {
+                              return value ? "Yes" : "No";
+                            }
+                            return value;
+                          })()
                       : "-"}
                   </td>
                 ))}

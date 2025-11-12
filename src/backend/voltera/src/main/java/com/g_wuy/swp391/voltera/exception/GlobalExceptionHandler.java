@@ -15,7 +15,8 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Object> handleRuntimeException(RuntimeException ex) {
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", LocalDateTime.now());
-        body.put("error", ex.getMessage());
+        body.put("message", ex.getMessage()); // Changed from "error" to "message"
+        body.put("error", ex.getMessage());   // Keep both for compatibility
         body.put("status", HttpStatus.BAD_REQUEST.value());
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }

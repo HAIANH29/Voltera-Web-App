@@ -19,6 +19,9 @@ public class TransactionScheduler {
     @Autowired
     private TransactionRepository transactionRepository;
 
+    @Autowired
+    private NotificationService notificationService;
+
     @Scheduled(cron = "0 0 0 * * ?")
     @Transactional
     public void cancelExpiredTransactions() {
@@ -32,6 +35,7 @@ public class TransactionScheduler {
         for (Transaction t : expiredTransactions) {
             t.setTransactionStatus("FAILED");
             transactionRepository.save(t);
+            notificationService.sendForEvent(t);
         }
     }
 }

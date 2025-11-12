@@ -17,9 +17,21 @@ export default function ContractPreview({ postId, contractId, onClose }) {
   const [isCanceling, setIsCanceling] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [isPaymentLoading, setIsPaymentLoading] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
 
   // Get token from cookies like in headerAfter
   const token = Cookies.get("accessToken");
+
+  // Fetch current user info
+  const fetchCurrentUser = async () => {
+    try {
+      const res = await api.get("/me");
+      setCurrentUser(res.data);
+      console.log("👤 Current user:", res.data);
+    } catch (error) {
+      console.error("Error fetching current user:", error);
+    }
+  };
 
   // Fetch contract data for preview with cleanup
   useEffect(() => {
@@ -29,6 +41,9 @@ export default function ContractPreview({ postId, contractId, onClose }) {
     setLoading(false);
     
     console.log("🔄 ContractPreview useEffect triggered:", { contractId, postId });
+    
+    // Fetch current user info
+    fetchCurrentUser();
     
     if (contractId) {
       fetchContractData();
@@ -110,6 +125,68 @@ export default function ContractPreview({ postId, contractId, onClose }) {
     } catch (err) {
       console.error("Error fetching post data:", err);
     }
+  };
+
+  // Check if current user is the buyer
+  const isCurrentUserBuyer = () => {
+    if (!currentUser || !contractData) return false;
+    
+    // API /me returns { username, roles }
+    // Primary check: username comparison
+    const usernameMatch = currentUser.username === contractData.buyerEmail || 
+                         currentUser.username === contractData.buyerName ||
+                         currentUser.username === contractData.buyerUsername;
+    
+    // Secondary check: if user has BUYER role
+    const hasRole = currentUser.roles && currentUser.roles.some(role => 
+      role.authority === 'ROLE_BUYER' || role.authority === 'BUYER'
+    );
+    
+    console.log("🔍 Buyer check:", {
+      currentUser: currentUser,
+      contractData: contractData,
+      usernameMatch: usernameMatch,
+      hasRole: hasRole,
+      roles: currentUser.roles,
+      usernameVsBuyerEmail: currentUser.username === contractData.buyerEmail,
+      usernameVsBuyerName: currentUser.username === contractData.buyerName,
+      usernameVsBuyerUsername: currentUser.username === contractData.buyerUsername
+    });
+    
+    // For now, use username match as primary logic
+    // Can be enhanced later with better buyer identification
+    return usernameMatch;
+  };
+
+  // Check if current user is the seller
+  const isCurrentUserSeller = () => {
+    if (!currentUser || !contractData) return false;
+    
+    // API /me returns { username, roles }
+    // Primary check: username comparison
+    const usernameMatch = currentUser.username === contractData.sellerEmail || 
+                         currentUser.username === contractData.sellerName ||
+                         currentUser.username === contractData.sellerUsername;
+    
+    // Secondary check: if user has SELLER role
+    const hasRole = currentUser.roles && currentUser.roles.some(role => 
+      role.authority === 'ROLE_SELLER' || role.authority === 'SELLER'
+    );
+    
+    console.log("🔍 Seller check:", {
+      currentUser: currentUser,
+      contractData: contractData,
+      usernameMatch: usernameMatch,
+      hasRole: hasRole,
+      roles: currentUser.roles,
+      usernameVsSellerEmail: currentUser.username === contractData.sellerEmail,
+      usernameVsSellerName: currentUser.username === contractData.sellerName,
+      usernameVsSellerUsername: currentUser.username === contractData.sellerUsername
+    });
+    
+    // For now, use username match as primary logic
+    // Can be enhanced later with better seller identification
+    return usernameMatch;
   };
 
   // Show contract preview modal
@@ -817,8 +894,8 @@ Created by Voltera system
                 </button>
               )}
 
-              {/* Pay Now Button - Only if both parties signed */}
-              {contractData.signedByBuyer && contractData.signedBySeller && (
+              {/* Pay Now Button - Only if both parties signed AND current user is buyer */}
+              {contractData.signedByBuyer && contractData.signedBySeller && isCurrentUserBuyer() && (
                 <button
                   onClick={handlePayNow}
                   disabled={isPaymentLoading}

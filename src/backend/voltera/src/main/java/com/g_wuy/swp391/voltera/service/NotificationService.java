@@ -34,7 +34,7 @@ public class NotificationService {
         String message;
 
         switch (status.toUpperCase()) {
-            case "SUCCESS" ->
+            case "COMPLETED" ->
                     message = "Your payment for post #" + transaction.getPost().getId() + " was successful.";
             case "FAILED" ->
                     message = "Your payment for post #" + transaction.getPost().getId() + " has failed. Please try again.";
@@ -68,7 +68,7 @@ public class NotificationService {
         switch (status.toUpperCase()) {
             case "SIGNED" ->
                     message = "Contract #" + contract.getId() + " has been signed by both parties.";
-            case "CANCEL" ->
+            case "CANCELLED" ->
                     message = "Contract #" + contract.getId() + " has been cancelled.";
             case "PENDING" ->
                     message = "Contract #" + contract.getId() + " is pending approval.";

@@ -57,4 +57,7 @@ public interface RefundRepository extends JpaRepository<Refund, Integer> {
 
     @Query("SELECT r FROM Refund r WHERE r.refundStatus = :status")
     List<Refund> findByRefundStatus(@Param("status") String status);
+
+    @Query("SELECT r FROM Refund r WHERE r.transaction = :transaction")
+    List<Refund> findByTransaction(@Param("transaction") com.g_wuy.swp391.voltera.entity.Transaction transaction);
 }

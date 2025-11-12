@@ -1,6 +1,7 @@
 package com.g_wuy.swp391.voltera.controller;
 
 import com.g_wuy.swp391.voltera.model.request.VNPayRequest;
+import com.g_wuy.swp391.voltera.model.response.PaymentPrepareResponse;
 import com.g_wuy.swp391.voltera.model.response.VNPayRefundResponse;
 import com.g_wuy.swp391.voltera.model.response.VNPayResponse;
 import com.g_wuy.swp391.voltera.service.VNPayService;
@@ -87,5 +88,12 @@ public class VNPayController {
             @PathVariable("refundId") Integer refundId,
             HttpServletRequest request) {
         return ResponseEntity.ok(vnPayService.refund(request, refundId));
+    }
+
+    @GetMapping("/prepare-payment/{transactionId}")
+    public ResponseEntity<PaymentPrepareResponse> preparePayment(
+            @PathVariable("transactionId") Integer transactionId,
+            @RequestHeader("Authorization") String token) {
+        return vnPayService.preparePayment(transactionId, token);
     }
 }
