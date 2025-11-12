@@ -156,6 +156,7 @@ public class FeeService {
                 transaction.setTransactionStatus("DONE");
                 payment.setPaymentStatus("COMPLETED");
                 fee.setFeeStatus("PAID");
+                // 💰 Logic cũ: Post giữ nguyên status "PENDING", chỉ cập nhật fee status
             } else {
                 transaction.setTransactionStatus("FAILED");
                 payment.setPaymentStatus("FAILED");

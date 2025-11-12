@@ -68,7 +68,29 @@ public class PostController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/admin/pending")
     public ResponseEntity<List<PostResponse>> getPendingPosts() {
+        // � NEW LOGIC: Hiển thị TẤT CẢ posts đã thanh toán để admin duyệt
+        return ResponseEntity.ok(postService.getAllPostsWithPaidFee());
+    }
+    
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/admin/all-pending")
+    public ResponseEntity<List<PostResponse>> getAllPendingPosts() {
+        // Endpoint để lấy TẤT CẢ posts PENDING (bao gồm chưa thanh toán)
         return ResponseEntity.ok(postService.getAllPost("PENDING"));
+    }
+
+    // 🔥 DEBUG: Endpoint tạm thời để kiểm tra dữ liệu
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/admin/debug-fees")
+    public ResponseEntity<?> debugFees() {
+        return ResponseEntity.ok(postService.debugFeesData());
+    }
+
+    // 🔥 NEW: Endpoint để lấy TẤT CẢ posts đã thanh toán phí (bao gồm cả APPROVE)
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/admin/all-paid-posts")
+    public ResponseEntity<List<PostResponse>> getAllPaidPosts() {
+        return ResponseEntity.ok(postService.getAllPostsWithPaidFee());
     }
 
 

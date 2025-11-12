@@ -26,8 +26,13 @@ public interface PostRepository extends JpaRepository<Post, Integer>, JpaSpecifi
     @Query("SELECT p FROM Post p WHERE p.status = :status")
     List<Post> getAllPostByStatus(@Param("status") String status);
     
-    @Query("SELECT p FROM Post p JOIN Fee f ON p.id = f.post.id WHERE p.status = 'PENDING' AND f.feeStatus = 'PAID'")
+    // 🔥 NEW: Lấy tất cả posts đã thanh toán phí để admin duyệt
+    @Query("SELECT DISTINCT p FROM Post p JOIN Fee f ON p.id = f.post.id WHERE f.feeStatus = 'PAID' AND p.status = 'PENDING'")
     List<Post> getPendingPostsWithPaidFee();
+    
+    // 🔥 NEW: Method backup - lấy posts có fee PAID bất kể status 
+    @Query("SELECT DISTINCT p FROM Post p JOIN Fee f ON p.id = f.post.id WHERE f.feeStatus = 'PAID'")
+    List<Post> getPostsWithPaidFee();
 
     @Query("SELECT p FROM Post p WHERE p.id = :id")
     Post findPostById(@Param("id") Integer id);
