@@ -682,7 +682,26 @@ export default function DashboardAdmin() {
           "🔍 First pending listing item structure:",
           response.data[0]
         );
-        setPendingListings(response.data);
+        console.log(
+          "📅 Available date fields in first post:",
+          {
+            createdAt: response.data[0]?.createdAt,
+            createdat: response.data[0]?.createdat,
+            updatedAt: response.data[0]?.updatedAt,
+            postDate: response.data[0]?.postDate,
+            createDate: response.data[0]?.createDate,
+          }
+        );
+        
+        // 🔄 Sort by ID - highest to lowest (newest posts have higher IDs)
+        const sortedPosts = response.data.sort((a, b) => {
+          const idA = parseInt(a.postId || a.id || 0);
+          const idB = parseInt(b.postId || b.id || 0);
+          return idB - idA; // Descending order (higher ID first = newer posts first)
+        });
+        
+        console.log("✅ Sorted posts by createdAt:", sortedPosts.length, "posts");
+        setPendingListings(sortedPosts);
       } else {
         console.warn("⚠️ Expected array but got:", typeof response.data);
         console.warn("📄 Response data content:", response.data);
@@ -761,7 +780,15 @@ export default function DashboardAdmin() {
                 console.log(
                   `📊 Valid posts after filtering: ${validPosts.length} of ${parsed.length}`
                 );
-                setPendingListings(validPosts);
+                
+                // 🔄 Sort by ID - highest to lowest (newest posts have higher IDs)
+                const sortedValidPosts = validPosts.sort((a, b) => {
+                  const idA = parseInt(a.postId || a.id || 0);
+                  const idB = parseInt(b.postId || b.id || 0);
+                  return idB - idA; // Descending order (higher ID first = newer posts first)
+                });
+                
+                setPendingListings(sortedValidPosts);
                 return;
               }
             } catch (cleanupError) {
@@ -791,7 +818,15 @@ export default function DashboardAdmin() {
                   console.log(
                     `🚨 Emergency extraction found ${emergencyPosts.length} posts`
                   );
-                  setPendingListings(emergencyPosts);
+                  
+                  // 🔄 Sort by ID - highest to lowest (newest posts have higher IDs)
+                  const sortedEmergencyPosts = emergencyPosts.sort((a, b) => {
+                    const idA = parseInt(a.postId || a.id || 0);
+                    const idB = parseInt(b.postId || b.id || 0);
+                    return idB - idA; // Descending order (higher ID first = newer posts first)
+                  });
+                  
+                  setPendingListings(sortedEmergencyPosts);
                   return;
                 }
               } catch (emergencyError) {
@@ -827,7 +862,15 @@ export default function DashboardAdmin() {
 
         if (fallbackResponse.data && Array.isArray(fallbackResponse.data)) {
           console.log("✅ Fallback API successful");
-          setPendingListings(fallbackResponse.data);
+          
+          // 🔄 Sort by ID - highest to lowest (newest posts have higher IDs)
+          const sortedFallbackPosts = fallbackResponse.data.sort((a, b) => {
+            const idA = parseInt(a.postId || a.id || 0);
+            const idB = parseInt(b.postId || b.id || 0);
+            return idB - idA; // Descending order (higher ID first = newer posts first)
+          });
+          
+          setPendingListings(sortedFallbackPosts);
           return;
         }
       } catch (fallbackError) {
@@ -1697,8 +1740,8 @@ export default function DashboardAdmin() {
                           <th>ID</th>
                           <th>Title</th>
                           <th>Type</th>
-                          <th>Price</th>
-                          <th>Created</th>
+                          <th>Price (VND)</th>
+                          <th>Created / Post ID</th>
                           <th>Actions</th>
                         </tr>
                       </thead>
@@ -1715,25 +1758,63 @@ export default function DashboardAdmin() {
                                   gap: "0.5rem",
                                 }}
                               >
-                                {post.type === "electric" ? (
+                                {/* Determine type based on post data structure */}
+                                {(post.type === "electric" || post.battery) ? (
                                   <Icons.Electric />
                                 ) : (
                                   <Icons.Car />
                                 )}
                                 <span
                                   className={`modern-badge ${
-                                    post.type === "electric"
+                                    (post.type === "electric" || post.battery)
                                       ? "info"
                                       : "success"
                                   }`}
                                 >
-                                  {post.type || "Vehicle"}
+                                  {post.type === "electric" || post.battery ? "Electric Battery" : post.type === "vehicle" || post.vehicle ? "Vehicle" : "Unknown"}
                                 </span>
                               </div>
                             </td>
-                            <td>${post.price?.toLocaleString() || "N/A"}</td>
                             <td>
-                              {new Date(post.createdAt).toLocaleDateString()}
+                              {post.price 
+                                ? new Intl.NumberFormat("vi-VN", {
+                                    style: "currency",
+                                    currency: "VND",
+                                    minimumFractionDigits: 0,
+                                    maximumFractionDigits: 0,
+                                  }).format(post.price)
+                                : "N/A"}
+                            </td>
+                            <td>
+                              {(() => {
+                                // Try multiple possible date fields
+                                const dateValue = post.createdAt || post.createdat || post.postDate || post.createDate || post.updatedAt;
+                                if (!dateValue) {
+                                  // If no date field, show post ID as indicator of creation order
+                                  return (
+                                    <div style={{ display: "flex", flexDirection: "column", fontSize: "0.875rem" }}>
+                                      <span style={{ color: "#6b7280" }}>Post #{post.postId || post.id}</span>
+                                      <span style={{ color: "#9ca3af", fontSize: "0.75rem" }}>
+                                        (No date available)
+                                      </span>
+                                    </div>
+                                  );
+                                }
+                                
+                                const dateObj = new Date(dateValue);
+                                if (isNaN(dateObj.getTime())) {
+                                  return <span style={{ color: "#ef4444" }}>Invalid Date: {dateValue}</span>;
+                                }
+                                
+                                return (
+                                  <div style={{ display: "flex", flexDirection: "column", fontSize: "0.875rem" }}>
+                                    <span>{dateObj.toLocaleDateString("vi-VN")}</span>
+                                    <span style={{ color: "#6b7280", fontSize: "0.75rem" }}>
+                                      {dateObj.toLocaleTimeString("vi-VN")}
+                                    </span>
+                                  </div>
+                                );
+                              })()}
                             </td>
                             <td>
                               <div style={{ display: "flex", gap: "0.5rem" }}>
