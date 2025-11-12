@@ -644,9 +644,9 @@
   padding: 18px;
   position: sticky;
   top: 24px;
-  z-index: 10;
+  z-index: 100;
   max-height: calc(100dvh - 48px);
-  overflow: auto;
+  overflow: visible;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
   box-shadow: var(--shadow-lg);
@@ -679,6 +679,12 @@
   margin: 16px 0 8px;
 }
 
+.filter-group {
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 1;
+}
+
 .filters select,
 .filters input {
   width: 100%;
@@ -690,6 +696,14 @@
   outline: none;
   font-size: 14px;
   transition: all 0.3s var(--ease);
+  position: relative;
+  z-index: 10;
+  pointer-events: auto;
+}
+
+.filters select {
+  z-index: 200;
+  position: relative;
 }
 
 .filters select:focus,
@@ -697,6 +711,7 @@
   border-color: var(--accent-solid);
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
   transform: translateY(-1px);
+  z-index: 300;
 }
 
 .filters .price-row {
@@ -748,6 +763,133 @@
   background: var(--card-hover);
   border-color: var(--accent-solid);
   transform: translateY(-1px);
+}
+
+/* STATUS BUTTONS: Modern button group */
+.status-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.status-btn {
+  flex: 1;
+  height: 38px;
+  border: 2px solid var(--line);
+  border-radius: var(--radius-small);
+  background: var(--card);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+  transition: all 0.3s var(--ease);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+}
+
+.status-btn:hover {
+  border-color: var(--accent-solid);
+  background: var(--soft);
+  transform: translateY(-1px);
+}
+
+.status-btn.active {
+  background: var(--accent-solid);
+  color: var(--accent-ink);
+  border-color: var(--accent-solid);
+  box-shadow: var(--shadow);
+}
+
+/* PRICE INPUTS: Enhanced design */
+.simple-price-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.simple-price-inputs input {
+  height: 38px;
+  padding: 0 12px;
+  border: 2px solid var(--line);
+  border-radius: var(--radius-small);
+  background: var(--card);
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.3s var(--ease);
+  color: var(--ink);
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  pointer-events: auto;
+  z-index: 10;
+  position: relative;
+}
+
+.simple-price-inputs input:focus {
+  border-color: var(--accent-solid);
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  transform: translateY(-1px);
+}
+
+.simple-price-inputs input::placeholder {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.simple-price-inputs span {
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 14px;
+  text-align: center;
+  min-width: 20px;
+}
+
+/* CAPACITY RANGE: Enhanced design */
+.capacity-range {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.capacity-range input {
+  height: 38px;
+  padding: 0 12px;
+  border: 2px solid var(--line);
+  border-radius: var(--radius-small);
+  background: var(--card);
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.3s var(--ease);
+  color: var(--ink);
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  pointer-events: auto;
+  z-index: 10;
+  position: relative;
+}
+
+.capacity-range input:focus {
+  border-color: var(--accent-solid);
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  transform: translateY(-1px);
+}
+
+.capacity-range input::placeholder {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.capacity-range span {
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 14px;
+  text-align: center;
+  min-width: 20px;
 }
 
 /* GRID: Enhanced modern layout - More space without filters */

@@ -12,15 +12,31 @@ export default function MiniPost({
   onFavoriteClick,
   onClick,
 }) {
-  // Format price as VND
+  // Format price as VND - check for both VND and ₫ symbols
   const formatPriceVND = (price) => {
-    if (typeof price === "string" && price.includes("VND")) {
-      return price; // Already formatted
-    }
-    const numPrice = typeof price === "string" ? parseFloat(price) : price;
-    if (!numPrice || numPrice === 0) return "Contact for price";
+    console.log("🏷️ MiniPost formatting price:", price, "Type:", typeof price);
     
-    return new Intl.NumberFormat("vi-VN").format(numPrice) + " VND";
+    // If already formatted with VND or ₫ symbol, return as-is
+    if (typeof price === "string" && (price.includes("VND") || price.includes("₫") || price.includes("Contact"))) {
+      console.log("✅ Price already formatted:", price);
+      return price;
+    }
+    
+    const numPrice = typeof price === "string" ? parseFloat(price.replace(/[^\d.]/g, "")) : price;
+    if (!numPrice || numPrice === 0) {
+      console.log("❌ Price is 0 or invalid, showing Contact for price");
+      return "Contact for price";
+    }
+    
+    const formatted = new Intl.NumberFormat("vi-VN", {
+      style: "currency", 
+      currency: "VND",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(numPrice);
+    
+    console.log("✅ MiniPost formatted price:", formatted);
+    return formatted;
   };
 
   const priceFmt = formatPriceVND(price);
