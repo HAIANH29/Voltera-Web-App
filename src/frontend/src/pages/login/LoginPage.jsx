@@ -8,19 +8,27 @@ import { useNavigate, useLocation } from "react-router-dom";
 import api from "../../config/api"; // instance có interceptors
 
 // ===== ENV =====
-const BASE_URL = import.meta.env.VITE_BACK_END_BASE_URL;          // vd: http://localhost:8080
+const BASE_URL = import.meta.env.VITE_BACK_END_BASE_URL; // vd: http://localhost:8080
 const LOGIN_PATH = "/api/v1/auth/login"; // Fixed path to match backend
 const FORCE_MOCK = String(import.meta.env.VITE_USE_MOCK || "0") === "1";
 
 // ===== Token helpers (Cookie) =====
 const setAccessToken = (accessToken) => {
   if (accessToken) {
-    Cookies.set("accessToken", accessToken, { expires: 1, sameSite: "Lax", path: "/" });
+    Cookies.set("accessToken", accessToken, {
+      expires: 1,
+      sameSite: "Lax",
+      path: "/",
+    });
   }
 };
 const setRefreshToken = (refreshToken) => {
   if (refreshToken) {
-    Cookies.set("refreshToken", refreshToken, { expires: 7, sameSite: "Lax", path: "/" });
+    Cookies.set("refreshToken", refreshToken, {
+      expires: 7,
+      sameSite: "Lax",
+      path: "/",
+    });
   }
 };
 const clearTokens = () => {
@@ -102,10 +110,15 @@ function loginMock({ email }) {
 
 // ===== Validation schemas =====
 const emailSchema = Yup.object({
-  email: Yup.string().trim().email("Invalid email address.").required("Please enter your email."),
+  email: Yup.string()
+    .trim()
+    .email("Invalid email address.")
+    .required("Please enter your email."),
 });
 const passwordSchema = Yup.object({
-  password: Yup.string().min(3, "Password must be at least 3 characters.").required("Please enter your password."),
+  password: Yup.string()
+    .min(3, "Password must be at least 3 characters.")
+    .required("Please enter your password."),
 });
 
 export default function LoginPage() {
@@ -116,12 +129,14 @@ export default function LoginPage() {
   const [successMsg, setSuccessMsg] = useState("");
   const [checking, setChecking] = useState(false);
 
-  // Hiển thị message từ trang khác (reset password, v.v.)
+  // Hiển thị message từ trang khác (reset password, registration, v.v.)
   useEffect(() => {
     const message = location.state?.message;
     const type = location.state?.type;
-    if (message && type === "success") {
-      setSuccessMsg(message);
+    if (message) {
+      if (type === "success" || !type) {
+        setSuccessMsg(message);
+      }
       // clear state để tránh hiện lại khi refresh
       navigate(location.pathname, { replace: true });
     }
@@ -135,7 +150,9 @@ export default function LoginPage() {
       try {
         await loginApiDual(values);
         // điều hướng về trang được yêu cầu trước đó (nếu có)
-        const redirect = new URLSearchParams(window.location.search).get("redirect");
+        const redirect = new URLSearchParams(window.location.search).get(
+          "redirect"
+        );
         navigate(redirect || "/");
       } catch (err) {
         console.error("Login error:", err?.response?.data || err?.message);
@@ -145,10 +162,18 @@ export default function LoginPage() {
           err?.response?.data?.error ||
           err?.message;
 
-        if (err?.response?.status === 401 || /bad credentials/i.test(errorMessage)) {
-          setFieldError("password", "Email or password is incorrect. Please check and try again.");
+        if (
+          err?.response?.status === 401 ||
+          /bad credentials/i.test(errorMessage)
+        ) {
+          setFieldError(
+            "password",
+            "Email or password is incorrect. Please check and try again."
+          );
         } else if (/not been approved|PENDING|APPROVE/i.test(errorMessage)) {
-          setFormMsg("Your account is pending approval. Please wait for admin approval before logging in.");
+          setFormMsg(
+            "Your account is pending approval. Please wait for admin approval before logging in."
+          );
         } else if (/account not found|user not found/i.test(errorMessage)) {
           setFieldError("email", "No account found with this email address.");
         } else {
@@ -194,7 +219,9 @@ export default function LoginPage() {
     <div className="tesla-login">
       <h1 className="t-title">Sign In</h1>
 
-      {!!successMsg && <div className="t-success t-success-global">{successMsg}</div>}
+      {!!successMsg && (
+        <div className="t-success t-success-global">{successMsg}</div>
+      )}
       {!!formMsg && <div className="t-error t-error-global">{formMsg}</div>}
 
       {step === 1 && (
@@ -207,13 +234,17 @@ export default function LoginPage() {
             id="email"
             name="email"
             type="email"
-            className={`t-input ${touched.email && errors.email ? "t-input-error" : ""}`}
+            className={`t-input ${
+              touched.email && errors.email ? "t-input-error" : ""
+            }`}
             value={values.email}
             onChange={handleChange}
             onBlur={handleBlur}
             autoComplete="email"
           />
-          {touched.email && errors.email && <div className="t-error">{errors.email}</div>}
+          {touched.email && errors.email && (
+            <div className="t-error">{errors.email}</div>
+          )}
 
           <button
             type="button"
@@ -256,15 +287,23 @@ export default function LoginPage() {
             id="password"
             name="password"
             type="password"
-            className={`t-input ${touched.password && errors.password ? "t-input-error" : ""}`}
+            className={`t-input ${
+              touched.password && errors.password ? "t-input-error" : ""
+            }`}
             value={values.password}
             onChange={handleChange}
             onBlur={handleBlur}
             autoComplete="current-password"
           />
-          {touched.password && errors.password && <div className="t-error">{errors.password}</div>}
+          {touched.password && errors.password && (
+            <div className="t-error">{errors.password}</div>
+          )}
 
-          <button type="submit" className="t-btn t-btn-primary" disabled={isSubmitting}>
+          <button
+            type="submit"
+            className="t-btn t-btn-primary"
+            disabled={isSubmitting}
+          >
             {isSubmitting ? "Signing in..." : "Sign In"}
           </button>
 

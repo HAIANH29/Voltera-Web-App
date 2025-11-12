@@ -28,8 +28,6 @@ public class AccountService {
 
     @Autowired
     private UserRepository userRepository;
-    @Autowired
-    private OtpService  otpService;
 
     @Autowired
     private SecurityConfig securityConfiguration;
@@ -55,7 +53,7 @@ public class AccountService {
         String email = username.matches(emailRegex) ? username : null;
         User userRegis = new User();
         userRegis.setEmail(email);
-        userRegis.setEmailVerified(false);
+        userRegis.setEmailVerified(true); // Set true vì đã verify OTP trước khi đến đây
         User userSaved = userRepository.save(userRegis);
 
         Account account = accountMapper.toAccount(registerRequest);
@@ -65,9 +63,7 @@ public class AccountService {
         account.setPassword(securityConfiguration.passwordEncoder().encode(registerRequest.getPassword()));
 
         accountRepository.save(account);
-        if (userSaved.getEmail() != null) {
-            otpService.generateOtp(userSaved.getEmail());
-        }
+        // Không tự động gửi OTP nữa vì đã verify trước đó
 
         return accountMapper.toRegisterResponse(account);
     }

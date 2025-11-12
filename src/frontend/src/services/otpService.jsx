@@ -27,6 +27,15 @@ export const otpService = {
     return res.data;
   },
 
+  // Verify OTP cho đăng ký (endpoint riêng)
+  async verifyRegisterOtp(email, otp) {
+    const res = await api.post("/otp/verify/register", {
+      email,
+      otp,
+    });
+    return res.data;
+  },
+
   // Resend OTP
   async resendOtp(email) {
     const res = await api.post("/otp/resend", null, {

@@ -24,6 +24,13 @@ public class OtpController {
 
     @PostMapping("/request")
     public ResponseEntity<String> requestOtp(@RequestParam String email) {
+        // Kiểm tra email đã tồn tại chưa cho registration
+        try {
+            userService.checkEmailExists(email);
+            return ResponseEntity.badRequest().body("This email is already registered");
+        } catch(BusinessException e) {
+            // Email chưa tồn tại, tiếp tục gửi OTP
+        }
         otpService.generateOtp(email);
         return ResponseEntity.ok("OTP has been sent to " + email);
     }
@@ -33,6 +40,19 @@ public class OtpController {
         try {
             userService.verifyRegisterOtp(request.getEmail(), request.getOtp());
             return ResponseEntity.ok("Email verified successfully");
+        } catch(BusinessException e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/verify/register")
+    public ResponseEntity<?> verifyRegisterOtp(@RequestBody OtpRequest request) {
+        try {
+            // Chỉ verify OTP, không tạo account
+            if (!otpService.verifyOtp(request.getEmail(), request.getOtp())) {
+                return ResponseEntity.badRequest().body("OTP invalid or expired");
+            }
+            return ResponseEntity.ok("OTP verified successfully");
         } catch(BusinessException e){
             return ResponseEntity.badRequest().body(e.getMessage());
         }
