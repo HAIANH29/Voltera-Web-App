@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PaymentPrepareResponse {
-    private Integer postId;
-    private BigDecimal amount;
+    private Integer title;
+    private BigDecimal price;
     private String orderInfo;
 }

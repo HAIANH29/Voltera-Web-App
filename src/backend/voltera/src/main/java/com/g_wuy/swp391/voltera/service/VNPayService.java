@@ -72,6 +72,9 @@ public class VNPayService {
     @Autowired
     private RefundRepository refundRepository;
 
+    @Autowired
+    private PostRepository postRepository;
+
     public VNPayResponse createPayment(VNPayRequest request, HttpServletRequest httpRequest, Integer transactionId) {
         try {
             String vnp_TxnRef = VNPayConfiguration.getRandomNumber(8);
@@ -163,7 +166,10 @@ public class VNPayService {
             if ("00".equals(params.get("vnp_ResponseCode"))) {
                 transaction.setTransactionStatus("DONE");
                 payment.setPaymentStatus("COMPLETED");
+                Post post = transaction.getPost();
+                post.setStatus("SOLD");
                 fee.setFeeStatus("PAID");
+                postRepository.save(post);
                 
                 // Update vehicle status only once
                 transaction.getPost().getVehicle().setStatus("SOLD");
