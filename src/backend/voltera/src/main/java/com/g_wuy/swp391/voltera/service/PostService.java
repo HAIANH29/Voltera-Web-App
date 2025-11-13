@@ -206,7 +206,9 @@ public class PostService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
         post.setStatus("APPROVE");
+        post.setUpdatedAt(Instant.now()); // 🔥 Update timestamp when approving
         postRepository.save(post);
+        System.out.println("✅ Post " + postId + " approved and status changed to APPROVE");
         return new ModerationResponse(post.getId(), post.getStatus(), null);
     }
 

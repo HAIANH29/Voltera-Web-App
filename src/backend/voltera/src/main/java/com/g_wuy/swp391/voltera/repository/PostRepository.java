@@ -23,7 +23,7 @@ public interface PostRepository extends JpaRepository<Post, Integer>, JpaSpecifi
     @Query("UPDATE Post p SET p.status = :status, p.updatedAt = CURRENT_TIMESTAMP WHERE p.id = :id")
     int updateStatusById(@Param("id") Integer id, @Param("status")String status);
 
-    @Query("SELECT p FROM Post p WHERE p.status = :status")
+    @Query("SELECT p FROM Post p WHERE p.status = :status ORDER BY p.createdAt ASC")
     List<Post> getAllPostByStatus(@Param("status") String status);
     
     // 🔥 NEW: Lấy tất cả posts đã thanh toán phí để admin duyệt
@@ -133,11 +133,11 @@ public interface PostRepository extends JpaRepository<Post, Integer>, JpaSpecifi
             @Param("minPrice") BigDecimal minPrice,
             @Param("maxPrice") BigDecimal maxPrice
     );
-    @Query("SELECT p FROM Post p WHERE p.vehicle IS NOT NULL AND p.status = 'APPROVE'")
+    @Query("SELECT p FROM Post p WHERE p.vehicle IS NOT NULL AND p.status = 'APPROVE' ORDER BY p.createdAt DESC")
     List<Post> findAllVehiclePosts();
 
 
-    @Query("SELECT p FROM Post p WHERE p.battery IS NOT NULL AND p.status = 'APPROVE'")
+    @Query("SELECT p FROM Post p WHERE p.battery IS NOT NULL AND p.status = 'APPROVE' ORDER BY p.createdAt DESC")
     List<Post> findAllBatteryPosts();
     List<Post> getPostsByStatusIgnoreCase(@Param("status") String status);
 
