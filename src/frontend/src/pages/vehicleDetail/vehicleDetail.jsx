@@ -38,15 +38,15 @@ const mapPostToDetail = (p) => {
     color: v?.color || "Silver",
     numberOfSeat: Number(v?.numberofseat ?? 5) || 5, // default to 5 seats
     odo: Number(v?.odo ?? 0),
-    year: Number(v?.yearmanufacture ?? 2024) || 2024,
+    year: Number(v?.yearmanufacture ?? 0) || new Date().getFullYear(),
     batteryCapacityRaw: v?.batterycapacity ?? null,
     batteryCapacity:
-      v?.batterycapacity != null ? `${v.batterycapacity} kWh` : "75 kWh",
+      v?.batterycapacity != null ? `${v.batterycapacity} kWh` : null,
     rangeRaw: v?.range ?? null,
-    range: v?.range != null ? `${v.range} km` : "400 km",
+    range: v?.range != null ? `${v.range} km` : null,
     chargingTimeRaw: v?.chargingtime ?? null,
     chargingTime:
-      v?.chargingtime != null ? `${v.chargingtime} hours` : "8 hours",
+      v?.chargingtime != null ? `${v.chargingtime} hours` : null,
     licensePlate: v?.licenseplate || null, // hide if not assigned
     origin: v?.origin || "International",
     bodyInsurance: Boolean(v?.bodyinsurance),
@@ -201,9 +201,9 @@ export default function VehicleDetail() {
 
   const formatPrice = (price) => {
     if (!price || price === 0) return "Contact for Price";
-    return new Intl.NumberFormat("en-US", {
+    return new Intl.NumberFormat("vi-VN", {
       style: "currency",
-      currency: "USD",
+      currency: "VND",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(price);
@@ -305,8 +305,7 @@ export default function VehicleDetail() {
                 <div className="detail-vehicle-info">
                   <h2>Vehicle Details</h2>
                   <div className="detail-info-grid">
-                    {vehicle.batteryCapacity &&
-                      vehicle.batteryCapacity !== "Not specified" && (
+                    {vehicle.batteryCapacity && (
                         <div className="detail-info-item">
                           <span className="detail-info-label">
                             Battery Capacity:
@@ -316,7 +315,7 @@ export default function VehicleDetail() {
                           </span>
                         </div>
                       )}
-                    {vehicle.range && vehicle.range !== "Not specified" && (
+                    {vehicle.range && (
                       <div className="detail-info-item">
                         <span className="detail-info-label">Range:</span>
                         <span className="detail-info-value">
@@ -324,8 +323,7 @@ export default function VehicleDetail() {
                         </span>
                       </div>
                     )}
-                    {vehicle.chargingTime &&
-                      vehicle.chargingTime !== "Not specified" && (
+                    {vehicle.chargingTime && (
                         <div className="detail-info-item">
                           <span className="detail-info-label">
                             Charging Time:
