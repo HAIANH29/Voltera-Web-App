@@ -11,16 +11,17 @@
   --line-electric: #e7ebf0;
   --ink-electric: #0b0f13;
   --ink-2-electric: #1a1f25;
-  --accent-electric: #667eea;         /* Blue accent for electric */  
-  --accent-dark-electric: #5a67d8;
+  --accent-electric: #1877F2;
+  /* Facebook blue for electric */
+  --accent-dark-electric: #166FE5;
   --accent-ink-electric: #fff;
-  --focus-electric: rgba(102, 126, 234, 0.14);
-  --shadow-1-electric: 0 1px 2px rgba(10,13,18,.06);
-  --shadow-2-electric: 0 12px 24px rgba(10,13,18,.08);
+  --focus-electric: rgba(24, 119, 242, 0.14);
+  --shadow-1-electric: 0 1px 2px rgba(10, 13, 18, .06);
+  --shadow-2-electric: 0 12px 24px rgba(10, 13, 18, .08);
   --radius-sm-electric: 10px;
   --radius-electric: 14px;
   --radius-lg-electric: 18px;
-  --ease-electric: cubic-bezier(.22,.61,.36,1);
+  --ease-electric: cubic-bezier(.22, .61, .36, 1);
   --success-electric: #10b981;
   --warning-electric: #f59e0b;
   --danger-electric: #ef4444;
@@ -56,8 +57,8 @@
   font-size: 15px;
   letter-spacing: 0.2px;
   font-weight: 600;
-  display: flex; 
-  align-items: center; 
+  display: flex;
+  align-items: center;
   gap: 10px;
   color: var(--ink-2-electric);
 }
@@ -123,7 +124,7 @@
   overflow: hidden;
 }
 
-.e-progress > div {
+.e-progress>div {
   background: linear-gradient(135deg, var(--accent-electric), var(--accent-dark-electric));
   height: 8px;
   transition: width 0.3s var(--ease-electric);
@@ -375,8 +376,13 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .upload-progress-text {
@@ -790,7 +796,7 @@
   transition: all 0.3s var(--ease-electric);
 }
 
-.checkbox-input:checked + .checkbox-custom {
+.checkbox-input:checked+.checkbox-custom {
   background: var(--accent-electric);
   border-color: var(--accent-electric);
   transform: scale(1.1);
@@ -804,7 +810,7 @@
   transition: opacity 0.2s var(--ease-electric);
 }
 
-.checkbox-input:checked + .checkbox-custom .checkbox-checkmark {
+.checkbox-input:checked+.checkbox-custom .checkbox-checkmark {
   opacity: 1;
 }
 
@@ -921,44 +927,44 @@
   .electric-wizard {
     padding: 16px;
   }
-  
+
   .e-grid {
     grid-template-columns: 1fr;
     gap: 16px;
   }
-  
+
   .photos-grid {
     grid-template-columns: 1fr;
     gap: 16px;
   }
-  
+
   .confirmation-section {
     padding: 24px 16px;
   }
-  
+
   .confirmation-checklist {
     gap: 20px;
   }
-  
+
   .confirmation-item {
     padding: 16px;
   }
-  
+
   .checkbox-custom {
     width: 20px;
     height: 20px;
   }
-  
+
   .status-icon {
     width: 40px;
     height: 40px;
     font-size: 20px;
   }
-  
+
   .picker-buttons {
     flex-direction: column;
   }
-  
+
   .location-btn {
     width: 100%;
   }
@@ -968,19 +974,19 @@
   .e-card-content {
     padding: 16px;
   }
-  
+
   .e-grid {
     gap: 12px;
   }
-  
+
   .photos-grid {
     gap: 12px;
   }
-  
+
   .uploaded-image {
     height: 140px;
   }
-  
+
   .e-empty-upload.enhanced {
     min-height: 140px;
     padding: 16px;
