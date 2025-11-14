@@ -71,6 +71,7 @@ public class PostService {
                 .description(dto.getDescription())
                 .price(dto.getPrice())
                 .status("PENDING")
+                .feeStatus("PENDING")
                 .createdAt(Instant.now())
                 .updatedAt(Instant.now())
                 .build();
@@ -206,6 +207,10 @@ public class PostService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
         post.setStatus("APPROVE");
+        // Ensure feeStatus is set if not already
+        if (post.getFeeStatus() == null) {
+            post.setFeeStatus("PENDING");
+        }
         post.setUpdatedAt(Instant.now()); // 🔥 Update timestamp when approving
         postRepository.save(post);
         System.out.println("✅ Post " + postId + " approved and status changed to APPROVE");
