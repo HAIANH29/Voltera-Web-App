@@ -459,12 +459,6 @@ const DashboardSeller = () => {
           <div className="content-card">
             <div className="content-card-header">
               <h2 className="content-card-title">Recent Posts</h2>
-              <button
-                className="btn-link"
-                onClick={() => (window.location.href = "/seller/posts")}
-              >
-                View all
-              </button>
             </div>
             <div className="recent-posts">
               {loading ? (
