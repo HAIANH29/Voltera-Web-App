@@ -2,7 +2,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import MiniPost from "../../components/miniPost/miniPost";
 import Pagination from "../../components/pagination/pagination";
-import "./vehiclesPage.css";
+import LoadingSpinner from "../../components/ui/LoadingSpinner";
+import "./ModernVehiclesPage.css";
 import { useNavigate } from "react-router-dom";
 import api from "../../config/api";
 import { favoriteService } from "../../services/favoriteService";
@@ -382,25 +383,8 @@ export default function VehiclesPage() {
   // ===================== RENDER =====================
   if (loading) {
     return (
-      <div className="vehicles-page">
-        <div className="vehicles-header">
-          <h1>Electric Vehicles</h1>
-        </div>
-        <div className="layout">
-          <aside className="filters skeleton-box" />
-          <div className="vehicles-grid">
-            {Array.from({ length: 12 }).map((_, idx) => (
-              <div key={idx} className="loading-card">
-                <div className="loading-image" />
-                <div className="loading-content">
-                  <div className="loading-line long" />
-                  <div className="loading-line medium" />
-                  <div className="loading-line short" />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+      <div className="vehicles-page modern-enhanced">
+        <LoadingSpinner message="Loading vehicles..." />
       </div>
     );
   }
@@ -637,14 +621,14 @@ export default function VehiclesPage() {
               </svg>
               Price Range (VND)
             </label>
-            
+
             <div className="simple-price-inputs">
               <input
                 type="text"
                 placeholder="Min Price (e.g. 500000000)"
                 value={draftFilters.minPrice}
                 onChange={(e) => {
-                  const value = e.target.value.replace(/[^0-9]/g, '');
+                  const value = e.target.value.replace(/[^0-9]/g, "");
                   console.log("Min price changed:", value);
                   setDraftFilters({ ...draftFilters, minPrice: value });
                 }}
@@ -655,7 +639,7 @@ export default function VehiclesPage() {
                 placeholder="Max Price (e.g. 1000000000)"
                 value={draftFilters.maxPrice}
                 onChange={(e) => {
-                  const value = e.target.value.replace(/[^0-9]/g, '');
+                  const value = e.target.value.replace(/[^0-9]/g, "");
                   console.log("Max price changed:", value);
                   setDraftFilters({ ...draftFilters, maxPrice: value });
                 }}
@@ -697,16 +681,6 @@ export default function VehiclesPage() {
                 {Math.min(currentPage * ITEMS_PER_PAGE, filtered.length)} of{" "}
                 {filtered.length}
               </span>
-            </div>
-            <div className="sort-controls">
-              <label>Sort by:</label>
-              <select className="sort-select">
-                <option value="newest">Newest First</option>
-                <option value="price-low">Price: Low to High</option>
-                <option value="price-high">Price: High to Low</option>
-                <option value="year-new">Year: Newest</option>
-                <option value="year-old">Year: Oldest</option>
-              </select>
             </div>
           </div>
 
