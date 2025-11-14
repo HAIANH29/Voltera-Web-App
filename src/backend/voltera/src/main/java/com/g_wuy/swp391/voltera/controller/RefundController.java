@@ -9,7 +9,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("api/refunds")
@@ -87,6 +89,46 @@ public class RefundController {
             log.error("Error rejecting refund", e);
             return ResponseEntity.internalServerError()
                 .body("Failed to reject refund: " + e.getMessage());
+        }
+    }
+    
+    @PostMapping("/payment/{refundId}")
+    @PreAuthorize("hasRole('SELLER')")
+    public ResponseEntity<?> createRefundPayment(
+            @PathVariable Integer refundId,
+            @RequestHeader("Authorization") String token,
+            HttpServletRequest request) {
+        try {
+            String paymentUrl = refundService.createRefundPaymentUrl(refundId, token, request);
+            return ResponseEntity.ok(Map.of("paymentUrl", paymentUrl));
+        } catch (Exception e) {
+            log.error("Error creating refund payment", e);
+            return ResponseEntity.internalServerError()
+                .body("Failed to create refund payment: " + e.getMessage());
+        }
+    }
+    
+    @GetMapping("/payment/callback/{refundId}")
+    public ResponseEntity<?> handleRefundPaymentCallback(
+            @PathVariable Integer refundId,
+            @RequestParam Map<String, String> params,
+            @RequestHeader("Authorization") String token) {
+        try {
+            // Verify payment success from VNPay params
+            String responseCode = params.get("vnp_ResponseCode");
+            if (!"00".equals(responseCode)) {
+                return ResponseEntity.badRequest()
+                    .body("Payment failed or cancelled");
+            }
+            
+            // Complete the refund
+            refundService.completeRefundPayment(refundId, token);
+            return ResponseEntity.ok("Refund payment completed successfully");
+            
+        } catch (Exception e) {
+            log.error("Error handling refund payment callback", e);
+            return ResponseEntity.internalServerError()
+                .body("Failed to complete refund payment: " + e.getMessage());
         }
     }
     

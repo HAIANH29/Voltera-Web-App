@@ -83,6 +83,31 @@ public class VNPayController {
         response.sendRedirect(frontendUrl.toString());
     }
 
+    @GetMapping("/return/refund/{refundId}")
+    public void handleRefundReturn(
+            @RequestParam Map<String, String> params,
+            @PathVariable("refundId") Integer refundId,
+            HttpServletRequest request,
+            HttpServletResponse response) throws java.io.IOException {
+        
+        try {
+            log.info("Handling refund payment return for refund ID: {}", refundId);
+            log.info("VNPay return parameters: {}", params);
+            
+            // Process the refund payment return
+            vnPayService.handleRefundPaymentReturn(params, refundId);
+            
+            // Redirect to frontend refund page with success
+            String frontendUrl = "http://localhost:5173/refunds?refundPaymentSuccess=" + refundId;
+            response.sendRedirect(frontendUrl);
+            
+        } catch (Exception e) {
+            log.error("Error processing refund payment return: ", e);
+            String frontendUrl = "http://localhost:5173/refunds?refundPaymentError=" + refundId;
+            response.sendRedirect(frontendUrl);
+        }
+    }
+
     @PostMapping("/refund/{refundId}")
     public ResponseEntity<VNPayRefundResponse> refund(
             @PathVariable("refundId") Integer refundId,

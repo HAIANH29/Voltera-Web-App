@@ -56,6 +56,9 @@ public class VNPayService {
 
     @Autowired
     private UserRepository userRepository;
+    
+    @Autowired
+    private RefundRepository refundRepository;
 
     @Autowired
     private VehicleRepository vehicleRepository;
@@ -68,9 +71,6 @@ public class VNPayService {
 
     @Autowired
     private BankTransferRepository bankTransferRepository;
-
-    @Autowired
-    private RefundRepository refundRepository;
 
     @Autowired
     private PostRepository postRepository;
@@ -333,6 +333,88 @@ public class VNPayService {
                     .code("99")
                     .message("Error: " + e.getMessage())
                     .build();
+        }
+    }
+    
+    public String createRefundPaymentUrl(BigDecimal amount, String orderInfo, HttpServletRequest httpRequest, Integer refundId) {
+        try {
+            String vnp_TxnRef = "REFUND_" + refundId + "_" + VNPayConfiguration.getRandomNumber(6);
+            String vnp_IpAddr = VNPayConfiguration.getIpAddress(httpRequest);
+
+            // Special return URL for refund payments
+            String returnUrlWithRefund = vnPayConfig.getVnpReturnUrl() + "/refund/" + refundId;
+
+            Map<String, String> vnp_Params = new TreeMap<>();
+            vnp_Params.put("vnp_Version", vnPayConfig.getVnpVersion());
+            vnp_Params.put("vnp_Command", "pay");
+            vnp_Params.put("vnp_TmnCode", vnPayConfig.getVnpTmnCode());
+            vnp_Params.put("vnp_Amount", String.valueOf(amount.multiply(BigDecimal.valueOf(100)).intValue())); // Convert to VND cents
+            vnp_Params.put("vnp_CurrCode", "VND");
+            vnp_Params.put("vnp_TxnRef", vnp_TxnRef);
+            vnp_Params.put("vnp_OrderInfo", orderInfo);
+            vnp_Params.put("vnp_OrderType", "refund");
+            vnp_Params.put("vnp_Locale", "vn");
+            vnp_Params.put("vnp_ReturnUrl", returnUrlWithRefund);
+            vnp_Params.put("vnp_IpAddr", vnp_IpAddr);
+
+            String createDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+            vnp_Params.put("vnp_CreateDate", createDate);
+
+            // Add expire time (30 minutes)
+            String expireDate = LocalDateTime.now().plusMinutes(30).format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+            vnp_Params.put("vnp_ExpireDate", expireDate);
+
+            StringBuilder hashData = new StringBuilder();
+            StringBuilder query = new StringBuilder();
+            for (Map.Entry<String, String> entry : vnp_Params.entrySet()) {
+                if (hashData.length() > 0) hashData.append('&');
+                hashData.append(entry.getKey()).append('=')
+                        .append(URLEncoder.encode(entry.getValue(), StandardCharsets.US_ASCII));
+
+                query.append(URLEncoder.encode(entry.getKey(), StandardCharsets.US_ASCII))
+                        .append('=')
+                        .append(URLEncoder.encode(entry.getValue(), StandardCharsets.US_ASCII))
+                        .append('&');
+            }
+
+            String vnp_SecureHash = vnPayConfig.hmacSHA512(vnPayConfig.getSecretKey(), hashData.toString());
+            String paymentUrl = vnPayConfig.getVnpPayUrl() + "?" + query + "vnp_SecureHash=" + vnp_SecureHash;
+            
+            return paymentUrl;
+            
+        } catch (Exception e) {
+            log.error("Error creating refund payment URL", e);
+            throw new RuntimeException("Failed to create payment URL: " + e.getMessage());
+        }
+    }
+    
+    public void handleRefundPaymentReturn(Map<String, String> params, Integer refundId) {
+        try {
+            log.info("Processing refund payment return for refund ID: {}", refundId);
+            
+            String vnp_ResponseCode = params.get("vnp_ResponseCode");
+            String vnp_TransactionStatus = params.get("vnp_TransactionStatus");
+            
+            if ("00".equals(vnp_ResponseCode) && "00".equals(vnp_TransactionStatus)) {
+                log.info("Refund payment successful for refund ID: {}", refundId);
+                
+                // Update refund status to REFUNDED
+                Refund refund = refundRepository.findById(refundId).orElse(null);
+                if (refund != null) {
+                    refund.setRefundStatus("REFUNDED");
+                    refund.setUpdatedAt(Instant.now());
+                    refundRepository.save(refund);
+                    log.info("Refund {} status updated to REFUNDED", refundId);
+                }
+                
+            } else {
+                log.warn("Refund payment failed for refund ID: {}. ResponseCode: {}, TransactionStatus: {}", 
+                    refundId, vnp_ResponseCode, vnp_TransactionStatus);
+            }
+            
+        } catch (Exception e) {
+            log.error("Error processing refund payment return for refund ID: {}", refundId, e);
+            throw new RuntimeException("Failed to process payment return: " + e.getMessage());
         }
     }
 }

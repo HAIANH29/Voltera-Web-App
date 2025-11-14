@@ -1301,9 +1301,8 @@ export default function DashboardAdmin() {
 
       setComplaintsLoading(true);
 
-      // Call API to resolve complaint (may need different endpoint)
-      // Note: Backend may not have resolve endpoint, this might need backend update
-      await api.put(`/api/complaints/resolve/${complaintId}`);
+      // Call API to resolve complaint using the correct endpoint
+      await api.put(`/api/complaints/${complaintId}/RESOLVED`);
 
       toast.success("Complaint marked as resolved successfully!");
 
@@ -1797,7 +1796,7 @@ export default function DashboardAdmin() {
                                   post.feeStatus === "PAID"
                                     ? "success"
                                     : post.feeStatus === "PENDING"
-                                    ? "warning" 
+                                    ? "warning"
                                     : post.feeStatus === "CANCELLED"
                                     ? "danger"
                                     : post.feeStatus === "NO_FEE"

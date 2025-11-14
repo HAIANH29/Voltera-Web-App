@@ -118,10 +118,46 @@ const RefundPage = () => {
     try {
       await refundService.acceptRefund(refundId);
       loadRefunds(); // Reload data
-      alert("Refund accepted successfully");
+      setNotification(
+        "Refund accepted. Please proceed with payment to complete the refund."
+      );
+      setTimeout(() => setNotification(""), 5000);
     } catch (err) {
       console.error("Error accepting refund:", err);
-      alert("Failed to accept refund: " + (err.response?.data || err.message));
+      const errorMessage =
+        err.response?.data || err.message || "Failed to accept refund";
+
+      // Check if it's a bank account issue
+      if (errorMessage.includes("bank account")) {
+        alert(
+          `${errorMessage}\n\nPlease register your bank account first by going to Dashboard → Register Bank.`
+        );
+      } else if (errorMessage.includes("Insufficient balance")) {
+        alert(`${errorMessage}\n\nPlease check your bank account balance.`);
+      } else {
+        alert("Failed to accept refund: " + errorMessage);
+      }
+    }
+  };
+
+  const handlePayForRefund = async (refundId) => {
+    try {
+      setLoading(true);
+      const response = await refundService.createRefundPayment(refundId);
+
+      if (response.paymentUrl) {
+        // Redirect to VNPay payment page
+        window.location.href = response.paymentUrl;
+      } else {
+        alert("Failed to create payment URL");
+      }
+    } catch (err) {
+      console.error("Error creating refund payment:", err);
+      const errorMessage =
+        err.response?.data || err.message || "Failed to create payment";
+      alert("Failed to create payment: " + errorMessage);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -373,23 +409,35 @@ const RefundPage = () => {
                     </>
                   )}
 
-                  {activeTab === "seller" &&
-                    refund.refundStatus === "REQUESTED" && (
-                      <>
+                  {activeTab === "seller" && (
+                    <>
+                      {refund.refundStatus === "REQUESTED" && (
+                        <>
+                          <button
+                            className="btn btn-success"
+                            onClick={() => handleAcceptRefund(refund.id)}
+                          >
+                            Accept
+                          </button>
+                          <button
+                            className="btn btn-danger"
+                            onClick={() => handleRejectRefund(refund.id)}
+                          >
+                            Reject
+                          </button>
+                        </>
+                      )}
+                      {refund.refundStatus === "APPROVED" && (
                         <button
-                          className="btn btn-success"
-                          onClick={() => handleAcceptRefund(refund.id)}
+                          className="btn btn-payment"
+                          onClick={() => handlePayForRefund(refund.id)}
+                          disabled={loading}
                         >
-                          Accept
+                          {loading ? "Processing..." : "Pay for Refund"}
                         </button>
-                        <button
-                          className="btn btn-danger"
-                          onClick={() => handleRejectRefund(refund.id)}
-                        >
-                          Reject
-                        </button>
-                      </>
-                    )}
+                      )}
+                    </>
+                  )}
 
                   {activeTab === "admin" && (
                     <>

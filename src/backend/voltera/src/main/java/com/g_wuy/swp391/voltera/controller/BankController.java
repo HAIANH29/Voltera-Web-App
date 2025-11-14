@@ -16,7 +16,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/bank")
@@ -82,6 +84,45 @@ public class BankController {
             log.error("Error registering seller bank account", e);
             return ResponseEntity.internalServerError()
                 .body("Failed to register bank account: " + e.getMessage());
+        }
+    }
+    
+    @PostMapping("/deposit")
+    @PreAuthorize("hasRole('SELLER')")
+    public ResponseEntity<?> depositMoney(
+            @RequestParam BigDecimal amount,
+            @RequestHeader("Authorization") String token) {
+        try {
+            if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+                return ResponseEntity.badRequest()
+                    .body("Deposit amount must be greater than 0");
+            }
+            
+            if (amount.compareTo(BigDecimal.valueOf(100000000)) > 0) { // Max 100M VND
+                return ResponseEntity.badRequest()
+                    .body("Deposit amount cannot exceed 100,000,000 VND");
+            }
+            
+            bankService.depositMoney(amount, token);
+            return ResponseEntity.ok("Money deposited successfully");
+            
+        } catch (Exception e) {
+            log.error("Error depositing money", e);
+            return ResponseEntity.internalServerError()
+                .body("Failed to deposit money: " + e.getMessage());
+        }
+    }
+    
+    @GetMapping("/balance")
+    @PreAuthorize("hasAnyRole('SELLER', 'BUYER')")
+    public ResponseEntity<?> getBalance(@RequestHeader("Authorization") String token) {
+        try {
+            BigDecimal balance = bankService.getBalance(token);
+            return ResponseEntity.ok(Map.of("balance", balance));
+        } catch (Exception e) {
+            log.error("Error getting balance", e);
+            return ResponseEntity.internalServerError()
+                .body("Failed to get balance: " + e.getMessage());
         }
     }
 }
