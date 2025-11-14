@@ -25,14 +25,14 @@ public interface PostRepository extends JpaRepository<Post, Integer>, JpaSpecifi
 
     @Query("SELECT p FROM Post p WHERE p.status = :status ORDER BY p.createdAt ASC")
     List<Post> getAllPostByStatus(@Param("status") String status);
-    
-    // 🔥 NEW: Lấy tất cả posts đã thanh toán phí để admin duyệt
-    @Query("SELECT DISTINCT p FROM Post p JOIN Fee f ON p.id = f.post.id WHERE f.feeStatus = 'PAID' AND p.status = 'PENDING'")
-    List<Post> getPendingPostsWithPaidFee();
-    
-    // 🔥 NEW: Method backup - lấy posts có fee PAID bất kể status 
-    @Query("SELECT DISTINCT p FROM Post p JOIN Fee f ON p.id = f.post.id WHERE f.feeStatus = 'PAID'")
-    List<Post> getPostsWithPaidFee();
+
+    @Query("""
+        SELECT DISTINCT p FROM Post p
+        JOIN p.fees f
+        WHERE p.status = 'PENDING'
+        AND f.feeStatus = 'PAID'
+    """)
+    List<Post> findPendingPostsWithPaidFee();
 
     @Query("SELECT p FROM Post p WHERE p.id = :id")
     Post findPostById(@Param("id") Integer id);
@@ -139,7 +139,6 @@ public interface PostRepository extends JpaRepository<Post, Integer>, JpaSpecifi
 
     @Query("SELECT p FROM Post p WHERE p.battery IS NOT NULL AND p.status = 'APPROVE' ORDER BY p.createdAt DESC")
     List<Post> findAllBatteryPosts();
-    List<Post> getPostsByStatusIgnoreCase(@Param("status") String status);
 
     @Query(value = "SELECT vi.ImageURL FROM Vehicle v " +
             "JOIN Post p ON p.PostID = v.PostID " +
@@ -150,6 +149,4 @@ public interface PostRepository extends JpaRepository<Post, Integer>, JpaSpecifi
     String getThumbnailUrlByPostId(@Param("postId") int postId);
 
 
-    @Query("SELECT f.post FROM Fee f WHERE f.feeStatus = 'VALID' AND f.post.status = 'APPROVE'")
-    List<Post> getAllPost();
 }

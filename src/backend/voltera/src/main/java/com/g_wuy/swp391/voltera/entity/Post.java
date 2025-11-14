@@ -69,23 +69,5 @@ public class Post {
     @OneToOne(mappedBy = "post", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Battery battery;
 
-    // Helper method to get current fee status from fees
-    public String getCurrentFeeStatus() {
-        if (fees != null && !fees.isEmpty()) {
-            // Get the most recent fee
-            Fee latestFee = fees.stream()
-                .filter(fee -> fee.getExpiredAt() == null || fee.getExpiredAt().isAfter(java.time.LocalDateTime.now()))
-                .findFirst()
-                .orElse(fees.get(fees.size() - 1));
-            return latestFee.getFeeStatus();
-        }
-        return this.feeStatus; // fallback to post's feeStatus
-    }
 
-    // Helper method to check if post has pending fees
-    public boolean hasPendingFees() {
-        return fees != null && fees.stream()
-            .anyMatch(fee -> "PENDING".equals(fee.getFeeStatus()) && 
-                (fee.getExpiredAt() == null || fee.getExpiredAt().isAfter(java.time.LocalDateTime.now())));
-    }
 }

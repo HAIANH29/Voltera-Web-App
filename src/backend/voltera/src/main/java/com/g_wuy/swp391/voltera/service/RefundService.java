@@ -42,6 +42,9 @@ public class RefundService {
     private RefundImageRepository refundImageRepository;
     @Autowired
     private VNPayService vnPayService;
+    @Autowired
+    private NotificationService notificationService;
+
 
     public ResponseEntity<RefundResponse> createRefund(String reason, Integer transactionId, @RequestHeader("Authorization") String token) {
         User sender = getUserByToken(token);
@@ -437,6 +440,7 @@ public class RefundService {
                 refund.setRefundStatus("REFUNDED");
                 refund.setClaimedAt(OffsetDateTime.now());
                 refundRepository.save(refund);
+                notificationService.sendForEvent(refund);
                 
                 // Update transaction status to FAILED to indicate it has been refunded
                 transaction.setTransactionStatus("FAILED");

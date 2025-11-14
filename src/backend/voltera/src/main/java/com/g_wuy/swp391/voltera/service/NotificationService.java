@@ -22,6 +22,12 @@ public class NotificationService {
         } else if (event instanceof Transaction transaction) {
             handleTransactionNotification(transaction);
         }
+     else if (event instanceof Post post) {
+        handlePostNotification(post);
+    }
+        else if (event instanceof Refund refund) {
+            handleRefundNotification(refund);
+        }
     }
 
     // ====== PAYMENT ======
@@ -107,7 +113,36 @@ public class NotificationService {
             save(transaction.getPost().getSellerId(), title, message);
 
     }
+    private void handlePostNotification(Post post) {
+        if (post.getSellerId() == null) return;
 
+        String title = "Post Update";
+        String message;
+
+        switch (post.getStatus().toUpperCase()) {
+            case "APPROVE" ->
+                    message = "Your post \"" + post.getTitle() + "\" has been approved.";
+            case "REJECT" ->
+                    message = "Your post \"" + post.getTitle() + "\" has been rejected. Please review the admin feedback.";
+            default ->
+                    message = "Your post \"" + post.getTitle() + "\" has been updated.";
+        }
+
+        save(post.getSellerId(), title, message);
+    }
+    private void handleRefundNotification(Refund refund) {
+        if (refund == null) return;
+
+        String title = "Refund Update";
+        String message = "Your refund for transaction #" + refund.getTransaction().getTransactionid()
+                + " is now " + refund.getRefundStatus();
+
+        if (refund.getSender() != null)
+            save(refund.getSender(), title, message);
+
+        if (refund.getReceiver() != null)
+            save(refund.getReceiver(), title, message);
+    }
     private void save(User user, String title, String message) {
         if (user == null) return;
 

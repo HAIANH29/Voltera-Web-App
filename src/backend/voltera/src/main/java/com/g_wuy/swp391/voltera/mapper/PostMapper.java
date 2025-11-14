@@ -33,12 +33,6 @@ public interface PostMapper {
     @Mapping(target = "thumbnail", ignore = true)
     PostResponse toPostResponse(Post post, Battery battery, Vehicle vehicle, List<String> imageUrls);
 
-    // Vehicle entity to VehicleDTO mapping
-    VehicleDTO toVehicleDTO(Vehicle vehicle);
-
-    // Battery entity to BatteryDTO mapping  
-    BatteryDTO toBatteryDTO(Battery battery);
-
 
     @AfterMapping
     default void setThumbnail(@MappingTarget PostResponse response, List<String> imageUrls) {

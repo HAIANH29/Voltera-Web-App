@@ -49,7 +49,7 @@ public class PostService {
     @Autowired
     private TransactionRepository transactionRepository;
     @Autowired
-    private FeeRepository feeRepository;
+    private NotificationService notificationService;
 
     @Transactional
     public PostResponse createPost(PostRequest dto, String username) {
@@ -207,13 +207,10 @@ public class PostService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
         post.setStatus("APPROVE");
-        // Ensure feeStatus is set if not already
-        if (post.getFeeStatus() == null) {
-            post.setFeeStatus("PENDING");
-        }
-        post.setUpdatedAt(Instant.now()); // 🔥 Update timestamp when approving
+        post.setUpdatedAt(Instant.now());
         postRepository.save(post);
-        System.out.println("✅ Post " + postId + " approved and status changed to APPROVE");
+        notificationService.sendForEvent(post);
+
         return new ModerationResponse(post.getId(), post.getStatus(), null);
     }
 
@@ -221,26 +218,14 @@ public class PostService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
         
-        // Find and refund the paid fee
-        List<Fee> fees = feeRepository.findAll().stream()
-            .filter(f -> f.getPost() != null && f.getPost().getId().equals(postId))
-            .filter(f -> "PAID".equals(f.getFeeStatus()))
-            .toList();
-        
-        for (Fee fee : fees) {
-            // Change fee status to CANCELLED to remove it from total revenue
-            fee.setFeeStatus("CANCELLED");
-            feeRepository.save(fee);
-            System.out.println("Fee refunded for rejected post ID: " + postId + 
-                             ", amount: " + fee.getAmount());
-        }
-        
         post.setStatus("REJECT");
+        post.setUpdatedAt(Instant.now());
+        postRepository.save(post);
+        notificationService.sendForEvent(post);
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String adminUsername = auth != null ? auth.getName() : "Unknown";
 
-        postRepository.save(post);
         return postMapper.toRejectResponse(post, adminUsername, request.getReason());
     }
 
@@ -356,21 +341,7 @@ public class PostService {
 
             PostResponse response = postMapper.toPostResponse(post, battery, vehicle, allImages);
             response.setLocation(post.getSellerId().getAddress());
-            
-            // Get fee status for this post
-            try {
-                // Get the most recent fee for this post
-                List<Fee> fees = feeRepository.findFeesByPostIdOrderByCreatedAtDesc(post.getId());
-                if (!fees.isEmpty()) {
-                    response.setFeeStatus(fees.get(0).getFeeStatus());
-                } else {
-                    response.setFeeStatus("PENDING"); // Default to PENDING if no fee record exists
-                }
-            } catch (Exception e) {
-                System.out.println("Error getting fee for post " + post.getId() + ": " + e.getMessage());
-                response.setFeeStatus("PENDING"); // Default to PENDING on error
-            }
-            
+
             responses.add(response);
         }
 
@@ -378,73 +349,19 @@ public class PostService {
     }
 
     public List<PostResponse> getPendingPostsWithPaidFee() {
-        try {
-            // 🔥 NEW: Thử method chính trước
-            List<Post> posts = postRepository.getPendingPostsWithPaidFee();
-            System.out.println("🔍 Found " + posts.size() + " posts with PENDING status and PAID fee");
-            
-            // 🔥 NEW: Nếu không có, thử lấy tất cả posts có fee PAID
-            if (posts.isEmpty()) {
-                System.out.println("⚠️ No PENDING posts found, checking all posts with PAID fees...");
-                List<Post> allPaidPosts = postRepository.getPostsWithPaidFee();
-                System.out.println("🔍 Found " + allPaidPosts.size() + " total posts with PAID fees");
-                
-                // Lọc chỉ lấy PENDING posts
-                posts = allPaidPosts.stream()
-                    .filter(p -> "PENDING".equals(p.getStatus()))
-                    .collect(java.util.stream.Collectors.toList());
-                System.out.println("🔍 Filtered to " + posts.size() + " PENDING posts");
-            }
-            
-            List<PostResponse> responses = new ArrayList<>();
 
-            for (Post post : posts) {
-                System.out.println("📝 Processing post ID: " + post.getId() + ", Status: " + post.getStatus());
-                List<String> allImages = new ArrayList<>();
-                Vehicle vehicle = vehicleRepository.findByPost(post).orElse(null);
-                Battery battery = batteryRepository.findByPost(post).orElse(null);
+        List<Post> posts = postRepository.findPendingPostsWithPaidFee();
 
-            if (vehicle != null) {
-                List<String> vImages = vehicleImageRepository.findByVehicle(vehicle)
-                        .stream().map(VehicleImage::getImageUrl).toList();
-                allImages.addAll(vImages);
-            }
+        return posts.stream().map(post -> {
 
-            if (battery != null) {
-                List<String> bImages = batteryImageRepository.findByBattery(battery)
-                        .stream().map(BatteryImage::getImageUrl).toList();
-                allImages.addAll(bImages);
-            }
+            Battery battery = post.getBattery();
+            Vehicle vehicle = post.getVehicle();
 
-                PostResponse response = postMapper.toPostResponse(post, battery, vehicle, allImages);
-                response.setLocation(post.getSellerId().getAddress());
-                
-                // 🔥 Lấy fee status cho post này
-                try {
-                    Fee fee = feeRepository.findFeeByPostId(post.getId());
-                    if (fee != null) {
-                        response.setFeeStatus(fee.getFeeStatus());
-                        System.out.println("💰 Post " + post.getId() + " - Fee Status: " + fee.getFeeStatus());
-                    } else {
-                        response.setFeeStatus("NOT_PAID");
-                        System.out.println("❌ Post " + post.getId() + " - No fee found, setting NOT_PAID");
-                    }
-                } catch (Exception e) {
-                    response.setFeeStatus("UNKNOWN");
-                    System.out.println("⚠️ Post " + post.getId() + " - Error getting fee: " + e.getMessage());
-                }
-                
-                responses.add(response);
-            }
-            
-            System.out.println("✅ Returning " + responses.size() + " post responses");
-            return responses;
-            
-        } catch (Exception e) {
-            System.err.println("❌ Error in getPendingPostsWithPaidFee: " + e.getMessage());
-            e.printStackTrace();
-            return new ArrayList<>();
-        }
+            List<String> imageUrls = List.of();
+
+            return postMapper.toPostResponse(post, battery, vehicle, imageUrls);
+
+        }).toList();
     }
 
     public List<PostResponse> getAllVehiclePosts() {
@@ -534,122 +451,5 @@ public class PostService {
         return responses;
     }
 
-    // 🔥 DEBUG: Method chi tiết để kiểm tra dữ liệu
-    public Map<String, Object> debugFeesData() {
-        Map<String, Object> debugInfo = new HashMap<>();
-        
-        try {
-            // 1. Kiểm tra tất cả posts PENDING
-            List<Post> allPendingPosts = postRepository.findByStatus("PENDING");
-            debugInfo.put("totalPendingPosts", allPendingPosts.size());
-            System.out.println("📊 Total PENDING posts: " + allPendingPosts.size());
-            
-            // 2. Kiểm tra tất cả fees
-            List<Fee> allFees = feeRepository.findAll();
-            long paidFees = allFees.stream().filter(f -> "PAID".equals(f.getFeeStatus())).count();
-            debugInfo.put("totalFees", allFees.size());
-            debugInfo.put("paidFees", paidFees);
-            System.out.println("💰 Total fees: " + allFees.size() + ", PAID: " + paidFees);
-            
-            // 3. Chi tiết fees PAID
-            List<Fee> paidFeeList = allFees.stream()
-                .filter(f -> "PAID".equals(f.getFeeStatus()))
-                .collect(java.util.stream.Collectors.toList());
-            
-            List<Map<String, Object>> paidFeeDetails = new ArrayList<>();
-            for (Fee fee : paidFeeList) {
-                Map<String, Object> feeDetail = new HashMap<>();
-                feeDetail.put("feeId", fee.getId());
-                feeDetail.put("amount", fee.getAmount());
-                feeDetail.put("postId", fee.getPost() != null ? fee.getPost().getId() : "NULL");
-                feeDetail.put("postStatus", fee.getPost() != null ? fee.getPost().getStatus() : "NULL");
-                feeDetail.put("postTitle", fee.getPost() != null ? fee.getPost().getTitle() : "NULL");
-                paidFeeDetails.add(feeDetail);
-                
-                System.out.println("💳 Fee " + fee.getId() + " -> Post " + 
-                    (fee.getPost() != null ? fee.getPost().getId() : "NULL") + 
-                    " (Status: " + (fee.getPost() != null ? fee.getPost().getStatus() : "NULL") + ")");
-            }
-            debugInfo.put("paidFeeDetails", paidFeeDetails);
-            
-            // 4. Kiểm tra query kết quả
-            List<Post> postsWithPaidFee = postRepository.getPendingPostsWithPaidFee();
-            debugInfo.put("queryResult_PendingWithPaid", postsWithPaidFee.size());
-            
-            List<Post> allPostsWithPaidFee = postRepository.getPostsWithPaidFee();
-            debugInfo.put("queryResult_AllWithPaid", allPostsWithPaidFee.size());
-            
-            System.out.println("🔍 Query results: PENDING+PAID=" + postsWithPaidFee.size() + 
-                ", ALL+PAID=" + allPostsWithPaidFee.size());
-                
-        } catch (Exception e) {
-            System.err.println("❌ Debug error: " + e.getMessage());
-            debugInfo.put("error", e.getMessage());
-        }
-        
-        return debugInfo;
-    }
 
-    // 🔥 NEW: Lấy tất cả posts đã thanh toán phí (để admin xem tổng quan)
-    public List<PostResponse> getAllPostsWithPaidFee() {
-        try {
-            List<Post> posts = postRepository.getPostsWithPaidFee();
-            System.out.println("🔍 getAllPostsWithPaidFee found: " + posts.size() + " posts");
-            
-            // Debug: In status của từng post
-            Map<String, Long> statusCount = new HashMap<>();
-            for (Post post : posts) {
-                String status = post.getStatus();
-                statusCount.put(status, statusCount.getOrDefault(status, 0L) + 1);
-                System.out.println("📝 Post " + post.getId() + " - Status: " + status + " - Title: " + post.getTitle());
-            }
-            System.out.println("📊 Status distribution: " + statusCount);
-            
-            List<PostResponse> responses = new ArrayList<>();
-            for (Post post : posts) {
-                List<String> allImages = new ArrayList<>();
-                Vehicle vehicle = vehicleRepository.findByPost(post).orElse(null);
-                Battery battery = batteryRepository.findByPost(post).orElse(null);
-
-                if (vehicle != null) {
-                    List<String> vImages = vehicleImageRepository.findByVehicle(vehicle)
-                            .stream().map(VehicleImage::getImageUrl).toList();
-                    allImages.addAll(vImages);
-                }
-
-                if (battery != null) {
-                    List<String> bImages = batteryImageRepository.findByBattery(battery)
-                            .stream().map(BatteryImage::getImageUrl).toList();
-                    allImages.addAll(bImages);
-                }
-
-                PostResponse response = postMapper.toPostResponse(post, battery, vehicle, allImages);
-                response.setLocation(post.getSellerId().getAddress());
-                
-                // 🔥 Lấy fee status cho post này
-                try {
-                    Fee fee = feeRepository.findFeeByPostId(post.getId());
-                    if (fee != null) {
-                        response.setFeeStatus(fee.getFeeStatus());
-                        System.out.println("💰 Post " + post.getId() + " - Fee Status: " + fee.getFeeStatus());
-                    } else {
-                        response.setFeeStatus("NOT_PAID");
-                        System.out.println("❌ Post " + post.getId() + " - No fee found, setting NOT_PAID");
-                    }
-                } catch (Exception e) {
-                    response.setFeeStatus("UNKNOWN");
-                    System.out.println("⚠️ Post " + post.getId() + " - Error getting fee: " + e.getMessage());
-                }
-                
-                responses.add(response);
-                
-                System.out.println("📝 Post " + post.getId() + " - Status: " + post.getStatus() + " - FeeStatus: " + response.getFeeStatus() + " - Title: " + post.getTitle());
-            }
-            
-            return responses;
-        } catch (Exception e) {
-            System.err.println("❌ Error in getAllPostsWithPaidFee: " + e.getMessage());
-            return new ArrayList<>();
-        }
-    }
 }

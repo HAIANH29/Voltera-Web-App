@@ -30,7 +30,7 @@ public class Battery {
     @JoinColumn(name = "postid", nullable = false)
     private Post post;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "batterytypeid")
     private BatteryType batteryTypeId;
 
