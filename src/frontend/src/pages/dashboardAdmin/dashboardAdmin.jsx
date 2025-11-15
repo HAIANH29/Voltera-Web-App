@@ -419,11 +419,11 @@ export default function DashboardAdmin() {
 
       // 🔍 Debug API calls
       console.log("📡 Making API calls to:");
-      console.log("  - /api/post/admin/pending");
+      console.log("  - api/post/admin/list/pending");
       console.log("  - /api/v1/admin/accounts/pending");
 
       const [postsRes, accountsRes] = await Promise.all([
-        api.get("/api/post/admin/pending"),
+        api.get("api/post/admin/list/pending"),
         api.get("/api/v1/admin/accounts/pending"),
       ]);
 
@@ -670,7 +670,7 @@ export default function DashboardAdmin() {
       console.log("📡 Loading pending listings...");
 
       // 🔧 Try to request with pagination or limited fields to avoid large responses
-      const response = await api.get("/api/post/admin/pending?limit=50");
+      const response = await api.get("api/post/admin/list/pending?limit=50");
       console.log(
         "📝 Pending listings response length:",
         typeof response.data === "string" ? response.data.length : "not string"
@@ -1301,9 +1301,8 @@ export default function DashboardAdmin() {
 
       setComplaintsLoading(true);
 
-      // Call API to resolve complaint (may need different endpoint)
-      // Note: Backend may not have resolve endpoint, this might need backend update
-      await api.put(`/api/complaints/resolve/${complaintId}`);
+      // Call API to resolve complaint using the correct endpoint
+      await api.put(`/api/complaints/${complaintId}/RESOLVED`);
 
       toast.success("Complaint marked as resolved successfully!");
 
@@ -1797,7 +1796,7 @@ export default function DashboardAdmin() {
                                   post.feeStatus === "PAID"
                                     ? "success"
                                     : post.feeStatus === "PENDING"
-                                    ? "warning" 
+                                    ? "warning"
                                     : post.feeStatus === "CANCELLED"
                                     ? "danger"
                                     : post.feeStatus === "NO_FEE"

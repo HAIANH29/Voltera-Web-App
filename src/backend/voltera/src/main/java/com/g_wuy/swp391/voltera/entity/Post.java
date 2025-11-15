@@ -43,6 +43,11 @@ public class Post {
     @Column(name = "status", length = 20)
     private String status;
 
+    @Size(max = 20)
+    @ColumnDefault("'PENDING'")
+    @Column(name = "feestatus", length = 20)
+    private String feeStatus;
+
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "createdat")
     private Instant createdAt;
@@ -55,8 +60,14 @@ public class Post {
     @JsonIgnore
     private List<Transaction> transactions;
 
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<Fee> fees;
+
     @OneToOne(mappedBy = "post", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Vehicle vehicle;
     @OneToOne(mappedBy = "post", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Battery battery;
+
+
 }

@@ -74,12 +74,27 @@ public class ComplaintService {
     }
 
     public ResponseEntity<Complaint> updateComplaintStatusById(Integer complaintId, String status) {
+        System.out.println("🔄 Updating complaint ID: " + complaintId + " to status: " + status);
+        
         Complaint complaint = complaintRepository.findComplaintById(complaintId);
-        if (complaint != null) {
-            complaint.setStatus(status);
-            complaintRepository.save(complaint);
+        if (complaint == null) {
+            System.out.println("❌ Complaint not found with ID: " + complaintId);
+            throw new BusinessException("Complaint not found");
         }
-
-        return ResponseEntity.ok(complaint);
+        
+        System.out.println("📄 Found complaint - Current status: " + complaint.getStatus());
+        
+        complaint.setStatus(status);
+        
+        // Nếu resolve thì cập nhật resolveAt timestamp
+        if ("RESOLVED".equals(status)) {
+            complaint.setResolveAt(LocalDateTime.now());
+            System.out.println("✅ Setting resolveAt timestamp");
+        }
+        
+        Complaint savedComplaint = complaintRepository.save(complaint);
+        System.out.println("✅ Complaint updated successfully - New status: " + savedComplaint.getStatus());
+        
+        return ResponseEntity.ok(savedComplaint);
     }
 }

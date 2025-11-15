@@ -45,7 +45,11 @@ public class PostController {
         return ResponseEntity.ok(response);
     }
 
-
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/admin/list/pending")
+    public ResponseEntity<List<PostResponse>> getPendingPostsWithPaidFee() {
+        return ResponseEntity.ok(postService.getPendingPostsWithPaidFee());
+    }
 
     @GetMapping("/list/{status}")
     public List<PostResponse> getAllPost(@PathVariable("status") String status) {
@@ -63,12 +67,6 @@ public class PostController {
     public RejectResponse rejectPost(@PathVariable Integer postId,
                                      @RequestBody RejectPostRequest request) {
         return postService.rejectPost(postId, request);
-    }
-
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/admin/pending")
-    public ResponseEntity<List<PostResponse>> getPendingPosts() {
-        return ResponseEntity.ok(postService.getAllPost("PENDING"));
     }
 
 

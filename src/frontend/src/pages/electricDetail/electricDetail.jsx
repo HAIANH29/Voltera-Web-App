@@ -56,7 +56,8 @@ const mapPostToDetail = (p) => {
       cycleCount: b?.cycleCount || 0,
       warranty: b?.warranty,
       weight: b?.weight ? `${b.weight}kg` : null,
-      lifeCycle: b?.lifeCycle ? `${b.lifeCycle} cycles` : "8000 cycles",
+      lifeCycleRaw: b?.lifecycle,
+      lifeCycle: b?.lifecycle ? `${b.lifecycle} cycles` : null,
       technical: b?.batteryTypeId?.technical,
       description: b?.batteryTypeId?.description,
     },
@@ -93,7 +94,7 @@ const mapPostToDetail = (p) => {
       "Cycle Count": b?.cycleCount ? `${b.cycleCount}` : "N/A",
       "Mileage Covered": b?.mileageCovered ? `${b.mileageCovered}km` : "N/A",
       Weight: b?.weight ? `${b.weight}kg` : "N/A",
-      "Life Cycle": b?.lifeCycle ? `${b.lifeCycle} cycles` : "N/A",
+      "Life Cycle": b?.lifecycle ? `${b.lifecycle} cycles` : "N/A",
       Warranty: b?.warranty || "N/A",
     },
 
@@ -271,9 +272,9 @@ export default function ElectricDetail() {
 
   const formatPrice = (price) => {
     if (!price || price === 0) return "Contact for Price";
-    return new Intl.NumberFormat("en-US", {
+    return new Intl.NumberFormat("vi-VN", {
       style: "currency",
-      currency: "USD",
+      currency: "VND",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(price);
@@ -295,7 +296,7 @@ export default function ElectricDetail() {
   const getCycleStatus = () => {
     if (!battery?.batteryDetails?.cycleCount) return "excellent";
     const used = battery.batteryDetails.cycleCount;
-    const totalLifeCycle = battery.batteryDetails.lifeCycle;
+    const totalLifeCycle = battery.batteryDetails.lifeCycleRaw;
     const total = totalLifeCycle ? parseInt(totalLifeCycle) : 8000; // Default lifecycle
     const percentage = (used / total) * 100;
 
@@ -468,7 +469,7 @@ export default function ElectricDetail() {
               <span>Charge Cycles:</span>
               <span className={`cycle-status ${getCycleStatus()}`}>
                 {battery.batteryDetails?.cycleCount || 0}/
-                {parseInt(battery.batteryDetails?.lifeCycle) || 8000}
+                {parseInt(battery.batteryDetails?.lifeCycleRaw) || 8000}
               </span>
             </div>
           </div>

@@ -2,10 +2,11 @@ import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import MiniPost from "../../components/miniPost/miniPost";
 import Pagination from "../../components/pagination/pagination";
+import LoadingSpinner from "../../components/ui/LoadingSpinner";
 import "../../components/pagination/pagination.css";
 import api from "../../config/api";
 import { favoriteService } from "../../services/favoriteService";
-import "./electricsPage.css";
+import "./ModernElectricsPage.css";
 
 /** Số thẻ mỗi trang */
 const ITEMS_PER_PAGE = 12;
@@ -25,10 +26,17 @@ const mapPostToCard = (p) => {
       : "");
 
   // Handle price conversion more carefully
-  console.log("🔍 Processing price for post:", p?.postId, "Price value:", p.price, "Type:", typeof p.price);
-  
+  console.log(
+    "🔍 Processing price for post:",
+    p?.postId,
+    "Price value:",
+    p.price,
+    "Type:",
+    typeof p.price
+  );
+
   let processedPrice = 0;
-  
+
   // Check if price exists and is valid
   if (p.price !== null && p.price !== undefined && p.price !== "") {
     if (typeof p.price === "string") {
@@ -44,10 +52,13 @@ const mapPostToCard = (p) => {
       processedPrice = 0;
     }
   } else {
-    console.log("❌ Price is missing, null, undefined, or empty for post:", p?.postId);
+    console.log(
+      "❌ Price is missing, null, undefined, or empty for post:",
+      p?.postId
+    );
     processedPrice = 0;
   }
-  
+
   console.log("💰 Final processed price:", processedPrice);
 
   return {
@@ -55,7 +66,9 @@ const mapPostToCard = (p) => {
     postID: String(p?.postId ?? ""),
 
     // thông tin hiển thị của battery
-    image: firstImg || "https://via.placeholder.com/400x300/667eea/ffffff?text=Battery+Pack",
+    image:
+      firstImg ||
+      "https://via.placeholder.com/400x300/667eea/ffffff?text=Battery+Pack",
     productName: p.title || `${b?.batteryTypeId?.typename || "Battery"} Pack`,
     basicInfo: [
       b?.batteryTypeId?.typename || "Li-ion",
@@ -106,11 +119,11 @@ const ElectricsPage = () => {
   const [batteries, setBatteries] = useState([]); // danh sách pin đã map
   const [loading, setLoading] = useState(true); // trạng thái loading
   const [currentPage, setCurrentPage] = useState(1);
-  
+
   // Tách input tìm kiếm/bộ lọc (draft) và bộ lọc áp dụng (applied)
   const [draftSearch, setDraftSearch] = useState("");
   const [appliedSearch, setAppliedSearch] = useState("");
-  
+
   const [draftFilters, setDraftFilters] = useState(initialFilters);
   const [appliedFilters, setAppliedFilters] = useState(initialFilters);
 
@@ -131,10 +144,13 @@ const ElectricsPage = () => {
         const items = Array.isArray(response.data) ? response.data : [];
 
         console.log("[ElectricsPage] Loaded", items.length, "battery posts");
-        
+
         // Debug first item to see structure
         if (items.length > 0) {
-          console.log("🔍 First battery post structure:", JSON.stringify(items[0], null, 2));
+          console.log(
+            "🔍 First battery post structure:",
+            JSON.stringify(items[0], null, 2)
+          );
         }
 
         const mapped = items.map(mapPostToCard);
@@ -168,7 +184,7 @@ const ElectricsPage = () => {
         console.error("❌ Error fetching batteries:", error);
         console.log("STATUS =", error?.response?.status);
         console.log("DATA   =", error?.response?.data);
-        
+
         // Only show test data in development
         if (process.env.NODE_ENV === "development") {
           const testData = [
@@ -220,7 +236,12 @@ const ElectricsPage = () => {
 
   // ===================== OPTIONS CHO BỘ LỌC (derive từ data) =====================
   const batteryTypes = useMemo(
-    () => Array.from(new Set(batteries.map((b) => b.batteryDetails?.batteryType).filter(Boolean))).sort(),
+    () =>
+      Array.from(
+        new Set(
+          batteries.map((b) => b.batteryDetails?.batteryType).filter(Boolean)
+        )
+      ).sort(),
     [batteries]
   );
 
@@ -234,14 +255,14 @@ const ElectricsPage = () => {
       const matchSearch =
         !s ||
         battery.productName?.toLowerCase().includes(s) ||
-        battery.basicInfo?.some((info) =>
-          info?.toLowerCase().includes(s)
-        ) ||
+        battery.basicInfo?.some((info) => info?.toLowerCase().includes(s)) ||
         battery.sellerName?.toLowerCase().includes(s);
 
       // từng điều kiện đơn
-      const inBatteryType = !f.batteryType || battery.batteryDetails?.batteryType === f.batteryType;
-      const inCondition = !f.condition || 
+      const inBatteryType =
+        !f.batteryType || battery.batteryDetails?.batteryType === f.batteryType;
+      const inCondition =
+        !f.condition ||
         (f.condition === "new" && battery.isNew) ||
         (f.condition === "used" && !battery.isNew);
 
@@ -250,16 +271,24 @@ const ElectricsPage = () => {
       const maxPriceOK = !f.maxPrice || battery.price <= Number(f.maxPrice);
 
       // khoảng capacity
-      const minCapacityOK = !f.minCapacity || 
-        (battery.batteryDetails?.originCapacity && battery.batteryDetails.originCapacity >= Number(f.minCapacity));
-      const maxCapacityOK = !f.maxCapacity || 
-        (battery.batteryDetails?.originCapacity && battery.batteryDetails.originCapacity <= Number(f.maxCapacity));
+      const minCapacityOK =
+        !f.minCapacity ||
+        (battery.batteryDetails?.originCapacity &&
+          battery.batteryDetails.originCapacity >= Number(f.minCapacity));
+      const maxCapacityOK =
+        !f.maxCapacity ||
+        (battery.batteryDetails?.originCapacity &&
+          battery.batteryDetails.originCapacity <= Number(f.maxCapacity));
 
       // khoảng voltage
-      const minVoltageOK = !f.minVoltage || 
-        (battery.batteryDetails?.voltage && battery.batteryDetails.voltage >= Number(f.minVoltage));
-      const maxVoltageOK = !f.maxVoltage || 
-        (battery.batteryDetails?.voltage && battery.batteryDetails.voltage <= Number(f.maxVoltage));
+      const minVoltageOK =
+        !f.minVoltage ||
+        (battery.batteryDetails?.voltage &&
+          battery.batteryDetails.voltage >= Number(f.minVoltage));
+      const maxVoltageOK =
+        !f.maxVoltage ||
+        (battery.batteryDetails?.voltage &&
+          battery.batteryDetails.voltage <= Number(f.maxVoltage));
 
       return (
         matchSearch &&
@@ -349,7 +378,7 @@ const ElectricsPage = () => {
   // ===================== FORMAT HIỂN THỊ =====================
   const formatPrice = (price) => {
     console.log("💰 Formatting price:", price, "Type:", typeof price);
-    
+
     if (!price || price === null || price === undefined) {
       console.log("❌ Price is null/undefined, showing Contact for Price");
       return "Contact for Price";
@@ -378,7 +407,7 @@ const ElectricsPage = () => {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(numPrice);
-    
+
     console.log("✅ Formatted price:", formatted);
     return formatted;
   };
@@ -386,19 +415,16 @@ const ElectricsPage = () => {
   // ===================== RENDER =====================
   if (loading) {
     return (
-      <div className="electrics-page modern-enhanced">
-        <div className="loading-container">
-          <div className="loading-spinner"></div>
-          <p>Loading batteries...</p>
-        </div>
+      <div className="electrics-page">
+        <LoadingSpinner message="Loading batteries..." />
       </div>
     );
   }
 
   return (
-    <div className="electrics-page modern-enhanced">
-      {/* Compact Header */}
-      <div className="compact-header">
+    <div className="electrics-page">
+      {/* Enhanced Header */}
+      <div className="enhanced-header">
         <h1>Electric Batteries</h1>
         <p>Quality batteries for electric vehicles</p>
       </div>
@@ -479,11 +505,14 @@ const ElectricsPage = () => {
               </svg>
               Battery Type
             </label>
-            <select 
+            <select
               className="filter-select"
               value={draftFilters.batteryType}
               onChange={(e) =>
-                setDraftFilters({ ...draftFilters, batteryType: e.target.value })
+                setDraftFilters({
+                  ...draftFilters,
+                  batteryType: e.target.value,
+                })
               }
             >
               <option value="">All Types</option>
@@ -515,7 +544,9 @@ const ElectricsPage = () => {
                 className={`status-btn ${
                   draftFilters.condition === "" ? "active" : ""
                 }`}
-                onClick={() => setDraftFilters({ ...draftFilters, condition: "" })}
+                onClick={() =>
+                  setDraftFilters({ ...draftFilters, condition: "" })
+                }
               >
                 All
               </button>
@@ -557,29 +588,29 @@ const ElectricsPage = () => {
               </svg>
               Price Range (VND)
             </label>
-            
+
             <div className="simple-price-inputs">
               <input
                 type="text"
                 placeholder="Min Price (VND) - e.g. 10,000,000"
                 value={draftFilters.minPrice}
                 onChange={(e) => {
-                  console.log('Min price input changed:', e.target.value);
-                  const value = e.target.value.replace(/[^0-9]/g, '');
+                  console.log("Min price input changed:", e.target.value);
+                  const value = e.target.value.replace(/[^0-9]/g, "");
                   setDraftFilters({ ...draftFilters, minPrice: value });
                 }}
-                style={{ pointerEvents: 'auto' }}
+                style={{ pointerEvents: "auto" }}
               />
               <input
                 type="text"
                 placeholder="Max Price (VND) - e.g. 50,000,000"
                 value={draftFilters.maxPrice}
                 onChange={(e) => {
-                  console.log('Max price input changed:', e.target.value);
-                  const value = e.target.value.replace(/[^0-9]/g, '');
+                  console.log("Max price input changed:", e.target.value);
+                  const value = e.target.value.replace(/[^0-9]/g, "");
                   setDraftFilters({ ...draftFilters, maxPrice: value });
                 }}
-                style={{ pointerEvents: 'auto' }}
+                style={{ pointerEvents: "auto" }}
               />
             </div>
           </div>
@@ -599,29 +630,29 @@ const ElectricsPage = () => {
               </svg>
               Capacity Range (kWh)
             </label>
-            
+
             <div className="simple-price-inputs">
               <input
                 type="text"
                 placeholder="Min Capacity (kWh) - e.g. 20"
                 value={draftFilters.minCapacity}
                 onChange={(e) => {
-                  console.log('Min capacity input changed:', e.target.value);
-                  const value = e.target.value.replace(/[^0-9.]/g, '');
+                  console.log("Min capacity input changed:", e.target.value);
+                  const value = e.target.value.replace(/[^0-9.]/g, "");
                   setDraftFilters({ ...draftFilters, minCapacity: value });
                 }}
-                style={{ pointerEvents: 'auto' }}
+                style={{ pointerEvents: "auto" }}
               />
               <input
                 type="text"
                 placeholder="Max Capacity (kWh) - e.g. 100"
                 value={draftFilters.maxCapacity}
                 onChange={(e) => {
-                  console.log('Max capacity input changed:', e.target.value);
-                  const value = e.target.value.replace(/[^0-9.]/g, '');
+                  console.log("Max capacity input changed:", e.target.value);
+                  const value = e.target.value.replace(/[^0-9.]/g, "");
                   setDraftFilters({ ...draftFilters, maxCapacity: value });
                 }}
-                style={{ pointerEvents: 'auto' }}
+                style={{ pointerEvents: "auto" }}
               />
             </div>
           </div>
@@ -651,21 +682,33 @@ const ElectricsPage = () => {
         </aside>
 
         {/* Main Content Grid */}
-        <main className="grid-container">
-          <div className="grid">
+        <main className="vehicles-content">
+          {/* Sort Bar */}
+          <div className="sort-bar">
+            <div className="sort-info">
+              <span className="showing-text">
+                Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}-
+                {Math.min(currentPage * ITEMS_PER_PAGE, batteries.length)} of{" "}
+                {batteries.length}
+              </span>
+            </div>
+          </div>
+
+          <div className="enhanced-grid">
             {currentBatteries.map((battery) => (
-              <MiniPost
-                key={battery.postID}
-                image={battery.image}
-                productName={battery.productName}
-                basicInfo={battery.basicInfo}
-                sellerName={battery.sellerName}
-                price={formatPrice(battery.price)}
-                isNew={battery.isNew}
-                isFavorite={battery.isFavorite}
-                onFavoriteClick={() => handleFavoriteClick(battery.postID)}
-                onClick={() => handleBatteryClick(battery)}
-              />
+              <div key={battery.postID} className="enhanced-vehicle-card">
+                <MiniPost
+                  image={battery.image}
+                  productName={battery.productName}
+                  basicInfo={battery.basicInfo}
+                  sellerName={battery.sellerName}
+                  price={formatPrice(battery.price)}
+                  isNew={battery.isNew}
+                  isFavorite={battery.isFavorite}
+                  onFavoriteClick={() => handleFavoriteClick(battery.postID)}
+                  onClick={() => handleBatteryClick(battery)}
+                />
+              </div>
             ))}
 
             {currentBatteries.length === 0 && (
@@ -723,8 +766,8 @@ const ElectricsPage = () => {
               />
               <div className="pagination-info">
                 Showing {startIndex + 1}-
-                {Math.min(endIndex, filteredBatteries.length)}{" "}
-                of {filteredBatteries.length} batteries
+                {Math.min(endIndex, filteredBatteries.length)} of{" "}
+                {filteredBatteries.length} batteries
               </div>
             </div>
           )}

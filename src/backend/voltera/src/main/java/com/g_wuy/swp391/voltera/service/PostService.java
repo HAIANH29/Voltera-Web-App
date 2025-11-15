@@ -19,6 +19,8 @@ import com.g_wuy.swp391.voltera.repository.*;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -47,7 +49,7 @@ public class PostService {
     @Autowired
     private TransactionRepository transactionRepository;
     @Autowired
-    private FeeRepository feeRepository;
+    private NotificationService notificationService;
 
     @Transactional
     public PostResponse createPost(PostRequest dto, String username) {
@@ -69,6 +71,7 @@ public class PostService {
                 .description(dto.getDescription())
                 .price(dto.getPrice())
                 .status("PENDING")
+                .feeStatus("PENDING")
                 .createdAt(Instant.now())
                 .updatedAt(Instant.now())
                 .build();
@@ -204,7 +207,10 @@ public class PostService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
         post.setStatus("APPROVE");
+        post.setUpdatedAt(Instant.now());
         postRepository.save(post);
+        notificationService.sendForEvent(post);
+
         return new ModerationResponse(post.getId(), post.getStatus(), null);
     }
 
@@ -212,26 +218,14 @@ public class PostService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
         
-        // Find and refund the paid fee
-        List<Fee> fees = feeRepository.findAll().stream()
-            .filter(f -> f.getPost() != null && f.getPost().getId().equals(postId))
-            .filter(f -> "PAID".equals(f.getFeeStatus()))
-            .toList();
-        
-        for (Fee fee : fees) {
-            // Change fee status to CANCELLED to remove it from total revenue
-            fee.setFeeStatus("CANCELLED");
-            feeRepository.save(fee);
-            System.out.println("Fee refunded for rejected post ID: " + postId + 
-                             ", amount: " + fee.getAmount());
-        }
-        
         post.setStatus("REJECT");
+        post.setUpdatedAt(Instant.now());
+        postRepository.save(post);
+        notificationService.sendForEvent(post);
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String adminUsername = auth != null ? auth.getName() : "Unknown";
 
-        postRepository.save(post);
         return postMapper.toRejectResponse(post, adminUsername, request.getReason());
     }
 
@@ -347,21 +341,7 @@ public class PostService {
 
             PostResponse response = postMapper.toPostResponse(post, battery, vehicle, allImages);
             response.setLocation(post.getSellerId().getAddress());
-            
-            // Get fee status for this post
-            try {
-                // Get the most recent fee for this post
-                List<Fee> fees = feeRepository.findFeesByPostIdOrderByCreatedAtDesc(post.getId());
-                if (!fees.isEmpty()) {
-                    response.setFeeStatus(fees.get(0).getFeeStatus());
-                } else {
-                    response.setFeeStatus("PENDING"); // Default to PENDING if no fee record exists
-                }
-            } catch (Exception e) {
-                System.out.println("Error getting fee for post " + post.getId() + ": " + e.getMessage());
-                response.setFeeStatus("PENDING"); // Default to PENDING on error
-            }
-            
+
             responses.add(response);
         }
 
@@ -369,32 +349,19 @@ public class PostService {
     }
 
     public List<PostResponse> getPendingPostsWithPaidFee() {
-        List<Post> posts = postRepository.getPendingPostsWithPaidFee();
-        List<PostResponse> responses = new ArrayList<>();
 
-        for (Post post : posts) {
-            List<String> allImages = new ArrayList<>();
-            Vehicle vehicle = vehicleRepository.findByPost(post).orElse(null);
-            Battery battery = batteryRepository.findByPost(post).orElse(null);
+        List<Post> posts = postRepository.findPendingPostsWithPaidFee();
 
-            if (vehicle != null) {
-                List<String> vImages = vehicleImageRepository.findByVehicle(vehicle)
-                        .stream().map(VehicleImage::getImageUrl).toList();
-                allImages.addAll(vImages);
-            }
+        return posts.stream().map(post -> {
 
-            if (battery != null) {
-                List<String> bImages = batteryImageRepository.findByBattery(battery)
-                        .stream().map(BatteryImage::getImageUrl).toList();
-                allImages.addAll(bImages);
-            }
+            Battery battery = post.getBattery();
+            Vehicle vehicle = post.getVehicle();
 
-            PostResponse response = postMapper.toPostResponse(post, battery, vehicle, allImages);
-            response.setLocation(post.getSellerId().getAddress());
-            responses.add(response);
-        }
+            List<String> imageUrls = List.of();
 
-        return responses;
+            return postMapper.toPostResponse(post, battery, vehicle, imageUrls);
+
+        }).toList();
     }
 
     public List<PostResponse> getAllVehiclePosts() {
@@ -483,4 +450,6 @@ public class PostService {
         }
         return responses;
     }
+
+
 }

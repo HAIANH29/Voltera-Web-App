@@ -1,14 +1,14 @@
 /* ============ Favorites Page (Modern Design) ============ */
 :root {
-  --bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --bg: #f8fafc;
   --bg-light: #f8fafc;
   --card: #ffffff;
   --card-hover: #f1f5f9;
   --line: #e2e8f0;
   --ink: #1a202c;
   --muted: #64748b;
-  --accent: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  --accent-solid: #667eea;
+  --accent: linear-gradient(135deg, #ef4444 0%, #f97316 100%);
+  --accent-solid: #ef4444;
   --accent-ink: #ffffff;
   --soft: #f1f5f9;
   --success: #10b981;
@@ -29,7 +29,7 @@
   margin: 0;
   padding: 32px;
   min-height: 100dvh;
-  background: var(--bg);
+  background: var(--bg-light);
   color: var(--ink);
   position: relative;
 }

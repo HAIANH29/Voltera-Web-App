@@ -243,6 +243,20 @@
     cursor: not-allowed;
 }
 
+.btn-payment {
+    background-color: #007bff;
+    color: white;
+}
+
+.btn-payment:hover:not(:disabled) {
+    background-color: #0056b3;
+}
+
+.btn-payment:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+}
+
 .btn-primary {
     background-color: #1877f2;
     color: white;

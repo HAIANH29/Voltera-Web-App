@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import MiniPost from "../../components/miniPost/miniPost";
+import LoadingSpinner from "../../components/ui/LoadingSpinner";
 import api from "../../config/api";
 import { favoriteService } from "../../services/favoriteService";
 import "./favoritesPage.css";
@@ -238,25 +239,7 @@ export default function FavoritesPage() {
   if (loading) {
     return (
       <div className="favorites-page">
-        <div className="favorites-header">
-          <h1>
-            <span className="heart-icon">♥</span>
-            Favorites
-          </h1>
-          <p>Your saved products list</p>
-        </div>
-        <div className="loading-grid">
-          {Array.from({ length: 8 }).map((_, index) => (
-            <div key={index} className="loading-card">
-              <div className="loading-image"></div>
-              <div className="loading-content">
-                <div className="loading-line long"></div>
-                <div className="loading-line medium"></div>
-                <div className="loading-line short"></div>
-              </div>
-            </div>
-          ))}
-        </div>
+        <LoadingSpinner message="Loading favorites..." />
       </div>
     );
   }

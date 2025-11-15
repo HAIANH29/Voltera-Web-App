@@ -1,108 +1,199 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Upload, X, Battery, Camera, DollarSign, Zap, Settings, MapPin, Navigation, Map } from "lucide-react";
+import {
+  Upload,
+  X,
+  Battery,
+  Camera,
+  DollarSign,
+  Zap,
+  Settings,
+  MapPin,
+  Navigation,
+  Map,
+} from "lucide-react";
 import toast from "react-hot-toast";
 import { listingService } from "../../../services/listing.jsx";
 import MapPicker from "../../../components/MapPicker/SimpleMapPicker.jsx";
 import "./createElectricForm.css";
 
 /** ===================== DATA & HELPERS ===================== */
-const batteryBrands = ["Tesla","CATL","BYD","LG Energy Solution","Panasonic","Samsung SDI","SK Innovation","CALB"];
-const batteryChemistry = ["NMC","LFP","NCA","NCM811","Other"];
-const connectorTypes = ["NACS","CCS","CHAdeMO","Custom"];
-const conditionOptions = ["excellent","very-good","good","fair","poor"];
+const batteryBrands = [
+  "Tesla",
+  "CATL",
+  "BYD",
+  "LG Energy Solution",
+  "Panasonic",
+  "Samsung SDI",
+  "SK Innovation",
+  "CALB",
+];
+const batteryChemistry = ["NMC", "LFP", "NCA", "NCM811", "Other"];
+const connectorTypes = ["NACS", "CCS", "CHAdeMO", "Custom"];
+const conditionOptions = ["excellent", "very-good", "good", "fair", "poor"];
 
 const ELECTRIC_IMAGE_SLOTS = [
-  { key: "battery-main",     label: "Battery Pack - Main View" },
-  { key: "battery-side",     label: "Battery Pack - Side View" },
-  { key: "battery-terminals", label: "Battery Terminals/Connections" },
-  { key: "battery-label",    label: "Battery Label/Serial Number" },
-  { key: "bms-system",       label: "BMS (Battery Management System)" },
-  { key: "documentation",    label: "Certificates & Documentation" },
+  { key: "battery-main", label: "Battery Pack Photos" },
 ];
 
 const Card = ({ title, icon, children }) => (
   <div className="e-card">
     {title && (
       <div className="e-card-header">
-        <div className="flex items-center gap-2">{icon}<span>{title}</span></div>
+        <div className="flex items-center gap-2">
+          {icon}
+          <span>{title}</span>
+        </div>
       </div>
     )}
     <div className="e-card-content">{children}</div>
   </div>
 );
 
-const L = ({ htmlFor, children }) => <label htmlFor={htmlFor} className="e-label">{children}</label>;
-const Inp = (props) => <input {...props} className={`e-input ${props.className || ""}`} />;
-const Textarea = (props) => <textarea {...props} className={`e-textarea ${props.className || ""}`} />;
+const L = ({ htmlFor, children }) => (
+  <label htmlFor={htmlFor} className="e-label">
+    {children}
+  </label>
+);
+const Inp = (props) => (
+  <input {...props} className={`e-input ${props.className || ""}`} />
+);
+const Textarea = (props) => (
+  <textarea {...props} className={`e-textarea ${props.className || ""}`} />
+);
 
 /** ===================== STEP COMPONENTS ===================== */
-function Step1({ formData, updateFormData, setShowMapPicker, fieldErrors = {} }) {
+function Step1({
+  formData,
+  updateFormData,
+  setShowMapPicker,
+  fieldErrors = {},
+}) {
   return (
     <Card title="Basic Information" icon={<Battery className="w-5 h-5" />}>
       <div className="e-grid">
         <div>
           <L htmlFor="title">Battery Pack Title *</L>
-          <Inp id="title" placeholder="Tesla Model S 100kWh Battery Pack - Excellent Condition"
-               value={formData.title ?? ""} onChange={(e)=>updateFormData("title", e.target.value)} 
-               className={fieldErrors.title ? 'error' : ''} />
-          {fieldErrors.title && <div className="text-red-500 text-sm mt-1">⚠️ {fieldErrors.title}</div>}
+          <Inp
+            id="title"
+            placeholder="Tesla Model S 100kWh Battery Pack - Excellent Condition"
+            value={formData.title ?? ""}
+            onChange={(e) => updateFormData("title", e.target.value)}
+            className={fieldErrors.title ? "error" : ""}
+          />
+          {fieldErrors.title && (
+            <div className="text-red-500 text-sm mt-1">
+              ⚠️ {fieldErrors.title}
+            </div>
+          )}
         </div>
 
         <div>
           <L htmlFor="brand">Battery Brand *</L>
-          <select id="brand" className={`e-select ${fieldErrors.brand ? 'error' : ''}`}
-                  value={formData.brand ?? ""} onChange={(e)=>updateFormData("brand", e.target.value)}>
+          <select
+            id="brand"
+            className={`e-select ${fieldErrors.brand ? "error" : ""}`}
+            value={formData.brand ?? ""}
+            onChange={(e) => updateFormData("brand", e.target.value)}
+          >
             <option value="">Select battery brand</option>
-            {batteryBrands.map(b=><option key={b} value={b}>{b}</option>)}
+            {batteryBrands.map((b) => (
+              <option key={b} value={b}>
+                {b}
+              </option>
+            ))}
           </select>
-          {fieldErrors.brand && <div className="text-red-500 text-sm mt-1">⚠️ {fieldErrors.brand}</div>}
+          {fieldErrors.brand && (
+            <div className="text-red-500 text-sm mt-1">
+              ⚠️ {fieldErrors.brand}
+            </div>
+          )}
         </div>
 
         <div>
           <L htmlFor="model">Battery Model *</L>
-          <Inp id="model" placeholder="Model S Battery Pack"
-               value={formData.model ?? ""} onChange={(e)=>updateFormData("model", e.target.value)} 
-               className={fieldErrors.model ? 'error' : ''} />
-          {fieldErrors.model && <div className="text-red-500 text-sm mt-1">⚠️ {fieldErrors.model}</div>}
+          <Inp
+            id="model"
+            placeholder="Model S Battery Pack"
+            value={formData.model ?? ""}
+            onChange={(e) => updateFormData("model", e.target.value)}
+            className={fieldErrors.model ? "error" : ""}
+          />
+          {fieldErrors.model && (
+            <div className="text-red-500 text-sm mt-1">
+              ⚠️ {fieldErrors.model}
+            </div>
+          )}
         </div>
 
         <div>
           <L htmlFor="year">Manufacturing Year *</L>
-          <select id="year" className="e-select"
-                  value={formData.year ?? ""} onChange={(e)=>updateFormData("year", e.target.value)}>
+          <select
+            id="year"
+            className="e-select"
+            value={formData.year ?? ""}
+            onChange={(e) => updateFormData("year", e.target.value)}
+          >
             <option value="">Select year</option>
-            {Array.from({length:15},(_,i)=>new Date().getFullYear()-i).map(y=><option key={y} value={String(y)}>{y}</option>)}
+            {Array.from(
+              { length: 15 },
+              (_, i) => new Date().getFullYear() - i
+            ).map((y) => (
+              <option key={y} value={String(y)}>
+                {y}
+              </option>
+            ))}
           </select>
         </div>
 
         <div>
           <L htmlFor="condition">Overall Condition *</L>
-          <select id="condition" className="e-select"
-                  value={formData.condition ?? ""} onChange={(e)=>updateFormData("condition", e.target.value)}>
+          <select
+            id="condition"
+            className="e-select"
+            value={formData.condition ?? ""}
+            onChange={(e) => updateFormData("condition", e.target.value)}
+          >
             <option value="">Select condition</option>
-            {conditionOptions.map(c=><option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1).replace('-', ' ')}</option>)}
+            {conditionOptions.map((c) => (
+              <option key={c} value={c}>
+                {c.charAt(0).toUpperCase() + c.slice(1).replace("-", " ")}
+              </option>
+            ))}
           </select>
         </div>
 
         <div>
           <L htmlFor="serialNumber">Serial Number</L>
-          <Inp id="serialNumber" placeholder="SN-ABC123XYZ"
-               value={formData.serialNumber ?? ""} onChange={(e)=>updateFormData("serialNumber", e.target.value)} />
+          <Inp
+            id="serialNumber"
+            placeholder="SN-ABC123XYZ"
+            value={formData.serialNumber ?? ""}
+            onChange={(e) => updateFormData("serialNumber", e.target.value)}
+          />
         </div>
       </div>
 
       <div className="mt-4">
         <L htmlFor="description">Description *</L>
-        <Textarea id="description" rows={4}
-                  placeholder="Describe battery condition, usage history, any maintenance, compatibility, etc."
-                  value={formData.description ?? ""} onChange={(e)=>updateFormData("description", e.target.value)} />
+        <Textarea
+          id="description"
+          rows={4}
+          placeholder="Describe battery condition, usage history, any maintenance, compatibility, etc."
+          value={formData.description ?? ""}
+          onChange={(e) => updateFormData("description", e.target.value)}
+        />
       </div>
 
       {/* Location Section */}
       <div className="mt-6">
-        <L htmlFor="location">Location * <span className="text-sm text-gray-500">(Where buyers can inspect/collect the battery)</span></L>
-        
+        <L htmlFor="location">
+          Location *{" "}
+          <span className="text-sm text-gray-500">
+            (Where buyers can inspect/collect the battery)
+          </span>
+        </L>
+
         {!formData?.coords ? (
           <div className="location-picker-empty">
             <div className="empty-state">
@@ -112,7 +203,7 @@ function Step1({ formData, updateFormData, setShowMapPicker, fieldErrors = {} })
               <h4>Set Battery Location</h4>
               <p>Help buyers find you by selecting your location</p>
             </div>
-            
+
             <div className="picker-buttons">
               <button
                 type="button"
@@ -127,21 +218,27 @@ function Step1({ formData, updateFormData, setShowMapPicker, fieldErrors = {} })
                   <div className="btn-subtitle">Search and click to select</div>
                 </div>
               </button>
-              
+
               <button
                 type="button"
                 className="location-btn secondary"
-                onClick={()=>{
-                  if (!navigator.geolocation) return toast.error("Geolocation is not supported");
+                onClick={() => {
+                  if (!navigator.geolocation)
+                    return toast.error("Geolocation is not supported");
                   navigator.geolocation.getCurrentPosition(
-                    (pos)=>{
-                      const { latitude:lat, longitude:lng } = pos.coords;
+                    (pos) => {
+                      const { latitude: lat, longitude: lng } = pos.coords;
                       updateFormData("coords", { lat, lng });
-                      updateFormData("location", `${lat.toFixed(6)}, ${lng.toFixed(6)}`);
-                      toast.success("Got current location! You can refine it on the map.");
+                      updateFormData(
+                        "location",
+                        `${lat.toFixed(6)}, ${lng.toFixed(6)}`
+                      );
+                      toast.success(
+                        "Got current location! You can refine it on the map."
+                      );
                       setTimeout(() => setShowMapPicker(true), 1000);
                     },
-                    ()=> toast.error("Unable to get location")
+                    () => toast.error("Unable to get location")
                   );
                 }}
               >
@@ -165,7 +262,8 @@ function Step1({ formData, updateFormData, setShowMapPicker, fieldErrors = {} })
                 <div className="location-details">
                   <div className="location-address">{formData.location}</div>
                   <div className="location-coords">
-                    {formData.coords.lat.toFixed(6)}, {formData.coords.lng.toFixed(6)}
+                    {formData.coords.lat.toFixed(6)},{" "}
+                    {formData.coords.lng.toFixed(6)}
                   </div>
                 </div>
                 <div className="location-status">
@@ -173,7 +271,7 @@ function Step1({ formData, updateFormData, setShowMapPicker, fieldErrors = {} })
                 </div>
               </div>
             </div>
-            
+
             <div className="location-actions">
               <button
                 type="button"
@@ -208,85 +306,168 @@ function Step2({ formData, updateFormData, fieldErrors = {} }) {
       <div className="e-grid">
         <div>
           <L htmlFor="originCapacity">Original Capacity (kWh) *</L>
-          <Inp id="originCapacity" type="number" step="0.1" placeholder="100.0"
-               value={formData.originCapacity ?? ""} onChange={(e)=>updateFormData("originCapacity", e.target.value)} />
-          <div className="text-xs text-gray-500 mt-1">Factory specification capacity</div>
+          <Inp
+            id="originCapacity"
+            type="number"
+            step="0.1"
+            placeholder="100.0"
+            value={formData.originCapacity ?? ""}
+            onChange={(e) => updateFormData("originCapacity", e.target.value)}
+          />
+          <div className="text-xs text-gray-500 mt-1">
+            Factory specification capacity
+          </div>
         </div>
 
         <div>
           <L htmlFor="remainingCapacity">Current Capacity (kWh) *</L>
-          <Inp id="remainingCapacity" type="number" step="0.1" placeholder="94.2"
-               value={formData.remainingCapacity ?? ""} onChange={(e)=>updateFormData("remainingCapacity", e.target.value)} />
-          <div className="text-xs text-gray-500 mt-1">Current measured capacity</div>
+          <Inp
+            id="remainingCapacity"
+            type="number"
+            step="0.1"
+            placeholder="94.2"
+            value={formData.remainingCapacity ?? ""}
+            onChange={(e) =>
+              updateFormData("remainingCapacity", e.target.value)
+            }
+          />
+          <div className="text-xs text-gray-500 mt-1">
+            Current measured capacity
+          </div>
         </div>
 
         <div>
           <L htmlFor="batteryHealth">Battery Health (%) *</L>
-          <Inp id="batteryHealth" type="number" min="0" max="100" placeholder="94"
-               value={formData.batteryHealth ?? ""} onChange={(e)=>updateFormData("batteryHealth", e.target.value)} />
-          <div className="text-xs text-gray-500 mt-1">State of Health (SOH)</div>
+          <Inp
+            id="batteryHealth"
+            type="number"
+            min="0"
+            max="100"
+            placeholder="94"
+            value={formData.batteryHealth ?? ""}
+            onChange={(e) => updateFormData("batteryHealth", e.target.value)}
+          />
+          <div className="text-xs text-gray-500 mt-1">
+            State of Health (SOH)
+          </div>
         </div>
 
         <div>
           <L htmlFor="voltage">Nominal Voltage (V) *</L>
-          <Inp id="voltage" type="number" step="0.1" placeholder="400.0"
-               value={formData.voltage ?? ""} onChange={(e)=>updateFormData("voltage", e.target.value)} />
+          <Inp
+            id="voltage"
+            type="number"
+            step="0.1"
+            placeholder="400.0"
+            value={formData.voltage ?? ""}
+            onChange={(e) => updateFormData("voltage", e.target.value)}
+          />
         </div>
 
         <div>
           <L htmlFor="chemistry">Cell Chemistry *</L>
-          <select id="chemistry" className="e-select"
-                  value={formData.chemistry ?? ""} onChange={(e)=>updateFormData("chemistry", e.target.value)}>
+          <select
+            id="chemistry"
+            className="e-select"
+            value={formData.chemistry ?? ""}
+            onChange={(e) => updateFormData("chemistry", e.target.value)}
+          >
             <option value="">Select chemistry</option>
-            {batteryChemistry.map(c=><option key={c} value={c}>{c}</option>)}
+            {batteryChemistry.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
           </select>
         </div>
 
         <div>
           <L htmlFor="cycleCount">Cycle Count</L>
-          <Inp id="cycleCount" type="number" placeholder="450"
-               value={formData.cycleCount ?? ""} onChange={(e)=>updateFormData("cycleCount", e.target.value)} />
-          <div className="text-xs text-gray-500 mt-1">Estimated charge cycles</div>
+          <Inp
+            id="cycleCount"
+            type="number"
+            placeholder="450"
+            value={formData.cycleCount ?? ""}
+            onChange={(e) => updateFormData("cycleCount", e.target.value)}
+          />
+          <div className="text-xs text-gray-500 mt-1">
+            Estimated charge cycles
+          </div>
         </div>
 
         <div>
           <L htmlFor="chargingSpeed">Max Charging Speed (kW)</L>
-          <Inp id="chargingSpeed" type="number" step="0.1" placeholder="250.0"
-               value={formData.chargingSpeed ?? ""} onChange={(e)=>updateFormData("chargingSpeed", e.target.value)} />
+          <Inp
+            id="chargingSpeed"
+            type="number"
+            step="0.1"
+            placeholder="250.0"
+            value={formData.chargingSpeed ?? ""}
+            onChange={(e) => updateFormData("chargingSpeed", e.target.value)}
+          />
         </div>
 
         <div>
           <L htmlFor="connectorType">Connector Type</L>
-          <select id="connectorType" className="e-select"
-                  value={formData.connectorType ?? ""} onChange={(e)=>updateFormData("connectorType", e.target.value)}>
+          <select
+            id="connectorType"
+            className="e-select"
+            value={formData.connectorType ?? ""}
+            onChange={(e) => updateFormData("connectorType", e.target.value)}
+          >
             <option value="">Select connector</option>
-            {connectorTypes.map(c=><option key={c} value={c}>{c}</option>)}
+            {connectorTypes.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
           </select>
         </div>
 
         <div>
           <L htmlFor="weight">Weight (kg)</L>
-          <Inp id="weight" type="number" step="0.1" placeholder="625.0"
-               value={formData.weight ?? ""} onChange={(e)=>updateFormData("weight", e.target.value)} />
+          <Inp
+            id="weight"
+            type="number"
+            step="0.1"
+            placeholder="625.0"
+            value={formData.weight ?? ""}
+            onChange={(e) => updateFormData("weight", e.target.value)}
+          />
         </div>
 
         <div>
           <L htmlFor="mileageCovered">Total Mileage (km)</L>
-          <Inp id="mileageCovered" type="number" placeholder="85000"
-               value={formData.mileageCovered ?? ""} onChange={(e)=>updateFormData("mileageCovered", e.target.value)} />
-          <div className="text-xs text-gray-500 mt-1">Total distance covered</div>
+          <Inp
+            id="mileageCovered"
+            type="number"
+            placeholder="85000"
+            value={formData.mileageCovered ?? ""}
+            onChange={(e) => updateFormData("mileageCovered", e.target.value)}
+          />
+          <div className="text-xs text-gray-500 mt-1">
+            Total distance covered
+          </div>
         </div>
 
         <div>
           <L htmlFor="warranty">Warranty Status</L>
-          <Inp id="warranty" placeholder="18 months remaining"
-               value={formData.warranty ?? ""} onChange={(e)=>updateFormData("warranty", e.target.value)} />
+          <Inp
+            id="warranty"
+            placeholder="18 months remaining"
+            value={formData.warranty ?? ""}
+            onChange={(e) => updateFormData("warranty", e.target.value)}
+          />
         </div>
 
         <div>
           <L htmlFor="bmsStatus">BMS Status</L>
-          <select id="bmsStatus" className="e-select"
-                  value={formData.bmsStatus ?? ""} onChange={(e)=>updateFormData("bmsStatus", e.target.value)}>
+          <select
+            id="bmsStatus"
+            className="e-select"
+            value={formData.bmsStatus ?? ""}
+            onChange={(e) => updateFormData("bmsStatus", e.target.value)}
+          >
             <option value="">Select BMS status</option>
             <option value="OK">OK - Working Properly</option>
             <option value="Replaced">Replaced Recently</option>
@@ -298,15 +479,23 @@ function Step2({ formData, updateFormData, fieldErrors = {} }) {
 
       <div className="mt-4">
         <L htmlFor="dimensions">Physical Dimensions</L>
-        <Inp id="dimensions" placeholder="e.g., 1080 x 1500 x 120 mm"
-             value={formData.dimensions ?? ""} onChange={(e)=>updateFormData("dimensions", e.target.value)} />
+        <Inp
+          id="dimensions"
+          placeholder="e.g., 1080 x 1500 x 120 mm"
+          value={formData.dimensions ?? ""}
+          onChange={(e) => updateFormData("dimensions", e.target.value)}
+        />
       </div>
 
       <div className="mt-4">
         <L htmlFor="compatibility">Vehicle Compatibility</L>
-        <Textarea id="compatibility" rows={3}
-                  placeholder="e.g., Tesla Model S 2016-2020 (all variants), Model X 2016-2019..."
-                  value={formData.compatibility ?? ""} onChange={(e)=>updateFormData("compatibility", e.target.value)} />
+        <Textarea
+          id="compatibility"
+          rows={3}
+          placeholder="e.g., Tesla Model S 2016-2020 (all variants), Model X 2016-2019..."
+          value={formData.compatibility ?? ""}
+          onChange={(e) => updateFormData("compatibility", e.target.value)}
+        />
       </div>
 
       {/* Safety Notice */}
@@ -316,14 +505,23 @@ function Step2({ formData, updateFormData, fieldErrors = {} }) {
             <span className="text-yellow-600 text-lg">⚠️</span>
           </div>
           <div>
-            <h4 className="font-semibold text-yellow-900 mb-1">Safety & Transport Notice</h4>
+            <h4 className="font-semibold text-yellow-900 mb-1">
+              Safety & Transport Notice
+            </h4>
             <p className="text-sm text-yellow-700 mb-3">
-              High-voltage battery packs require special handling and may be classified as hazardous materials for shipping.
+              High-voltage battery packs require special handling and may be
+              classified as hazardous materials for shipping.
             </p>
             <label className="inline-flex items-center gap-2">
-              <input type="checkbox" checked={!!formData.hazmatAck}
-                     onChange={(e)=>updateFormData("hazmatAck", e.target.checked)} />
-              <span className="text-sm text-yellow-800">I acknowledge hazardous material transport requirements and safety protocols</span>
+              <input
+                type="checkbox"
+                checked={!!formData.hazmatAck}
+                onChange={(e) => updateFormData("hazmatAck", e.target.checked)}
+              />
+              <span className="text-sm text-yellow-800">
+                I acknowledge hazardous material transport requirements and
+                safety protocols
+              </span>
             </label>
           </div>
         </div>
@@ -351,11 +549,19 @@ const Step3 = ({
             <Camera className="w-4 h-4 text-blue-600" />
           </div>
           <div>
-            <h4 className="font-semibold text-blue-900 mb-1">📸 Battery Photography Tips</h4>
-            <p className="text-sm text-blue-700 mb-2">High-quality photos increase buyer confidence and sale price!</p>
+            <h4 className="font-semibold text-blue-900 mb-1">
+              📸 Battery Photography Tips
+            </h4>
+            <p className="text-sm text-blue-700 mb-2">
+              High-quality photos increase buyer confidence and sale price!
+            </p>
             <ul className="text-xs text-blue-600 space-y-1">
-              <li>• <strong>First photo will be your main thumbnail</strong></li>
-              <li>• Show battery pack, BMS, terminals, and serial numbers clearly</li>
+              <li>
+                • <strong>First photo will be your main thumbnail</strong>
+              </li>
+              <li>
+                • Show battery pack, BMS, terminals, and serial numbers clearly
+              </li>
               <li>• Include any certificates or documentation</li>
               <li>• Good lighting prevents safety concerns</li>
             </ul>
@@ -372,7 +578,7 @@ const Step3 = ({
               <div className="flex items-center justify-between mb-3">
                 <L className="font-medium text-gray-700">{label}</L>
                 <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-                  {index === 0 ? 'Main Photo' : `Photo ${index + 1}`}
+                  {index === 0 ? "Main Photo" : `Photo ${index + 1}`}
                 </span>
               </div>
 
@@ -396,7 +602,9 @@ const Step3 = ({
                     <img
                       src={it.url}
                       alt={label}
-                      onClick={() => document.getElementById(`up-${key}`)?.click()}
+                      onClick={() =>
+                        document.getElementById(`up-${key}`)?.click()
+                      }
                       className="uploaded-image"
                     />
 
@@ -404,7 +612,9 @@ const Step3 = ({
                       <button
                         type="button"
                         className="e-btn-mini primary"
-                        onClick={() => document.getElementById(`up-${key}`)?.click()}
+                        onClick={() =>
+                          document.getElementById(`up-${key}`)?.click()
+                        }
                       >
                         Change
                       </button>
@@ -425,17 +635,20 @@ const Step3 = ({
                       <X className="w-4 h-4" />
                     </button>
 
-                    <div className="upload-success-badge">
-                      ✓ Uploaded
-                    </div>
+                    <div className="upload-success-badge">✓ Uploaded</div>
                   </>
                 ) : (
-                  <label htmlFor={`up-${key}`} className="e-empty-upload enhanced">
+                  <label
+                    htmlFor={`up-${key}`}
+                    className="e-empty-upload enhanced"
+                  >
                     <div className="upload-icon-container">
                       <Upload className="h-12 w-12" />
                     </div>
                     <div className="upload-text">
-                      <span className="upload-main">Click to add {label.toLowerCase()}</span>
+                      <span className="upload-main">
+                        Click to add {label.toLowerCase()}
+                      </span>
                       <span className="upload-sub">JPG, PNG up to 10MB</span>
                     </div>
                   </label>
@@ -466,15 +679,21 @@ const Step3 = ({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
-                <span className="text-green-600 text-sm font-semibold">{formData.images.length}</span>
+                <span className="text-green-600 text-sm font-semibold">
+                  {formData.images.length}
+                </span>
               </div>
               <span className="text-green-800 font-medium">
-                {formData.images.length} photo{formData.images.length !== 1 ? 's' : ''} uploaded
+                {formData.images.length} photo
+                {formData.images.length !== 1 ? "s" : ""} uploaded
               </span>
             </div>
             <span className="text-xs text-green-600 font-medium">
-              {formData.images.length >= 3 ? '✅ Excellent coverage!' : 
-               formData.images.length >= 1 ? '👍 Add more for better results' : ''}
+              {formData.images.length >= 3
+                ? "✅ Excellent coverage!"
+                : formData.images.length >= 1
+                ? "👍 Add more for better results"
+                : ""}
             </span>
           </div>
         </div>
@@ -486,28 +705,41 @@ const Step3 = ({
 function Step4({ formData, updateFormData }) {
   const totalPhotos = formData.images?.length || 0;
   const hasMainPhoto = formData.images?.[0]?.url;
-  
+
   return (
-    <Card title="Pricing & Final Review" icon={<DollarSign className="w-5 h-5" />}>
+    <Card
+      title="Pricing & Final Review"
+      icon={<DollarSign className="w-5 h-5" />}
+    >
       {/* Pricing Section */}
       <div className="pricing-section mb-8">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Pricing Information</h3>
-        
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          Pricing Information
+        </h3>
+
         <div className="e-grid">
           <div>
             <L htmlFor="price">Price (USD) *</L>
             <div className="relative">
               <DollarSign className="e-left-icon" />
-              <Inp id="price" type="number" placeholder="15000" 
-                   value={formData.price ?? ""} onChange={(e)=>updateFormData("price", e.target.value)}
-                   className="pl-9" />
+              <Inp
+                id="price"
+                type="number"
+                placeholder="15000"
+                value={formData.price ?? ""}
+                onChange={(e) => updateFormData("price", e.target.value)}
+                className="pl-9"
+              />
             </div>
           </div>
         </div>
 
         <label className="mt-3 inline-flex items-center gap-2">
-          <input type="checkbox" checked={!!formData.acceptOffers}
-                 onChange={(e)=>updateFormData("acceptOffers", e.target.checked)} />
+          <input
+            type="checkbox"
+            checked={!!formData.acceptOffers}
+            onChange={(e) => updateFormData("acceptOffers", e.target.checked)}
+          />
           <span>Accept offers from buyers</span>
         </label>
       </div>
@@ -517,9 +749,11 @@ function Step4({ formData, updateFormData }) {
         <div className="grid md:grid-cols-2 gap-8">
           <div className="battery-summary">
             <div className="summary-header">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Battery Summary</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Battery Summary
+              </h3>
             </div>
-            
+
             <div className="summary-grid">
               <div className="summary-item">
                 <span className="summary-label">Title</span>
@@ -527,7 +761,9 @@ function Step4({ formData, updateFormData }) {
               </div>
               <div className="summary-item">
                 <span className="summary-label">Battery</span>
-                <span className="summary-value">{formData.brand} {formData.model}</span>
+                <span className="summary-value">
+                  {formData.brand} {formData.model}
+                </span>
               </div>
               <div className="summary-item">
                 <span className="summary-label">Year</span>
@@ -535,35 +771,51 @@ function Step4({ formData, updateFormData }) {
               </div>
               <div className="summary-item">
                 <span className="summary-label">Capacity</span>
-                <span className="summary-value">{formData.originCapacity ? `${formData.originCapacity} kWh` : "—"}</span>
+                <span className="summary-value">
+                  {formData.originCapacity
+                    ? `${formData.originCapacity} kWh`
+                    : "—"}
+                </span>
               </div>
               <div className="summary-item">
                 <span className="summary-label">Health</span>
-                <span className="summary-value">{formData.batteryHealth ? `${formData.batteryHealth}%` : "—"}</span>
+                <span className="summary-value">
+                  {formData.batteryHealth ? `${formData.batteryHealth}%` : "—"}
+                </span>
               </div>
               <div className="summary-item">
                 <span className="summary-label">Price</span>
-                <span className="summary-value price">${parseInt(formData.price || "0").toLocaleString()}</span>
+                <span className="summary-value price">
+                  ${parseInt(formData.price || "0").toLocaleString()}
+                </span>
               </div>
             </div>
           </div>
 
           <div className="listing-preview">
             <div className="preview-header">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Listing Preview</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Listing Preview
+              </h3>
             </div>
-            
+
             {hasMainPhoto ? (
               <div className="preview-card">
                 <div className="preview-image">
-                  <img src={formData.images[0].url} alt="Main preview" className="w-full h-48 object-cover rounded-lg" />
+                  <img
+                    src={formData.images[0].url}
+                    alt="Main preview"
+                    className="w-full h-48 object-cover rounded-lg"
+                  />
                   <div className="photo-count-badge">
-                    📸 {totalPhotos} photo{totalPhotos !== 1 ? 's' : ''}
+                    📸 {totalPhotos} photo{totalPhotos !== 1 ? "s" : ""}
                   </div>
                 </div>
                 <div className="preview-content">
                   <div className="preview-title">{formData.title}</div>
-                  <div className="preview-price">${parseInt(formData.price || "0").toLocaleString()}</div>
+                  <div className="preview-price">
+                    ${parseInt(formData.price || "0").toLocaleString()}
+                  </div>
                   <p className="preview-description">
                     {(formData.description || "").slice(0, 100)}
                     {formData.description?.length > 100 ? "..." : ""}
@@ -591,26 +843,32 @@ function Step4({ formData, updateFormData }) {
         <div className="confirmation-intro">
           <h3 className="confirmation-title">Before You Submit</h3>
           <p className="confirmation-subtitle">
-            Please review and confirm the following to complete your battery listing
+            Please review and confirm the following to complete your battery
+            listing
           </p>
         </div>
 
         <div className="confirmation-checklist">
           <div className="confirmation-item">
             <label className="confirmation-checkbox">
-              <input 
-                type="checkbox" 
+              <input
+                type="checkbox"
                 checked={!!formData.confirmOwnership}
-                onChange={(e) => updateFormData("confirmOwnership", e.target.checked)}
+                onChange={(e) =>
+                  updateFormData("confirmOwnership", e.target.checked)
+                }
                 className="checkbox-input"
               />
               <div className="checkbox-custom">
                 <div className="checkbox-checkmark">✓</div>
               </div>
               <div className="checkbox-content">
-                <div className="checkbox-title">Battery Pack Ownership Verification</div>
+                <div className="checkbox-title">
+                  Battery Pack Ownership Verification
+                </div>
                 <div className="checkbox-description">
-                  I confirm that I am the legal owner of this battery pack and have the right to sell it
+                  I confirm that I am the legal owner of this battery pack and
+                  have the right to sell it
                 </div>
               </div>
             </label>
@@ -618,8 +876,8 @@ function Step4({ formData, updateFormData }) {
 
           <div className="confirmation-item">
             <label className="confirmation-checkbox">
-              <input 
-                type="checkbox" 
+              <input
+                type="checkbox"
                 checked={!!formData.agreeTerms}
                 onChange={(e) => updateFormData("agreeTerms", e.target.checked)}
                 className="checkbox-input"
@@ -628,10 +886,19 @@ function Step4({ formData, updateFormData }) {
                 <div className="checkbox-checkmark">✓</div>
               </div>
               <div className="checkbox-content">
-                <div className="checkbox-title">Terms & Guidelines Agreement</div>
+                <div className="checkbox-title">
+                  Terms & Guidelines Agreement
+                </div>
                 <div className="checkbox-description">
-                  I agree to Voltera's <a href="/terms" className="terms-link">Terms of Service</a> and 
-                  <a href="/guidelines" className="terms-link"> Listing Guidelines</a>
+                  I agree to Voltera's{" "}
+                  <a href="/terms" className="terms-link">
+                    Terms of Service
+                  </a>{" "}
+                  and
+                  <a href="/guidelines" className="terms-link">
+                    {" "}
+                    Listing Guidelines
+                  </a>
                 </div>
               </div>
             </label>
@@ -644,15 +911,21 @@ function Step4({ formData, updateFormData }) {
               <div className="status-icon ready">✓</div>
               <div className="status-text">
                 <div className="status-title">Ready to Submit</div>
-                <div className="status-description">Your battery listing will be reviewed within 24 hours</div>
+                <div className="status-description">
+                  Your battery listing will be reviewed within 24 hours
+                </div>
               </div>
             </div>
           ) : (
             <div className="status-pending">
               <div className="status-icon pending">⏳</div>
               <div className="status-text">
-                <div className="status-title">Complete Required Confirmations</div>
-                <div className="status-description">Please check both boxes above to proceed</div>
+                <div className="status-title">
+                  Complete Required Confirmations
+                </div>
+                <div className="status-description">
+                  Please check both boxes above to proceed
+                </div>
               </div>
             </div>
           )}
@@ -663,7 +936,10 @@ function Step4({ formData, updateFormData }) {
 }
 
 /** ===================== MAIN COMPONENT ===================== */
-export default function CreateElectricForm({ currentUser = null, onSubmit = () => {} }) {
+export default function CreateElectricForm({
+  currentUser = null,
+  onSubmit = () => {},
+}) {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const totalSteps = 4;
@@ -677,20 +953,40 @@ export default function CreateElectricForm({ currentUser = null, onSubmit = () =
     } catch {}
     return {
       // Basic
-      title:"", brand:"", model:"", year:"", condition:"", description:"", serialNumber:"",
-      location:"", coords:null,
+      title: "",
+      brand: "",
+      model: "",
+      year: "",
+      condition: "",
+      description: "",
+      serialNumber: "",
+      location: "",
+      coords: null,
       // Technical
-      originCapacity:"", remainingCapacity:"", batteryHealth:"", voltage:"", chemistry:"",
-      cycleCount:"", chargingSpeed:"", connectorType:"", weight:"", mileageCovered:"",
-      warranty:"", bmsStatus:"", dimensions:"", compatibility:"",
+      originCapacity: "",
+      remainingCapacity: "",
+      batteryHealth: "",
+      voltage: "",
+      chemistry: "",
+      cycleCount: "",
+      chargingSpeed: "",
+      connectorType: "",
+      weight: "",
+      mileageCovered: "",
+      warranty: "",
+      bmsStatus: "",
+      dimensions: "",
+      compatibility: "",
       // Safety
-      hazmatAck:false,
+      hazmatAck: false,
       // Pricing
-      price:"", acceptOffers:true,
+      price: "",
+      acceptOffers: true,
       // Media
-      images:[],
+      images: [],
       // Legal
-      agreeTerms:false, confirmOwnership:false,
+      agreeTerms: false,
+      confirmOwnership: false,
     };
   }, []);
 
@@ -703,7 +999,9 @@ export default function CreateElectricForm({ currentUser = null, onSubmit = () =
     if (step <= 3) {
       clearTimeout(saveTimer.current);
       saveTimer.current = setTimeout(() => {
-        try { localStorage.setItem(DRAFT_KEY, JSON.stringify(formData)); } catch {}
+        try {
+          localStorage.setItem(DRAFT_KEY, JSON.stringify(formData));
+        } catch {}
       }, 300);
     }
     return () => clearTimeout(saveTimer.current);
@@ -711,25 +1009,25 @@ export default function CreateElectricForm({ currentUser = null, onSubmit = () =
 
   const updateFormData = (field, value) => {
     setFormData((p) => ({ ...p, [field]: value ?? "" }));
-    
+
     // Clear field error when user starts typing
     if (fieldErrors[field]) {
-      setFieldErrors(prev => ({
+      setFieldErrors((prev) => ({
         ...prev,
-        [field]: null
+        [field]: null,
       }));
     }
   };
 
   const validateCurrentStep = () => {
     const errors = {};
-    
+
     if (step === 1) {
       if (!formData.title?.trim()) errors.title = "Title is required";
-      if (!formData.brand?.trim()) errors.brand = "Brand is required";  
+      if (!formData.brand?.trim()) errors.brand = "Brand is required";
       if (!formData.model?.trim()) errors.model = "Model is required";
     }
-    
+
     return errors;
   };
 
@@ -742,8 +1040,12 @@ export default function CreateElectricForm({ currentUser = null, onSubmit = () =
     updateFormData("images", imgs);
   };
 
-  const removeImageForSlot = (slotKey) => updateFormData("images", (formData.images || []).filter((i) => i.slot !== slotKey));
-  
+  const removeImageForSlot = (slotKey) =>
+    updateFormData(
+      "images",
+      (formData.images || []).filter((i) => i.slot !== slotKey)
+    );
+
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadingSlot, setUploadingSlot] = useState(null);
 
@@ -751,7 +1053,11 @@ export default function CreateElectricForm({ currentUser = null, onSubmit = () =
     if (!file) return;
     setUploadingSlot(slotKey);
     try {
-      const url = await listingService.uploadImageOne(file, "electric", setUploadProgress);
+      const url = await listingService.uploadImageOne(
+        file,
+        "electric",
+        setUploadProgress
+      );
       setImageForSlot(slotKey, { url });
       toast.success("Image uploaded");
     } catch (error) {
@@ -773,14 +1079,105 @@ export default function CreateElectricForm({ currentUser = null, onSubmit = () =
     if (!formData.agreeTerms || !formData.confirmOwnership) {
       return toast.error("Please confirm ownership and accept the terms");
     }
-    
-    // Basic validation
+
+    // Step 1 validation - Basic Information
     if (!formData.title || !formData.brand || !formData.model) {
-      return toast.error("Please fill all required fields");
+      return toast.error(
+        "Please fill all required fields: Title, Brand, and Model"
+      );
     }
-    
+
+    if (!formData.description || formData.description.trim().length < 1) {
+      return toast.error("Please provide a description");
+    }
+
+    if (!formData.year) {
+      return toast.error("Please select the manufacturing year");
+    }
+
+    if (!formData.condition) {
+      return toast.error("Please select the battery condition");
+    }
+
+    // Location validation
+    if (!formData.coords || !formData.location) {
+      return toast.error(
+        "Please set the battery location for buyers to inspect/collect"
+      );
+    }
+
+    // Step 2 validation - Technical Specifications
+    if (!formData.originCapacity || Number(formData.originCapacity) <= 0) {
+      return toast.error("Please enter the original capacity (kWh)");
+    }
+
+    if (
+      !formData.remainingCapacity ||
+      Number(formData.remainingCapacity) <= 0
+    ) {
+      return toast.error("Please enter the current remaining capacity (kWh)");
+    }
+
+    if (!formData.batteryHealth || Number(formData.batteryHealth) <= 0) {
+      return toast.error("Please enter the battery health percentage");
+    }
+
+    if (!formData.voltage || Number(formData.voltage) <= 0) {
+      return toast.error("Please enter the nominal voltage");
+    }
+
+    if (!formData.chemistry) {
+      return toast.error("Please select the battery chemistry type");
+    }
+
+    // Price validation
     if (!formData.price || Number(formData.price) <= 0) {
       return toast.error("Please enter a valid price");
+    }
+
+    // Range validations
+    if (
+      formData.year &&
+      (formData.year < 1990 || formData.year > new Date().getFullYear() + 2)
+    ) {
+      return toast.error(
+        `Manufacturing year must be between 1990 and ${
+          new Date().getFullYear() + 2
+        }`
+      );
+    }
+
+    if (
+      formData.originCapacity &&
+      (formData.originCapacity <= 0 || formData.originCapacity > 300)
+    ) {
+      return toast.error("Original capacity must be between 0 and 300 kWh");
+    }
+
+    if (
+      formData.remainingCapacity &&
+      formData.originCapacity &&
+      formData.remainingCapacity > formData.originCapacity
+    ) {
+      return toast.error("Remaining capacity cannot exceed original capacity");
+    }
+
+    if (
+      formData.batteryHealth &&
+      (formData.batteryHealth < 0 || formData.batteryHealth > 100)
+    ) {
+      return toast.error("Battery health must be between 0 and 100%");
+    }
+
+    if (
+      formData.cycleCount &&
+      (formData.cycleCount < 0 || formData.cycleCount > 10000)
+    ) {
+      return toast.error("Cycle count must be between 0 and 10,000");
+    }
+
+    if (formData.voltage && (formData.voltage < 0 || formData.voltage > 1000)) {
+      return toast.error("Voltage must be between 0 and 1000V");
     }
 
     if (!formData.hazmatAck) {
@@ -789,11 +1186,13 @@ export default function CreateElectricForm({ currentUser = null, onSubmit = () =
 
     const imgs = formData.images || [];
     if (imgs.length === 0) {
-      return toast.error("Please upload at least one photo of your battery pack");
+      return toast.error(
+        "Please upload at least one photo of your battery pack"
+      );
     }
 
-    if (imgs.some(i => !i.url)) {
-      return toast.error("Please wait for all photos to finish uploading.");
+    if (imgs.some((i) => !i.url)) {
+      return toast.error("Please wait for all photos to finish uploading");
     }
 
     // Create payload for electric post
@@ -806,123 +1205,190 @@ export default function CreateElectricForm({ currentUser = null, onSubmit = () =
       vehicleImages: [],
       battery: {
         serialNumber: formData.serialNumber || `EV-${Date.now()}`,
-        originCapacity: formData.originCapacity ? parseFloat(formData.originCapacity) : 0,
-        remainingCapacity: formData.remainingCapacity ? parseFloat(formData.remainingCapacity) : 0,
-        mileageCovered: formData.mileageCovered ? parseInt(formData.mileageCovered) : 0,
+        originCapacity: formData.originCapacity
+          ? parseFloat(formData.originCapacity)
+          : 0,
+        remainingCapacity: formData.remainingCapacity
+          ? parseFloat(formData.remainingCapacity)
+          : 0,
+        mileageCovered: formData.mileageCovered
+          ? parseInt(formData.mileageCovered)
+          : 0,
         voltage: formData.voltage ? parseFloat(formData.voltage) : 0,
         cycleCount: formData.cycleCount ? parseInt(formData.cycleCount) : 0,
         warranty: formData.warranty || "",
         weight: formData.weight ? parseFloat(formData.weight) : 0,
-        lifeCycle: formData.condition || "",
-        // Extended fields
-        brand: formData.brand || "",
-        model: formData.model || "",
-        condition: formData.condition || "",
-        batteryHealth: formData.batteryHealth ? parseInt(formData.batteryHealth) : 0,
-        chemistry: formData.chemistry || "",
-        chargingSpeed: formData.chargingSpeed ? parseFloat(formData.chargingSpeed) : 0,
-        warrantyRemaining: formData.warranty || "",
-        bmsStatus: formData.bmsStatus || "",
-        connectorType: formData.connectorType || "",
-        compatibility: formData.compatibility || "",
-        manufactureDate: formData.year ? `${formData.year}-01-01` : null,
-        dimensions: formData.dimensions || "",
-        year: formData.year || "",
-        hazmatAck: !!formData.hazmatAck,
-        batteryTypeId: null, // Will be handled by backend
+        lifecycle: formData.condition || "",
+        // Create BatteryType object for backend
+        batteryTypeId: {
+          id: 1, // Default battery type ID - backend will handle if not exist
+          typename: formData.chemistry || "Generic",
+          technical: `${formData.brand} ${formData.model} ${
+            formData.chemistry || "Battery"
+          }`,
+          description: `Battery pack from ${formData.brand} with ${
+            formData.chemistry || "generic"
+          } chemistry`,
+        },
       },
-      batteryImages: imgs.map(i => i.url),
+      batteryImages: imgs.map((i) => i.url),
     };
 
     try {
-      console.log("📤 Sending electric post payload:", JSON.stringify(payload, null, 2));
-      
+      console.log(
+        "📤 Sending electric post payload:",
+        JSON.stringify(payload, null, 2)
+      );
+
+      // Check authentication
+      const getCookie = (name) => {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(";").shift();
+        return null;
+      };
+
+      const token = getCookie("accessToken");
+      console.log("🔐 Auth token present:", !!token);
+      if (!token) {
+        toast.error("Please login first");
+        return;
+      }
+
       const created = await listingService.createPost(payload);
-      toast.success("Battery pack posted successfully! Your listing is pending admin approval.");
-      
+      toast.success(
+        "Battery pack posted successfully! Your listing is pending admin approval."
+      );
+
       // Clear draft
-      try { localStorage.removeItem(DRAFT_KEY); } catch {}
-      
+      try {
+        localStorage.removeItem(DRAFT_KEY);
+      } catch {}
+
       onSubmit(created || payload);
-      
+
       setTimeout(() => {
-        navigate("/", { 
+        navigate("/", {
           replace: true,
-          state: { 
-            message: "Your battery pack listing has been submitted for review. You'll be notified once it's approved." 
-          }
+          state: {
+            message:
+              "Your battery pack listing has been submitted for review. You'll be notified once it's approved.",
+          },
         });
       }, 2000);
-      
     } catch (error) {
       console.error("❌ Submit error:", error);
+      console.error("❌ Response data:", error?.response?.data);
+      console.error("❌ Status:", error?.response?.status);
+      console.error("❌ Headers:", error?.response?.headers);
+
       const errorData = error?.response?.data;
       let msg = "Failed to create battery listing";
-      
+
       if (errorData) {
-        if (typeof errorData === 'string') {
+        if (typeof errorData === "string") {
           msg = errorData;
         } else if (errorData.message) {
           msg = errorData.message;
+        } else if (errorData.error) {
+          msg = errorData.error;
+        } else {
+          msg = `Server error: ${JSON.stringify(errorData)}`;
         }
       }
-      
+
       toast.error(msg);
     }
   };
 
   const renderStep = () => {
     switch (step) {
-      case 1: return <Step1 formData={formData} updateFormData={updateFormData} setShowMapPicker={setShowMapPicker} fieldErrors={fieldErrors} />;
-      case 2: return <Step2 formData={formData} updateFormData={updateFormData} fieldErrors={fieldErrors} />;
-      case 3: return (
-        <Step3
-          formData={formData}
-          setImageForSlot={setImageForSlot}
-          removeImageForSlot={removeImageForSlot}
-          handleUploadForSlot={handleUploadForSlot}
-          uploadingSlot={uploadingSlot}
-          uploadProgress={uploadProgress}
-        />
-      );
-      case 4: return <Step4 formData={formData} updateFormData={updateFormData} />;
-      default: return null;
+      case 1:
+        return (
+          <Step1
+            formData={formData}
+            updateFormData={updateFormData}
+            setShowMapPicker={setShowMapPicker}
+            fieldErrors={fieldErrors}
+          />
+        );
+      case 2:
+        return (
+          <Step2
+            formData={formData}
+            updateFormData={updateFormData}
+            fieldErrors={fieldErrors}
+          />
+        );
+      case 3:
+        return (
+          <Step3
+            formData={formData}
+            setImageForSlot={setImageForSlot}
+            removeImageForSlot={removeImageForSlot}
+            handleUploadForSlot={handleUploadForSlot}
+            uploadingSlot={uploadingSlot}
+            uploadProgress={uploadProgress}
+          />
+        );
+      case 4:
+        return <Step4 formData={formData} updateFormData={updateFormData} />;
+      default:
+        return null;
     }
   };
 
   return (
     <>
-      <form onSubmit={(e)=>e.preventDefault()} className="electric-wizard space-y-6">
+      <form
+        onSubmit={(e) => e.preventDefault()}
+        className="electric-wizard space-y-6"
+      >
         {/* Progress */}
         <div>
           <div className="flex justify-between text-sm mb-2">
             <span>Step {step} of 4</span>
-            <span>{Math.round((step/4)*100)}% Complete</span>
+            <span>{Math.round((step / 4) * 100)}% Complete</span>
           </div>
-          <div className="e-progress h-2"><div style={{ width: `${(step/4)*100}%` }} /></div>
+          <div className="e-progress h-2">
+            <div style={{ width: `${(step / 4) * 100}%` }} />
+          </div>
         </div>
 
         {renderStep()}
 
         {/* Navigation */}
         <div className="flex justify-between">
-          <button className="e-btn e-btn-outline" onClick={()=>setStep(s=>Math.max(1,s-1))} disabled={step===1}>Previous</button>
-          {step===4 ? (
-            <button className="e-btn e-btn-primary"
-                    onClick={submitForm}
-                    disabled={!formData.agreeTerms || !formData.confirmOwnership}>
+          <button
+            className="e-btn e-btn-outline"
+            onClick={() => setStep((s) => Math.max(1, s - 1))}
+            disabled={step === 1}
+          >
+            Previous
+          </button>
+          {step === 4 ? (
+            <button
+              className="e-btn e-btn-primary"
+              onClick={submitForm}
+              disabled={!formData.agreeTerms || !formData.confirmOwnership}
+            >
               Submit Battery Listing
             </button>
           ) : (
-            <button className="e-btn e-btn-primary" onClick={() => {
-              const stepErrors = validateCurrentStep();
-              if (Object.keys(stepErrors).length > 0) {
-                setFieldErrors(prev => ({ ...prev, ...stepErrors }));
-                toast.error("Please fix the errors before continuing");
-                return;
-              }
-              setStep(s => Math.min(4, s + 1));
-            }}>Next</button>
+            <button
+              className="e-btn e-btn-primary"
+              onClick={() => {
+                const stepErrors = validateCurrentStep();
+                if (Object.keys(stepErrors).length > 0) {
+                  setFieldErrors((prev) => ({ ...prev, ...stepErrors }));
+                  toast.error("Please fix the errors before continuing");
+                  return;
+                }
+                setStep((s) => Math.min(4, s + 1));
+              }}
+            >
+              Next
+            </button>
           )}
         </div>
       </form>

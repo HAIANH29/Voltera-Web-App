@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.multipart.MultipartFile;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.OffsetDateTime;
@@ -39,6 +40,11 @@ public class RefundService {
     private BankTransferRepository bankTransferRepository;
     @Autowired
     private RefundImageRepository refundImageRepository;
+    @Autowired
+    private VNPayService vnPayService;
+    @Autowired
+    private NotificationService notificationService;
+
 
     public ResponseEntity<RefundResponse> createRefund(String reason, Integer transactionId, @RequestHeader("Authorization") String token) {
         User sender = getUserByToken(token);
@@ -263,30 +269,86 @@ public class RefundService {
             throw new BusinessException("Refund is not in requested status");
         }
         
-        // Deduct money from seller's bank account
-        Bank sellerBank = bankRepository.findBankByUserId(seller.getId());
+        // Check if seller has bank account (for future reference)
+        Bank sellerBank = bankRepository.findByUserId(seller.getId());
         if (sellerBank == null) {
-            throw new BusinessException("Seller bank account not found");
+            // Try alternative method as fallback
+            sellerBank = bankRepository.findBankByUserId(seller.getId());
+        }
+        
+        if (sellerBank == null) {
+            throw new BusinessException("You must register a bank account before accepting refunds. Please go to your dashboard and register your bank account first.");
+        }
+        
+        // Set status to APPROVED - seller will pay via VNPay to complete refund
+        refund.setRefundStatus("APPROVED");
+        refund.setUpdatedAt(Instant.now());
+        refundRepository.save(refund);
+        
+        log.info("Refund {} accepted by seller {}. Payment required to complete refund.", 
+            refundId, seller.getId());
+    }
+    
+    public String createRefundPaymentUrl(Integer refundId, String token, HttpServletRequest request) {
+        User seller = getUserByToken(token);
+        
+        Refund refund = refundRepository.findById(refundId)
+            .orElseThrow(() -> new BusinessException("Refund not found"));
+            
+        // Verify seller owns the refund
+        if (!refund.getReceiver().getId().equals(seller.getId())) {
+            throw new BusinessException("You don't have permission to pay for this refund");
+        }
+        
+        if (!"APPROVED".equalsIgnoreCase(refund.getRefundStatus())) {
+            throw new BusinessException("Refund is not in approved status for payment");
         }
         
         Transaction transaction = refund.getTransaction();
         BigDecimal refundAmount = transaction.getPrice();
         
-        if (sellerBank.getBalance().compareTo(refundAmount) < 0) {
-            throw new BusinessException("Insufficient balance in seller account");
+        log.info("Creating refund payment URL - RefundId: {}, Amount: {}, SellerId: {}", 
+            refundId, refundAmount, seller.getId());
+        
+        // Create payment URL using existing VNPay service
+        // We'll create a special payment for refund (not regular transaction)
+        try {
+            String vnpayUrl = vnPayService.createRefundPaymentUrl(
+                refundAmount, 
+                "Refund payment for order #" + refund.getId(), 
+                request,
+                refundId
+            );
+            log.info("Successfully created refund payment URL for refund {}", refundId);
+            return vnpayUrl;
+        } catch (Exception e) {
+            log.error("Failed to create refund payment URL for refund {}: {}", refundId, e.getMessage(), e);
+            throw new BusinessException("Failed to create payment URL: " + e.getMessage());
+        }
+    }
+    
+    public void completeRefundPayment(Integer refundId, String token) {
+        User seller = getUserByToken(token);
+        
+        Refund refund = refundRepository.findById(refundId)
+            .orElseThrow(() -> new BusinessException("Refund not found"));
+            
+        // Verify seller owns the refund
+        if (!refund.getReceiver().getId().equals(seller.getId())) {
+            throw new BusinessException("You don't have permission to complete this refund");
         }
         
-        // Deduct money from seller
-        sellerBank.setBalance(sellerBank.getBalance().subtract(refundAmount));
-        bankRepository.save(sellerBank);
+        if (!"PAYMENT_PENDING".equalsIgnoreCase(refund.getRefundStatus())) {
+            throw new BusinessException("Refund is not in payment pending status");
+        }
         
-        // Update refund status
+        // Payment successful, now approve the refund
         refund.setRefundStatus("APPROVED");
         refund.setUpdatedAt(Instant.now());
         refundRepository.save(refund);
         
-        log.info("Refund {} accepted by seller {}. Amount {} deducted from seller account.", 
-            refundId, seller.getId(), refundAmount);
+        log.info("Refund {} completed by seller {} after successful payment.", 
+            refundId, seller.getId());
     }
     
     public void rejectRefund(Integer refundId, String token) {
@@ -378,6 +440,7 @@ public class RefundService {
                 refund.setRefundStatus("REFUNDED");
                 refund.setClaimedAt(OffsetDateTime.now());
                 refundRepository.save(refund);
+                notificationService.sendForEvent(refund);
                 
                 // Update transaction status to FAILED to indicate it has been refunded
                 transaction.setTransactionStatus("FAILED");

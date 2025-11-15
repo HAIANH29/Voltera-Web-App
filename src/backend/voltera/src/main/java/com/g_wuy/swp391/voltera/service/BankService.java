@@ -107,4 +107,43 @@ public class BankService {
         
         return bankRepository.save(bank);
     }
+    
+    public void depositMoney(BigDecimal amount, String token) {
+        String jwtToken = token.substring(7);
+        String username = jwtService.extractUsername(jwtToken);
+        User user = userRepository.findUserByUsername(username);
+        
+        if (user == null) {
+            throw new RuntimeException("User not found");
+        }
+        
+        Bank bank = bankRepository.findByUserId(user.getId());
+        if (bank == null) {
+            throw new RuntimeException("Bank account not found. Please register your bank account first.");
+        }
+        
+        // Add money to current balance
+        BigDecimal currentBalance = bank.getBalance() != null ? bank.getBalance() : BigDecimal.ZERO;
+        bank.setBalance(currentBalance.add(amount));
+        bank.setUpdatedAt(Instant.now());
+        
+        bankRepository.save(bank);
+    }
+    
+    public BigDecimal getBalance(String token) {
+        String jwtToken = token.substring(7);
+        String username = jwtService.extractUsername(jwtToken);
+        User user = userRepository.findUserByUsername(username);
+        
+        if (user == null) {
+            throw new RuntimeException("User not found");
+        }
+        
+        Bank bank = bankRepository.findByUserId(user.getId());
+        if (bank == null) {
+            return BigDecimal.ZERO; // Return 0 if no bank account
+        }
+        
+        return bank.getBalance() != null ? bank.getBalance() : BigDecimal.ZERO;
+    }
 }

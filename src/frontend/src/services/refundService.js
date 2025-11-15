@@ -103,6 +103,18 @@ const refundService = {
     }
   },
 
+  // Create payment URL for refund (seller action)
+  createRefundPayment: async (refundId) => {
+    try {
+      console.log(`Creating payment for refund ${refundId}`);
+      const response = await api.post(`/api/refunds/payment/${refundId}`);
+      return response.data;
+    } catch (error) {
+      console.error("Error creating refund payment:", error);
+      throw error;
+    }
+  },
+
   // Claim refund money (buyer action)
   claimRefundMoney: async (refundId) => {
     try {
@@ -193,6 +205,35 @@ const refundService = {
       return response.data;
     } catch (error) {
       console.error("Error admin rejecting refund:", error);
+      throw error;
+    }
+  },
+
+  // Create payment URL for refund
+  createRefundPayment: async (refundId) => {
+    try {
+      console.log(`Creating payment URL for refund ${refundId}`);
+      const response = await api.post(`/api/refunds/payment/${refundId}`);
+      return response.data;
+    } catch (error) {
+      console.error("Error creating refund payment:", error);
+      throw error;
+    }
+  },
+
+  // Handle payment callback
+  handlePaymentCallback: async (refundId, params) => {
+    try {
+      console.log(`Handling payment callback for refund ${refundId}`);
+      const response = await api.get(
+        `/api/refunds/payment/callback/${refundId}`,
+        {
+          params: params,
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error handling payment callback:", error);
       throw error;
     }
   },
