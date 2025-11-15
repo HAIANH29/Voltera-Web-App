@@ -419,11 +419,11 @@ export default function DashboardAdmin() {
 
       // 🔍 Debug API calls
       console.log("📡 Making API calls to:");
-      console.log("  - /api/post/admin/pending");
+      console.log("  - api/post/admin/list/pending");
       console.log("  - /api/v1/admin/accounts/pending");
 
       const [postsRes, accountsRes] = await Promise.all([
-        api.get("/api/post/admin/pending"),
+        api.get("api/post/admin/list/pending"),
         api.get("/api/v1/admin/accounts/pending"),
       ]);
 
@@ -670,7 +670,7 @@ export default function DashboardAdmin() {
       console.log("📡 Loading pending listings...");
 
       // 🔧 Try to request with pagination or limited fields to avoid large responses
-      const response = await api.get("/api/post/admin/pending?limit=50");
+      const response = await api.get("api/post/admin/list/pending?limit=50");
       console.log(
         "📝 Pending listings response length:",
         typeof response.data === "string" ? response.data.length : "not string"
