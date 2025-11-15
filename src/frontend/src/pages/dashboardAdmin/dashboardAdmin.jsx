@@ -617,8 +617,8 @@ export default function DashboardAdmin() {
         : [];
 
       setStats({
-        totalPosts: postsData.length,
-        pendingPosts: postsData.filter((p) => p.status === "PENDING").length,
+        totalPosts: postsData.length, // Posts từ API pending đã được filter
+        pendingPosts: postsData.length, // Tất cả posts từ API đều là PENDING + PAID fee
         totalUsers: accountsData.length,
         pendingAccounts: accountsData.length,
       });

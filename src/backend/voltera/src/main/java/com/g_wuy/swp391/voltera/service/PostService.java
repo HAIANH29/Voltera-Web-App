@@ -358,7 +358,18 @@ public class PostService {
 
             List<String> imageUrls = List.of();
 
-            return postMapper.toPostResponse(post, battery, vehicle, imageUrls);
+            PostResponse response = postMapper.toPostResponse(post, battery, vehicle, imageUrls);
+            
+            // Lấy feeStatus từ fees collection (vì query đã filter posts có fee PAID)
+            String feeStatus = post.getFees().stream()
+                .filter(fee -> "PAID".equals(fee.getFeeStatus()))
+                .findFirst()
+                .map(fee -> fee.getFeeStatus())
+                .orElse("UNKNOWN");
+                
+            response.setFeeStatus(feeStatus);
+
+            return response;
 
         }).toList();
     }
