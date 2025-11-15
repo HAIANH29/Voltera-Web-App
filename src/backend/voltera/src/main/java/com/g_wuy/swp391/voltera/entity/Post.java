@@ -43,11 +43,6 @@ public class Post {
     @Column(name = "status", length = 20)
     private String status;
 
-    @Size(max = 20)
-    @ColumnDefault("'PENDING'")
-    @Column(name = "feestatus", length = 20)
-    private String feeStatus;
-
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "createdat")
     private Instant createdAt;

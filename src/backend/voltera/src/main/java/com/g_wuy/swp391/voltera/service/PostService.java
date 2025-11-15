@@ -71,7 +71,6 @@ public class PostService {
                 .description(dto.getDescription())
                 .price(dto.getPrice())
                 .status("PENDING")
-                .feeStatus("PENDING")
                 .createdAt(Instant.now())
                 .updatedAt(Instant.now())
                 .build();
