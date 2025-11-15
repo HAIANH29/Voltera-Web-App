@@ -37,7 +37,7 @@ public class PostController {
     public ResponseEntity<PostResponse> createPost(
             @Valid
             @RequestHeader("Authorization") String authHeader,
-            @RequestBody PostRequest dto) throws IOException {
+            @RequestBody PostRequest dto) {
 
         String token = authHeader.substring(7);
         String username = jwtService.extractUsername(token);

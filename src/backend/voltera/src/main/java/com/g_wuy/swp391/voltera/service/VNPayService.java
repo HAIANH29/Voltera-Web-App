@@ -167,7 +167,12 @@ public class VNPayService {
                 transaction.setTransactionStatus("DONE");
                 payment.setPaymentStatus("COMPLETED");
                 Post post = transaction.getPost();
-                post.setStatus("SOLD");
+                if (payment.getOrderInfo().contains("Payment for")) {
+                    post.setStatus("SOLD");
+                }
+                else {
+                    post.setStatus("PENDING");
+                }
                 fee.setFeeStatus("PAID");
                 postRepository.save(post);
                 

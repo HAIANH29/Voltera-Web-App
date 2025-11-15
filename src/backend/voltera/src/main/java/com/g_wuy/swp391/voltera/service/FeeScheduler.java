@@ -25,12 +25,12 @@ public class FeeScheduler {
     @Autowired
     private EmailService emailService;
 
-    @Scheduled(cron = "0 0 0 * * ?")
+    @Scheduled(cron = "0 37 7 * * ?")
     @Transactional
     public void scheduled() {
-        LocalDateTime oneMonthAgo = LocalDateTime.now().minusDays(15);
+        LocalDateTime fifteenDaysAgo = LocalDateTime.now().minusDays(15);
 
-        List<Fee> expiredFees = feeRepository.findByCreatedAtBeforeAndFeeStatus(oneMonthAgo, "PAID");
+        List<Fee> expiredFees = feeRepository.findByCreatedAtBeforeAndFeeStatus(fifteenDaysAgo, "PAID");
 
         for (Fee fee : expiredFees) {
             fee.setFeeStatus("PENDING");

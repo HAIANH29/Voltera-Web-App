@@ -16,16 +16,7 @@ public interface FeeRepository extends JpaRepository<Fee,Integer> {
     @Query("SELECT f FROM Fee f WHERE f.post.id = :postId AND f.feeStatus = 'VALID'")
     Optional<Fee> findValidFeeByPostId(Integer postId);
 
-    @Query("SELECT CASE WHEN COUNT(f) > 0 THEN true ELSE false END " +
-            "FROM Fee f WHERE f.post.id = :postId AND f.feeStatus = 'VALID'")
-    boolean isPostPaid(Integer postId);
-
-    List<Fee> findByCreatedAtBefore(LocalDateTime createdAtBefore);
-
     List<Fee> findByCreatedAtBeforeAndFeeStatus(LocalDateTime dateTime, String status);
-
-    @Query("SELECT f from Fee f WHERE f.post.id = :postId")
-    Fee findFeeByPostId(@Param("postId") Integer postId);
 
     @Query("SELECT f FROM Fee f WHERE f.transaction.transactionid = :transactionId")
     Fee findByTransactionId(@Param("transactionId") Integer transactionId);
