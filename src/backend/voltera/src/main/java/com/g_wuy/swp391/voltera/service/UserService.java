@@ -43,12 +43,27 @@ public class UserService {
 
 
     public LoginResponse login(LoginRequest request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
-        );
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
+            );
+        } catch (org.springframework.security.authentication.BadCredentialsException e) {
+            throw new BusinessException("Invalid username or password");
+        } catch (org.springframework.security.authentication.DisabledException e) {
+            throw new BusinessException("Account is disabled");
+        } catch (org.springframework.security.authentication.LockedException e) {
+            throw new BusinessException("Account is locked");
+        } catch (Exception e) {
+            throw new BusinessException("Authentication failed: " + e.getMessage());
+        }
 
         Account account = accountRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new BusinessException("Account not found with username: " + request.getUsername()));
+
+        // Check if account is banned/inactive
+        if ("INACTIVE".equalsIgnoreCase(account.getStatus())) {
+            throw new RuntimeException("Your account was banned by admin, sorry!");
+        }
 
         if (!"APPROVE".equalsIgnoreCase(account.getStatus()) && !"ACTIVE".equalsIgnoreCase(account.getStatus())) {
             throw new RuntimeException("Your account has not been approved yet.");
@@ -225,10 +240,10 @@ public class UserService {
     public void unlockAccount(Integer accountId) {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new BusinessException("Account not found"));
-        if (account.getStatus().equals("ACTIVE")) {
+        if (account.getStatus().equals("APPROVE")) {
             throw new LogicException("Account has already been unlocked");
         }
-        account.setStatus("ACTIVE");
+        account.setStatus("APPROVE");
         accountRepository.save(account);
     }
     

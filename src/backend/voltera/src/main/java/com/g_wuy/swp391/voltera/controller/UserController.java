@@ -9,6 +9,7 @@ import com.g_wuy.swp391.voltera.model.response.ApproveResponse;
 import com.g_wuy.swp391.voltera.model.response.ProfileResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -115,6 +116,56 @@ public class UserController {
                 .map(accountMapper::toAccountResponse)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/api/v1/admin/accounts/approved")
+    public ResponseEntity<List<ApproveResponse>> getApprovedAccounts() {
+        System.out.println("🔍 [DEBUG] Getting approved accounts...");
+        System.out.println("🔍 [DEBUG] User requesting: " + SecurityContextHolder.getContext().getAuthentication().getName());
+        System.out.println("🔍 [DEBUG] User roles: " + SecurityContextHolder.getContext().getAuthentication().getAuthorities());
+        
+        List<Account> approvedAccounts = accountService.getApprovedAccounts();
+        System.out.println("📊 [DEBUG] Found " + approvedAccounts.size() + " approved accounts");
+        
+        for (Account acc : approvedAccounts) {
+            System.out.println("👤 [DEBUG] Account: " + acc.getUsername() + " | Status: " + acc.getStatus() + " | Role: " + acc.getRole());
+        }
+        
+        List<ApproveResponse> response = approvedAccounts.stream()
+                .map(accountMapper::toAccountResponse)
+                .collect(Collectors.toList());
+        System.out.println("✅ [DEBUG] Returning " + response.size() + " responses");
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/api/v1/admin/account/{id}/lock")
+    public ResponseEntity<ApproveResponse> lockAccount(@PathVariable Integer id) {
+        try {
+            System.out.println("🔒 [DEBUG] Lock request by user: " + SecurityContextHolder.getContext().getAuthentication().getName());
+            userService.lockAccount(id);
+            Account lockedAccount = accountService.findAccountById(id);
+            ApproveResponse response = accountMapper.toAccountResponse(lockedAccount);
+            System.out.println("🔒 [DEBUG] Account locked: " + lockedAccount.getUsername() + " | New Status: " + lockedAccount.getStatus());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            System.err.println("❌ [ERROR] Failed to lock account " + id + ": " + e.getMessage());
+            throw e;
+        }
+    }
+
+    @PutMapping("/api/v1/admin/account/{id}/unlock")
+    public ResponseEntity<ApproveResponse> unlockAccount(@PathVariable Integer id) {
+        try {
+            System.out.println("🔓 [DEBUG] Unlock request by user: " + SecurityContextHolder.getContext().getAuthentication().getName());
+            userService.unlockAccount(id);
+            Account unlockedAccount = accountService.findAccountById(id);
+            ApproveResponse response = accountMapper.toAccountResponse(unlockedAccount);
+            System.out.println("🔓 [DEBUG] Account unlocked: " + unlockedAccount.getUsername() + " | New Status: " + unlockedAccount.getStatus());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            System.err.println("❌ [ERROR] Failed to unlock account " + id + ": " + e.getMessage());
+            throw e;
+        }
     }
 
 }

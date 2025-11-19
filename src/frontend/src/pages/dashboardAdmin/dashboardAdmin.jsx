@@ -169,6 +169,21 @@ const Icons = {
       />
     </svg>
   ),
+  Refresh: () => (
+    <svg
+      className="w-4 h-4"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+      />
+    </svg>
+  ),
   Eye: () => (
     <svg
       className="w-4 h-4"
@@ -217,6 +232,36 @@ const Icons = {
         strokeLinejoin="round"
         strokeWidth={2}
         d="M6 18L18 6M6 6l12 12"
+      />
+    </svg>
+  ),
+  Lock: () => (
+    <svg
+      className="w-4 h-4"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+      />
+    </svg>
+  ),
+  Unlock: () => (
+    <svg
+      className="w-4 h-4"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"
       />
     </svg>
   ),
@@ -303,6 +348,7 @@ export default function DashboardAdmin() {
   });
   const [pendingListings, setPendingListings] = useState([]);
   const [pendingAccounts, setPendingAccounts] = useState([]);
+  const [approvedAccounts, setApprovedAccounts] = useState([]);
   const [allUsers, setAllUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [selectedRole, setSelectedRole] = useState("ALL");
@@ -383,6 +429,9 @@ export default function DashboardAdmin() {
         break;
       case "accounts":
         loadPendingAccounts();
+        break;
+      case "activeUsers":
+        loadApprovedAccounts();
         break;
       case "users":
         loadAllUsers();
@@ -1537,6 +1586,72 @@ export default function DashboardAdmin() {
     }
   };
 
+  const loadApprovedAccounts = async () => {
+    try {
+      setLoading(true);
+      console.log("🔍 [DEBUG] Loading approved accounts...");
+
+      // Debug token
+      const getCookie = (name) => {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(";").shift();
+        return null;
+      };
+      const token = getCookie("accessToken");
+      console.log("🔐 [DEBUG] Token exists:", !!token);
+      console.log(
+        "🔐 [DEBUG] Token preview:",
+        token ? token.substring(0, 20) + "..." : "No token"
+      );
+
+      const response = await api.get("/api/v1/admin/accounts/approved");
+      console.log("📊 [DEBUG] Approved accounts response:", response.data);
+
+      if (response.data && Array.isArray(response.data)) {
+        setApprovedAccounts(response.data);
+        console.log(
+          "✅ [DEBUG] Loaded " + response.data.length + " approved accounts"
+        );
+      }
+    } catch (error) {
+      console.error("⚠️ Error loading approved accounts:", error);
+      console.error("⚠️ Error status:", error.response?.status);
+      console.error("⚠️ Error data:", error.response?.data);
+      toast.error("Failed to load approved accounts");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLockAccount = async (accountId) => {
+    try {
+      setLoading(true);
+      await api.put(`/api/v1/admin/account/${accountId}/lock`);
+      toast.success("Account locked successfully");
+      await loadApprovedAccounts();
+    } catch (error) {
+      console.error("Error locking account:", error);
+      toast.error("Failed to lock account");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUnlockAccount = async (accountId) => {
+    try {
+      setLoading(true);
+      await api.put(`/api/v1/admin/account/${accountId}/unlock`);
+      toast.success("Account unlocked successfully");
+      await loadApprovedAccounts();
+    } catch (error) {
+      console.error("Error unlocking account:", error);
+      toast.error("Failed to unlock account");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   /* ===================== POST DETAIL ===================== */
   const loadPostDetail = async (postId) => {
     setLoadingDetail(true);
@@ -1696,6 +1811,16 @@ export default function DashboardAdmin() {
                       >
                         <Icons.Users />
                         Manage Users
+                      </button>
+                      <button
+                        className="modern-btn warning"
+                        onClick={() => {
+                          setActiveSection("activeUsers");
+                          loadApprovedAccounts();
+                        }}
+                      >
+                        <Icons.Lock />
+                        Ban/Unban Accounts
                       </button>
                     </div>
                   </div>
@@ -2013,6 +2138,133 @@ export default function DashboardAdmin() {
                                   <Icons.X />
                                   Reject
                                 </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 🔒 Active Users Section - Ban/Unban Management */}
+          {activeSection === "activeUsers" && (
+            <div className="fade-in">
+              <div className="content-card">
+                <div className="content-card-header">
+                  <div>
+                    <div className="content-card-title">
+                      User Account Management ({approvedAccounts.length})
+                    </div>
+                    <div className="content-card-subtitle">
+                      Manage active and banned user accounts (Lock/Unlock)
+                    </div>
+                  </div>
+                  <button
+                    className="modern-btn primary"
+                    onClick={loadApprovedAccounts}
+                  >
+                    <Icons.Refresh />
+                    Refresh
+                  </button>
+                </div>
+                <div className="content-card-body">
+                  {loading ? (
+                    <div style={{ textAlign: "center", padding: "2rem" }}>
+                      <div className="loading-spinner"></div>
+                    </div>
+                  ) : approvedAccounts.length === 0 ? (
+                    <div className="empty-state">
+                      <div className="empty-state-icon">🔓</div>
+                      <div className="empty-state-title">
+                        No User Accounts Found
+                      </div>
+                      <div className="empty-state-text">
+                        No active or banned users to manage
+                      </div>
+                    </div>
+                  ) : (
+                    <table className="modern-table">
+                      <thead>
+                        <tr>
+                          <th>ID</th>
+                          <th>Username</th>
+                          <th>Email</th>
+                          <th>Role</th>
+                          <th>Status</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {approvedAccounts.map((account, index) => (
+                          <tr key={account.accountId || account.id}>
+                            <td>#{String(index + 1).padStart(3, "0")}</td>
+                            <td>
+                              <strong>{account.username || "Unknown"}</strong>
+                            </td>
+                            <td>{account.email || "N/A"}</td>
+                            <td>
+                              <span
+                                className={`modern-badge ${
+                                  account.role === "ADMIN"
+                                    ? "danger"
+                                    : account.role === "SELLER"
+                                    ? "warning"
+                                    : "info"
+                                }`}
+                              >
+                                {account.role || "BUYER"}
+                              </span>
+                            </td>
+                            <td>
+                              <span
+                                className={`modern-badge ${
+                                  account.status === "APPROVE"
+                                    ? "success"
+                                    : account.status === "INACTIVE"
+                                    ? "danger"
+                                    : "warning"
+                                }`}
+                              >
+                                {account.status === "APPROVE"
+                                  ? "Active"
+                                  : account.status === "INACTIVE"
+                                  ? "Locked"
+                                  : account.status || "Unknown"}
+                              </span>
+                            </td>
+                            <td>
+                              <div style={{ display: "flex", gap: "0.5rem" }}>
+                                {account.status === "APPROVE" ? (
+                                  <button
+                                    className="modern-btn danger"
+                                    onClick={() =>
+                                      handleLockAccount(
+                                        account.accountId || account.id
+                                      )
+                                    }
+                                    title="Lock Account"
+                                  >
+                                    <Icons.Lock />
+                                    Lock
+                                  </button>
+                                ) : (
+                                  <button
+                                    className="modern-btn success"
+                                    onClick={() =>
+                                      handleUnlockAccount(
+                                        account.accountId || account.id
+                                      )
+                                    }
+                                    title="Unlock Account"
+                                  >
+                                    <Icons.Unlock />
+                                    Unlock
+                                  </button>
+                                )}
                               </div>
                             </td>
                           </tr>

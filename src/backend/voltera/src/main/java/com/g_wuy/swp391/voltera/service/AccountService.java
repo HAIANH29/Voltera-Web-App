@@ -105,4 +105,8 @@ public class AccountService {
         return accountRepository.findAllAccountsOrdered();
     }
 
+    public List<Account> getApprovedAccounts() {
+        return accountRepository.findApprovedAccounts();
+    }
+
 }

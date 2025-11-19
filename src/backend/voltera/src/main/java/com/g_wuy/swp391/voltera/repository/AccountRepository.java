@@ -38,6 +38,9 @@ public interface AccountRepository extends JpaRepository<Account, Integer> {
     @Query("SELECT a FROM Account a ORDER BY a.createat DESC")
     List<Account> findAllAccountsOrdered();
 
+    @Query("SELECT a FROM Account a WHERE (a.status = 'APPROVE' OR a.status = 'INACTIVE') AND a.role != 'ADMIN' ORDER BY a.createat DESC")
+    List<Account> findApprovedAccounts();
+
     @Modifying
     @Transactional
     @Query("Update Account a SET a.status = 'REJECT' WHERE a.id = :id")

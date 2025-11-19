@@ -489,6 +489,15 @@
   background: #059669;
 }
 
+.modern-btn.warning {
+  background: #f59e0b;
+  color: white;
+}
+
+.modern-btn.warning:hover {
+  background: #d97706;
+}
+
 /* ==================== LOADING & EMPTY STATES ==================== */
 .loading-spinner {
   width: 32px;
