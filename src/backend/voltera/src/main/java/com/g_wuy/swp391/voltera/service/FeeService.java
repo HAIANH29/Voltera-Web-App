@@ -133,6 +133,12 @@ public class FeeService {
                     .orElseThrow(() -> new RuntimeException("Transaction not found"));
 
             Fee fee = feeRepository.findByTransactionId(transactionId);
+            if (fee == null) {
+                log.error("❌ No fee found for transaction ID: {}", transactionId);
+                throw new RuntimeException("Fee record not found for transaction: " + transactionId);
+            }
+            
+            log.info("🔍 Found fee ID: {} for transaction ID: {}, current status: {}", fee.getId(), transactionId, fee.getFeeStatus());
 
             BigDecimal amount = new BigDecimal(params.get("vnp_Amount")).divide(BigDecimal.valueOf(100));
             transaction.setPrice(amount);
@@ -155,19 +161,29 @@ public class FeeService {
             if ("00".equals(params.get("vnp_ResponseCode"))) {
                 transaction.setTransactionStatus("DONE");
                 payment.setPaymentStatus("COMPLETED");
+                
+                // 🎯 Update post status to indicate payment completed, ready for admin review
                 Post post = transaction.getPost();
-                post.setStatus("PENDING");
+                post.setStatus("PAID_PENDING_REVIEW");
                 postRepository.save(post);
+                
                 fee.setFeeStatus("PAID");
-                // 💰 Logic cũ: Post giữ nguyên status "PENDING", chỉ cập nhật fee status
+                
+                log.info("✅ Payment successful for transaction ID: {}, post ID: {}, fee status updated to PAID", transactionId, post.getId());
             } else {
                 transaction.setTransactionStatus("FAILED");
                 payment.setPaymentStatus("FAILED");
                 fee.setFeeStatus("PENDING");
+                
+                log.warn("❌ Payment failed for transaction ID: {}, response code: {}", transactionId, params.get("vnp_ResponseCode"));
             }
 
+            // 🔧 Save all entities to persist changes
             paymentRepository.save(payment);
             transactionRepository.save(transaction);
+            feeRepository.save(fee); // 🚀 CRITICAL: Save fee to persist feeStatus change
+            
+            log.info("💾 All entities saved - Fee ID: {}, new fee status: {}", fee.getId(), fee.getFeeStatus());
 
             return "Giao dịch " + transaction.getTransactionStatus().toLowerCase() + "!";
         } catch (Exception e) {

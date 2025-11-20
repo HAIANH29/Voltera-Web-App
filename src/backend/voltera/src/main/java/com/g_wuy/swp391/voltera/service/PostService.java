@@ -50,6 +50,8 @@ public class PostService {
     private TransactionRepository transactionRepository;
     @Autowired
     private NotificationService notificationService;
+    @Autowired
+    private FeeRepository feeRepository;
 
     @Transactional
     public PostResponse createPost(PostRequest dto, String username) {
@@ -190,6 +192,18 @@ public class PostService {
                 .buyerid(seller)
                 .build();
         transactionRepository.save(transaction);
+
+        // 💰 Automatically create Fee record for immediate tracking in Fee Management
+        Fee fee = Fee.builder()
+                .post(post)
+                .transaction(transaction)
+                .amount(price)
+                .description("Posting fee for: " + post.getTitle())
+                .createdAt(LocalDateTime.now())
+                .expiredAt(LocalDateTime.now().plusDays(15)) // 15 days to pay
+                .feeStatus("PENDING")
+                .build();
+        feeRepository.save(fee);
 
 
         PostResponse response = postMapper.toPostResponse(post, savedBattery, savedVehicle, allImages);
@@ -358,7 +372,27 @@ public class PostService {
 
             List<String> imageUrls = List.of();
 
-            return postMapper.toPostResponse(post, battery, vehicle, imageUrls);
+            PostResponse response = postMapper.toPostResponse(post, battery, vehicle, imageUrls);
+            
+            // 💰 Add fee status to response
+            if (post.getFees() != null && !post.getFees().isEmpty()) {
+                // Get the most recent fee
+                Fee mostRecentFee = post.getFees().stream()
+                    .sorted((f1, f2) -> f2.getCreatedAt().compareTo(f1.getCreatedAt()))
+                    .findFirst()
+                    .orElse(null);
+                    
+                if (mostRecentFee != null) {
+                    response.setFeeStatus(mostRecentFee.getFeeStatus());
+                    System.out.println("🔍 [DEBUG] Post ID: " + post.getId() + ", Fee Status: " + mostRecentFee.getFeeStatus());
+                } else {
+                    response.setFeeStatus("NO_FEE");
+                }
+            } else {
+                response.setFeeStatus("NO_FEE");
+            }
+            
+            return response;
 
         }).toList();
     }
