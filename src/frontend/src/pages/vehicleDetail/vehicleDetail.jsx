@@ -30,27 +30,27 @@ const mapPostToDetail = (p) => {
     price: priceNumber,
     status: (p?.status || "").toLowerCase(),
 
-    // vehicle specific - matching VehicleDTO field names
+    // vehicle specific - matching VehicleDTO field names (camelCase from backend)
     brand: v?.brand || "Electric Vehicle",
     model: v?.model || "Premium Model",
     version: v?.version || "Standard",
     style: v?.style || "SUV",
     color: v?.color || "Silver",
-    numberOfSeat: Number(v?.numberofseat ?? 5) || 5, // default to 5 seats
+    numberOfSeat: Number(v?.numberOfSeat ?? 5) || 5, // camelCase from backend
     odo: Number(v?.odo ?? 0),
-    year: Number(v?.yearmanufacture ?? 0) || new Date().getFullYear(),
-    batteryCapacityRaw: v?.batterycapacity ?? null,
+    year: Number(v?.yearManufacture ?? 0) || new Date().getFullYear(), // camelCase
+    batteryCapacityRaw: v?.batteryCapacity ?? null, // camelCase from backend
     batteryCapacity:
-      v?.batterycapacity != null ? `${v.batterycapacity} kWh` : null,
+      v?.batteryCapacity != null ? `${v.batteryCapacity} kWh` : null,
     rangeRaw: v?.range ?? null,
     range: v?.range != null ? `${v.range} km` : null,
-    chargingTimeRaw: v?.chargingtime ?? null,
+    chargingTimeRaw: v?.chargingTime ?? null, // camelCase from backend
     chargingTime:
-      v?.chargingtime != null ? `${v.chargingtime} hours` : null,
-    licensePlate: v?.licenseplate || null, // hide if not assigned
+      v?.chargingTime != null ? `${v.chargingTime} hours` : null,
+    licensePlate: v?.licensePlate || null, // camelCase
     origin: v?.origin || "International",
-    bodyInsurance: Boolean(v?.bodyinsurance),
-    vehicleInspection: Boolean(v?.vehicleinspection),
+    bodyInsurance: Boolean(v?.bodyInsurance),
+    vehicleInspection: Boolean(v?.vehicleInspection),
 
     // images
     images,
@@ -61,20 +61,20 @@ const mapPostToDetail = (p) => {
       address: p?.location || null,
     },
 
-    // specifications (English labels)
+    // specifications (English labels) - using correct camelCase field names
     specifications: {
-      Year: v?.yearmanufacture || "N/A",
-      Seats: v?.numberofseat || "N/A",
+      Year: v?.yearManufacture || "N/A",
+      Seats: v?.numberOfSeat || "N/A", 
       "Body type": v?.style || "N/A",
       Color: v?.color || "N/A",
-      Odometer: v?.odo ? `${v.odo.toLocaleString()} km` : "New",
-      Battery: v?.batterycapacity ? `${v.batterycapacity} kWh` : "N/A",
+      Odometer: v?.odo !== null && v?.odo !== undefined ? (v.odo === 0 ? "New (0 km)" : `${v.odo.toLocaleString()} km`) : "N/A",
+      Battery: v?.batteryCapacity ? `${v.batteryCapacity} kWh` : "N/A",
       Range: v?.range ? `${v.range} km` : "N/A",
-      "Charging time": v?.chargingtime ? `${v.chargingtime} h` : "N/A",
+      "Charging time": v?.chargingTime ? `${v.chargingTime} h` : "N/A",
       Origin: v?.origin || "N/A",
-      "License plate": v?.licenseplate || "N/A",
-      "Body insurance": v?.bodyinsurance ? "Yes" : "No",
-      "Vehicle inspection": v?.vehicleinspection ? "Yes" : "No",
+      "License plate": v?.licensePlate || "N/A",
+      "Body insurance": v?.bodyInsurance !== null && v?.bodyInsurance !== undefined ? (v.bodyInsurance ? "Yes" : "No") : "N/A",
+      "Vehicle inspection": v?.vehicleInspection !== null && v?.vehicleInspection !== undefined ? (v.vehicleInspection ? "Yes" : "No") : "N/A",
     },
 
     isFavorite: false,
@@ -99,6 +99,16 @@ export default function VehicleDetail() {
       try {
         const response = await api.get(`/api/post/detail/${postID}`);
         const postData = response.data;
+        
+        console.log("🚗 Raw backend response:", postData);
+        console.log("🔍 Vehicle object from backend:", postData?.vehicle);
+        console.log("🔧 Field mapping verification:", {
+          batteryCapacity: postData?.vehicle?.batteryCapacity,
+          chargingTime: postData?.vehicle?.chargingTime, 
+          yearManufacture: postData?.vehicle?.yearManufacture,
+          numberOfSeat: postData?.vehicle?.numberOfSeat,
+          licensePlate: postData?.vehicle?.licensePlate,
+        });
 
         // Kiểm tra xem post có chứa vehicle không
         if (!postData?.vehicle) {
@@ -108,6 +118,7 @@ export default function VehicleDetail() {
         }
 
         const mappedVehicle = mapPostToDetail(postData);
+        console.log("✅ Mapped vehicle data:", mappedVehicle);
         setVehicle(mappedVehicle);
         setIsFavorite(mappedVehicle.isFavorite);
 
@@ -305,91 +316,74 @@ export default function VehicleDetail() {
                 <div className="detail-vehicle-info">
                   <h2>Vehicle Details</h2>
                   <div className="detail-info-grid">
-                    {vehicle.batteryCapacity && (
-                        <div className="detail-info-item">
-                          <span className="detail-info-label">
-                            Battery Capacity:
-                          </span>
-                          <span className="detail-info-value">
-                            {vehicle.batteryCapacity}
-                          </span>
-                        </div>
-                      )}
-                    {vehicle.range && (
-                      <div className="detail-info-item">
-                        <span className="detail-info-label">Range:</span>
-                        <span className="detail-info-value">
-                          {vehicle.range}
-                        </span>
-                      </div>
-                    )}
-                    {vehicle.chargingTime && (
-                        <div className="detail-info-item">
-                          <span className="detail-info-label">
-                            Charging Time:
-                          </span>
-                          <span className="detail-info-value">
-                            {vehicle.chargingTime}
-                          </span>
-                        </div>
-                      )}
-                    {vehicle.numberOfSeat > 0 && (
-                      <div className="detail-info-item">
-                        <span className="detail-info-label">
-                          Number of Seats:
-                        </span>
-                        <span className="detail-info-value">
-                          {vehicle.numberOfSeat}
-                        </span>
-                      </div>
-                    )}
-                    {vehicle.style && vehicle.style !== "Not specified" && (
-                      <div className="detail-info-item">
-                        <span className="detail-info-label">Style:</span>
-                        <span className="detail-info-value">
-                          {vehicle.style}
-                        </span>
-                      </div>
-                    )}
-                    {vehicle.color && vehicle.color !== "Not specified" && (
-                      <div className="detail-info-item">
-                        <span className="detail-info-label">Color:</span>
-                        <span className="detail-info-value">
-                          {vehicle.color}
-                        </span>
-                      </div>
-                    )}
+                    <div className="detail-info-item">
+                      <span className="detail-info-label">
+                        Battery Capacity:
+                      </span>
+                      <span className="detail-info-value">
+                        {vehicle.batteryCapacity || "N/A"}
+                      </span>
+                    </div>
+                    <div className="detail-info-item">
+                      <span className="detail-info-label">Range:</span>
+                      <span className="detail-info-value">
+                        {vehicle.range || "N/A"}
+                      </span>
+                    </div>
+                    <div className="detail-info-item">
+                      <span className="detail-info-label">
+                        Charging Time:
+                      </span>
+                      <span className="detail-info-value">
+                        {vehicle.chargingTime || "N/A"}
+                      </span>
+                    </div>
+                    <div className="detail-info-item">
+                      <span className="detail-info-label">
+                        Number of Seats:
+                      </span>
+                      <span className="detail-info-value">
+                        {vehicle.numberOfSeat || "N/A"}
+                      </span>
+                    </div>
+                    <div className="detail-info-item">
+                      <span className="detail-info-label">Style:</span>
+                      <span className="detail-info-value">
+                        {vehicle.style || "N/A"}
+                      </span>
+                    </div>
+                    <div className="detail-info-item">
+                      <span className="detail-info-label">Color:</span>
+                      <span className="detail-info-value">
+                        {vehicle.color || "N/A"}
+                      </span>
+                    </div>
                     <div className="detail-info-item">
                       <span className="detail-info-label">Mileage:</span>
                       <span className="detail-info-value">
                         {vehicle.odo > 0
                           ? `${vehicle.odo.toLocaleString()} km`
-                          : "Brand New (0 km)"}
+                          : vehicle.odo === 0 ? "Brand New (0 km)" : "N/A"}
                       </span>
                     </div>
                     <div className="detail-info-item">
                       <span className="detail-info-label">Year:</span>
-                      <span className="detail-info-value">{vehicle.year}</span>
+                      <span className="detail-info-value">{vehicle.year || "N/A"}</span>
                     </div>
-                    {vehicle.origin && vehicle.origin !== "Not specified" && (
-                      <div className="detail-info-item">
-                        <span className="detail-info-label">Origin:</span>
-                        <span className="detail-info-value">
-                          {vehicle.origin}
-                        </span>
-                      </div>
-                    )}
-                    {vehicle.licensePlate &&
-                      vehicle.licensePlate !== "Not assigned" && (
-                        <div className="detail-info-item">
-                          <span className="detail-info-label">
-                            License Plate:
-                          </span>
-                          <span className="detail-info-value">
-                            {vehicle.licensePlate}
-                          </span>
-                        </div>
-                      )}
+                    <div className="detail-info-item">
+                      <span className="detail-info-label">Origin:</span>
+                      <span className="detail-info-value">
+                        {vehicle.origin || "N/A"}
+                      </span>
+                    </div>
+                    <div className="detail-info-item">
+                      <span className="detail-info-label">
+                        License Plate:
+                      </span>
+                      <span className="detail-info-value">
+                        {vehicle.licensePlate || "N/A"}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>

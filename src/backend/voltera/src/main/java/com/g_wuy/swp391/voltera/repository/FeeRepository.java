@@ -13,8 +13,8 @@ import java.util.Optional;
 @Repository
 public interface FeeRepository extends JpaRepository<Fee,Integer> {
 
-    @Query("SELECT f FROM Fee f WHERE f.post.id = :postId AND f.feeStatus = 'VALID'")
-    Optional<Fee> findValidFeeByPostId(Integer postId);
+    @Query("SELECT f FROM Fee f WHERE f.post.id = :postId AND (f.feeStatus = 'PENDING' OR f.feeStatus = 'PAID') ORDER BY f.createdAt DESC")
+    Optional<Fee> findValidFeeByPostId(@Param("postId") Integer postId);
 
     List<Fee> findByCreatedAtBeforeAndFeeStatus(LocalDateTime dateTime, String status);
 

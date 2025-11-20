@@ -28,8 +28,8 @@ public interface PostRepository extends JpaRepository<Post, Integer>, JpaSpecifi
 
     @Query("""
         SELECT DISTINCT p FROM Post p
-        JOIN p.fees f
-        WHERE p.status = 'PENDING'
+        JOIN FETCH p.fees f
+        WHERE (p.status = 'PENDING' OR p.status = 'PAID_PENDING_REVIEW')
         AND f.feeStatus = 'PAID'
     """)
     List<Post> findPendingPostsWithPaidFee();

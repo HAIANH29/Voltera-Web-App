@@ -2084,7 +2084,6 @@ export default function DashboardAdmin() {
                           <th>Username</th>
                           <th>Email</th>
                           <th>Role</th>
-                          <th>Registered</th>
                           <th>Actions</th>
                         </tr>
                       </thead>
@@ -2106,13 +2105,6 @@ export default function DashboardAdmin() {
                               >
                                 {account.role || "USER"}
                               </span>
-                            </td>
-                            <td>
-                              {account.createdAt
-                                ? new Date(
-                                    account.createdAt
-                                  ).toLocaleDateString()
-                                : "N/A"}
                             </td>
                             <td>
                               <div style={{ display: "flex", gap: "0.5rem" }}>

@@ -51,21 +51,31 @@ public class FeeService {
             throw new BusinessException("Transaction Not Found");
         }
 
-        Fee fee = new Fee();
-        fee.setPost(transaction.getPost());
-        if (transaction.getPost().getVehicle() != null && transaction.getPost().getBattery() == null) {
-            fee.setAmount(BigDecimal.valueOf(500000));
-        } else if (transaction.getPost().getBattery() != null && transaction.getPost().getVehicle() == null) {
-            fee.setAmount(BigDecimal.valueOf(200000));
+        // 🔍 Check if Fee already exists for this post to avoid duplicates
+        Fee existingFee = feeRepository.findValidFeeByPostId(transaction.getPost().getId()).orElse(null);
+        
+        Fee fee;
+        if (existingFee != null && "PENDING".equals(existingFee.getFeeStatus())) {
+            // ✅ Use existing Fee instead of creating duplicate
+            fee = existingFee;
         } else {
-            throw new BusinessException("Post không có vehicle hay battery");
+            // ✨ Create new Fee only if none exists or existing is not PENDING
+            fee = new Fee();
+            fee.setPost(transaction.getPost());
+            if (transaction.getPost().getVehicle() != null && transaction.getPost().getBattery() == null) {
+                fee.setAmount(BigDecimal.valueOf(500000));
+            } else if (transaction.getPost().getBattery() != null && transaction.getPost().getVehicle() == null) {
+                fee.setAmount(BigDecimal.valueOf(200000));
+            } else {
+                throw new BusinessException("Post không có vehicle hay battery");
+            }
+            fee.setDescription("Fee for posting " + transaction.getPost().getTitle());
+            fee.setCreatedAt(LocalDateTime.now());
+            fee.setExpiredAt(LocalDateTime.now().plusDays(15));
+            fee.setFeeStatus("PENDING");
+            fee.setTransaction(transaction);
+            feeRepository.save(fee);
         }
-        fee.setDescription("Fee for posting " + transaction.getPost().getTitle());
-        fee.setCreatedAt(LocalDateTime.now());
-        fee.setExpiredAt(LocalDateTime.now().plusDays(15));
-        fee.setFeeStatus("PENDING");
-        fee.setTransaction(transaction);
-        feeRepository.save(fee);
 
         VNPayRequest vnPayRequest = new VNPayRequest();
         vnPayRequest.setAmount(Long.valueOf(String.valueOf(fee.getAmount())));
@@ -133,6 +143,12 @@ public class FeeService {
                     .orElseThrow(() -> new RuntimeException("Transaction not found"));
 
             Fee fee = feeRepository.findByTransactionId(transactionId);
+            if (fee == null) {
+                log.error("❌ No fee found for transaction ID: {}", transactionId);
+                throw new RuntimeException("Fee record not found for transaction: " + transactionId);
+            }
+            
+            log.info("🔍 Found fee ID: {} for transaction ID: {}, current status: {}", fee.getId(), transactionId, fee.getFeeStatus());
 
             BigDecimal amount = new BigDecimal(params.get("vnp_Amount")).divide(BigDecimal.valueOf(100));
             transaction.setPrice(amount);
@@ -155,21 +171,38 @@ public class FeeService {
             if ("00".equals(params.get("vnp_ResponseCode"))) {
                 transaction.setTransactionStatus("DONE");
                 payment.setPaymentStatus("COMPLETED");
+                
+                // 🎯 Update post status to indicate payment completed, ready for admin review
                 Post post = transaction.getPost();
-                post.setStatus("PENDING");
+                post.setStatus("PAID_PENDING_REVIEW");
                 postRepository.save(post);
+                
                 fee.setFeeStatus("PAID");
+<<<<<<< HEAD
                 feeRepository.save(fee);
                 // 💰 Logic cũ: Post giữ nguyên status "PENDING", chỉ cập nhật fee status
+=======
+                
+                log.info("✅ Payment successful for transaction ID: {}, post ID: {}, fee status updated to PAID", transactionId, post.getId());
+>>>>>>> c5ecdec0b6d621e757dc3a118954c04dbfeb3076
             } else {
                 transaction.setTransactionStatus("FAILED");
                 payment.setPaymentStatus("FAILED");
                 fee.setFeeStatus("PENDING");
+<<<<<<< HEAD
                 feeRepository.save(fee);
+=======
+                
+                log.warn("❌ Payment failed for transaction ID: {}, response code: {}", transactionId, params.get("vnp_ResponseCode"));
+>>>>>>> c5ecdec0b6d621e757dc3a118954c04dbfeb3076
             }
 
+            // 🔧 Save all entities to persist changes
             paymentRepository.save(payment);
             transactionRepository.save(transaction);
+            feeRepository.save(fee); // 🚀 CRITICAL: Save fee to persist feeStatus change
+            
+            log.info("💾 All entities saved - Fee ID: {}, new fee status: {}", fee.getId(), fee.getFeeStatus());
 
             return "Giao dịch " + transaction.getTransactionStatus().toLowerCase() + "!";
         } catch (Exception e) {
