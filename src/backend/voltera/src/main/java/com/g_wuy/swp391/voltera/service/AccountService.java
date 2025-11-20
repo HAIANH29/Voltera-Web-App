@@ -53,7 +53,7 @@ public class AccountService {
         String email = username.matches(emailRegex) ? username : null;
         User userRegis = new User();
         userRegis.setEmail(email);
-        userRegis.setEmailVerified(true); // Set true vì đã verify OTP trước khi đến đây
+        userRegis.setEmailVerified(true);
         User userSaved = userRepository.save(userRegis);
 
         Account account = accountMapper.toAccount(registerRequest);
