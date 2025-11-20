@@ -5,7 +5,6 @@ import {
   X,
   Battery,
   Camera,
-  DollarSign,
   Zap,
   Settings,
   MapPin,
@@ -29,11 +28,15 @@ const batteryBrands = [
   "CALB",
 ];
 const batteryChemistry = ["NMC", "LFP", "NCA", "NCM811", "Other"];
-const connectorTypes = ["NACS", "CCS", "CHAdeMO", "Custom"];
 const conditionOptions = ["excellent", "very-good", "good", "fair", "poor"];
 
 const ELECTRIC_IMAGE_SLOTS = [
-  { key: "battery-main", label: "Battery Pack Photos" },
+  { key: "battery-main", label: "Main Battery Pack View" },
+  { key: "battery-side", label: "Side/Profile View" },
+  { key: "battery-terminal", label: "Terminals & Connections" },
+  { key: "battery-bms", label: "BMS & Control Module" },
+  { key: "battery-serial", label: "Serial Number & Labels" },
+  { key: "battery-docs", label: "Certificates & Documents" },
 ];
 
 const Card = ({ title, icon, children }) => (
@@ -164,13 +167,22 @@ function Step1({
         </div>
 
         <div>
-          <L htmlFor="serialNumber">Serial Number</L>
+          <L htmlFor="serialNumber">Serial Number *</L>
           <Inp
             id="serialNumber"
             placeholder="SN-ABC123XYZ"
             value={formData.serialNumber ?? ""}
             onChange={(e) => updateFormData("serialNumber", e.target.value)}
+            className={fieldErrors.serialNumber ? "error" : ""}
           />
+          {fieldErrors.serialNumber && (
+            <div className="text-red-500 text-sm mt-1">
+              ⚠️ {fieldErrors.serialNumber}
+            </div>
+          )}
+          <div className="text-xs text-gray-500 mt-1">
+            Format: Letters, numbers, hyphens (5-20 chars)
+          </div>
         </div>
       </div>
 
@@ -305,6 +317,23 @@ function Step2({ formData, updateFormData, fieldErrors = {} }) {
     <Card title="Technical Specifications" icon={<Zap className="w-5 h-5" />}>
       <div className="e-grid">
         <div>
+          <L htmlFor="batteryTypeId">Battery Type *</L>
+          <select
+            id="batteryTypeId"
+            value={formData.batteryTypeId ?? ""}
+            onChange={(e) => updateFormData("batteryTypeId", e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+          >
+            <option value="">Select battery type</option>
+            <option value="1">Li-ion</option>
+            <option value="2">LiPo</option>
+            <option value="3">LiFePO4</option>
+            <option value="4">NiMH</option>
+          </select>
+          {fieldErrors.batteryTypeId && <div className="text-red-500 text-sm mt-1">{fieldErrors.batteryTypeId}</div>}
+        </div>
+
+        <div>
           <L htmlFor="originCapacity">Original Capacity (kWh) *</L>
           <Inp
             id="originCapacity"
@@ -337,22 +366,6 @@ function Step2({ formData, updateFormData, fieldErrors = {} }) {
         </div>
 
         <div>
-          <L htmlFor="batteryHealth">Battery Health (%) *</L>
-          <Inp
-            id="batteryHealth"
-            type="number"
-            min="0"
-            max="100"
-            placeholder="94"
-            value={formData.batteryHealth ?? ""}
-            onChange={(e) => updateFormData("batteryHealth", e.target.value)}
-          />
-          <div className="text-xs text-gray-500 mt-1">
-            State of Health (SOH)
-          </div>
-        </div>
-
-        <div>
           <L htmlFor="voltage">Nominal Voltage (V) *</L>
           <Inp
             id="voltage"
@@ -362,23 +375,6 @@ function Step2({ formData, updateFormData, fieldErrors = {} }) {
             value={formData.voltage ?? ""}
             onChange={(e) => updateFormData("voltage", e.target.value)}
           />
-        </div>
-
-        <div>
-          <L htmlFor="chemistry">Cell Chemistry *</L>
-          <select
-            id="chemistry"
-            className="e-select"
-            value={formData.chemistry ?? ""}
-            onChange={(e) => updateFormData("chemistry", e.target.value)}
-          >
-            <option value="">Select chemistry</option>
-            {batteryChemistry.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
         </div>
 
         <div>
@@ -395,34 +391,9 @@ function Step2({ formData, updateFormData, fieldErrors = {} }) {
           </div>
         </div>
 
-        <div>
-          <L htmlFor="chargingSpeed">Max Charging Speed (kW)</L>
-          <Inp
-            id="chargingSpeed"
-            type="number"
-            step="0.1"
-            placeholder="250.0"
-            value={formData.chargingSpeed ?? ""}
-            onChange={(e) => updateFormData("chargingSpeed", e.target.value)}
-          />
-        </div>
 
-        <div>
-          <L htmlFor="connectorType">Connector Type</L>
-          <select
-            id="connectorType"
-            className="e-select"
-            value={formData.connectorType ?? ""}
-            onChange={(e) => updateFormData("connectorType", e.target.value)}
-          >
-            <option value="">Select connector</option>
-            {connectorTypes.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-        </div>
+
+
 
         <div>
           <L htmlFor="weight">Weight (kg)</L>
@@ -437,7 +408,7 @@ function Step2({ formData, updateFormData, fieldErrors = {} }) {
         </div>
 
         <div>
-          <L htmlFor="mileageCovered">Total Mileage (km)</L>
+          <L htmlFor="mileageCovered">Usage Mileage (km)</L>
           <Inp
             id="mileageCovered"
             type="number"
@@ -446,7 +417,7 @@ function Step2({ formData, updateFormData, fieldErrors = {} }) {
             onChange={(e) => updateFormData("mileageCovered", e.target.value)}
           />
           <div className="text-xs text-gray-500 mt-1">
-            Total distance covered
+            Approximate total mileage when battery was in use
           </div>
         </div>
 
@@ -460,42 +431,7 @@ function Step2({ formData, updateFormData, fieldErrors = {} }) {
           />
         </div>
 
-        <div>
-          <L htmlFor="bmsStatus">BMS Status</L>
-          <select
-            id="bmsStatus"
-            className="e-select"
-            value={formData.bmsStatus ?? ""}
-            onChange={(e) => updateFormData("bmsStatus", e.target.value)}
-          >
-            <option value="">Select BMS status</option>
-            <option value="OK">OK - Working Properly</option>
-            <option value="Replaced">Replaced Recently</option>
-            <option value="Needs Service">Needs Service</option>
-            <option value="Unknown">Unknown</option>
-          </select>
-        </div>
-      </div>
 
-      <div className="mt-4">
-        <L htmlFor="dimensions">Physical Dimensions</L>
-        <Inp
-          id="dimensions"
-          placeholder="e.g., 1080 x 1500 x 120 mm"
-          value={formData.dimensions ?? ""}
-          onChange={(e) => updateFormData("dimensions", e.target.value)}
-        />
-      </div>
-
-      <div className="mt-4">
-        <L htmlFor="compatibility">Vehicle Compatibility</L>
-        <Textarea
-          id="compatibility"
-          rows={3}
-          placeholder="e.g., Tesla Model S 2016-2020 (all variants), Model X 2016-2019..."
-          value={formData.compatibility ?? ""}
-          onChange={(e) => updateFormData("compatibility", e.target.value)}
-        />
       </div>
 
       {/* Safety Notice */}
@@ -560,8 +496,9 @@ const Step3 = ({
                 • <strong>First photo will be your main thumbnail</strong>
               </li>
               <li>
-                • Show battery pack, BMS, terminals, and serial numbers clearly
+                • <strong>Upload at least 3 photos (REQUIRED)</strong> for listing approval
               </li>
+              <li>• Show battery pack, BMS, terminals, and serial numbers clearly</li>
               <li>• Include any certificates or documentation</li>
               <li>• Good lighting prevents safety concerns</li>
             </ul>
@@ -709,7 +646,7 @@ function Step4({ formData, updateFormData }) {
   return (
     <Card
       title="Pricing & Final Review"
-      icon={<DollarSign className="w-5 h-5" />}
+      icon={<Zap className="w-5 h-5" />}
     >
       {/* Pricing Section */}
       <div className="pricing-section mb-8">
@@ -719,17 +656,20 @@ function Step4({ formData, updateFormData }) {
 
         <div className="e-grid">
           <div>
-            <L htmlFor="price">Price (USD) *</L>
+            <L htmlFor="price">Price (VNĐ) *</L>
             <div className="relative">
-              <DollarSign className="e-left-icon" />
+              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">₫</span>
               <Inp
                 id="price"
                 type="number"
-                placeholder="15000"
+                placeholder="15000000"
                 value={formData.price ?? ""}
                 onChange={(e) => updateFormData("price", e.target.value)}
-                className="pl-9"
+                className="pl-8"
               />
+            </div>
+            <div className="text-xs text-gray-500 mt-1">
+              Enter price in Vietnamese Dong (VNĐ)
             </div>
           </div>
         </div>
@@ -962,21 +902,16 @@ export default function CreateElectricForm({
       serialNumber: "",
       location: "",
       coords: null,
-      // Technical
+      // Technical - Only backend required fields
+      batteryTypeId: "",
       originCapacity: "",
       remainingCapacity: "",
-      batteryHealth: "",
       voltage: "",
-      chemistry: "",
       cycleCount: "",
-      chargingSpeed: "",
-      connectorType: "",
       weight: "",
       mileageCovered: "",
       warranty: "",
-      bmsStatus: "",
-      dimensions: "",
-      compatibility: "",
+      lifecycle: "",
       // Safety
       hazmatAck: false,
       // Pricing
@@ -1026,6 +961,72 @@ export default function CreateElectricForm({
       if (!formData.title?.trim()) errors.title = "Title is required";
       if (!formData.brand?.trim()) errors.brand = "Brand is required";
       if (!formData.model?.trim()) errors.model = "Model is required";
+      
+      // Serial Number validation - match backend @NotBlank + max 100 chars
+      if (!formData.serialNumber?.trim()) {
+        errors.serialNumber = "Serial Number is required";
+      } else {
+        const serialNumber = formData.serialNumber.trim();
+        
+        // Check length (backend max 100)
+        if (serialNumber.length < 5 || serialNumber.length > 100) {
+          errors.serialNumber = "Serial Number must be 5-100 characters";
+        }
+        
+        // Check format: only letters, numbers, hyphens, underscores
+        const validFormat = /^[A-Za-z0-9\-_]+$/;
+        if (!validFormat.test(serialNumber)) {
+          errors.serialNumber = "Serial Number can only contain letters, numbers, hyphens, and underscores";
+        }
+        
+        // Check for at least one letter and one number
+        const hasLetter = /[A-Za-z]/.test(serialNumber);
+        const hasNumber = /[0-9]/.test(serialNumber);
+        if (!hasLetter || !hasNumber) {
+          errors.serialNumber = "Serial Number must contain at least one letter and one number";
+        }
+      }
+    }
+
+    if (step === 2) {
+      // Battery Type validation (required for backend)
+      if (!formData.batteryTypeId) {
+        errors.batteryTypeId = "Battery type is required";
+      }
+
+      // Backend validation: @NotNull, @DecimalMin > 0
+      if (!formData.originCapacity || parseFloat(formData.originCapacity) <= 0) {
+        errors.originCapacity = "Origin capacity must be greater than 0";
+      }
+
+      // Backend validation: @NotNull, @DecimalMin >= 0
+      if (formData.remainingCapacity === "" || formData.remainingCapacity === null || parseFloat(formData.remainingCapacity) < 0) {
+        errors.remainingCapacity = "Remaining capacity must be 0 or greater";
+      }
+
+      // Check if remaining > origin
+      if (formData.remainingCapacity && formData.originCapacity) {
+        const remaining = parseFloat(formData.remainingCapacity);
+        const origin = parseFloat(formData.originCapacity);
+        if (!isNaN(remaining) && !isNaN(origin) && remaining > origin) {
+          errors.remainingCapacity = "Remaining capacity cannot exceed original capacity";
+        }
+      }
+
+      // Backend validation: @NotNull, @DecimalMin > 0
+      if (!formData.voltage || parseFloat(formData.voltage) <= 0) {
+        errors.voltage = "Voltage must be greater than 0";
+      }
+
+      // Backend validation: @NotNull, @Min >= 0
+      if (!formData.cycleCount || parseInt(formData.cycleCount) < 0) {
+        errors.cycleCount = "Cycle count must be 0 or greater";
+      }
+
+      // Backend validation: @NotNull, @Min >= 0
+      if (!formData.mileageCovered || parseInt(formData.mileageCovered) < 0) {
+        errors.mileageCovered = "Mileage covered must be 0 or greater";
+      }
     }
 
     return errors;
@@ -1048,6 +1049,8 @@ export default function CreateElectricForm({
 
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadingSlot, setUploadingSlot] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
 
   const handleUploadForSlot = async (slotKey, file) => {
     if (!file) return;
@@ -1076,15 +1079,43 @@ export default function CreateElectricForm({
   };
 
   const submitForm = async () => {
+    // Prevent double submission
+    if (isSubmitting || submitSuccess) {
+      return;
+    }
+    
     if (!formData.agreeTerms || !formData.confirmOwnership) {
       return toast.error("Please confirm ownership and accept the terms");
     }
+
+    setIsSubmitting(true);
 
     // Step 1 validation - Basic Information
     if (!formData.title || !formData.brand || !formData.model) {
       return toast.error(
         "Please fill all required fields: Title, Brand, and Model"
       );
+    }
+    
+    // Serial Number validation
+    if (!formData.serialNumber?.trim()) {
+      return toast.error("Please enter the battery serial number");
+    }
+    
+    const serialNumber = formData.serialNumber.trim();
+    if (serialNumber.length < 5 || serialNumber.length > 20) {
+      return toast.error("Serial Number must be 5-20 characters long");
+    }
+    
+    const validSerialFormat = /^[A-Za-z0-9\-_]+$/;
+    if (!validSerialFormat.test(serialNumber)) {
+      return toast.error("Serial Number can only contain letters, numbers, hyphens, and underscores");
+    }
+    
+    const hasLetter = /[A-Za-z]/.test(serialNumber);
+    const hasNumber = /[0-9]/.test(serialNumber);
+    if (!hasLetter || !hasNumber) {
+      return toast.error("Serial Number must contain at least one letter and one number");
     }
 
     if (!formData.description || formData.description.trim().length < 1) {
@@ -1106,28 +1137,29 @@ export default function CreateElectricForm({
       );
     }
 
-    // Step 2 validation - Technical Specifications
+    // Step 2 validation - Technical Specifications (match backend DTO)
+    if (!formData.batteryTypeId) {
+      return toast.error("Please select the battery type");
+    }
+    
     if (!formData.originCapacity || Number(formData.originCapacity) <= 0) {
       return toast.error("Please enter the original capacity (kWh)");
     }
 
-    if (
-      !formData.remainingCapacity ||
-      Number(formData.remainingCapacity) <= 0
-    ) {
+    if (!formData.remainingCapacity || Number(formData.remainingCapacity) < 0) {
       return toast.error("Please enter the current remaining capacity (kWh)");
-    }
-
-    if (!formData.batteryHealth || Number(formData.batteryHealth) <= 0) {
-      return toast.error("Please enter the battery health percentage");
     }
 
     if (!formData.voltage || Number(formData.voltage) <= 0) {
       return toast.error("Please enter the nominal voltage");
     }
 
-    if (!formData.chemistry) {
-      return toast.error("Please select the battery chemistry type");
+    if (!formData.cycleCount || Number(formData.cycleCount) < 0) {
+      return toast.error("Please enter the cycle count");
+    }
+
+    if (!formData.mileageCovered || Number(formData.mileageCovered) < 0) {
+      return toast.error("Please enter the mileage covered");
     }
 
     // Price validation
@@ -1135,29 +1167,11 @@ export default function CreateElectricForm({
       return toast.error("Please enter a valid price");
     }
 
-    // Range validations
-    if (
-      formData.year &&
-      (formData.year < 1990 || formData.year > new Date().getFullYear() + 2)
-    ) {
-      return toast.error(
-        `Manufacturing year must be between 1990 and ${
-          new Date().getFullYear() + 2
-        }`
-      );
-    }
-
-    if (
-      formData.originCapacity &&
-      (formData.originCapacity <= 0 || formData.originCapacity > 300)
-    ) {
-      return toast.error("Original capacity must be between 0 and 300 kWh");
-    }
-
+    // Basic range validations
     if (
       formData.remainingCapacity &&
       formData.originCapacity &&
-      formData.remainingCapacity > formData.originCapacity
+      parseFloat(formData.remainingCapacity) > parseFloat(formData.originCapacity)
     ) {
       return toast.error("Remaining capacity cannot exceed original capacity");
     }
@@ -1169,29 +1183,19 @@ export default function CreateElectricForm({
       return toast.error("Battery health must be between 0 and 100%");
     }
 
-    if (
-      formData.cycleCount &&
-      (formData.cycleCount < 0 || formData.cycleCount > 10000)
-    ) {
-      return toast.error("Cycle count must be between 0 and 10,000");
-    }
-
-    if (formData.voltage && (formData.voltage < 0 || formData.voltage > 1000)) {
-      return toast.error("Voltage must be between 0 and 1000V");
-    }
-
     if (!formData.hazmatAck) {
       return toast.error("Please acknowledge hazmat transport requirements");
     }
 
     const imgs = formData.images || [];
-    if (imgs.length === 0) {
+    const validImages = imgs.filter(img => img.url && img.url.trim() !== '');
+    if (validImages.length < 3) {
       return toast.error(
-        "Please upload at least one photo of your battery pack"
+        "Please upload at least 3 photos of your battery pack"
       );
     }
 
-    if (imgs.some((i) => !i.url)) {
+    if (validImages.some((i) => !i.url)) {
       return toast.error("Please wait for all photos to finish uploading");
     }
 
@@ -1204,7 +1208,7 @@ export default function CreateElectricForm({
       vehicle: null,
       vehicleImages: [],
       battery: {
-        serialNumber: formData.serialNumber || `EV-${Date.now()}`,
+        serialNumber: formData.serialNumber.trim(),
         originCapacity: formData.originCapacity
           ? parseFloat(formData.originCapacity)
           : 0,
@@ -1217,21 +1221,14 @@ export default function CreateElectricForm({
         voltage: formData.voltage ? parseFloat(formData.voltage) : 0,
         cycleCount: formData.cycleCount ? parseInt(formData.cycleCount) : 0,
         warranty: formData.warranty || "",
-        weight: formData.weight ? parseFloat(formData.weight) : 0,
+        weight: formData.weight ? parseFloat(formData.weight) : null,
         lifecycle: formData.condition || "",
-        // Create BatteryType object for backend
+        // Backend requires batteryTypeId object with id
         batteryTypeId: {
-          id: 1, // Default battery type ID - backend will handle if not exist
-          typename: formData.chemistry || "Generic",
-          technical: `${formData.brand} ${formData.model} ${
-            formData.chemistry || "Battery"
-          }`,
-          description: `Battery pack from ${formData.brand} with ${
-            formData.chemistry || "generic"
-          } chemistry`,
+          id: parseInt(formData.batteryTypeId) || 1, // From dropdown selection
         },
       },
-      batteryImages: imgs.map((i) => i.url),
+      batteryImages: validImages.map((i) => i.url),
     };
 
     try {
@@ -1265,6 +1262,14 @@ export default function CreateElectricForm({
         localStorage.removeItem(DRAFT_KEY);
       } catch {}
 
+      // Set success state for protection
+      setSubmitSuccess(true);
+      
+      // Auto-reset after 10 seconds
+      setTimeout(() => {
+        setSubmitSuccess(false);
+      }, 10000);
+      
       onSubmit(created || payload);
 
       setTimeout(() => {
@@ -1298,6 +1303,8 @@ export default function CreateElectricForm({
       }
 
       toast.error(msg);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -1370,9 +1377,13 @@ export default function CreateElectricForm({
             <button
               className="e-btn e-btn-primary"
               onClick={submitForm}
-              disabled={!formData.agreeTerms || !formData.confirmOwnership}
+              disabled={!formData.agreeTerms || !formData.confirmOwnership || isSubmitting || submitSuccess}
             >
-              Submit Battery Listing
+              {isSubmitting 
+                ? "Submitting..." 
+                : submitSuccess 
+                ? "✅ Submitted (10s cooldown)" 
+                : "Submit Battery Listing"}
             </button>
           ) : (
             <button

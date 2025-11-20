@@ -159,11 +159,13 @@ public class FeeService {
                 post.setStatus("PENDING");
                 postRepository.save(post);
                 fee.setFeeStatus("PAID");
+                feeRepository.save(fee);
                 // 💰 Logic cũ: Post giữ nguyên status "PENDING", chỉ cập nhật fee status
             } else {
                 transaction.setTransactionStatus("FAILED");
                 payment.setPaymentStatus("FAILED");
                 fee.setFeeStatus("PENDING");
+                feeRepository.save(fee);
             }
 
             paymentRepository.save(payment);
