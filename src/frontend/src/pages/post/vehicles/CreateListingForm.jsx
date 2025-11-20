@@ -1341,15 +1341,33 @@ export default function CreateListingForm({
     if (!formData.price || Number(formData.price) <= 0)
       return toast.error("Please enter a valid price");
 
+    // Validate required backend fields
+    if (!formData.color || formData.color.trim() === "")
+      return toast.error("Please enter vehicle color");
+    if (!formData.origin || formData.origin.trim() === "")
+      return toast.error("Please enter vehicle origin");
+
+    // Battery capacity validation (backend requires > 0)
+    if (formData.batteryCapacity && parseFloat(formData.batteryCapacity) <= 0)
+      return toast.error("Battery capacity must be greater than 0 kWh");
+
+    // Range validation (backend requires >= 1)
+    if (formData.range && parseInt(formData.range) < 1)
+      return toast.error("Range must be at least 1 km");
+
+    // Number of seats validation (backend requires >= 4)
+    if (formData.numberOfSeats && parseInt(formData.numberOfSeats) < 4)
+      return toast.error("Number of seats must be at least 4");
+
     // License plate format validation (Vietnamese format)
     if (formData.licensePlate) {
       if (formData.licensePlate.length > 8) {
         return toast.error("License plate must be 8 characters or less");
       }
-      const licensePlatePattern = /^[0-9]{2}[A-Z]{1}-[0-9]{3,4}$/;
+      const licensePlatePattern = /^[0-9]{2}[A-Z]{1}-[0-9]{4,5}$/;
       if (!licensePlatePattern.test(formData.licensePlate)) {
         return toast.error(
-          "License plate must follow Vietnamese format (e.g., 30A-1234 or 51B-123)"
+          "License plate must follow Vietnamese format (e.g., 30A-12345 or 51B-1234)"
         );
       }
     }
@@ -1414,21 +1432,23 @@ export default function CreateListingForm({
         model: formData.model || "",
         version: formData.version || "",
         odo: formData.odo ? parseInt(formData.odo) : 0,
-        batterycapacity: formData.batteryCapacity
-          ? formData.batteryCapacity.toString()
-          : "0",
-        range: formData.range ? Math.min(parseInt(formData.range), 600) : 0,
-        chargingtime: formData.chargingTime
+        batteryCapacity: formData.batteryCapacity && parseFloat(formData.batteryCapacity) > 0
+          ? parseFloat(formData.batteryCapacity)
+          : 50.0, // Default reasonable battery capacity
+        range: formData.range && parseInt(formData.range) > 0 
+          ? Math.min(parseInt(formData.range), 600)
+          : 300, // Default reasonable range
+        chargingTime: formData.chargingTime
           ? parseInt(formData.chargingTime)
-          : 0,
-        color: formData.color || "",
-        numberofseat: formData.numberOfSeats
-          ? Math.min(parseInt(formData.numberOfSeats), 7)
-          : 4,
-        style: formData.style || "",
-        bodyinsurance: !!formData.bodyInsurance,
-        vehicleinspection: !!formData.vehicleInspection,
-        licenseplate:
+          : 8, // Default 8 hours charging time
+        color: formData.color || "White",
+        numberOfSeat: formData.numberOfSeats
+          ? Math.max(4, Math.min(parseInt(formData.numberOfSeats), 7)) // Ensure >= 4
+          : 5, // Default 5 seats
+        style: formData.style || "Sedan",
+        bodyInsurance: !!formData.bodyInsurance,
+        vehicleInspection: !!formData.vehicleInspection,
+        licensePlate:
           formData.licensePlate ||
           (() => {
             // Generate Vietnamese license plate format: 30A-1234 (8 chars max)
@@ -1439,8 +1459,8 @@ export default function CreateListingForm({
             const numbers = Math.floor(Math.random() * 9000) + 1000; // 1000-9999
             return `${digits}${letter}-${numbers}`;
           })(),
-        origin: formData.origin || "",
-        yearmanufacture: formData.year
+        origin: formData.origin || "Vietnam",
+        yearManufacture: formData.year
           ? parseInt(formData.year)
           : new Date().getFullYear(),
       },
