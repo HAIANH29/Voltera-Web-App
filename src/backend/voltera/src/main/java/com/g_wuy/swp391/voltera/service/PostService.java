@@ -53,7 +53,7 @@ public class PostService {
 
     @Transactional
     public PostResponse createPost(PostRequest dto, String username) {
-        //Lấy account và kiểm tra quyền
+
         Account account = accountRepository.findByUsername(username)
                 .orElseThrow(() -> new AccessDeniedException("Account not found"));
 
@@ -64,7 +64,7 @@ public class PostService {
         User seller = Optional.ofNullable(account.getUser())
                 .orElseThrow(() -> new SecurityException("Seller information not found"));
 
-        //Tạo Post trước
+
         Post post = Post.builder()
                 .sellerId(seller)
                 .title(dto.getTitle())
@@ -76,7 +76,7 @@ public class PostService {
                 .build();
 
         postRepository.save(post);
-        postRepository.flush(); // Quan trọng với @MapsId — đảm bảo có post.id
+        postRepository.flush();
 
         // Kiểm tra chỉ được chọn 1 trong 2: vehicle hoặc battery
         if (dto.getVehicle() != null && dto.getBattery() != null) {
@@ -156,7 +156,7 @@ public class PostService {
                     .status("AVAILABLE")
                     .build());
 
-            //Lưu ảnh pin (nếu có)
+
             if (dto.getBatteryImages() != null && !dto.getBatteryImages().isEmpty()) {
                 for (String url : dto.getBatteryImages()) {
                     batteryImageRepository.save(BatteryImage.builder()
@@ -169,7 +169,7 @@ public class PostService {
             }
         }
 
-        //Tạo transaction thanh toán phí đăng bài
+
 
         BigDecimal price = BigDecimal.valueOf(0.0);
         if (dto.getBattery() != null) {
@@ -191,7 +191,7 @@ public class PostService {
                 .build();
         transactionRepository.save(transaction);
 
-        //Chuẩn bị response
+
         PostResponse response = postMapper.toPostResponse(post, savedBattery, savedVehicle, allImages);
         response.setLocation(seller.getAddress());
         return response;
@@ -358,18 +358,7 @@ public class PostService {
 
             List<String> imageUrls = List.of();
 
-            PostResponse response = postMapper.toPostResponse(post, battery, vehicle, imageUrls);
-            
-            // Lấy feeStatus từ fees collection (vì query đã filter posts có fee PAID)
-            String feeStatus = post.getFees().stream()
-                .filter(fee -> "PAID".equals(fee.getFeeStatus()))
-                .findFirst()
-                .map(fee -> fee.getFeeStatus())
-                .orElse("UNKNOWN");
-                
-            response.setFeeStatus(feeStatus);
-
-            return response;
+            return postMapper.toPostResponse(post, battery, vehicle, imageUrls);
 
         }).toList();
     }

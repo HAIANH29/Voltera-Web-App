@@ -33,7 +33,7 @@ public class JwtAuthentificationFilter extends OncePerRequestFilter {
 
         String path = request.getServletPath();
 
-        // ✅ Bỏ qua tất cả các endpoint permitAll
+
         if (path.startsWith("/api/v1/auth/") ||
                 path.startsWith("/otp") ||
                 path.startsWith("/api/vnpay/") ||
@@ -43,7 +43,7 @@ public class JwtAuthentificationFilter extends OncePerRequestFilter {
             return;
         }
 
-        // Xử lý JWT cho các endpoint cần auth
+
         final String authHeader = request.getHeader("Authorization");
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String jwt = authHeader.substring(7);
