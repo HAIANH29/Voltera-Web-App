@@ -659,7 +659,7 @@ const Step3 = ({
                 • <strong>First photo will be your main thumbnail</strong> -
                 make it count!
               </li>
-              <li>• Upload at least 3-4 photos for maximum visibility</li>
+              <li><strong>• Upload at least 3 photos (REQUIRED)</strong> for your listing to be accepted</li>
               <li>• Take photos in good lighting (daytime/well-lit garage)</li>
               <li>• Clean your vehicle before photographing</li>
             </ul>
@@ -788,30 +788,47 @@ const Step3 = ({
       </div>
 
       {/* Progress indicator */}
-      {formData.images?.length > 0 && (
-        <div className="mt-6 p-4 bg-green-50 rounded-lg border border-green-200">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
-                <span className="text-green-600 text-sm font-semibold">
-                  {formData.images.length}
+      <div className="mt-6">
+        {formData.images?.length >= 3 ? (
+          <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
+                  <span className="text-green-600 text-sm font-semibold">
+                    {formData.images.length}
+                  </span>
+                </div>
+                <span className="text-green-800 font-medium">
+                  {formData.images.length} photo
+                  {formData.images.length !== 1 ? "s" : ""} uploaded
                 </span>
               </div>
-              <span className="text-green-800 font-medium">
-                {formData.images.length} photo
-                {formData.images.length !== 1 ? "s" : ""} uploaded
+              <span className="text-xs text-green-600 font-medium">
+                ✅ Great coverage! Ready to proceed
               </span>
             </div>
-            <span className="text-xs text-green-600 font-medium">
-              {formData.images.length >= 3
-                ? "✅ Great coverage!"
-                : formData.images.length >= 1
-                ? "👍 Add more for better results"
-                : ""}
-            </span>
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="p-4 bg-orange-50 rounded-lg border border-orange-200">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 bg-orange-100 rounded-full flex items-center justify-center">
+                  <span className="text-orange-600 text-sm font-semibold">
+                    {formData.images?.length || 0}
+                  </span>
+                </div>
+                <span className="text-orange-800 font-medium">
+                  {formData.images?.length || 0} photo
+                  {(formData.images?.length || 0) !== 1 ? "s" : ""} uploaded
+                </span>
+              </div>
+              <span className="text-xs text-orange-600 font-medium">
+                ⚠️ Need {3 - (formData.images?.length || 0)} more photos (minimum 3 required)
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
     </Card>
   );
 };
@@ -1274,6 +1291,8 @@ export default function CreateListingForm({
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadingSlot, setUploadingSlot] = useState(null);
   const [showMapPicker, setShowMapPicker] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
 
   const handleUploadForSlot = async (slotKey, file) => {
     if (!file) return;
@@ -1312,6 +1331,9 @@ export default function CreateListingForm({
   }, [step]);
 
   const submitForm = async () => {
+    // Ngăn submit nhiều lần
+    if (isSubmitting) return;
+    
     if (!formData.agreeTerms || !formData.confirmOwnership)
       return toast.error("Please confirm ownership and accept the terms");
     if (!formData.title || !formData.brand || !formData.model || !formData.year)
@@ -1371,9 +1393,14 @@ export default function CreateListingForm({
 
     const imgs = formData.images || [];
     if (imgs.length === 0)
-      return toast.error("Please upload at least one photo of your vehicle");
+      return toast.error("Please upload at least 3 photos of your vehicle");
+    if (imgs.length < 3)
+      return toast.error(`Please upload at least 3 photos of your vehicle. You currently have ${imgs.length} photo${imgs.length !== 1 ? 's' : ''}.`);
     if (imgs.some((i) => !i.url))
       return toast.error("Please wait for all photos to finish uploading.");
+
+    // Bắt đầu submit
+    setIsSubmitting(true);
 
     const payload = {
       title: formData.title,
@@ -1444,6 +1471,12 @@ export default function CreateListingForm({
         "Vehicle posted successfully! Your listing is pending admin approval."
       );
 
+      // Đánh dấu submit thành công và disable nút 10 giây
+      setSubmitSuccess(true);
+      setTimeout(() => {
+        setSubmitSuccess(false);
+      }, 10000);
+
       // Clear draft
       try {
         localStorage.removeItem(DRAFT_KEY);
@@ -1486,6 +1519,9 @@ export default function CreateListingForm({
       }
 
       toast.error(msg);
+    } finally {
+      // Luôn reset trạng thái submit
+      setIsSubmitting(false);
     }
   };
 
@@ -1572,11 +1608,20 @@ export default function CreateListingForm({
           </button>
           {step === 4 ? (
             <button
-              className="v-btn v-btn-primary"
+              className={`v-btn v-btn-primary ${(isSubmitting || submitSuccess) ? 'opacity-50 cursor-not-allowed' : ''}`}
               onClick={submitForm}
-              disabled={!formData.agreeTerms || !formData.confirmOwnership}
+              disabled={!formData.agreeTerms || !formData.confirmOwnership || isSubmitting || submitSuccess}
             >
-              Submit Listing
+              {isSubmitting ? (
+                <>
+                  <span className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
+                  Submitting...
+                </>
+              ) : submitSuccess ? (
+                'Successfully Submitted!'
+              ) : (
+                'Submit Listing'
+              )}
             </button>
           ) : (
             <button
@@ -1588,6 +1633,16 @@ export default function CreateListingForm({
                   toast.error("Please fix the errors before continuing");
                   return;
                 }
+                
+                // Kiểm tra yêu cầu tối thiểu 3 ảnh khi chuyển từ step 3 sang step 4
+                if (step === 3) {
+                  const imgCount = formData.images?.length || 0;
+                  if (imgCount < 3) {
+                    toast.error(`Please upload at least 3 photos to continue. You currently have ${imgCount} photo${imgCount !== 1 ? 's' : ''}.`);
+                    return;
+                  }
+                }
+                
                 setStep((s) => Math.min(4, s + 1));
               }}
             >

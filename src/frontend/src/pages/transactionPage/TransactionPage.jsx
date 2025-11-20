@@ -11,7 +11,7 @@ const TransactionPage = () => {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [filter, setFilter] = useState("ALL");
+  const [filter, setFilter] = useState("PENDING");
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("createAt");
   const [sortOrder, setSortOrder] = useState("desc");
@@ -37,10 +37,8 @@ const TransactionPage = () => {
       setLoading(true);
       setError("");
 
-      let endpoint = "/api/contract/transactions";
-      if (filter !== "ALL") {
-        endpoint = `/api/transactions/${filter}`;
-      }
+      // Luôn dùng endpoint filter theo status
+      const endpoint = `/api/transactions/${filter}`;
 
       const response = await api.get(endpoint);
       console.log("Fetched transactions:", response.data); // Debug log
@@ -449,7 +447,6 @@ const TransactionPage = () => {
               onChange={(e) => setFilter(e.target.value)}
               className="filter-select"
             >
-              <option value="ALL">All</option>
               <option value="PENDING">Pending</option>
               <option value="DONE">Done</option>
               <option value="FAILED">Failed</option>
