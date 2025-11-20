@@ -178,23 +178,12 @@ public class FeeService {
                 postRepository.save(post);
                 
                 fee.setFeeStatus("PAID");
-<<<<<<< HEAD
-                feeRepository.save(fee);
-                // 💰 Logic cũ: Post giữ nguyên status "PENDING", chỉ cập nhật fee status
-=======
-                
                 log.info("✅ Payment successful for transaction ID: {}, post ID: {}, fee status updated to PAID", transactionId, post.getId());
->>>>>>> c5ecdec0b6d621e757dc3a118954c04dbfeb3076
             } else {
                 transaction.setTransactionStatus("FAILED");
                 payment.setPaymentStatus("FAILED");
                 fee.setFeeStatus("PENDING");
-<<<<<<< HEAD
-                feeRepository.save(fee);
-=======
-                
                 log.warn("❌ Payment failed for transaction ID: {}, response code: {}", transactionId, params.get("vnp_ResponseCode"));
->>>>>>> c5ecdec0b6d621e757dc3a118954c04dbfeb3076
             }
 
             // 🔧 Save all entities to persist changes
