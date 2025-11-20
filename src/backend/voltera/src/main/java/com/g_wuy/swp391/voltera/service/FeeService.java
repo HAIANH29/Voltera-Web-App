@@ -51,21 +51,31 @@ public class FeeService {
             throw new BusinessException("Transaction Not Found");
         }
 
-        Fee fee = new Fee();
-        fee.setPost(transaction.getPost());
-        if (transaction.getPost().getVehicle() != null && transaction.getPost().getBattery() == null) {
-            fee.setAmount(BigDecimal.valueOf(500000));
-        } else if (transaction.getPost().getBattery() != null && transaction.getPost().getVehicle() == null) {
-            fee.setAmount(BigDecimal.valueOf(200000));
+        // 🔍 Check if Fee already exists for this post to avoid duplicates
+        Fee existingFee = feeRepository.findValidFeeByPostId(transaction.getPost().getId()).orElse(null);
+        
+        Fee fee;
+        if (existingFee != null && "PENDING".equals(existingFee.getFeeStatus())) {
+            // ✅ Use existing Fee instead of creating duplicate
+            fee = existingFee;
         } else {
-            throw new BusinessException("Post không có vehicle hay battery");
+            // ✨ Create new Fee only if none exists or existing is not PENDING
+            fee = new Fee();
+            fee.setPost(transaction.getPost());
+            if (transaction.getPost().getVehicle() != null && transaction.getPost().getBattery() == null) {
+                fee.setAmount(BigDecimal.valueOf(500000));
+            } else if (transaction.getPost().getBattery() != null && transaction.getPost().getVehicle() == null) {
+                fee.setAmount(BigDecimal.valueOf(200000));
+            } else {
+                throw new BusinessException("Post không có vehicle hay battery");
+            }
+            fee.setDescription("Fee for posting " + transaction.getPost().getTitle());
+            fee.setCreatedAt(LocalDateTime.now());
+            fee.setExpiredAt(LocalDateTime.now().plusDays(15));
+            fee.setFeeStatus("PENDING");
+            fee.setTransaction(transaction);
+            feeRepository.save(fee);
         }
-        fee.setDescription("Fee for posting " + transaction.getPost().getTitle());
-        fee.setCreatedAt(LocalDateTime.now());
-        fee.setExpiredAt(LocalDateTime.now().plusDays(15));
-        fee.setFeeStatus("PENDING");
-        fee.setTransaction(transaction);
-        feeRepository.save(fee);
 
         VNPayRequest vnPayRequest = new VNPayRequest();
         vnPayRequest.setAmount(Long.valueOf(String.valueOf(fee.getAmount())));
