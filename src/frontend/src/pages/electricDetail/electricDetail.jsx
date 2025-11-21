@@ -102,66 +102,6 @@ const mapPostToDetail = (p) => {
   };
 };
 
-// Mock data for fallback (development only)
-const mockBatteriesData = [
-  {
-    postID: 1,
-    image: "https://images.unsplash.com/photo-1558618047-3c8c6c8b1c0e?w=400",
-    productName: "Tesla Model S Battery Pack",
-    basicInfo: ["Li-ion", "85kWh", "8000 cycles"],
-    sellerName: "Tesla Service Center",
-    price: 450000000,
-    isNew: true,
-    isFavorite: false,
-    batteryDetails: {
-      batteryType: "Lithium-ion",
-      serialNumber: "TSL-85-2023-001",
-      originalCapacity: "85kWh",
-      remainingCapacity: "82kWh",
-      mileageCovered: "15000km",
-      voltage: "400V",
-      cycleCount: 245,
-      warranty: "8 năm",
-      weight: "540kg",
-      lifeCycle: "8000 cycles",
-    },
-    description:
-      "Pin lithium-ion chính hãng Tesla Model S với công nghệ tiên tiến và độ bền cao. Pin đã được kiểm tra và bảo dưỡng định kỳ, còn 96.5% dung lượng ban đầu.",
-    features: [
-      "Công nghệ lithium-ion tiên tiến",
-      "Hệ thống quản lý nhiệt thông minh",
-      "Sạc nhanh DC lên đến 250kW",
-      "Tuổi thọ 8000+ chu kỳ sạc",
-      "Bảo hành chính hãng 8 năm",
-      "Khả năng tái chế 95%",
-    ],
-    specifications: {
-      "Loại pin": "Lithium-ion NCR 18650",
-      "Dung lượng danh định": "85 kWh",
-      "Dung lượng còn lại": "82 kWh (96.5%)",
-      "Điện áp": "400V DC",
-      "Dòng sạc tối đa": "625A",
-      "Công suất sạc": "250kW (DC)",
-      "Số chu kỳ đã sử dụng": "245/8000",
-      "Nhiệt độ vận hành": "-20°C đến +60°C",
-      "Trọng lượng": "540kg",
-      "Kích thước": "210 x 150 x 14 cm",
-    },
-    images: [
-      "https://images.unsplash.com/photo-1558618047-3c8c6c8b1c0e?w=800",
-      "https://images.unsplash.com/photo-1593941707882-a5bac6861d75?w=800",
-      "https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=800",
-    ],
-    sellerInfo: {
-      name: "Tesla Service Center",
-      phone: "1900123456",
-      address: "Quận 3, TP.HCM",
-      rating: 4.9,
-      totalSales: 150,
-    },
-  },
-];
-
 export default function ElectricDetail() {
   const { postID } = useParams();
   const navigate = useNavigate();
@@ -175,7 +115,6 @@ export default function ElectricDetail() {
       if (!postID) return;
 
       setLoading(true);
-      console.log("� Fetching battery detail for postID:", postID);
 
       try {
         const response = await api.get(`/api/post/detail/${postID}`);
@@ -183,49 +122,15 @@ export default function ElectricDetail() {
 
         // Kiểm tra xem post có chứa battery không
         if (!postData?.battery) {
-          console.warn("Post không chứa thông tin battery");
-          // Fallback to mock data in development
-          if (process.env.NODE_ENV === "development") {
-            const foundBattery = mockBatteriesData.find(
-              (b) => b.postID === parseInt(postID)
-            );
-            if (foundBattery) {
-              setBattery(foundBattery);
-              setIsFavorite(foundBattery.isFavorite);
-            } else {
-              setBattery(null);
-            }
-          } else {
-            setBattery(null);
-          }
+          setBattery(null);
           return;
         }
 
         const mappedBattery = mapPostToDetail(postData);
         setBattery(mappedBattery);
         setIsFavorite(mappedBattery.isFavorite);
-
-        console.log("✅ Battery detail loaded:", mappedBattery);
       } catch (error) {
-        console.error("❌ Failed to fetch battery detail:", error);
-        console.log("STATUS =", error?.response?.status);
-        console.log("DATA   =", error?.response?.data);
-
-        // Fallback to mock data in development
-        if (process.env.NODE_ENV === "development") {
-          console.log("🔄 Using mock data as fallback");
-          const foundBattery = mockBatteriesData.find(
-            (b) => b.postID === parseInt(postID)
-          );
-          if (foundBattery) {
-            setBattery(foundBattery);
-            setIsFavorite(foundBattery.isFavorite);
-          } else {
-            setBattery(null);
-          }
-        } else {
-          setBattery(null);
-        }
+        setBattery(null);
       } finally {
         setLoading(false);
       }
@@ -260,11 +165,6 @@ export default function ElectricDetail() {
       alert("Battery information has not been loaded. Please try again.");
       return;
     }
-
-    // Debug: Log battery data
-    console.log("🔍 Battery data:", battery);
-    console.log("🔍 Battery name:", battery.productName);
-    console.log("🔍 Battery price:", battery.price);
 
     // Navigate to contract page to create contract for battery
     navigate(`/contract?postId=${postID}&action=create&type=battery`);

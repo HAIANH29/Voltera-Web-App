@@ -48,10 +48,8 @@ const TransactionPage = () => {
       const endpoint = `/api/transactions/${filter}`;
 
       const response = await api.get(endpoint);
-      console.log("Fetched transactions:", response.data); // Debug log
       setTransactions(response.data);
     } catch (err) {
-      console.error("Error fetching transactions:", err);
       setError("Unable to load transaction list. Please try again.");
     } finally {
       setLoading(false);
@@ -150,7 +148,6 @@ const TransactionPage = () => {
       setSelectedTransaction(response.data);
       setShowModal(true);
     } catch (err) {
-      console.error("Error fetching transaction details:", err);
       // Fallback to showing the transaction data we have
       setSelectedTransaction(transaction);
       setShowModal(true);
@@ -180,13 +177,6 @@ const TransactionPage = () => {
         refundTransaction.transactionId ||
         refundTransaction.transactionid;
 
-      console.log("🔍 Refund Debug Info:", {
-        refundTransaction,
-        transactionId,
-        refundReason,
-        imagesCount: refundImages.length,
-      });
-
       // Create refund request
       const refund = await refundService.createRefund(
         transactionId,
@@ -207,8 +197,6 @@ const TransactionPage = () => {
       // Optionally navigate to refunds page
       navigate("/refunds");
     } catch (error) {
-      console.error("Error submitting refund request:", error);
-
       let errorMessage = "Failed to submit refund request.";
 
       if (error.response?.data?.message) {
@@ -224,11 +212,6 @@ const TransactionPage = () => {
         // Generic error message
         errorMessage = error.message;
       }
-
-      console.log("📋 Error details:", {
-        errorResponse: error.response?.data,
-        errorMessage: errorMessage,
-      });
 
       alert(errorMessage);
     }
@@ -298,20 +281,14 @@ const TransactionPage = () => {
                 onClick={async () => {
                   try {
                     setShowModal(false);
-                    console.log(
-                      "Selected transaction object:",
-                      selectedTransaction
-                    ); // Debug log
 
                     // Try different possible ID fields
                     const transactionId =
                       selectedTransaction.id ||
                       selectedTransaction.transactionId ||
                       selectedTransaction.transactionid;
-                    console.log("Using transaction ID:", transactionId);
 
                     if (!transactionId) {
-                      console.error("No transaction ID found!");
                       alert(
                         "Transaction ID not found. Cannot proceed with payment."
                       );
@@ -334,7 +311,6 @@ const TransactionPage = () => {
                       )}`
                     );
                   } catch (error) {
-                    console.error("Error creating payment:", error);
                     // Fallback to payment page with all necessary info
                     const transactionId =
                       selectedTransaction.id ||
@@ -551,20 +527,13 @@ const TransactionPage = () => {
                             className="btn-action btn-pay"
                             onClick={async () => {
                               try {
-                                console.log("Transaction object:", transaction); // Debug log
-
                                 // Try different possible ID fields
                                 const transactionId =
                                   transaction.id ||
                                   transaction.transactionId ||
                                   transaction.transactionid;
-                                console.log(
-                                  "Using transaction ID:",
-                                  transactionId
-                                );
 
                                 if (!transactionId) {
-                                  console.error("No transaction ID found!");
                                   setError(
                                     "Transaction ID not found. Cannot proceed with payment."
                                   );
@@ -587,7 +556,6 @@ const TransactionPage = () => {
                                   )}`
                                 );
                               } catch (error) {
-                                console.error("Error creating payment:", error);
                                 // Fallback to payment page with all necessary info
                                 const transactionId =
                                   transaction.id ||

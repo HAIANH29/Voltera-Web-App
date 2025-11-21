@@ -77,7 +77,6 @@ const AdminLayout = ({ children }) => {
       // Redirect to login
       navigate("/login", { replace: true });
     } catch (error) {
-      console.error("Logout error:", error);
       // Force logout even if error
       Cookies.remove("accessToken", { path: "/" });
       Cookies.remove("refreshToken", { path: "/" });

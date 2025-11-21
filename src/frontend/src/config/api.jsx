@@ -32,11 +32,6 @@ api.interceptors.response.use(
       try {
         // Check for extremely large responses
         if (res.data.length > 200000) {
-          console.warn(
-            "⚠️ Very large JSON response detected:",
-            res.data.length,
-            "chars"
-          );
           // Don't auto-parse very large responses to avoid blocking
           return res;
         }
@@ -44,14 +39,11 @@ api.interceptors.response.use(
         // Check for obvious JSON truncation/corruption
         const lastChar = res.data.trim().slice(-1);
         if (lastChar !== "}" && lastChar !== "]") {
-          console.warn("⚠️ JSON appears truncated, last char:", lastChar);
           return res;
         }
 
         res.data = JSON.parse(res.data);
-        console.log("🔧 Auto-parsed JSON string response");
       } catch (e) {
-        console.warn("⚠️ Failed to auto-parse JSON:", e.message);
         // Don't throw, just return original response
       }
     }
@@ -69,5 +61,5 @@ api.interceptors.response.use(
     return Promise.reject(err);
   }
 );
-console.log("API baseURL =", import.meta.env.VITE_BACK_END_BASE_URL);
+
 export default api;

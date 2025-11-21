@@ -117,8 +117,6 @@ export default function VehiclesPage() {
         // BE trả list PostResponse chỉ chứa vehicles
         const items = Array.isArray(res.data) ? res.data : [];
 
-        console.log("[VehiclesPage] Loaded", items.length, "vehicle posts");
-
         const mapped = items.map(mapPostToCard);
 
         // Load user favorites to sync favorite status
@@ -137,7 +135,6 @@ export default function VehiclesPage() {
 
             setVehicles(mappedWithFavorites);
           } catch (favError) {
-            console.error("Error loading favorites:", favError);
             // Still set vehicles even if favorites loading failed
             setVehicles(mapped);
           }
@@ -145,9 +142,6 @@ export default function VehiclesPage() {
           setVehicles(mapped);
         }
       } catch (e) {
-        console.error("Load vehicles failed:", e);
-        console.log("STATUS =", e?.response?.status);
-        console.log("DATA   =", e?.response?.data);
         setVehicles([]);
       } finally {
         setLoading(false);
@@ -326,13 +320,11 @@ export default function VehiclesPage() {
         )
       );
 
-      console.error("Error toggling favorite:", error);
       alert("Failed to update favorites. Please try again.");
     }
   };
 
   const handleCardClick = (vehicle) => {
-    console.log("Navigating to vehicle detail:", vehicle.postID);
     navigate(`/vehicles/${vehicle.postID}`);
   };
 
@@ -629,7 +621,6 @@ export default function VehiclesPage() {
                 value={draftFilters.minPrice}
                 onChange={(e) => {
                   const value = e.target.value.replace(/[^0-9]/g, "");
-                  console.log("Min price changed:", value);
                   setDraftFilters({ ...draftFilters, minPrice: value });
                 }}
                 className="simple-price-input"
@@ -640,7 +631,6 @@ export default function VehiclesPage() {
                 value={draftFilters.maxPrice}
                 onChange={(e) => {
                   const value = e.target.value.replace(/[^0-9]/g, "");
-                  console.log("Max price changed:", value);
                   setDraftFilters({ ...draftFilters, maxPrice: value });
                 }}
                 className="simple-price-input"

@@ -21,8 +21,7 @@ const NotificationPage = () => {
         setError(result.error);
       }
     } catch (error) {
-      console.error('Error fetching notifications:', error);
-      setError('Unable to load notifications. Please try again.');
+setError('Unable to load notifications. Please try again.');
     } finally {
       setLoading(false);
     }

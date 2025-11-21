@@ -27,10 +27,7 @@ export default function ContractPreview({ postId, contractId, onClose }) {
     try {
       const res = await api.get("/me");
       setCurrentUser(res.data);
-      console.log("👤 Current user:", res.data);
-    } catch (error) {
-      console.error("Error fetching current user:", error);
-    }
+    } catch (error) {}
   };
 
   // Fetch contract data for preview with cleanup
@@ -39,12 +36,10 @@ export default function ContractPreview({ postId, contractId, onClose }) {
     setContractData(null);
     setPostData(null);
     setLoading(false);
-    
-    console.log("🔄 ContractPreview useEffect triggered:", { contractId, postId });
-    
+
     // Fetch current user info
     fetchCurrentUser();
-    
+
     if (contractId) {
       fetchContractData();
     } else if (postId) {
@@ -58,44 +53,29 @@ export default function ContractPreview({ postId, contractId, onClose }) {
       const res = await api.get(`/api/contract/${contractId}`);
       const contractInfo = res.data;
       setContractData(contractInfo);
-      
-      console.log("📋 Contract data loaded:", {
-        contractId: contractInfo.contractId,
-        postId: contractInfo.postId,
-        contractType: contractInfo.contractType,
-        postTitle: contractInfo.postTitle,
-        sellerName: contractInfo.sellerName,
-        buyerName: contractInfo.buyerName
-      });
-      
+
       // If contract has postId, always fetch fresh post data to ensure correct display
       if (contractInfo.postId) {
-        console.log("🔄 Fetching post data for contract:", contractInfo.postId);
         try {
-          const postRes = await api.get(`/api/post/detail/${contractInfo.postId}`);
+          const postRes = await api.get(
+            `/api/post/detail/${contractInfo.postId}`
+          );
           const rawPostData = postRes.data;
-          
+
           // Add type detection to postData
           const enhancedData = {
             ...rawPostData,
-            type: rawPostData.battery ? 'battery' : rawPostData.vehicle ? 'vehicle' : 'unknown'
+            type: rawPostData.battery
+              ? "battery"
+              : rawPostData.vehicle
+              ? "vehicle"
+              : "unknown",
           };
-          
-          console.log("📊 Post data loaded from contract:", {
-            postId: contractInfo.postId,
-            hasBattery: !!rawPostData.battery,
-            hasVehicle: !!rawPostData.vehicle,
-            detectedType: enhancedData.type,
-            rawData: rawPostData
-          });
-          
+
           setPostData(enhancedData);
-        } catch (postErr) {
-          console.error("Error fetching post data from contract:", postErr);
-        }
+        } catch (postErr) {}
       }
     } catch (err) {
-      console.error("Error fetching contract:", err);
       alert("Unable to load contract information.");
     } finally {
       setLoading(false);
@@ -106,53 +86,39 @@ export default function ContractPreview({ postId, contractId, onClose }) {
     try {
       const res = await api.get(`/api/post/detail/${postId}`);
       const rawData = res.data;
-      
+
       // Add type detection to postData
       const enhancedData = {
         ...rawData,
-        type: rawData.battery ? 'battery' : rawData.vehicle ? 'vehicle' : 'unknown'
+        type: rawData.battery
+          ? "battery"
+          : rawData.vehicle
+          ? "vehicle"
+          : "unknown",
       };
-      
-      console.log("📊 Post data loaded:", {
-        postId: postId,
-        hasBattery: !!rawData.battery,
-        hasVehicle: !!rawData.vehicle,
-        detectedType: enhancedData.type,
-        rawData: rawData
-      });
-      
+
       setPostData(enhancedData);
-    } catch (err) {
-      console.error("Error fetching post data:", err);
-    }
+    } catch (err) {}
   };
 
   // Check if current user is the buyer
   const isCurrentUserBuyer = () => {
     if (!currentUser || !contractData) return false;
-    
+
     // API /me returns { username, roles }
     // Primary check: username comparison
-    const usernameMatch = currentUser.username === contractData.buyerEmail || 
-                         currentUser.username === contractData.buyerName ||
-                         currentUser.username === contractData.buyerUsername;
-    
+    const usernameMatch =
+      currentUser.username === contractData.buyerEmail ||
+      currentUser.username === contractData.buyerName ||
+      currentUser.username === contractData.buyerUsername;
+
     // Secondary check: if user has BUYER role
-    const hasRole = currentUser.roles && currentUser.roles.some(role => 
-      role.authority === 'ROLE_BUYER' || role.authority === 'BUYER'
-    );
-    
-    console.log("🔍 Buyer check:", {
-      currentUser: currentUser,
-      contractData: contractData,
-      usernameMatch: usernameMatch,
-      hasRole: hasRole,
-      roles: currentUser.roles,
-      usernameVsBuyerEmail: currentUser.username === contractData.buyerEmail,
-      usernameVsBuyerName: currentUser.username === contractData.buyerName,
-      usernameVsBuyerUsername: currentUser.username === contractData.buyerUsername
-    });
-    
+    const hasRole =
+      currentUser.roles &&
+      currentUser.roles.some(
+        (role) => role.authority === "ROLE_BUYER" || role.authority === "BUYER"
+      );
+
     // For now, use username match as primary logic
     // Can be enhanced later with better buyer identification
     return usernameMatch;
@@ -161,29 +127,22 @@ export default function ContractPreview({ postId, contractId, onClose }) {
   // Check if current user is the seller
   const isCurrentUserSeller = () => {
     if (!currentUser || !contractData) return false;
-    
+
     // API /me returns { username, roles }
     // Primary check: username comparison
-    const usernameMatch = currentUser.username === contractData.sellerEmail || 
-                         currentUser.username === contractData.sellerName ||
-                         currentUser.username === contractData.sellerUsername;
-    
+    const usernameMatch =
+      currentUser.username === contractData.sellerEmail ||
+      currentUser.username === contractData.sellerName ||
+      currentUser.username === contractData.sellerUsername;
+
     // Secondary check: if user has SELLER role
-    const hasRole = currentUser.roles && currentUser.roles.some(role => 
-      role.authority === 'ROLE_SELLER' || role.authority === 'SELLER'
-    );
-    
-    console.log("🔍 Seller check:", {
-      currentUser: currentUser,
-      contractData: contractData,
-      usernameMatch: usernameMatch,
-      hasRole: hasRole,
-      roles: currentUser.roles,
-      usernameVsSellerEmail: currentUser.username === contractData.sellerEmail,
-      usernameVsSellerName: currentUser.username === contractData.sellerName,
-      usernameVsSellerUsername: currentUser.username === contractData.sellerUsername
-    });
-    
+    const hasRole =
+      currentUser.roles &&
+      currentUser.roles.some(
+        (role) =>
+          role.authority === "ROLE_SELLER" || role.authority === "SELLER"
+      );
+
     // For now, use username match as primary logic
     // Can be enhanced later with better seller identification
     return usernameMatch;
@@ -214,7 +173,6 @@ export default function ContractPreview({ postId, contractId, onClose }) {
       await fetchContractData();
       alert("Contract signed successfully!");
     } catch (err) {
-      console.error("Error signing contract:", err);
       alert("Unable to sign contract, please try again.");
     } finally {
       setIsSigning(false);
@@ -224,26 +182,16 @@ export default function ContractPreview({ postId, contractId, onClose }) {
   // Cancel contract
   const cancelContract = async () => {
     try {
-      console.log("🔥 [Cancel] Starting cancel contract...");
-      console.log("🔥 [Cancel] Contract ID:", contractData.contractId);
-      console.log("🔥 [Cancel] Token:", token ? "Present" : "Missing");
-
       setIsCanceling(true);
 
       const response = await api.put(
         `/api/contract/${contractData.contractId}/cancel`
       );
 
-      console.log("✅ [Cancel] Success response:", response.data);
-
       // Refresh contract data after canceling
       await fetchContractData();
       alert("Contract canceled successfully!");
     } catch (err) {
-      console.error("❌ [Cancel] Error canceling contract:", err);
-      console.error("❌ [Cancel] Error response:", err.response?.data);
-      console.error("❌ [Cancel] Error status:", err.response?.status);
-
       // Show specific error message
       const errorMessage =
         err.response?.data?.message || err.message || "Unknown error";
@@ -270,22 +218,21 @@ export default function ContractPreview({ postId, contractId, onClose }) {
 
       // Get postId from multiple sources
       const paymentPostId = postData?.postId || postId || contractData.postId;
-      
+
       // Build payment URL
       let paymentUrl = `/payment?contractId=${contractData.contractId}&transactionId=${transactionId}`;
-      
+
       if (paymentPostId) {
         paymentUrl += `&postId=${paymentPostId}`;
       }
-      
+
       if (postData?.price && postData.price > 0) {
         paymentUrl += `&amount=${postData.price}`;
       }
-      
+
       // Use window.location.href to navigate
       window.location.href = paymentUrl;
     } catch (err) {
-      console.error("Error creating payment:", err);
       const errorMessage =
         err.response?.data?.message ||
         err.message ||
@@ -313,79 +260,50 @@ export default function ContractPreview({ postId, contractId, onClose }) {
       }
 
       setLoading(true);
-      console.log("🚀 Starting contract download process...");
-      console.log("📋 Contract Data:", contractData);
-      console.log("🚗 Post Data:", postData);
 
       // 2️⃣ Determine contract type and get appropriate template
       // Enhanced detection: check contractData for post type as well
       const hasBatteryInPost = !!postData?.battery;
       const postType = postData?.type;
-      const contractPostTitle = contractData?.postTitle || postData?.title || '';
-      const isBatteryByTitle = contractPostTitle.toLowerCase().includes('battery') || 
-                               contractPostTitle.toLowerCase().includes('pin') ||
-                               contractPostTitle.toLowerCase().includes('electric battery');
-      
+      const contractPostTitle =
+        contractData?.postTitle || postData?.title || "";
+      const isBatteryByTitle =
+        contractPostTitle.toLowerCase().includes("battery") ||
+        contractPostTitle.toLowerCase().includes("pin") ||
+        contractPostTitle.toLowerCase().includes("electric battery");
+
       // Multiple ways to detect battery contract
-      const isBattery = hasBatteryInPost || 
-                        postType === 'battery' || 
-                        isBatteryByTitle ||
-                        (contractData?.contractType && contractData.contractType === 'battery');
-      
-      const templatePath = isBattery 
+      const isBattery =
+        hasBatteryInPost ||
+        postType === "battery" ||
+        isBatteryByTitle ||
+        (contractData?.contractType && contractData.contractType === "battery");
+
+      const templatePath = isBattery
         ? "/templates/contract/ElectricContract.docx"
         : "/templates/contract/VehicleContract.docx";
-      
-      console.log("🔍 Enhanced contract type detection:", {
-        postData: postData,
-        contractData: contractData,
-        hasBatteryInPost: hasBatteryInPost,
-        postType: postType,
-        contractPostTitle: contractPostTitle,
-        isBatteryByTitle: isBatteryByTitle,
-        contractType: contractData?.contractType,
-        finalIsBattery: isBattery,
-        templatePath: templatePath,
-        postDataKeys: postData ? Object.keys(postData) : 'no postData',
-        batteryData: postData?.battery ? 'has battery data' : 'no battery data'
-      });
-      
-      console.log("🔍 Fetching DOCX template from:", templatePath);
-      const fileRes = await fetch(templatePath, {
-        method: 'GET',
-        headers: {
-          'Cache-Control': 'no-cache'
-        }
-      });
 
-      console.log("📄 Template response:", {
-        status: fileRes.status,
-        statusText: fileRes.statusText,
-        ok: fileRes.ok,
-        headers: Object.fromEntries(fileRes.headers.entries())
+      const fileRes = await fetch(templatePath, {
+        method: "GET",
+        headers: {
+          "Cache-Control": "no-cache",
+        },
       });
 
       if (!fileRes.ok) {
-        console.error(`❌ Template file request failed: ${fileRes.status} ${fileRes.statusText}`);
-        console.log("🔄 Falling back to text download...");
         downloadContractAsText();
         return;
       }
 
-      console.log("✅ Template found, processing DOCX...");
       const buffer = await fileRes.arrayBuffer();
-      console.log("📦 Template buffer size:", buffer.byteLength);
 
       if (buffer.byteLength === 0) {
-        console.error("❌ Template file is empty");
         downloadContractAsText();
         return;
       }
 
-      console.log("🔧 Creating PizZip instance...");
       const zip = new PizZip(buffer);
-      
-      console.log("📝 Creating Docxtemplater instance...");
+
       const doc = new Docxtemplater(zip, {
         paragraphLoop: true,
         linebreaks: true,
@@ -394,20 +312,9 @@ export default function ContractPreview({ postId, contractId, onClose }) {
       // 3️⃣ Prepare data for rendering - Comprehensive data mapping
       const vehicle = postData?.vehicle || {};
       const battery = postData?.battery || {};
-      
-      console.log("📋 Raw contract data for mapping:", {
-        contractData: contractData,
-        postData: postData,
-        vehicle: vehicle,
-        battery: battery,
-        emails: {
-          sellerEmail: contractData?.sellerEmail,
-          buyerEmail: contractData?.buyerEmail
-        }
-      });
-      
+
       let renderData;
-      
+
       if (isBattery) {
         // Battery contract data mapping
         renderData = {
@@ -420,34 +327,42 @@ export default function ContractPreview({ postId, contractId, onClose }) {
             ? new Date(contractData.signedDate).toLocaleDateString("en-US")
             : "Not signed yet",
 
-          // Seller info  
+          // Seller info
           sellerName: contractData.sellerName || "N/A",
           sellerEmail: contractData.sellerEmail || "seller@voltera.com",
           sellerSigned: contractData.signedBySeller ? "Signed" : "Not signed",
-          sellerSignedStatus: contractData.signedBySeller ? "✅ Signed" : "❌ Not signed",
+          sellerSignedStatus: contractData.signedBySeller
+            ? "✅ Signed"
+            : "❌ Not signed",
 
           // Buyer info
-          buyerName: contractData.buyerName || "N/A", 
+          buyerName: contractData.buyerName || "N/A",
           buyerEmail: contractData.buyerEmail || "buyer@voltera.com",
           buyerSigned: contractData.signedByBuyer ? "Signed" : "Not signed",
-          buyerSignedStatus: contractData.signedByBuyer ? "✅ Signed" : "❌ Not signed",
+          buyerSignedStatus: contractData.signedByBuyer
+            ? "✅ Signed"
+            : "❌ Not signed",
 
           // Battery info (handle both originCapacity and originalCapacity)
           title: contractData.postTitle || postData?.title || "Battery Pack",
           serialNumber: battery.serialNumber || "N/A",
-          originalCapacity: battery.originCapacity || battery.originalCapacity || "N/A",
+          originalCapacity:
+            battery.originCapacity || battery.originalCapacity || "N/A",
           remainingCapacity: battery.remainingCapacity || "N/A",
           voltage: battery.voltage || "N/A",
           cycleCount: battery.cycleCount || "0",
           warranty: battery.warranty || "N/A",
           weight: battery.weight || "N/A",
           mileageCovered: battery.mileageCovered || "0",
-          batteryType: battery.batteryTypeId?.typename || battery.batteryType || "Li-ion",
-          price: postData?.price ? `$${postData.price.toLocaleString()}` : "Contact for price",
-          
+          batteryType:
+            battery.batteryTypeId?.typename || battery.batteryType || "Li-ion",
+          price: postData?.price
+            ? `$${postData.price.toLocaleString()}`
+            : "Contact for price",
+
           // Contract status
           contractStatus: contractData.contractStatus || "PENDING",
-          
+
           // Current date
           date: new Date().toLocaleDateString("en-US"),
           currentDate: new Date().toLocaleDateString("en-US"),
@@ -465,17 +380,21 @@ export default function ContractPreview({ postId, contractId, onClose }) {
             ? new Date(contractData.signedDate).toLocaleDateString("vi-VN")
             : "Not signed yet",
 
-          // Seller info  
+          // Seller info
           sellerName: contractData.sellerName || "N/A",
           sellerEmail: contractData.sellerEmail || "seller@voltera.com",
           sellerSigned: contractData.signedBySeller ? "Signed" : "Not signed",
-          sellerSignedStatus: contractData.signedBySeller ? "✅ Signed" : "❌ Not signed",
+          sellerSignedStatus: contractData.signedBySeller
+            ? "✅ Signed"
+            : "❌ Not signed",
 
           // Buyer info
-          buyerName: contractData.buyerName || "N/A", 
+          buyerName: contractData.buyerName || "N/A",
           buyerEmail: contractData.buyerEmail || "buyer@voltera.com",
           buyerSigned: contractData.signedByBuyer ? "Signed" : "Not signed",
-          buyerSignedStatus: contractData.signedByBuyer ? "✅ Signed" : "❌ Not signed",
+          buyerSignedStatus: contractData.signedByBuyer
+            ? "✅ Signed"
+            : "❌ Not signed",
 
           // Vehicle info
           title: contractData.postTitle || postData?.title || "N/A",
@@ -489,13 +408,13 @@ export default function ContractPreview({ postId, contractId, onClose }) {
 
           // Additional fields that might be in template
           brand: vehicle.brand || "N/A",
-          model: vehicle.model || "N/A", 
+          model: vehicle.model || "N/A",
           year: vehicle.yearManufacture || "N/A",
           color: vehicle.color || "N/A",
-          
+
           // Contract status
           contractStatus: contractData.contractStatus || "PENDING",
-          
+
           // Current date
           date: new Date().toLocaleDateString("vi-VN"),
           currentDate: new Date().toLocaleDateString("vi-VN"),
@@ -503,85 +422,59 @@ export default function ContractPreview({ postId, contractId, onClose }) {
         };
       }
 
-      console.log("🎯 Render data for contract:", renderData);
-      console.log("📋 Contract data debug:", {
-        contractId: contractData.contractId,
-        signedDate: contractData.signedDate,
-        signedBySeller: contractData.signedBySeller,
-        signedByBuyer: contractData.signedByBuyer,
-        contractStatus: contractData.contractStatus,
-        sellerName: contractData.sellerName,
-        buyerName: contractData.buyerName
-      });
-
       // 4️⃣ Render data with error handling
-      console.log("🔄 Rendering template with data...");
+
       try {
         doc.render(renderData);
-        console.log("✅ Template rendered successfully");
       } catch (renderError) {
-        console.error("❌ Template render error:", renderError);
-        console.error("❌ Render error details:", {
-          message: renderError.message,
-          properties: renderError.properties,
-          stack: renderError.stack
-        });
         throw new Error(`Template rendering failed: ${renderError.message}`);
       }
 
       // 5️⃣ Export file with comprehensive error handling
-      console.log("📦 Generating DOCX blob...");
+
       let blob;
       try {
         const zipOutput = doc.getZip().generate({
           type: "blob",
-          mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          mimeType:
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         });
         blob = zipOutput;
-        console.log("✅ DOCX blob generated successfully");
       } catch (zipError) {
-        console.error("❌ ZIP generation error:", zipError);
         throw new Error(`Failed to generate DOCX file: ${zipError.message}`);
       }
-
-      console.log("💾 Downloading DOCX file...");
-      console.log("📁 Blob details:", {
-        size: blob.size,
-        type: blob.type
-      });
 
       if (blob.size === 0) {
         throw new Error("Generated DOCX file is empty");
       }
 
-      const fileName = isBattery 
-        ? `BatterySalesContract_${contractData.contractId}_${new Date().toISOString().split("T")[0]}.docx`
-        : `VehicleSalesContract_${contractData.contractId}_${new Date().toISOString().split("T")[0]}.docx`;
-      
-      console.log("📄 Saving file as:", fileName);
-      saveAs(blob, fileName);
-      
-      console.log("🎉 DOCX download completed successfully!");
-      alert(`${isBattery ? 'Battery' : 'Vehicle'} contract downloaded successfully!`);
-      
-    } catch (err) {
-      console.error("❌ Error downloading DOCX contract:", err);
-      console.error("❌ Error details:", {
-        message: err.message,
-        name: err.name,
-        stack: err.stack
-      });
+      const fileName = isBattery
+        ? `BatterySalesContract_${contractData.contractId}_${
+            new Date().toISOString().split("T")[0]
+          }.docx`
+        : `VehicleSalesContract_${contractData.contractId}_${
+            new Date().toISOString().split("T")[0]
+          }.docx`;
 
-      // Show specific error to user  
+      saveAs(blob, fileName);
+
+      alert(
+        `${isBattery ? "Battery" : "Vehicle"} contract downloaded successfully!`
+      );
+    } catch (err) {
+      // Show specific error to user
       const errorMsg = err.message || "Unknown error occurred";
-      alert(`DOCX creation failed: ${errorMsg}\n\nDownloading as text file instead...`);
+      alert(
+        `DOCX creation failed: ${errorMsg}\n\nDownloading as text file instead...`
+      );
 
       // Fallback if error with DOCX
       try {
         downloadContractAsText();
       } catch (fallbackError) {
-        console.error("❌ Even fallback failed:", fallbackError);
-        alert("Unable to download contract in any format. Please try again later.");
+        alert(
+          "Unable to download contract in any format. Please try again later."
+        );
       }
     } finally {
       setLoading(false);
@@ -601,31 +494,33 @@ export default function ContractPreview({ postId, contractId, onClose }) {
 
       const vehicle = postData?.vehicle || {};
       const battery = postData?.battery || {};
-      
+
       // Use same enhanced detection logic as DOCX download
       const hasBatteryInPost = !!postData?.battery;
       const postType = postData?.type;
-      const contractPostTitle = contractData?.postTitle || postData?.title || '';
-      const isBatteryByTitle = contractPostTitle.toLowerCase().includes('battery') || 
-                               contractPostTitle.toLowerCase().includes('pin') ||
-                               contractPostTitle.toLowerCase().includes('electric battery');
-      
-      const isBattery = hasBatteryInPost || 
-                        postType === 'battery' || 
-                        isBatteryByTitle ||
-                        (contractData?.contractType && contractData.contractType === 'battery');
-      
-      console.log("📄 Text contract type detection:", {
-        hasBatteryInPost, postType, isBatteryByTitle, 
-        finalIsBattery: isBattery, contractPostTitle
-      });
+      const contractPostTitle =
+        contractData?.postTitle || postData?.title || "";
+      const isBatteryByTitle =
+        contractPostTitle.toLowerCase().includes("battery") ||
+        contractPostTitle.toLowerCase().includes("pin") ||
+        contractPostTitle.toLowerCase().includes("electric battery");
+
+      const isBattery =
+        hasBatteryInPost ||
+        postType === "battery" ||
+        isBatteryByTitle ||
+        (contractData?.contractType && contractData.contractType === "battery");
 
       const contractText = `
 SOCIALIST REPUBLIC OF VIETNAM
 Independence - Freedom - Happiness
 ----------------------------------
 
-${isBattery ? 'ELECTRIC BATTERY SALES CONTRACT' : 'ELECTRIC VEHICLE SALES CONTRACT'}
+${
+  isBattery
+    ? "ELECTRIC BATTERY SALES CONTRACT"
+    : "ELECTRIC VEHICLE SALES CONTRACT"
+}
 
 Today, ${
         contractData.signedDate
@@ -642,12 +537,18 @@ BUYER (Party B):
 Full name: ${contractData.buyerName || "N/A"}
 Email: ${contractData.buyerEmail || "buyer@voltera.com"}
 
-Together agreed to sign an ${isBattery ? 'electric battery' : 'electric vehicle'} sales contract with the following terms:
+Together agreed to sign an ${
+        isBattery ? "electric battery" : "electric vehicle"
+      } sales contract with the following terms:
 
-${isBattery ? `Article 1. Electric battery information
+${
+  isBattery
+    ? `Article 1. Electric battery information
 • Battery name: ${contractData.postTitle || postData?.title || "N/A"}
 • Serial number: ${battery.serialNumber || "N/A"}
-• Original capacity: ${battery.originCapacity || battery.originalCapacity || "N/A"} kWh
+• Original capacity: ${
+        battery.originCapacity || battery.originalCapacity || "N/A"
+      } kWh
 • Remaining capacity: ${battery.remainingCapacity || "N/A"} kWh
 • Voltage: ${battery.voltage || "N/A"}V
 • Cycle count: ${battery.cycleCount || "0"}
@@ -656,7 +557,8 @@ ${isBattery ? `Article 1. Electric battery information
         postData?.price
           ? new Intl.NumberFormat("en-US").format(postData.price)
           : "N/A"
-      } USD` : `Article 1. Electric vehicle information
+      } USD`
+    : `Article 1. Electric vehicle information
 • Vehicle name: ${contractData.postTitle || postData?.title || "N/A"}
 • Battery capacity: ${
         vehicle.batterycapacity ? `${vehicle.batterycapacity} kWh` : "N/A"
@@ -666,17 +568,28 @@ ${isBattery ? `Article 1. Electric battery information
         postData?.price
           ? new Intl.NumberFormat("en-US").format(postData.price)
           : "N/A"
-      } USD`}
+      } USD`
+}
 
 Article 2. Rights and obligations of the Seller
-1. The seller commits that the ${isBattery ? 'electric battery' : 'electric vehicle'} is legally owned, without disputes, mortgages, or pledges.
-2. The seller is responsible for providing all documents proving the origin and condition of the ${isBattery ? 'battery' : 'vehicle'}.
-3. The seller must deliver the ${isBattery ? 'battery' : 'vehicle'} on time and as described in the listing.
+1. The seller commits that the ${
+        isBattery ? "electric battery" : "electric vehicle"
+      } is legally owned, without disputes, mortgages, or pledges.
+2. The seller is responsible for providing all documents proving the origin and condition of the ${
+        isBattery ? "battery" : "vehicle"
+      }.
+3. The seller must deliver the ${
+        isBattery ? "battery" : "vehicle"
+      } on time and as described in the listing.
 
 Article 3. Rights and obligations of the Buyer
 1. The buyer is responsible for full and timely payment as agreed.
-2. The buyer is responsible for carefully inspecting the ${isBattery ? 'battery' : 'vehicle'} condition before taking delivery.
-3. The buyer bears full responsibility for the ${isBattery ? 'battery' : 'vehicle'} after completing the transaction.
+2. The buyer is responsible for carefully inspecting the ${
+        isBattery ? "battery" : "vehicle"
+      } condition before taking delivery.
+3. The buyer bears full responsibility for the ${
+        isBattery ? "battery" : "vehicle"
+      } after completing the transaction.
 
 Article 4. General terms
 1. Both parties commit to fully comply with all terms of this contract.
@@ -701,14 +614,21 @@ Created by Voltera system
       const blob = new Blob([contractText], {
         type: "text/plain;charset=utf-8",
       });
-      const fileName = isBattery 
-        ? `BatterySalesContract_${contractData.contractId}_${new Date().toISOString().split("T")[0]}.txt`
-        : `VehicleSalesContract_${contractData.contractId}_${new Date().toISOString().split("T")[0]}.txt`;
-      
+      const fileName = isBattery
+        ? `BatterySalesContract_${contractData.contractId}_${
+            new Date().toISOString().split("T")[0]
+          }.txt`
+        : `VehicleSalesContract_${contractData.contractId}_${
+            new Date().toISOString().split("T")[0]
+          }.txt`;
+
       saveAs(blob, fileName);
-      alert(`${isBattery ? 'Battery' : 'Vehicle'} contract text downloaded successfully!`);
+      alert(
+        `${
+          isBattery ? "Battery" : "Vehicle"
+        } contract text downloaded successfully!`
+      );
     } catch (err) {
-      console.error("Error creating text contract:", err);
       alert("Unable to create contract. Please try again.");
     }
   };
@@ -736,10 +656,7 @@ Created by Voltera system
       <div className="contract-header contract-header--relative">
         <h2>Contract Information</h2>
         {onClose && (
-          <button
-            onClick={onClose}
-            className="contract-close-btn"
-          >
+          <button onClick={onClose} className="contract-close-btn">
             ✕ Close
           </button>
         )}
@@ -926,45 +843,34 @@ Created by Voltera system
               )}
 
               {/* Pay Now Button - Only if both parties signed AND current user is buyer */}
-              {contractData.signedByBuyer && contractData.signedBySeller && isCurrentUserBuyer() && (
-                <button
-                  onClick={handlePayNow}
-                  disabled={isPaymentLoading}
-                  className="contract-btn success pay-now-btn"
-                >
-                  {isPaymentLoading && (
-                    <div className="contract-btn-spinner"></div>
-                  )}
-                  {isPaymentLoading ? "Redirecting..." : "💳 Pay Now"}
-                </button>
-              )}
+              {contractData.signedByBuyer &&
+                contractData.signedBySeller &&
+                isCurrentUserBuyer() && (
+                  <button
+                    onClick={handlePayNow}
+                    disabled={isPaymentLoading}
+                    className="contract-btn success pay-now-btn"
+                  >
+                    {isPaymentLoading && (
+                      <div className="contract-btn-spinner"></div>
+                    )}
+                    {isPaymentLoading ? "Redirecting..." : "💳 Pay Now"}
+                  </button>
+                )}
 
               {/* Cancel Contract Button */}
               {(() => {
-                console.log(
-                  "🔍 [Render] Contract status:",
-                  contractData.contractStatus
-                );
-                console.log(
-                  "🔍 [Render] Should show cancel button:",
-                  contractData.contractStatus === "PENDING"
-                );
-                console.log("🔍 [Render] Contract data:", contractData);
                 return contractData.contractStatus === "PENDING";
               })() && (
                 <button
                   onClick={() => {
-                    console.log("🖱️ [Click] Cancel button clicked");
-                    console.log("🖱️ [Click] isCanceling state:", isCanceling);
                     if (
                       window.confirm(
                         "Are you sure you want to cancel this contract? This action cannot be undone."
                       )
                     ) {
-                      console.log("✅ [Confirm] User confirmed cancel");
                       cancelContract();
                     } else {
-                      console.log("❌ [Confirm] User cancelled");
                     }
                   }}
                   disabled={isCanceling}
@@ -974,8 +880,6 @@ Created by Voltera system
                   {isCanceling ? "Canceling..." : "❌ Cancel Contract"}
                 </button>
               )}
-
-
             </div>
           </>
         ) : (

@@ -26,14 +26,6 @@ const mapPostToCard = (p) => {
       : "");
 
   // Handle price conversion more carefully
-  console.log(
-    "🔍 Processing price for post:",
-    p?.postId,
-    "Price value:",
-    p.price,
-    "Type:",
-    typeof p.price
-  );
 
   let processedPrice = 0;
 
@@ -48,18 +40,11 @@ const mapPostToCard = (p) => {
     } else if (typeof p.price === "number") {
       processedPrice = p.price;
     } else {
-      console.warn("⚠️ Unexpected price type:", typeof p.price, p.price);
       processedPrice = 0;
     }
   } else {
-    console.log(
-      "❌ Price is missing, null, undefined, or empty for post:",
-      p?.postId
-    );
     processedPrice = 0;
   }
-
-  console.log("💰 Final processed price:", processedPrice);
 
   return {
     // id bài đăng
@@ -132,25 +117,15 @@ const ElectricsPage = () => {
     const fetchBatteries = async () => {
       try {
         setLoading(true);
-        console.log("🔋 Fetching batteries from API...");
 
         // Sử dụng endpoint chuyên cho batteries đã được approved
         const response = await api.get("/api/post/public/batteries");
 
-        console.log("✅ Battery API Response:", response.data);
-        console.log("🔥 Hot reload trigger - MiniPost should be updated now");
-
         // BE trả list PostResponse chỉ chứa batteries
         const items = Array.isArray(response.data) ? response.data : [];
 
-        console.log("[ElectricsPage] Loaded", items.length, "battery posts");
-
         // Debug first item to see structure
         if (items.length > 0) {
-          console.log(
-            "🔍 First battery post structure:",
-            JSON.stringify(items[0], null, 2)
-          );
         }
 
         const mapped = items.map(mapPostToCard);
@@ -171,61 +146,14 @@ const ElectricsPage = () => {
 
             setBatteries(mappedWithFavorites);
           } catch (favError) {
-            console.error("Error loading favorites:", favError);
             // Still set batteries even if favorites loading failed
             setBatteries(mapped);
           }
         } else {
           setBatteries(mapped);
         }
-
-        console.log("✅ Batteries loaded:", mapped.length);
       } catch (error) {
-        console.error("❌ Error fetching batteries:", error);
-        console.log("STATUS =", error?.response?.status);
-        console.log("DATA   =", error?.response?.data);
-
-        // Only show test data in development
-        if (process.env.NODE_ENV === "development") {
-          const testData = [
-            {
-              postID: "test-1",
-              image:
-                "https://via.placeholder.com/400x300/667eea/ffffff?text=Tesla+Battery",
-              productName: "Tesla Model S Battery Pack",
-              basicInfo: ["Lithium-ion", "100kWh", "400V", "172 cycles"],
-              sellerName: "Tesla Parts Dealer",
-              price: 15000,
-              isNew: true,
-              isFavorite: false,
-            },
-            {
-              postID: "test-2",
-              image:
-                "https://via.placeholder.com/400x300/10b981/ffffff?text=BMW+Battery",
-              productName: "BMW i3 Battery Pack",
-              basicInfo: ["Li-ion", "42kWh", "350V"],
-              sellerName: "BMW Certified",
-              price: 8500,
-              isNew: false,
-              isFavorite: false,
-            },
-            {
-              postID: "test-3",
-              image:
-                "https://via.placeholder.com/400x300/f59e0b/ffffff?text=Nissan+Battery",
-              productName: "Nissan Leaf Battery",
-              basicInfo: ["Li-ion", "62kWh", "350V"],
-              sellerName: "Green Auto Parts",
-              price: 12000,
-              isNew: true,
-              isFavorite: false,
-            },
-          ];
-          setBatteries(testData);
-        } else {
-          setBatteries([]);
-        }
+        setBatteries([]);
       } finally {
         setLoading(false);
       }
@@ -368,7 +296,6 @@ const ElectricsPage = () => {
           )
         );
 
-        console.error("Error toggling favorite:", error);
         alert("Failed to update favorites. Please try again.");
       }
     },
@@ -377,10 +304,7 @@ const ElectricsPage = () => {
 
   // ===================== FORMAT HIỂN THỊ =====================
   const formatPrice = (price) => {
-    console.log("💰 Formatting price:", price, "Type:", typeof price);
-
     if (!price || price === null || price === undefined) {
-      console.log("❌ Price is null/undefined, showing Contact for Price");
       return "Contact for Price";
     }
 
@@ -393,10 +317,7 @@ const ElectricsPage = () => {
       numPrice = Number(price);
     }
 
-    console.log("🔢 Converted price to number:", numPrice);
-
     if (isNaN(numPrice) || numPrice === 0) {
-      console.log("❌ Price is NaN or 0, showing Contact for Price");
       return "Contact for Price";
     }
 
@@ -408,7 +329,6 @@ const ElectricsPage = () => {
       maximumFractionDigits: 0,
     }).format(numPrice);
 
-    console.log("✅ Formatted price:", formatted);
     return formatted;
   };
 
@@ -595,7 +515,6 @@ const ElectricsPage = () => {
                 placeholder="Min Price (VND) - e.g. 10,000,000"
                 value={draftFilters.minPrice}
                 onChange={(e) => {
-                  console.log("Min price input changed:", e.target.value);
                   const value = e.target.value.replace(/[^0-9]/g, "");
                   setDraftFilters({ ...draftFilters, minPrice: value });
                 }}
@@ -606,7 +525,6 @@ const ElectricsPage = () => {
                 placeholder="Max Price (VND) - e.g. 50,000,000"
                 value={draftFilters.maxPrice}
                 onChange={(e) => {
-                  console.log("Max price input changed:", e.target.value);
                   const value = e.target.value.replace(/[^0-9]/g, "");
                   setDraftFilters({ ...draftFilters, maxPrice: value });
                 }}
@@ -637,7 +555,6 @@ const ElectricsPage = () => {
                 placeholder="Min Capacity (kWh) - e.g. 20"
                 value={draftFilters.minCapacity}
                 onChange={(e) => {
-                  console.log("Min capacity input changed:", e.target.value);
                   const value = e.target.value.replace(/[^0-9.]/g, "");
                   setDraftFilters({ ...draftFilters, minCapacity: value });
                 }}
@@ -648,7 +565,6 @@ const ElectricsPage = () => {
                 placeholder="Max Capacity (kWh) - e.g. 100"
                 value={draftFilters.maxCapacity}
                 onChange={(e) => {
-                  console.log("Max capacity input changed:", e.target.value);
                   const value = e.target.value.replace(/[^0-9.]/g, "");
                   setDraftFilters({ ...draftFilters, maxCapacity: value });
                 }}

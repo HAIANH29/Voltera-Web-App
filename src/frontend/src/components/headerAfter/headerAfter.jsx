@@ -42,7 +42,7 @@ const HeaderAfter = ({ user: userProp }) => {
           localStorage.setItem("currentUser", JSON.stringify(userData));
         }
       } catch (err) {
-        console.error("Failed to load user profile:", err);
+        // Failed to load user profile
       }
     };
 
@@ -137,15 +137,11 @@ const HeaderAfter = ({ user: userProp }) => {
             // Decode JWT payload (base64 decode middle part)
             const payload = JSON.parse(atob(accessToken.split(".")[1]));
             username = payload.sub || payload.username || payload.email;
-            console.log("Username from JWT token:", username);
           }
         } catch (tokenError) {
-          console.error("Failed to decode JWT token:", tokenError);
+          // Failed to decode JWT token
         }
       }
-
-      console.log("Current user object:", currentUser);
-      console.log("Final username for logout:", username);
 
       // 3. Call backend logout API nếu có username hợp lệ
       if (username && username !== "user@example.com" && username !== "User") {
@@ -153,19 +149,11 @@ const HeaderAfter = ({ user: userProp }) => {
           await api.post("/auth/logout", null, {
             params: { username },
           });
-          console.log("Backend logout successful");
         } catch (apiError) {
           // Logout errors are not critical - user can still be logged out client-side
-          console.warn(
-            "Backend logout failed (non-critical):",
-            apiError.response?.status === 403
-              ? "Token expired or unauthorized"
-              : apiError.message
-          );
           // Continue with client cleanup - logout should still work
         }
       } else {
-        console.log("No valid username found, skipping backend logout API");
       }
 
       // 4. Clear client-side data
@@ -177,12 +165,10 @@ const HeaderAfter = ({ user: userProp }) => {
       setShowUserMenu(false);
       navigate("/");
 
-      console.log("Logout completed successfully");
-
       // Tuỳ chọn: phát event để các nơi khác có thể lắng nghe
       // window.dispatchEvent(new Event("auth:logout"));
     } catch (err) {
-      console.error("Logout error:", err);
+      // Logout error occurred
 
       // Vẫn clear client-side data ngay cả khi có lỗi
       Cookies.remove("accessToken", { path: "/" });
@@ -190,8 +176,6 @@ const HeaderAfter = ({ user: userProp }) => {
       localStorage.removeItem("currentUser");
       setShowUserMenu(false);
       navigate("/");
-
-      console.log("Logout completed with error, but client cleanup done");
     }
   };
 

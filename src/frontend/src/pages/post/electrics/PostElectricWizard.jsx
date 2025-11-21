@@ -72,7 +72,7 @@ export default function PostElectricWizard() {
       <CreateElectricForm
         currentUser={currentUser}
         onSubmit={(data) => {
-          console.log("Electric post created:", data);
+          // Electric post created successfully
         }}
       />
     </div>

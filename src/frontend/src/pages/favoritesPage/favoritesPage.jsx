@@ -20,7 +20,6 @@ export default function FavoritesPage() {
       setLoading(true);
       try {
         if (!favoriteService.isUserLoggedIn()) {
-          console.log("❌ No access token found - user not logged in");
           setFavorites([]);
           setLoading(false);
           return;
@@ -41,82 +40,35 @@ export default function FavoritesPage() {
                 );
                 if (postDetailResponse.data) {
                   const postData = postDetailResponse.data;
-                  console.log(
-                    `🔍 Full Post ${fav.postId} detail:`,
-                    JSON.stringify(postData, null, 2)
-                  );
-
-                  // Check what type of post this is
-                  console.log(`📝 Post ${fav.postId} analysis:`, {
-                    hasElectric: !!postData.electric,
-                    hasVehicle: !!postData.vehicle,
-                    hasBattery: !!postData.battery,
-                    hasImageUrls: !!postData.imageUrls,
-                    imageUrlsLength: postData.imageUrls?.length || 0,
-                    thumbnail: postData.thumbnail,
-                    thumbnailFromFav: fav.thumbnailUrl,
-                  });
 
                   // Priority order for image selection:
                   // 1. Use imageUrls[0] if available (most accurate for all posts)
                   if (postData.imageUrls && postData.imageUrls.length > 0) {
                     imageUrl = postData.imageUrls[0];
-                    console.log(
-                      `✅ Using imageUrls[0] for post ${fav.postId}:`,
-                      imageUrl
-                    );
                   }
                   // 2. Use API thumbnail if available
                   else if (postData.thumbnail) {
                     imageUrl = postData.thumbnail;
-                    console.log(
-                      `✅ Using API thumbnail for post ${fav.postId}:`,
-                      imageUrl
-                    );
                   }
-                  // 3. For electric posts (though these seem to be battery posts now)
+                  // 3. For electric posts
                   else if (postData.electric && postData.electric.image) {
                     imageUrl = postData.electric.image;
-                    console.log(
-                      `✅ Using electric.image for post ${fav.postId}:`,
-                      imageUrl
-                    );
                   }
                   // 4. For battery posts
                   else if (postData.battery && postData.battery.image) {
                     imageUrl = postData.battery.image;
-                    console.log(
-                      `✅ Using battery.image for post ${fav.postId}:`,
-                      imageUrl
-                    );
                   }
                   // 5. For vehicle posts
                   else if (postData.vehicle && postData.vehicle.image) {
                     imageUrl = postData.vehicle.image;
-                    console.log(
-                      `✅ Using vehicle.image for post ${fav.postId}:`,
-                      imageUrl
-                    );
                   }
                   // 6. Fallback to favorites thumbnail
                   else if (fav.thumbnailUrl) {
                     imageUrl = fav.thumbnailUrl;
-                    console.log(
-                      `⚠️ Using favorites thumbnail for post ${fav.postId}:`,
-                      imageUrl
-                    );
                   }
-
-                  console.log(
-                    `🖼️ Final image URL for post ${fav.postId}:`,
-                    imageUrl
-                  );
                 }
               } catch (error) {
-                console.log(
-                  `❌ Could not fetch detailed image for post ${fav.postId}, using thumbnail:`,
-                  error.message
-                );
+                // Could not fetch detailed image, use thumbnail
               }
 
               return {
@@ -135,14 +87,11 @@ export default function FavoritesPage() {
             })
           );
 
-          console.log("✅ Loaded favorites from API:", mappedFavorites.length);
           setFavorites(mappedFavorites);
         } else {
-          console.log("✅ No favorites found");
           setFavorites([]);
         }
       } catch (error) {
-        console.error("❌ Error fetching favorites:", error);
         setFavorites([]);
       }
       setLoading(false);
@@ -168,7 +117,6 @@ export default function FavoritesPage() {
       // Update local state
       setFavorites((prev) => prev.filter((item) => item.id !== itemId));
     } catch (error) {
-      console.error("Error removing from favorites:", error);
       // Still update local state even if API call fails
       setFavorites((prev) => prev.filter((item) => item.id !== itemId));
     }
@@ -176,8 +124,6 @@ export default function FavoritesPage() {
 
   // Handle card click - navigate to detail page
   const handleCardClick = async (item) => {
-    console.log("Navigating to product detail:", item.postID);
-
     // Try to determine the correct route by checking post details
     try {
       const postDetailResponse = await api.get(
@@ -204,7 +150,6 @@ export default function FavoritesPage() {
         }
       }
     } catch (error) {
-      console.log("Could not determine post type, defaulting to vehicles");
       navigate(`/vehicles/${item.postID}`);
     }
   };

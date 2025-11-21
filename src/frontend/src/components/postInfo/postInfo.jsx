@@ -1,5 +1,5 @@
-import React from 'react';
-import './postInfo.css';
+import React from "react";
+import "./postInfo.css";
 
 export default function PostInfo({ postData, contractData }) {
   if (!postData) {
@@ -13,36 +13,22 @@ export default function PostInfo({ postData, contractData }) {
   // Determine if this is battery or vehicle contract
   const hasBatteryInPost = !!postData?.battery;
   const postType = postData?.type;
-  const contractPostTitle = contractData?.postTitle || postData?.title || '';
-  const isBatteryByTitle = contractPostTitle.toLowerCase().includes('battery') || 
-                           contractPostTitle.toLowerCase().includes('pin') ||
-                           contractPostTitle.toLowerCase().includes('electric battery');
-  const isBattery = hasBatteryInPost || 
-                    postType === 'battery' || 
-                    isBatteryByTitle ||
-                    (contractData?.contractType && contractData.contractType === 'battery');
-  
-  console.log("🔍 PostInfo type detection:", {
-    hasBatteryInPost, postType, isBatteryByTitle, 
-    contractType: contractData?.contractType,
-    finalIsBattery: isBattery, contractPostTitle
-  });
-
-  console.log("📋 PostInfo vehicle data debug:", {
-    postData: postData,
-    vehicle: postData?.vehicle,
-    batteryCapacity: postData?.vehicle?.batteryCapacity,
-    batterycapacity: postData?.vehicle?.batterycapacity,
-    yearManufacture: postData?.vehicle?.yearManufacture,
-    yearmanufacture: postData?.vehicle?.yearmanufacture,
-    vehicleKeys: postData?.vehicle ? Object.keys(postData.vehicle) : 'no vehicle data'
-  });
+  const contractPostTitle = contractData?.postTitle || postData?.title || "";
+  const isBatteryByTitle =
+    contractPostTitle.toLowerCase().includes("battery") ||
+    contractPostTitle.toLowerCase().includes("pin") ||
+    contractPostTitle.toLowerCase().includes("electric battery");
+  const isBattery =
+    hasBatteryInPost ||
+    postType === "battery" ||
+    isBatteryByTitle ||
+    (contractData?.contractType && contractData.contractType === "battery");
 
   return (
     <div className="post-info-section">
       <div className="post-info-item">
         <span className="post-info-label">
-          {isBattery ? 'Battery Price' : 'Vehicle Price'}
+          {isBattery ? "Battery Price" : "Vehicle Price"}
         </span>
         <span className="post-info-value">
           {postData.price
@@ -50,7 +36,7 @@ export default function PostInfo({ postData, contractData }) {
             : "N/A"}
         </span>
       </div>
-      
+
       {/* Battery Information */}
       {isBattery && postData.battery && (
         <>
@@ -63,7 +49,7 @@ export default function PostInfo({ postData, contractData }) {
           <div className="post-info-item">
             <span className="post-info-label">Original Capacity</span>
             <span className="post-info-value">
-              {postData.battery.originCapacity 
+              {postData.battery.originCapacity
                 ? `${postData.battery.originCapacity} kWh`
                 : "N/A"}
             </span>
@@ -71,7 +57,7 @@ export default function PostInfo({ postData, contractData }) {
           <div className="post-info-item">
             <span className="post-info-label">Remaining Capacity</span>
             <span className="post-info-value">
-              {postData.battery.remainingCapacity 
+              {postData.battery.remainingCapacity
                 ? `${postData.battery.remainingCapacity} kWh`
                 : "N/A"}
             </span>
@@ -79,7 +65,7 @@ export default function PostInfo({ postData, contractData }) {
           <div className="post-info-item">
             <span className="post-info-label">Voltage</span>
             <span className="post-info-value">
-              {postData.battery.voltage 
+              {postData.battery.voltage
                 ? `${postData.battery.voltage}V`
                 : "N/A"}
             </span>
@@ -92,21 +78,27 @@ export default function PostInfo({ postData, contractData }) {
           </div>
         </>
       )}
-      
+
       {/* Vehicle Information */}
       {!isBattery && postData.vehicle && (
         <>
           <div className="post-info-item">
             <span className="post-info-label">Brand & Model</span>
             <span className="post-info-value">
-              {`${postData.vehicle.brand || ''} ${postData.vehicle.model || ''}`.trim() || "N/A"}
+              {`${postData.vehicle.brand || ""} ${
+                postData.vehicle.model || ""
+              }`.trim() || "N/A"}
             </span>
           </div>
           <div className="post-info-item">
             <span className="post-info-label">Battery Capacity</span>
             <span className="post-info-value">
-              {(postData.vehicle.batteryCapacity ?? postData.vehicle.batterycapacity)
-                ? `${postData.vehicle.batteryCapacity ?? postData.vehicle.batterycapacity} kWh`
+              {postData.vehicle.batteryCapacity ??
+              postData.vehicle.batterycapacity
+                ? `${
+                    postData.vehicle.batteryCapacity ??
+                    postData.vehicle.batterycapacity
+                  } kWh`
                 : "N/A"}
             </span>
           </div>
@@ -119,7 +111,9 @@ export default function PostInfo({ postData, contractData }) {
           <div className="post-info-item">
             <span className="post-info-label">Year</span>
             <span className="post-info-value">
-              {postData.vehicle.yearManufacture ?? postData.vehicle.yearmanufacture ?? "N/A"}
+              {postData.vehicle.yearManufacture ??
+                postData.vehicle.yearmanufacture ??
+                "N/A"}
             </span>
           </div>
         </>

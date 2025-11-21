@@ -74,9 +74,7 @@ const Dashboard = () => {
 
     default:
       // Fallback for unknown roles - redirect to buyer dashboard
-      console.warn(
-        `Unknown user role: ${userRole}, defaulting to BUYER dashboard`
-      );
+
       return <DashboardBuyer />;
   }
 };

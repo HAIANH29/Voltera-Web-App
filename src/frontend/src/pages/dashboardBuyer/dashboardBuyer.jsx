@@ -43,7 +43,6 @@ const DashboardBuyer = () => {
       // Load refunds data
       await loadRefunds();
     } catch (error) {
-      console.error("Error loading dashboard data:", error);
       setError("Failed to load dashboard data");
     } finally {
       setLoading(false);
@@ -71,24 +70,7 @@ const DashboardBuyer = () => {
 
       setRecentContracts(contracts.slice(0, 5));
     } catch (error) {
-      console.error("Error loading contracts:", error);
-      // Set mock data for contracts if API fails
-      setRecentContracts([
-        {
-          id: 1,
-          postTitle: "Tesla Model 3",
-          status: "ACTIVE",
-          createdAt: new Date().toISOString(),
-          amount: 45000,
-        },
-        {
-          id: 2,
-          postTitle: "VinFast VF8",
-          status: "COMPLETED",
-          createdAt: new Date().toISOString(),
-          amount: 35000,
-        },
-      ]);
+      setRecentContracts([]);
     }
   };
 
@@ -108,24 +90,7 @@ const DashboardBuyer = () => {
 
       setRecentTransactions(transactions.slice(0, 5));
     } catch (error) {
-      console.error("Error loading transactions:", error);
-      // Set mock data for transactions if API fails
-      setRecentTransactions([
-        {
-          id: 1,
-          description: "Tesla Model 3 Purchase",
-          transactionStatus: "DONE",
-          price: 45000,
-          createdAt: new Date().toISOString(),
-        },
-        {
-          id: 2,
-          description: "VinFast VF8 Purchase",
-          transactionStatus: "PENDING",
-          price: 35000,
-          createdAt: new Date().toISOString(),
-        },
-      ]);
+      setRecentTransactions([]);
     }
   };
 
@@ -138,7 +103,7 @@ const DashboardBuyer = () => {
         favoriteItems: favorites.length,
       }));
     } catch (error) {
-      console.error("Error loading favorites:", error);
+      // Handle error silently
     }
   };
 
@@ -155,7 +120,7 @@ const DashboardBuyer = () => {
         pendingRefunds,
       }));
     } catch (error) {
-      console.error("Error loading refunds:", error);
+      // Handle error silently
     }
   };
 

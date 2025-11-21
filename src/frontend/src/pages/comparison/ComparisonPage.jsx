@@ -26,7 +26,6 @@ export default function ComparisonPage() {
       const response = await api.get(endpoint);
       setAvailableItems(response.data || []);
     } catch (error) {
-      console.error("Error loading items:", error);
       setAvailableItems([]);
     } finally {
       setLoading(false);

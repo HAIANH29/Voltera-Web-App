@@ -45,8 +45,7 @@ const mapPostToDetail = (p) => {
     rangeRaw: v?.range ?? null,
     range: v?.range != null ? `${v.range} km` : null,
     chargingTimeRaw: v?.chargingTime ?? null, // camelCase from backend
-    chargingTime:
-      v?.chargingTime != null ? `${v.chargingTime} hours` : null,
+    chargingTime: v?.chargingTime != null ? `${v.chargingTime} hours` : null,
     licensePlate: v?.licensePlate || null, // camelCase
     origin: v?.origin || "International",
     bodyInsurance: Boolean(v?.bodyInsurance),
@@ -64,17 +63,32 @@ const mapPostToDetail = (p) => {
     // specifications (English labels) - using correct camelCase field names
     specifications: {
       Year: v?.yearManufacture || "N/A",
-      Seats: v?.numberOfSeat || "N/A", 
+      Seats: v?.numberOfSeat || "N/A",
       "Body type": v?.style || "N/A",
       Color: v?.color || "N/A",
-      Odometer: v?.odo !== null && v?.odo !== undefined ? (v.odo === 0 ? "New (0 km)" : `${v.odo.toLocaleString()} km`) : "N/A",
+      Odometer:
+        v?.odo !== null && v?.odo !== undefined
+          ? v.odo === 0
+            ? "New (0 km)"
+            : `${v.odo.toLocaleString()} km`
+          : "N/A",
       Battery: v?.batteryCapacity ? `${v.batteryCapacity} kWh` : "N/A",
       Range: v?.range ? `${v.range} km` : "N/A",
       "Charging time": v?.chargingTime ? `${v.chargingTime} h` : "N/A",
       Origin: v?.origin || "N/A",
       "License plate": v?.licensePlate || "N/A",
-      "Body insurance": v?.bodyInsurance !== null && v?.bodyInsurance !== undefined ? (v.bodyInsurance ? "Yes" : "No") : "N/A",
-      "Vehicle inspection": v?.vehicleInspection !== null && v?.vehicleInspection !== undefined ? (v.vehicleInspection ? "Yes" : "No") : "N/A",
+      "Body insurance":
+        v?.bodyInsurance !== null && v?.bodyInsurance !== undefined
+          ? v.bodyInsurance
+            ? "Yes"
+            : "No"
+          : "N/A",
+      "Vehicle inspection":
+        v?.vehicleInspection !== null && v?.vehicleInspection !== undefined
+          ? v.vehicleInspection
+            ? "Yes"
+            : "No"
+          : "N/A",
     },
 
     isFavorite: false,
@@ -94,37 +108,21 @@ export default function VehicleDetail() {
       if (!postID) return;
 
       setLoading(true);
-      console.log("📌 Fetching vehicle detail for postID:", postID);
 
       try {
         const response = await api.get(`/api/post/detail/${postID}`);
         const postData = response.data;
-        
-        console.log("🚗 Raw backend response:", postData);
-        console.log("🔍 Vehicle object from backend:", postData?.vehicle);
-        console.log("🔧 Field mapping verification:", {
-          batteryCapacity: postData?.vehicle?.batteryCapacity,
-          chargingTime: postData?.vehicle?.chargingTime, 
-          yearManufacture: postData?.vehicle?.yearManufacture,
-          numberOfSeat: postData?.vehicle?.numberOfSeat,
-          licensePlate: postData?.vehicle?.licensePlate,
-        });
 
         // Kiểm tra xem post có chứa vehicle không
         if (!postData?.vehicle) {
-          console.warn("Post không chứa thông tin vehicle");
           setVehicle(null);
           return;
         }
 
         const mappedVehicle = mapPostToDetail(postData);
-        console.log("✅ Mapped vehicle data:", mappedVehicle);
         setVehicle(mappedVehicle);
         setIsFavorite(mappedVehicle.isFavorite);
-
-        console.log("✅ Vehicle detail loaded:", mappedVehicle);
       } catch (error) {
-        console.error("❌ Failed to fetch vehicle detail:", error);
         setVehicle(null);
       } finally {
         setLoading(false);
@@ -199,12 +197,6 @@ export default function VehicleDetail() {
       alert("Vehicle information has not been loaded. Please try again.");
       return;
     }
-
-    // Debug: Log vehicle data
-    console.log("🔍 Vehicle data:", vehicle);
-    console.log("🔍 Vehicle brand:", vehicle.brand);
-    console.log("🔍 Vehicle model:", vehicle.model);
-    console.log("🔍 Vehicle price:", vehicle.price);
 
     // Navigate to contract page to create contract
     navigate(`/contract?postId=${postID}&action=create`);
@@ -331,9 +323,7 @@ export default function VehicleDetail() {
                       </span>
                     </div>
                     <div className="detail-info-item">
-                      <span className="detail-info-label">
-                        Charging Time:
-                      </span>
+                      <span className="detail-info-label">Charging Time:</span>
                       <span className="detail-info-value">
                         {vehicle.chargingTime || "N/A"}
                       </span>
@@ -363,12 +353,16 @@ export default function VehicleDetail() {
                       <span className="detail-info-value">
                         {vehicle.odo > 0
                           ? `${vehicle.odo.toLocaleString()} km`
-                          : vehicle.odo === 0 ? "Brand New (0 km)" : "N/A"}
+                          : vehicle.odo === 0
+                          ? "Brand New (0 km)"
+                          : "N/A"}
                       </span>
                     </div>
                     <div className="detail-info-item">
                       <span className="detail-info-label">Year:</span>
-                      <span className="detail-info-value">{vehicle.year || "N/A"}</span>
+                      <span className="detail-info-value">
+                        {vehicle.year || "N/A"}
+                      </span>
                     </div>
                     <div className="detail-info-item">
                       <span className="detail-info-label">Origin:</span>
@@ -377,9 +371,7 @@ export default function VehicleDetail() {
                       </span>
                     </div>
                     <div className="detail-info-item">
-                      <span className="detail-info-label">
-                        License Plate:
-                      </span>
+                      <span className="detail-info-label">License Plate:</span>
                       <span className="detail-info-value">
                         {vehicle.licensePlate || "N/A"}
                       </span>

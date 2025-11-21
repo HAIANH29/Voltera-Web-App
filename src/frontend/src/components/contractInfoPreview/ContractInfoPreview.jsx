@@ -118,7 +118,7 @@ export default function ContractInfoPreview({
           phone: payload.phone || "Không rõ",
         };
       } catch (tokenError) {
-        console.error("Error decoding token:", tokenError);
+
       }
     }
 
@@ -185,15 +185,15 @@ export default function ContractInfoPreview({
         };
 
         setPostData(finalData);
-        console.log("✅ ContractInfoPreview using vehicleData:");
-        console.log("- Original vehicleData:", vehicleData);
-        console.log("- VehicleForMapping:", vehicleForMapping);
-        console.log("- Mapped vehicle:", mappedVehicle);
-        console.log("🔍 Key mappings check:");
-        console.log("- batteryCapacityRaw:", vehicleData.batteryCapacityRaw, "-> batterycapacityDisplay:", mappedVehicle.batterycapacityDisplay);
-        console.log("- chargingTimeRaw:", vehicleData.chargingTimeRaw, "-> chargingtimeDisplay:", mappedVehicle.chargingtimeDisplay);
-        console.log("- numberOfSeat:", vehicleData.numberOfSeat, "-> numberofseat:", mappedVehicle.numberofseat);
-        console.log("- Final postData:", finalData);
+
+
+
+
+
+
+
+
+
       } else {
         fetchAllData();
       }
@@ -207,7 +207,6 @@ export default function ContractInfoPreview({
 
       // Chỉ fetch từ API nếu không có vehicleData
       if (postId) {
-        console.log("🔄 Fetching post data for postID:", postId);
 
         // Thêm timeout để tránh load quá lâu
         const controller = new AbortController();
@@ -230,11 +229,11 @@ export default function ContractInfoPreview({
               battery: mapBatteryData(rawData.battery),
               type: 'battery'
             };
-            console.log("✅ Battery post data loaded:", rawData);
-            console.log("✅ Mapped battery data:", mappedData);
-            console.log("🔍 Battery mapping comparison:");
-            console.log("- Raw battery:", rawData.battery);
-            console.log("- Mapped battery:", mappedData.battery);
+
+
+
+
+
           } else if (rawData.vehicle) {
             // Vehicle post
             mappedData = {
@@ -242,18 +241,18 @@ export default function ContractInfoPreview({
               vehicle: mapVehicleData(rawData.vehicle),
               type: 'vehicle'
             };
-            console.log("✅ Vehicle post data loaded:", rawData);
-            console.log("✅ Mapped vehicle data:", mappedData);
-            console.log("🔍 Vehicle mapping comparison:");
-            console.log("- Raw vehicle:", rawData.vehicle);
-            console.log("- Mapped vehicle:", mappedData.vehicle);
+
+
+
+
+
           } else {
             // Unknown post type
             mappedData = {
               ...rawData,
               type: 'unknown'
             };
-            console.warn("⚠️ Unknown post type - no vehicle or battery data found");
+
           }
 
           setPostData(mappedData);
@@ -274,7 +273,7 @@ export default function ContractInfoPreview({
         throw new Error("No post information available to load");
       }
     } catch (err) {
-      console.error("❌ Error fetching contract data:", err);
+
       setError(
         err.response?.data?.message ||
           err.message ||
@@ -290,19 +289,10 @@ export default function ContractInfoPreview({
       setCreating(true);
       setError("");
 
-      console.log("🔄 Creating contract for post:", postId);
-      console.log("🔄 Post data for contract creation:", postData);
 
       // Determine contract type from postData
       const isBattery = postData?.battery || postData?.type === 'battery';
       const contractType = isBattery ? 'battery' : 'vehicle';
-      
-      console.log("🔍 Contract type for creation:", {
-        isBattery,
-        contractType,
-        hasBatteryData: !!postData?.battery,
-        postType: postData?.type
-      });
 
       // 1. Create contract with type information
       const contractResponse = await api.post("/api/contract/create", {
@@ -310,17 +300,12 @@ export default function ContractInfoPreview({
         contractType: contractType
       });
 
-      console.log("✅ Contract created:", contractResponse.data);
-
       if (contractResponse.data?.contractId) {
         // 2. Auto-sign contract as buyer
-        console.log("🔄 Auto-signing contract as buyer...");
 
         const signResponse = await api.put(
           `/api/contract/${contractResponse.data.contractId}/sign`
         );
-
-        console.log("✅ Contract signed:", signResponse.data);
 
         alert(
           "🎉 Contract has been created and signed successfully! The seller will be notified."
@@ -332,7 +317,7 @@ export default function ContractInfoPreview({
         }
       }
     } catch (err) {
-      console.error("❌ Error:", err);
+
       setError(
         err.response?.data?.message ||
           err.message ||
@@ -653,3 +638,4 @@ export default function ContractInfoPreview({
     </div>
   );
 }
+

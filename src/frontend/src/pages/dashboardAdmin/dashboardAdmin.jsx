@@ -402,26 +402,10 @@ export default function DashboardAdmin() {
     },
   ];
 
-  // 🚀 Load Data Effects
+  // Load Data Effects
   useEffect(() => {
     loadDashboardData();
-    // 🧪 Test admin auth with a simple call
-    testAdminAuth();
   }, []);
-
-  const testAdminAuth = async () => {
-    try {
-      console.log("🧪 Testing admin auth...");
-      const response = await api.get("/api/v1/admin/accounts/all");
-      console.log("✅ Admin auth works! User count:", response.data?.length);
-    } catch (error) {
-      console.log(
-        "❌ Admin auth failed:",
-        error.response?.status,
-        error.response?.data
-      );
-    }
-  };
   useEffect(() => {
     switch (activeSection) {
       case "listings":
@@ -450,87 +434,16 @@ export default function DashboardAdmin() {
     try {
       setLoading(true);
 
-      // 🔍 Debug authentication
-      const getCookie = (name) => {
-        const value = `; ${document.cookie}`;
-        const parts = value.split(`; ${name}=`);
-        if (parts.length === 2) return parts.pop().split(";").shift();
-        return null;
-      };
-
-      const token = getCookie("accessToken");
-      console.log("🔐 Admin token exists:", !!token);
-      console.log(
-        "🔐 Token preview:",
-        token ? token.substring(0, 20) + "..." : "No token"
-      );
-      console.log("🌐 API Base URL:", import.meta.env.VITE_BACK_END_BASE_URL);
-
-      // 🔍 Debug API calls
-      console.log("📡 Making API calls to:");
-      console.log("  - api/post/admin/list/pending");
-      console.log("  - /api/v1/admin/accounts/pending");
-
       const [postsRes, accountsRes] = await Promise.all([
         api.get("api/post/admin/list/pending"),
         api.get("/api/v1/admin/accounts/pending"),
       ]);
 
-      console.log("✅ API calls successful!");
-      console.log("📊 Full Posts response:", postsRes);
-      console.log("📊 Posts response status:", postsRes.status);
-      console.log("📊 Posts response data:", postsRes.data);
-      console.log(
-        "📊 Posts type:",
-        typeof postsRes.data,
-        "isArray:",
-        Array.isArray(postsRes.data)
-      );
-      console.log("👥 Full Accounts response:", accountsRes);
-      console.log("👥 Accounts response status:", accountsRes.status);
-      console.log("👥 Accounts response data:", accountsRes.data);
-      console.log(
-        "👥 Accounts type:",
-        typeof accountsRes.data,
-        "isArray:",
-        Array.isArray(accountsRes.data)
-      );
-      console.log("📊 Posts response:", postsRes.data);
-      console.log(
-        "� Posts type:",
-        typeof postsRes.data,
-        "isArray:",
-        Array.isArray(postsRes.data)
-      );
-      console.log("�👥 Accounts response:", accountsRes.data);
-      console.log(
-        "👥 Accounts type:",
-        typeof accountsRes.data,
-        "isArray:",
-        Array.isArray(accountsRes.data)
-      );
-
-      // 🔍 Debug string content if not array
       if (typeof postsRes.data === "string") {
-        console.warn("📄 Posts returned string length:", postsRes.data.length);
-        console.warn(
-          "📄 Posts returned string (first 500 chars):",
-          postsRes.data.substring(0, 500)
-        );
-
-        if (postsRes.data.length > 200000) {
-          console.warn("⚠️ Very large posts JSON response, might be truncated");
-        }
-
-        console.warn("🔧 Attempting to parse posts JSON string...");
         try {
-          // Try direct parse first
           const parsedPosts = JSON.parse(postsRes.data);
-          console.log("✅ Successfully parsed posts JSON:", parsedPosts);
           postsRes.data = parsedPosts;
         } catch (e) {
-          console.error("❌ Failed to parse posts JSON:", e);
-
           // Try to clean up potential circular references
           let cleanedJson = postsRes.data;
 
@@ -565,7 +478,6 @@ export default function DashboardAdmin() {
 
           try {
             const cleanedPosts = JSON.parse(cleanedJson);
-            console.log("✅ Successfully parsed cleaned posts JSON");
             postsRes.data = Array.isArray(cleanedPosts)
               ? cleanedPosts.filter(
                   (post) =>
@@ -576,38 +488,15 @@ export default function DashboardAdmin() {
                 )
               : [];
           } catch (cleanupError) {
-            console.error(
-              "❌ Posts cleanup also failed:",
-              cleanupError.message
-            );
-            postsRes.data = []; // Fallback to empty array
+            postsRes.data = [];
           }
         }
       }
       if (typeof accountsRes.data === "string") {
-        console.warn(
-          "📄 Accounts returned string length:",
-          accountsRes.data.length
-        );
-        console.warn(
-          "📄 Accounts returned string (first 500 chars):",
-          accountsRes.data.substring(0, 500)
-        );
-
-        if (accountsRes.data.length > 200000) {
-          console.warn(
-            "⚠️ Very large accounts JSON response, might be truncated"
-          );
-        }
-
-        console.warn("🔧 Attempting to parse accounts JSON string...");
         try {
           const parsedAccounts = JSON.parse(accountsRes.data);
-          console.log("✅ Successfully parsed accounts JSON:", parsedAccounts);
           accountsRes.data = parsedAccounts;
         } catch (e) {
-          console.error("❌ Failed to parse accounts JSON:", e);
-
           // Apply same cleanup logic for accounts
           let cleanedJson = accountsRes.data;
 
@@ -639,7 +528,6 @@ export default function DashboardAdmin() {
 
           try {
             const cleanedAccounts = JSON.parse(cleanedJson);
-            console.log("✅ Successfully parsed cleaned accounts JSON");
             accountsRes.data = Array.isArray(cleanedAccounts)
               ? cleanedAccounts.filter(
                   (account) =>
@@ -650,46 +538,23 @@ export default function DashboardAdmin() {
                 )
               : [];
           } catch (cleanupError) {
-            console.error(
-              "❌ Accounts cleanup also failed:",
-              cleanupError.message
-            );
-            accountsRes.data = []; // Fallback to empty array
+            accountsRes.data = [];
           }
         }
       }
 
-      // 🔍 Safe array operations
       const postsData = Array.isArray(postsRes.data) ? postsRes.data : [];
       const accountsData = Array.isArray(accountsRes.data)
         ? accountsRes.data
         : [];
 
       setStats({
-        totalPosts: postsData.length, // Posts từ API pending đã được filter
-        pendingPosts: postsData.length, // Tất cả posts từ API đều là PENDING + PAID fee
+        totalPosts: postsData.length,
+        pendingPosts: postsData.length,
         totalUsers: accountsData.length,
         pendingAccounts: accountsData.length,
       });
     } catch (error) {
-      // 🔍 Better error logging
-      console.error("❌ API Error Details:", {
-        message: error.message,
-        status: error.response?.status,
-        data: error.response?.data,
-        code: error.code,
-        config: error.config?.url,
-      });
-
-      // 🔧 Mock data for testing UI
-      setStats({
-        totalPosts: 25,
-        pendingPosts: 8,
-        totalUsers: 1250,
-        pendingAccounts: 3,
-      });
-
-      // 🎯 Better error message
       let errorMessage = "Failed to load dashboard data";
       if (error.response?.status) {
         errorMessage = `API Error ${error.response.status}: ${
@@ -716,65 +581,18 @@ export default function DashboardAdmin() {
   const loadPendingListings = async () => {
     try {
       setLoading(true);
-      console.log("📡 Loading pending listings...");
-
-      // 🔧 Try to request with pagination or limited fields to avoid large responses
       const response = await api.get("api/post/admin/list/pending?limit=50");
-      console.log(
-        "📝 Pending listings response length:",
-        typeof response.data === "string" ? response.data.length : "not string"
-      );
-      console.log("📝 Pending listings response type:", typeof response.data);
 
       if (response.data && Array.isArray(response.data)) {
-        console.log(
-          "🔍 First pending listing item structure:",
-          response.data[0]
-        );
-        console.log("📅 Available date fields in first post:", {
-          createdAt: response.data[0]?.createdAt,
-          createdat: response.data[0]?.createdat,
-          updatedAt: response.data[0]?.updatedAt,
-          postDate: response.data[0]?.postDate,
-          createDate: response.data[0]?.createDate,
-        });
-
-        // 🔄 Sort by ID - highest to lowest (newest posts have higher IDs)
         const sortedPosts = response.data.sort((a, b) => {
           const idA = parseInt(a.postId || a.id || 0);
           const idB = parseInt(b.postId || b.id || 0);
-          return idB - idA; // Descending order (higher ID first = newer posts first)
+          return idB - idA;
         });
-
-        console.log(
-          "✅ Sorted posts by createdAt:",
-          sortedPosts.length,
-          "posts"
-        );
         setPendingListings(sortedPosts);
       } else {
-        console.warn("⚠️ Expected array but got:", typeof response.data);
-        console.warn("📄 Response data content:", response.data);
-        console.warn(
-          "📄 First 500 chars:",
-          typeof response.data === "string"
-            ? response.data.substring(0, 500)
-            : response.data
-        );
-
-        // 🔧 Try to parse if it's a JSON string
         if (typeof response.data === "string") {
           try {
-            console.log(
-              "🔧 Attempting to parse JSON string length:",
-              response.data.length
-            );
-
-            // Check if JSON looks truncated or has circular refs
-            if (response.data.length > 100000) {
-              console.warn("⚠️ Very large JSON response, might be truncated");
-            }
-
             // Try to clean up potential circular references
             let cleanedJson = response.data;
 
@@ -809,14 +627,9 @@ export default function DashboardAdmin() {
               }
             }
 
-            console.log("🔧 Cleaned JSON length:", cleanedJson.length);
-            console.log("🔧 Cleaned JSON ends with:", cleanedJson.slice(-50));
-
             try {
               const parsed = JSON.parse(cleanedJson);
-              console.log("✅ Successfully parsed cleaned JSON");
 
-              // Further ensure it's an array of valid objects
               if (Array.isArray(parsed)) {
                 const validPosts = parsed.filter(
                   (post) =>
@@ -824,108 +637,64 @@ export default function DashboardAdmin() {
                     typeof post === "object" &&
                     post.id &&
                     post.title &&
-                    !post.transactions // Remove any posts that still have transactions to avoid circular refs
+                    !post.transactions
                 );
 
-                console.log(
-                  `📊 Valid posts after filtering: ${validPosts.length} of ${parsed.length}`
-                );
-
-                // 🔄 Sort by ID - highest to lowest (newest posts have higher IDs)
                 const sortedValidPosts = validPosts.sort((a, b) => {
                   const idA = parseInt(a.postId || a.id || 0);
                   const idB = parseInt(b.postId || b.id || 0);
-                  return idB - idA; // Descending order (higher ID first = newer posts first)
+                  return idB - idA;
                 });
 
                 setPendingListings(sortedValidPosts);
                 return;
               }
             } catch (cleanupError) {
-              console.log(
-                "⚠️ Cleaned JSON still failed:",
-                cleanupError.message
+              const postMatches = cleanedJson.match(
+                /\{"id":\d+,"title":"[^"]*","description":"[^"]*","price":[\d.]+,"status":"PENDING","createdAt":"[^"]*","updatedAt":"[^"]*"\}/g
               );
 
-              // EMERGENCY: Try to extract valid objects manually
-              try {
-                // Look for post objects without transactions
-                const postMatches = cleanedJson.match(
-                  /\{"id":\d+,"title":"[^"]*","description":"[^"]*","price":[\d.]+,"status":"PENDING","createdAt":"[^"]*","updatedAt":"[^"]*"\}/g
-                );
+              if (postMatches && postMatches.length > 0) {
+                const emergencyPosts = postMatches
+                  .map((match) => {
+                    try {
+                      return JSON.parse(match);
+                    } catch (e) {
+                      return null;
+                    }
+                  })
+                  .filter(Boolean);
 
-                if (postMatches && postMatches.length > 0) {
-                  const emergencyPosts = postMatches
-                    .map((match) => {
-                      try {
-                        return JSON.parse(match);
-                      } catch (e) {
-                        return null;
-                      }
-                    })
-                    .filter(Boolean);
+                const sortedEmergencyPosts = emergencyPosts.sort((a, b) => {
+                  const idA = parseInt(a.postId || a.id || 0);
+                  const idB = parseInt(b.postId || b.id || 0);
+                  return idB - idA;
+                });
 
-                  console.log(
-                    `🚨 Emergency extraction found ${emergencyPosts.length} posts`
-                  );
-
-                  // 🔄 Sort by ID - highest to lowest (newest posts have higher IDs)
-                  const sortedEmergencyPosts = emergencyPosts.sort((a, b) => {
-                    const idA = parseInt(a.postId || a.id || 0);
-                    const idB = parseInt(b.postId || b.id || 0);
-                    return idB - idA; // Descending order (higher ID first = newer posts first)
-                  });
-
-                  setPendingListings(sortedEmergencyPosts);
-                  return;
-                }
-              } catch (emergencyError) {
-                console.log(
-                  "🚨 Emergency extraction failed:",
-                  emergencyError.message
-                );
+                setPendingListings(sortedEmergencyPosts);
+                return;
               }
             }
-          } catch (e) {
-            console.error("❌ Failed to parse pending listings JSON:", e);
-            console.error(
-              "🔍 JSON snippet around error:",
-              response.data.substring(150900, 151000)
-            );
-          }
+          } catch (e) {}
         }
 
         setPendingListings([]);
       }
     } catch (error) {
-      console.error("❌ Failed to load pending listings:", {
-        message: error.message,
-        status: error.response?.status,
-        data: error.response?.data,
-        url: error.config?.url,
-      });
-
-      // 🔄 Fallback: Try simpler API call without complex relations
       try {
-        console.log("🔄 Trying fallback API call...");
         const fallbackResponse = await api.get("/api/post/list/PENDING");
 
         if (fallbackResponse.data && Array.isArray(fallbackResponse.data)) {
-          console.log("✅ Fallback API successful");
-
-          // 🔄 Sort by ID - highest to lowest (newest posts have higher IDs)
           const sortedFallbackPosts = fallbackResponse.data.sort((a, b) => {
             const idA = parseInt(a.postId || a.id || 0);
             const idB = parseInt(b.postId || b.id || 0);
-            return idB - idA; // Descending order (higher ID first = newer posts first)
+            return idB - idA;
           });
 
           setPendingListings(sortedFallbackPosts);
           return;
         }
-      } catch (fallbackError) {
-        console.error("❌ Fallback API also failed:", fallbackError);
-      }
+      } catch (fallbackError) {}
 
       // Set empty array on error
       setPendingListings([]);
@@ -946,60 +715,23 @@ export default function DashboardAdmin() {
   const loadPendingUsers = async () => {
     try {
       setLoading(true);
-      console.log("📡 Loading pending users...");
-
       const response = await api.get("/api/v1/admin/accounts/pending");
-      console.log("👥 Pending users response:", response.data);
 
       if (response.data && Array.isArray(response.data)) {
         setPendingAccounts(response.data);
       } else {
-        console.warn("⚠️ Expected array but got:", typeof response.data);
-
-        // 🔧 Try to parse if it's a JSON string
         if (typeof response.data === "string") {
           try {
             const parsed = JSON.parse(response.data);
             if (Array.isArray(parsed)) {
-              console.log("✅ Successfully parsed pending users JSON");
               setPendingAccounts(parsed);
               return;
             }
-          } catch (e) {
-            console.error("❌ Failed to parse pending users JSON:", e);
-          }
+          } catch (e) {}
         }
-
         setPendingAccounts([]);
       }
     } catch (error) {
-      console.error("❌ Failed to load pending users:", {
-        message: error.message,
-        status: error.response?.status,
-        data: error.response?.data,
-        url: error.config?.url,
-      });
-
-      // Mock data for testing UI
-      setPendingAccounts([
-        {
-          id: 1,
-          accountId: 1,
-          username: "newuser1",
-          email: "newuser1@example.com",
-          role: "USER",
-          createdAt: new Date().toISOString(),
-        },
-        {
-          id: 2,
-          accountId: 2,
-          username: "seller2",
-          email: "seller2@example.com",
-          role: "SELLER",
-          createdAt: new Date().toISOString(),
-        },
-      ]);
-
       if (error.response?.status === 403) {
         toast.error("Access denied. Admin permissions required.");
       } else if (error.response?.status === 401) {
@@ -1020,35 +752,13 @@ export default function DashboardAdmin() {
         setPendingAccounts(response.data);
       }
     } catch (error) {
-      console.error("⚠️ API Error (need ADMIN login):", error.response?.status);
-      // 🔧 Mock data for testing UI
-      setPendingAccounts([
-        {
-          id: 1,
-          accountId: 1,
-          username: "newuser1",
-          email: "newuser1@example.com",
-          role: "USER",
-          createdAt: new Date().toISOString(),
-        },
-        {
-          id: 2,
-          accountId: 2,
-          username: "seller2",
-          email: "seller2@example.com",
-          role: "SELLER",
-          createdAt: new Date().toISOString(),
-        },
-        {
-          id: 3,
-          accountId: 3,
-          username: "admin3",
-          email: "admin3@example.com",
-          role: "ADMIN",
-          createdAt: new Date().toISOString(),
-        },
-      ]);
-      toast.error("Need ADMIN login. Using mock data for UI testing.");
+      if (error.response?.status === 403) {
+        toast.error("Access denied. Admin permissions required.");
+      } else if (error.response?.status === 401) {
+        toast.error("Authentication failed. Please login again.");
+      } else {
+        toast.error("Failed to load pending accounts.");
+      }
     } finally {
       setLoading(false);
     }
@@ -1057,12 +767,9 @@ export default function DashboardAdmin() {
   const loadAllUsers = async () => {
     try {
       setLoading(true);
-      console.log("[DEBUG] Loading all users from API...");
       const response = await api.get("/api/v1/admin/accounts/all");
-      console.log("[DEBUG] All users response:", response.data);
 
       if (response.data && Array.isArray(response.data)) {
-        // Load ALL users (not just approved) and show their actual roles
         const allUsers = response.data.map((user) => ({
           accountId: user.accountId || user.id,
           username: user.username || "Unknown",
@@ -1073,16 +780,6 @@ export default function DashboardAdmin() {
             user.createdAt || user.createat || new Date().toISOString(),
         }));
 
-        console.log("[DEBUG] Mapped users:", allUsers);
-        console.log("[DEBUG] Role distribution:", {
-          ADMIN: allUsers.filter((u) => u.role === "ADMIN").length,
-          SELLER: allUsers.filter((u) => u.role === "SELLER").length,
-          USER: allUsers.filter((u) => u.role === "USER").length,
-          OTHER: allUsers.filter(
-            (u) => !["ADMIN", "SELLER", "USER"].includes(u.role)
-          ).length,
-        });
-
         setAllUsers(allUsers);
         setFilteredUsers(allUsers);
         toast.success(
@@ -1092,72 +789,7 @@ export default function DashboardAdmin() {
         );
       }
     } catch (error) {
-      console.error("Error loading users:", error);
-      console.error("Error response:", error.response?.data);
-      // 🔧 Mock data with diverse roles for testing
-      const mockUsers = [
-        {
-          accountId: 1,
-          username: "admin_main",
-          email: "admin@voltera.com",
-          role: "ADMIN",
-          status: "APPROVED",
-          createdAt: "2024-01-01",
-        },
-        {
-          accountId: 2,
-          username: "seller_tesla",
-          email: "tesla@voltera.com",
-          role: "SELLER",
-          status: "APPROVED",
-          createdAt: "2024-01-15",
-        },
-        {
-          accountId: 3,
-          username: "seller_byd",
-          email: "byd@voltera.com",
-          role: "SELLER",
-          status: "APPROVED",
-          createdAt: "2024-01-20",
-        },
-        {
-          accountId: 4,
-          username: "buyer_john",
-          email: "john@gmail.com",
-          role: "USER",
-          status: "APPROVED",
-          createdAt: "2024-01-25",
-        },
-        {
-          accountId: 5,
-          username: "buyer_jane",
-          email: "jane@gmail.com",
-          role: "USER",
-          status: "APPROVED",
-          createdAt: "2024-02-01",
-        },
-        {
-          accountId: 6,
-          username: "seller_vf",
-          email: "vf@voltera.com",
-          role: "SELLER",
-          status: "PENDING",
-          createdAt: "2024-02-05",
-        },
-        {
-          accountId: 7,
-          username: "buyer_mike",
-          email: "mike@yahoo.com",
-          role: "USER",
-          status: "PENDING",
-          createdAt: "2024-02-10",
-        },
-      ];
-      setAllUsers(mockUsers);
-      setFilteredUsers(mockUsers);
-      toast.error(
-        `API Error: ${error.response?.status || "Unknown"}. Using mock data.`
-      );
+      toast.error(`API Error: ${error.response?.status || "Unknown"}.`);
     } finally {
       setLoading(false);
     }
@@ -1167,39 +799,19 @@ export default function DashboardAdmin() {
   const loadComplaints = async () => {
     try {
       setComplaintsLoading(true);
-      console.log("📡 Loading complaints from API...");
-
-      // Try to get all complaints by trying different endpoints
       let response;
 
       try {
-        // Try unresolve complaints first (admin endpoint)
         response = await api.get("/api/reply-complaint/unresolve");
-        console.log("✅ Unresolved complaints loaded:", response);
       } catch (error) {
-        console.warn(
-          "⚠️ Failed to get unresolve complaints, trying alternative endpoint:",
-          error.message
-        );
-
-        // Fallback: try to get complaints by status
         try {
           response = await api.get("/api/complaints/status/PENDING");
-          console.log("✅ Pending complaints loaded:", response);
         } catch (error2) {
-          console.warn(
-            "⚠️ Failed to get pending complaints, trying search endpoint:",
-            error2.message
-          );
-
-          // Fallback: try search with empty query to get all
           response = await api.get("/api/reply-complaint/search?problem=");
-          console.log("✅ Search complaints loaded:", response);
         }
       }
 
       if (response && response.data) {
-        // Handle different possible response structures from backend
         let complaintsData = [];
 
         if (Array.isArray(response.data)) {
@@ -1212,18 +824,10 @@ export default function DashboardAdmin() {
         ) {
           complaintsData = response.data.content;
         } else {
-          console.warn(
-            "⚠️ Unexpected complaints response format:",
-            response.data
-          );
-          console.warn("⚠️ Response structure:", Object.keys(response.data));
           complaintsData = [];
         }
 
-        // Transform data to match frontend expectations if needed
         const transformedComplaints = complaintsData.map((complaint) => {
-          console.log("🔍 Processing complaint:", complaint);
-
           // Extract user info from various possible paths
           let userName = "System User";
           let userEmail = "";
@@ -1285,7 +889,6 @@ export default function DashboardAdmin() {
           };
         });
 
-        console.log("📋 Processed complaints data:", transformedComplaints);
         setComplaints(transformedComplaints);
 
         if (transformedComplaints.length === 0) {
@@ -1294,19 +897,10 @@ export default function DashboardAdmin() {
           toast.success(`Loaded ${transformedComplaints.length} complaints`);
         }
       } else {
-        console.warn("⚠️ Empty response from complaints API");
         setComplaints([]);
         toast.info("No complaints data received from server.");
       }
     } catch (error) {
-      console.error("❌ All complaint endpoints failed:", error);
-      console.error("❌ Final error details:", {
-        status: error.response?.status,
-        statusText: error.response?.statusText,
-        data: error.response?.data,
-        message: error.message,
-      });
-
       setComplaints([]);
 
       // Show appropriate error message based on error type
@@ -1337,9 +931,6 @@ export default function DashboardAdmin() {
   // Handle Resolve Complaint
   const handleResolveComplaint = async (complaintId) => {
     try {
-      console.log("🔄 Resolving complaint:", complaintId);
-
-      // Show confirmation
       if (
         !window.confirm(
           "Are you sure you want to mark this complaint as resolved? This action cannot be undone."
@@ -1349,17 +940,10 @@ export default function DashboardAdmin() {
       }
 
       setComplaintsLoading(true);
-
-      // Call API to resolve complaint using the correct endpoint
       await api.put(`/api/complaints/${complaintId}/RESOLVED`);
-
       toast.success("Complaint marked as resolved successfully!");
-
-      // Reload complaints to remove resolved item
       await loadComplaints();
     } catch (error) {
-      console.error("❌ Failed to resolve complaint:", error);
-
       if (error.response?.status === 401) {
         toast.error("Authentication failed. Please login again.");
       } else if (error.response?.status === 403) {
@@ -1379,9 +963,6 @@ export default function DashboardAdmin() {
     try {
       setFeeLoading(true);
 
-      console.log("📡 Loading real fee data from backend...");
-
-      // Load fee statistics
       const statsResponse = await api.get("/api/fee/admin/stats");
       if (statsResponse.data) {
         setFeeStats({
@@ -1391,38 +972,21 @@ export default function DashboardAdmin() {
           expiredFees: statsResponse.data.expiredFees || 0,
           totalRevenue: statsResponse.data.totalRevenue || 0,
         });
-        console.log("✅ Fee statistics loaded:", statsResponse.data);
       }
 
-      // Load fee list (limited to avoid large responses)
       const feesResponse = await api.get("/api/fee/admin/all");
       if (feesResponse.data && Array.isArray(feesResponse.data)) {
-        // Limit to most recent 50 fees to avoid performance issues
         const limitedFees = feesResponse.data
           .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
           .slice(0, 50);
 
         setFees(limitedFees);
-        console.log(`✅ Fee data loaded: ${limitedFees.length} fees`);
       } else {
-        console.warn("⚠️ Unexpected fee data format, using empty array");
         setFees([]);
       }
     } catch (err) {
-      console.error("❌ Error loading fees:", err);
-
-      // Fallback to mock data if API fails
-      console.log("🔄 Falling back to mock data...");
-      const mockFeeStats = {
-        totalFees: 0,
-        paidFees: 0,
-        pendingFees: 0,
-        expiredFees: 0,
-        totalRevenue: 0,
-      };
-
       setFees([]);
-      setFeeStats(mockFeeStats);
+      setFeeStats({});
 
       if (err.response?.status === 401) {
         toast.error("Authentication required for fee data");
@@ -1443,10 +1007,6 @@ export default function DashboardAdmin() {
   };
 
   const submitReply = async () => {
-    console.log("🚀 Submit reply called, replyText:", replyText);
-    console.log("🚀 Reply text length:", replyText.length);
-    console.log("🚀 Trimmed text:", replyText.trim());
-
     if (!replyText.trim()) {
       toast.error("Please enter a reply message.");
       return;
@@ -1454,8 +1014,6 @@ export default function DashboardAdmin() {
 
     try {
       setReplyLoading(true);
-      console.log("📤 Submitting reply for complaint:", selectedComplaint.id);
-
       const replyRequest = {
         message: replyText.trim(),
       };
@@ -1466,16 +1024,10 @@ export default function DashboardAdmin() {
       );
 
       toast.success("Reply sent successfully!");
-
-      // Close modal and reload complaints
       setSelectedComplaint(null);
       setReplyText("");
       await loadComplaints();
     } catch (error) {
-      console.error("❌ Failed to send reply:", error);
-      console.error("❌ Error response:", error.response?.data);
-      console.error("❌ Request payload:", replyRequest);
-
       if (error.response?.status === 400) {
         toast.error(
           `Bad request: ${
@@ -1510,14 +1062,11 @@ export default function DashboardAdmin() {
   const handleApprovePost = async (postId) => {
     try {
       setLoading(true);
-      console.log("[DEBUG] Approving post:", postId);
       await api.put(`/api/post/admin/${postId}/approve`);
       toast.success("Post approved");
       await loadPendingListings();
       await loadDashboardData();
     } catch (error) {
-      console.error("Error approving post:", error);
-      console.error("Error details:", error.response?.data);
       toast.error(
         error?.response?.status === 401
           ? "Please login again."
@@ -1536,14 +1085,11 @@ export default function DashboardAdmin() {
       const reason =
         window.prompt("Please provide a reason for rejection:") ||
         "Not specified";
-      console.log("[DEBUG] Rejecting post:", postId, "with reason:", reason);
       await api.put(`/api/post/admin/${postId}/reject`, { reason });
       toast.success("Post rejected");
       await loadPendingListings();
       await loadDashboardData();
     } catch (error) {
-      console.error("Error rejecting post:", error);
-      console.error("Error details:", error.response?.data);
       toast.error(
         error?.response?.status === 401
           ? "Please login again."
@@ -1564,7 +1110,6 @@ export default function DashboardAdmin() {
       await loadPendingAccounts();
       await loadDashboardData();
     } catch (error) {
-      console.error("Error approving account:", error);
       toast.error("Failed to approve account");
     } finally {
       setLoading(false);
@@ -1579,7 +1124,6 @@ export default function DashboardAdmin() {
       await loadPendingAccounts();
       await loadDashboardData();
     } catch (error) {
-      console.error("Error rejecting account:", error);
       toast.error("Failed to reject account");
     } finally {
       setLoading(false);
@@ -1589,35 +1133,12 @@ export default function DashboardAdmin() {
   const loadApprovedAccounts = async () => {
     try {
       setLoading(true);
-      console.log("🔍 [DEBUG] Loading approved accounts...");
-
-      // Debug token
-      const getCookie = (name) => {
-        const value = `; ${document.cookie}`;
-        const parts = value.split(`; ${name}=`);
-        if (parts.length === 2) return parts.pop().split(";").shift();
-        return null;
-      };
-      const token = getCookie("accessToken");
-      console.log("🔐 [DEBUG] Token exists:", !!token);
-      console.log(
-        "🔐 [DEBUG] Token preview:",
-        token ? token.substring(0, 20) + "..." : "No token"
-      );
-
       const response = await api.get("/api/v1/admin/accounts/approved");
-      console.log("📊 [DEBUG] Approved accounts response:", response.data);
 
       if (response.data && Array.isArray(response.data)) {
         setApprovedAccounts(response.data);
-        console.log(
-          "✅ [DEBUG] Loaded " + response.data.length + " approved accounts"
-        );
       }
     } catch (error) {
-      console.error("⚠️ Error loading approved accounts:", error);
-      console.error("⚠️ Error status:", error.response?.status);
-      console.error("⚠️ Error data:", error.response?.data);
       toast.error("Failed to load approved accounts");
     } finally {
       setLoading(false);
@@ -1631,7 +1152,6 @@ export default function DashboardAdmin() {
       toast.success("Account locked successfully");
       await loadApprovedAccounts();
     } catch (error) {
-      console.error("Error locking account:", error);
       toast.error("Failed to lock account");
     } finally {
       setLoading(false);
@@ -1645,24 +1165,18 @@ export default function DashboardAdmin() {
       toast.success("Account unlocked successfully");
       await loadApprovedAccounts();
     } catch (error) {
-      console.error("Error unlocking account:", error);
       toast.error("Failed to unlock account");
     } finally {
       setLoading(false);
     }
   };
 
-  /* ===================== POST DETAIL ===================== */
   const loadPostDetail = async (postId) => {
     setLoadingDetail(true);
     try {
       const res = await api.get(`/api/post/detail/${postId}`);
-      console.log("[DEBUG] Post detail data:", res.data);
-      console.log("[DEBUG] Vehicle data:", res.data?.vehicle);
-      console.log("[DEBUG] Battery data:", res.data?.battery);
       setPostDetail(res.data);
     } catch (error) {
-      console.error("[Admin] Error loading post detail:", error);
       toast.error("Failed to load post details");
       setPostDetail(null);
     } finally {
@@ -1934,28 +1448,13 @@ export default function DashboardAdmin() {
                             </td>
                             <td>
                               {(() => {
-                                // Try multiple possible date fields - backend now returns createdAt properly
                                 const dateValue =
                                   post.createdAt ||
                                   post.updatedAt ||
                                   post.createdat ||
                                   post.postDate ||
                                   post.createDate;
-                                console.log(
-                                  "🔍 Date fields for post",
-                                  post.postId || post.id,
-                                  ":",
-                                  {
-                                    createdAt: post.createdAt,
-                                    updatedAt: post.updatedAt,
-                                    createdat: post.createdat,
-                                    postDate: post.postDate,
-                                    createDate: post.createDate,
-                                    selectedValue: dateValue,
-                                  }
-                                );
                                 if (!dateValue) {
-                                  // If no date field, show post ID as indicator of creation order
                                   return (
                                     <div
                                       style={{

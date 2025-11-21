@@ -97,16 +97,13 @@ export default function VerifyEmailPage() {
       if (purpose === "signup") {
         // Bước 1: Verify OTP bằng endpoint mới
         const res = await otpService.verifyRegisterOtp(email, joined);
-        console.log("OTP verify response:", res);
 
         // Bước 2: Nếu có dữ liệu registration, tạo account sau khi verify thành công
         if (registrationData) {
-          console.log("Creating account after OTP verification...");
           const registerRes = await api.post(
             "/api/v1/auth/register",
             registrationData
           );
-          console.log("Account created successfully:", registerRes.data);
         }
 
         navigate("/login", {
@@ -127,7 +124,6 @@ export default function VerifyEmailPage() {
         });
       }
     } catch (e) {
-      console.error("OTP verification error:", e);
       setError("The code you entered is incorrect or expired.");
       setSubmitting(false);
       // focus lại ô đầu để gõ lại
@@ -139,10 +135,8 @@ export default function VerifyEmailPage() {
     if (left > 0) return;
     try {
       await otpService.resendOtp(email);
-      console.log("OTP resent successfully");
       setLeft(RESEND_SECONDS);
     } catch (e) {
-      console.error("Resend OTP error:", e);
       setError("Unable to resend code. Please try again later.");
     }
   };
