@@ -425,23 +425,37 @@ const ElectricsPage = () => {
               </svg>
               Battery Type
             </label>
-            <select
-              className="filter-select"
-              value={draftFilters.batteryType}
-              onChange={(e) =>
-                setDraftFilters({
-                  ...draftFilters,
-                  batteryType: e.target.value,
-                })
-              }
-            >
-              <option value="">All Types</option>
-              {batteryTypes.map((type) => (
-                <option key={type} value={type}>
-                  {type}
-                </option>
-              ))}
-            </select>
+            <div style={{ display: 'flex', width: '100%' }}>
+              <select
+                className="filter-select"
+                style={{ fontSize: '1rem', padding: '10px 18px', maxWidth: '100%' }}
+                value={draftFilters.batteryType}
+                onChange={(e) =>
+                  setDraftFilters({
+                    ...draftFilters,
+                    batteryType: e.target.value,
+                  })
+                }
+              >
+                <option value="">All Types</option>
+                {/* Default battery types for selection */}
+                <option value="Li-ion">Li-ion</option>
+                <option value="LFP">LFP</option>
+                <option value="NMC">NMC</option>
+                <option value="Lead-acid">Lead-acid</option>
+                {/* Dynamic battery types from data */}
+                {batteryTypes
+                  .filter(
+                    (type) =>
+                      !["Li-ion", "LFP", "NMC", "Lead-acid"].includes(type)
+                  )
+                  .map((type) => (
+                    <option key={type} value={type}>
+                      {type}
+                    </option>
+                  ))}
+              </select>
+            </div>
           </div>
 
           <div className="filter-group">
@@ -533,45 +547,6 @@ const ElectricsPage = () => {
             </div>
           </div>
 
-          <div className="filter-group">
-            <label className="filter-label">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <rect x="1" y="6" width="18" height="12" rx="2" ry="2" />
-                <path d="m22 10-2-2v8l2-2" />
-              </svg>
-              Capacity Range (kWh)
-            </label>
-
-            <div className="simple-price-inputs">
-              <input
-                type="text"
-                placeholder="Min Capacity (kWh) - e.g. 20"
-                value={draftFilters.minCapacity}
-                onChange={(e) => {
-                  const value = e.target.value.replace(/[^0-9.]/g, "");
-                  setDraftFilters({ ...draftFilters, minCapacity: value });
-                }}
-                style={{ pointerEvents: "auto" }}
-              />
-              <input
-                type="text"
-                placeholder="Max Capacity (kWh) - e.g. 100"
-                value={draftFilters.maxCapacity}
-                onChange={(e) => {
-                  const value = e.target.value.replace(/[^0-9.]/g, "");
-                  setDraftFilters({ ...draftFilters, maxCapacity: value });
-                }}
-                style={{ pointerEvents: "auto" }}
-              />
-            </div>
-          </div>
 
           <div className="filter-actions">
             <button

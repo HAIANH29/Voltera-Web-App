@@ -459,24 +459,27 @@ export default function VehiclesPage() {
               </svg>
               Brand
             </label>
-            <select
-              className="filter-select"
-              value={draftFilters.brand}
-              onChange={(e) =>
-                setDraftFilters({
-                  ...draftFilters,
-                  brand: e.target.value,
-                  model: "",
-                })
-              }
-            >
-              <option value="">All Brands</option>
-              {brands.map((b) => (
-                <option key={b} value={b}>
-                  {b}
-                </option>
-              ))}
-            </select>
+            <div style={{ display: 'flex', width: '100%' }}>
+              <select
+                className="filter-select"
+                style={{ fontSize: '1rem', padding: '10px 18px', maxWidth: '100%' }}
+                value={draftFilters.brand}
+                onChange={(e) =>
+                  setDraftFilters({
+                    ...draftFilters,
+                    brand: e.target.value,
+                    model: "",
+                  })
+                }
+              >
+                <option value="">All Brands</option>
+                {brands.map((b) => (
+                  <option key={b} value={b}>
+                    {b}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           <div className="filter-group">
@@ -493,31 +496,34 @@ export default function VehiclesPage() {
               </svg>
               Model
             </label>
-            <select
-              className="filter-select"
-              value={draftFilters.model}
-              onChange={(e) =>
-                setDraftFilters({
-                  ...draftFilters,
-                  model: e.target.value,
-                })
-              }
-            >
-              <option value="">All Models</option>
-              {models
-                .filter(
-                  (m) =>
-                    !draftFilters.brand ||
-                    vehicles.some(
-                      (v) => v.brand === draftFilters.brand && v.model === m
-                    )
-                )
-                .map((m) => (
-                  <option key={m} value={m}>
-                    {m}
-                  </option>
-                ))}
-            </select>
+            <div style={{ display: 'flex', width: '100%' }}>
+              <select
+                className="filter-select"
+                style={{ fontSize: '1rem', padding: '10px 18px', maxWidth: '100%' }}
+                value={draftFilters.model}
+                onChange={(e) =>
+                  setDraftFilters({
+                    ...draftFilters,
+                    model: e.target.value,
+                  })
+                }
+              >
+                <option value="">All Models</option>
+                {models
+                  .filter(
+                    (m) =>
+                      !draftFilters.brand ||
+                      vehicles.some(
+                        (v) => v.brand === draftFilters.brand && v.model === m
+                      )
+                  )
+                  .map((m) => (
+                    <option key={m} value={m}>
+                      {m}
+                    </option>
+                  ))}
+              </select>
+            </div>
           </div>
 
           <div className="filter-group">
@@ -582,20 +588,23 @@ export default function VehiclesPage() {
               </svg>
               Origin
             </label>
-            <select
-              className="filter-select"
-              value={draftFilters.origin}
-              onChange={(e) =>
-                setDraftFilters({ ...draftFilters, origin: e.target.value })
-              }
-            >
-              <option value="">All Origins</option>
-              {origins.map((o) => (
-                <option key={o} value={o}>
-                  {o}
-                </option>
-              ))}
-            </select>
+            <div style={{ display: 'flex', width: '100%' }}>
+              <select
+                className="filter-select"
+                style={{ fontSize: '1rem', padding: '10px 18px', maxWidth: '100%' }}
+                value={draftFilters.origin}
+                onChange={(e) =>
+                  setDraftFilters({ ...draftFilters, origin: e.target.value })
+                }
+              >
+                <option value="">All Origins</option>
+                {origins.map((o) => (
+                  <option key={o} value={o}>
+                    {o}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           <div className="filter-group">
