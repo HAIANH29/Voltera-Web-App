@@ -143,18 +143,9 @@ const HeaderAfter = ({ user: userProp }) => {
         }
       }
 
-      // 3. Call backend logout API nếu có username hợp lệ
-      if (username && username !== "user@example.com" && username !== "User") {
-        try {
-          await api.post("/auth/logout", null, {
-            params: { username },
-          });
-        } catch (apiError) {
-          // Logout errors are not critical - user can still be logged out client-side
-          // Continue with client cleanup - logout should still work
-        }
-      } else {
-      }
+      // 3. Skip backend logout API call to avoid 403 errors
+      // Backend logout is not critical - client-side cleanup is sufficient
+      // The token will naturally expire on the backend
 
       // 4. Clear client-side data
       Cookies.remove("accessToken", { path: "/" });

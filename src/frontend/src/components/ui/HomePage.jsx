@@ -6,7 +6,7 @@ import {
   ChevronRight,
   ChevronDown,
 } from "lucide-react";
-import { ImageWithFallback } from "image/ImageWithFallback";
+import { ImageWithFallback } from "../image/ImageWithFallback";
 import { NewestPosts } from "./NewestPosts";
 
 export function PremiumHomepage({
