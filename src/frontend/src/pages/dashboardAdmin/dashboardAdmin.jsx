@@ -3076,12 +3076,6 @@ export default function DashboardAdmin() {
                 />
                 <div className="character-count">
                   {replyText.length}/1000 characters
-                  {process.env.NODE_ENV === "development" && (
-                    <span style={{ marginLeft: "10px", color: "#ef4444" }}>
-                      | Debug: isEmpty={replyText.trim().length === 0} |
-                      loading={replyLoading}
-                    </span>
-                  )}
                 </div>
               </div>
             </div>
