@@ -72,11 +72,7 @@ public class ContractService {
                 .orElseThrow(() -> new RuntimeException("Post not found"));
         User seller = post.getSellerId();
         
-        // Additional check: prevent self-contracting (buyer cannot be the same as seller)
-        if (buyer.getId().equals(seller.getId())) {
-            throw new RuntimeException("You cannot create a contract for your own product listing.");
-        }
-        
+     
         Contract contract = contractMapper.toEntity(request, post, buyer, seller);
         contract.setExpirationdate(LocalDate.now().plusDays(7));
         contract = contractRepository.save(contract);
