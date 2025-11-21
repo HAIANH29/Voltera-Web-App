@@ -78,7 +78,7 @@ public class FeeService {
         }
 
         VNPayRequest vnPayRequest = new VNPayRequest();
-        vnPayRequest.setAmount(Long.valueOf(String.valueOf(fee.getAmount())));
+        vnPayRequest.setAmount(fee.getAmount().longValue()); 
         vnPayRequest.setPostId(transaction.getPost().getId());
         vnPayRequest.setOrderInfo("Pay for posting " + transaction.getPost().getTitle());
         vnPayRequest.setOrderType("Bill Payment");
