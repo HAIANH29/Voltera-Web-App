@@ -160,6 +160,31 @@ export default function ElectricDetail() {
       return;
     }
 
+    // Check user role - only buyers can create contracts
+    const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
+    const userRole = currentUser?.role?.toUpperCase();
+
+    if (userRole === "SELLER") {
+      alert(
+        "Sellers cannot create contracts for their own products. Only buyers can create contracts."
+      );
+      return;
+    }
+
+    if (userRole === "ADMIN") {
+      alert(
+        "Administrators cannot create contracts. Only buyers can create contracts."
+      );
+      return;
+    }
+
+    if (userRole !== "BUYER") {
+      alert(
+        "Only registered buyers can create contracts. Please ensure you have the correct account type."
+      );
+      return;
+    }
+
     // Check if battery data is available
     if (!battery) {
       alert("Battery information has not been loaded. Please try again.");

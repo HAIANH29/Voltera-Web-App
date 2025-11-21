@@ -1,5 +1,6 @@
 package com.g_wuy.swp391.voltera.service;
 
+import com.g_wuy.swp391.voltera.entity.Account;
 import com.g_wuy.swp391.voltera.entity.Contract;
 import com.g_wuy.swp391.voltera.entity.Post;
 import com.g_wuy.swp391.voltera.entity.Transaction;
@@ -9,6 +10,7 @@ import com.g_wuy.swp391.voltera.mapper.TransactionMapper;
 import com.g_wuy.swp391.voltera.model.request.ContractRequest;
 import com.g_wuy.swp391.voltera.model.response.ContractResponse;
 import com.g_wuy.swp391.voltera.model.response.TransactionResponse;
+import com.g_wuy.swp391.voltera.repository.AccountRepository;
 import com.g_wuy.swp391.voltera.repository.ContractRepository;
 import com.g_wuy.swp391.voltera.repository.PostRepository;
 import com.g_wuy.swp391.voltera.repository.TransactionRepository;
@@ -43,15 +45,38 @@ public class ContractService {
     private TransactionMapper transactionMapper;
     @Autowired
     private NotificationService notificationService;
+    @Autowired
+    private AccountRepository accountRepository;
 
     @Transactional
     public ContractResponse createContract(ContractRequest request,String username) {
+
+        // Get user account to check role
+        Account account = accountRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Account not found"));
+        
+        // Only buyers can create contracts
+        if (!"BUYER".equalsIgnoreCase(account.getRole())) {
+            if ("SELLER".equalsIgnoreCase(account.getRole())) {
+                throw new RuntimeException("Sellers cannot create contracts for their own products. Only buyers can create contracts.");
+            } else if ("ADMIN".equalsIgnoreCase(account.getRole())) {
+                throw new RuntimeException("Administrators cannot create contracts. Only buyers can create contracts.");
+            } else {
+                throw new RuntimeException("Only registered buyers can create contracts. Please ensure you have the correct account type.");
+            }
+        }
 
         User buyer = userRepository.findUserByUsername(username);
 
         Post post = postRepository.findById(request.getPostId())
                 .orElseThrow(() -> new RuntimeException("Post not found"));
         User seller = post.getSellerId();
+        
+        // Additional check: prevent self-contracting (buyer cannot be the same as seller)
+        if (buyer.getId().equals(seller.getId())) {
+            throw new RuntimeException("You cannot create a contract for your own product listing.");
+        }
+        
         Contract contract = contractMapper.toEntity(request, post, buyer, seller);
         contract.setExpirationdate(LocalDate.now().plusDays(7));
         contract = contractRepository.save(contract);
