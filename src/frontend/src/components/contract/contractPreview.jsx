@@ -415,15 +415,22 @@ export default function ContractPreview({ postId, contractId, onClose }) {
           contractId: contractData.contractId || "N/A",
           signedDate: contractData.signedDate
             ? new Date(contractData.signedDate).toLocaleDateString("en-US")
-            : new Date().toLocaleDateString("en-US"),
+            : "Not signed yet",
+          contractSigningDate: contractData.signedDate
+            ? new Date(contractData.signedDate).toLocaleDateString("en-US")
+            : "Not signed yet",
 
           // Seller info  
           sellerName: contractData.sellerName || "N/A",
           sellerEmail: contractData.sellerEmail || "seller@voltera.com",
+          sellerSigned: contractData.signedBySeller ? "Signed" : "Not signed",
+          sellerSignedStatus: contractData.signedBySeller ? "✅ Signed" : "❌ Not signed",
 
           // Buyer info
           buyerName: contractData.buyerName || "N/A", 
           buyerEmail: contractData.buyerEmail || "buyer@voltera.com",
+          buyerSigned: contractData.signedByBuyer ? "Signed" : "Not signed",
+          buyerSignedStatus: contractData.signedByBuyer ? "✅ Signed" : "❌ Not signed",
 
           // Battery info (handle both originCapacity and originalCapacity)
           title: contractData.postTitle || postData?.title || "Battery Pack",
@@ -438,26 +445,37 @@ export default function ContractPreview({ postId, contractId, onClose }) {
           batteryType: battery.batteryTypeId?.typename || battery.batteryType || "Li-ion",
           price: postData?.price ? `$${postData.price.toLocaleString()}` : "Contact for price",
           
+          // Contract status
+          contractStatus: contractData.contractStatus || "PENDING",
+          
           // Current date
           date: new Date().toLocaleDateString("en-US"),
           currentDate: new Date().toLocaleDateString("en-US"),
+          todayDate: new Date().toLocaleDateString("en-US"),
         };
       } else {
         // Vehicle contract data mapping
         renderData = {
           // Contract info
           contractId: contractData.contractId || "N/A",
+          signedDate: contractData.signedDate
+            ? new Date(contractData.signedDate).toLocaleDateString("vi-VN")
+            : "Not signed yet",
           contractSigningDate: contractData.signedDate
             ? new Date(contractData.signedDate).toLocaleDateString("vi-VN")
-            : new Date().toLocaleDateString("vi-VN"),
+            : "Not signed yet",
 
           // Seller info  
           sellerName: contractData.sellerName || "N/A",
           sellerEmail: contractData.sellerEmail || "seller@voltera.com",
+          sellerSigned: contractData.signedBySeller ? "Signed" : "Not signed",
+          sellerSignedStatus: contractData.signedBySeller ? "✅ Signed" : "❌ Not signed",
 
           // Buyer info
           buyerName: contractData.buyerName || "N/A", 
           buyerEmail: contractData.buyerEmail || "buyer@voltera.com",
+          buyerSigned: contractData.signedByBuyer ? "Signed" : "Not signed",
+          buyerSignedStatus: contractData.signedByBuyer ? "✅ Signed" : "❌ Not signed",
 
           // Vehicle info
           title: contractData.postTitle || postData?.title || "N/A",
@@ -475,13 +493,26 @@ export default function ContractPreview({ postId, contractId, onClose }) {
           year: vehicle.yearManufacture || "N/A",
           color: vehicle.color || "N/A",
           
+          // Contract status
+          contractStatus: contractData.contractStatus || "PENDING",
+          
           // Current date
           date: new Date().toLocaleDateString("vi-VN"),
           currentDate: new Date().toLocaleDateString("vi-VN"),
+          todayDate: new Date().toLocaleDateString("vi-VN"),
         };
       }
 
       console.log("🎯 Render data for contract:", renderData);
+      console.log("📋 Contract data debug:", {
+        contractId: contractData.contractId,
+        signedDate: contractData.signedDate,
+        signedBySeller: contractData.signedBySeller,
+        signedByBuyer: contractData.signedByBuyer,
+        contractStatus: contractData.contractStatus,
+        sellerName: contractData.sellerName,
+        buyerName: contractData.buyerName
+      });
 
       // 4️⃣ Render data with error handling
       console.log("🔄 Rendering template with data...");

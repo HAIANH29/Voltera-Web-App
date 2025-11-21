@@ -7,28 +7,37 @@ import "./ContractInfoPreview.css";
 const mapVehicleData = (vehicleData) => {
   const v = vehicleData || {};
   
+  // Handle both camelCase (from API) and lowercase field names
+  const batteryCapacity = v.batteryCapacity ?? v.batterycapacity;
+  const chargingTime = v.chargingTime ?? v.chargingtime;
+  const numberOfSeat = v.numberOfSeat ?? v.numberofseat;
+  const yearManufacture = v.yearManufacture ?? v.yearmanufacture;
+  const licensePlate = v.licensePlate ?? v.licenseplate;
+  const bodyInsurance = v.bodyInsurance ?? v.bodyinsurance;
+  const vehicleInspection = v.vehicleInspection ?? v.vehicleinspection;
+  
   return {
     ...v,
-    // Format fields with proper fallbacks
-    batterycapacity: v.batterycapacity != null ? v.batterycapacity : null,
-    batterycapacityDisplay: v.batterycapacity != null ? `${v.batterycapacity} kWh` : "Not specified",
+    // Format fields with proper fallbacks using both naming conventions
+    batterycapacity: batteryCapacity != null ? batteryCapacity : null,
+    batterycapacityDisplay: batteryCapacity != null ? `${batteryCapacity} kWh` : "Not specified",
     
     range: v.range != null ? v.range : null,
     rangeDisplay: v.range != null ? `${v.range} km` : "Not specified",
     
-    chargingtime: v.chargingtime != null ? v.chargingtime : null,
-    chargingtimeDisplay: v.chargingtime != null ? `${v.chargingtime} hours` : "Not specified",
+    chargingtime: chargingTime != null ? chargingTime : null,
+    chargingtimeDisplay: chargingTime != null ? `${chargingTime} hours` : "Not specified",
     
-    numberofseat: v.numberofseat != null ? v.numberofseat : 5, // default 5 seats
-    numberofseatDisplay: v.numberofseat != null ? v.numberofseat : 5,
+    numberofseat: numberOfSeat != null ? numberOfSeat : 5, // default 5 seats
+    numberofseatDisplay: numberOfSeat != null ? numberOfSeat : 5,
     
-    yearmanufacture: v.yearmanufacture > 0 ? v.yearmanufacture : new Date().getFullYear(),
+    yearmanufacture: yearManufacture > 0 ? yearManufacture : new Date().getFullYear(),
     
-    licenseplate: v.licenseplate || "Not assigned",
+    licenseplate: licensePlate || "Not assigned",
     origin: v.origin || "International",
     
-    bodyinsurance: v.bodyinsurance != null ? v.bodyinsurance : false,
-    vehicleinspection: v.vehicleinspection != null ? v.vehicleinspection : false,
+    bodyinsurance: bodyInsurance != null ? bodyInsurance : false,
+    vehicleinspection: vehicleInspection != null ? vehicleInspection : false,
     
     brand: v.brand || "Electric Vehicle",
     model: v.model || "Premium Model", 
@@ -146,12 +155,18 @@ export default function ContractInfoPreview({
           brand: vehicleData.brand,
           model: vehicleData.model,
           version: vehicleData.version,
-          yearmanufacture: vehicleData.yearmanufacture,
+          yearManufacture: vehicleData.year, // Use correct field name
           color: vehicleData.color,
           odo: vehicleData.odo,
-          batterycapacity: vehicleData.batteryCapacityRaw,
-          range: vehicleData.rangeRaw,
-          numberofseat: vehicleData.numberOfSeat,
+          batteryCapacity: vehicleData.batteryCapacityRaw, // Use camelCase
+          range: vehicleData.rangeRaw, // Use rangeRaw for numeric value
+          chargingTime: vehicleData.chargingTimeRaw, // Use camelCase
+          numberOfSeat: vehicleData.numberOfSeat, // Use camelCase
+          licensePlate: vehicleData.licensePlate, // Use camelCase
+          origin: vehicleData.origin,
+          style: vehicleData.style,
+          bodyInsurance: vehicleData.bodyInsurance,
+          vehicleInspection: vehicleData.vehicleInspection,
         };
 
         const mappedVehicle = mapVehicleData(vehicleForMapping);
@@ -172,7 +187,12 @@ export default function ContractInfoPreview({
         setPostData(finalData);
         console.log("✅ ContractInfoPreview using vehicleData:");
         console.log("- Original vehicleData:", vehicleData);
+        console.log("- VehicleForMapping:", vehicleForMapping);
         console.log("- Mapped vehicle:", mappedVehicle);
+        console.log("🔍 Key mappings check:");
+        console.log("- batteryCapacityRaw:", vehicleData.batteryCapacityRaw, "-> batterycapacityDisplay:", mappedVehicle.batterycapacityDisplay);
+        console.log("- chargingTimeRaw:", vehicleData.chargingTimeRaw, "-> chargingtimeDisplay:", mappedVehicle.chargingtimeDisplay);
+        console.log("- numberOfSeat:", vehicleData.numberOfSeat, "-> numberofseat:", mappedVehicle.numberofseat);
         console.log("- Final postData:", finalData);
       } else {
         fetchAllData();
@@ -412,7 +432,7 @@ export default function ContractInfoPreview({
               </div>
               <div className="section-content">
                 <div className="info-row">
-                  <span className="label">Tiêu đề:</span>
+                  <span className="label">Title:</span>
                   <span className="value">
                     {postData.title ||
                       (isBattery 

@@ -139,30 +139,39 @@ export default function ContractPage() {
   const mapVehicleData = (postData) => {
     const v = postData?.vehicle || {};
     
+    // Handle both camelCase (from API) and lowercase field names
+    const batteryCapacity = v.batteryCapacity ?? v.batterycapacity;
+    const chargingTime = v.chargingTime ?? v.chargingtime;
+    const numberOfSeat = v.numberOfSeat ?? v.numberofseat;
+    const yearManufacture = v.yearManufacture ?? v.yearmanufacture;
+    const licensePlate = v.licensePlate ?? v.licenseplate;
+    const bodyInsurance = v.bodyInsurance ?? v.bodyinsurance;
+    const vehicleInspection = v.vehicleInspection ?? v.vehicleinspection;
+    
     return {
       ...postData,
       vehicle: {
         ...v,
-        // Format fields with proper fallbacks
-        batterycapacity: v?.batterycapacity != null ? v.batterycapacity : null,
-        batterycapacityDisplay: v?.batterycapacity != null ? `${v.batterycapacity} kWh` : "Not specified",
+        // Format fields with proper fallbacks using both naming conventions
+        batterycapacity: batteryCapacity != null ? batteryCapacity : null,
+        batterycapacityDisplay: batteryCapacity != null ? `${batteryCapacity} kWh` : "Not specified",
         
-        range: v?.range != null ? v.range : null,
-        rangeDisplay: v?.range != null ? `${v.range} km` : "Not specified",
+        range: v.range != null ? v.range : null,
+        rangeDisplay: v.range != null ? `${v.range} km` : "Not specified",
         
-        chargingtime: v?.chargingtime != null ? v.chargingtime : null,
-        chargingtimeDisplay: v?.chargingtime != null ? `${v.chargingtime} hours` : "Not specified",
+        chargingtime: chargingTime != null ? chargingTime : null,
+        chargingtimeDisplay: chargingTime != null ? `${chargingTime} hours` : "Not specified",
         
-        numberofseat: v?.numberofseat != null ? v.numberofseat : 5, // default 5 seats
-        numberofseatDisplay: v?.numberofseat != null ? v.numberofseat : 5,
+        numberofseat: numberOfSeat != null ? numberOfSeat : 5, // default 5 seats
+        numberofseatDisplay: numberOfSeat != null ? numberOfSeat : 5,
         
-        yearmanufacture: v?.yearmanufacture > 0 ? v.yearmanufacture : new Date().getFullYear(),
+        yearmanufacture: yearManufacture > 0 ? yearManufacture : new Date().getFullYear(),
         
-        licenseplate: v?.licenseplate || "Not assigned",
-        origin: v?.origin || "International",
+        licenseplate: licensePlate || "Not assigned",
+        origin: v.origin || "International",
         
-        bodyinsurance: v?.bodyinsurance != null ? v.bodyinsurance : false,
-        vehicleinspection: v?.vehicleinspection != null ? v.vehicleinspection : false,
+        bodyinsurance: bodyInsurance != null ? bodyInsurance : false,
+        vehicleinspection: vehicleInspection != null ? vehicleInspection : false,
       }
     };
   };
@@ -210,7 +219,19 @@ export default function ContractPage() {
     setLoadingVehicle(true);
     try {
       const response = await api.get(`/api/post/detail/${postId}`);
-      const mappedData = mapVehicleData(response.data);
+      const rawData = response.data;
+      const mappedData = mapVehicleData(rawData);
+      console.log("✅ ContractPage vehicle data loaded:", {
+        rawData: rawData,
+        mappedData: mappedData,
+        batteryCapacityRaw: rawData?.vehicle?.batteryCapacity,
+        batteryCapacityLowercase: rawData?.vehicle?.batterycapacity,
+        batteryCapacityDisplay: mappedData?.vehicle?.batterycapacityDisplay,
+        chargingTimeRaw: rawData?.vehicle?.chargingTime,
+        chargingTimeLowercase: rawData?.vehicle?.chargingtime,
+        chargingTimeDisplay: mappedData?.vehicle?.chargingtimeDisplay,
+        vehicleKeys: rawData?.vehicle ? Object.keys(rawData.vehicle) : 'no vehicle data'
+      });
       console.log("🚗 Setting vehicle detail:", mappedData);
       setVehicleDetail(mappedData);
     } catch (error) {
