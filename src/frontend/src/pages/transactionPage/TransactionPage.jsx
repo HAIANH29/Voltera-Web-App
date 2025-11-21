@@ -311,35 +311,21 @@ const TransactionPage = () => {
                       return;
                     }
 
-                    // Call the fee payment API directly
-                    const response = await api.post(
-                      `/api/fee/create-payment/${transactionId}`
+                    // Navigate to payment page first
+                    const postId =
+                      selectedTransaction.post?.id ||
+                      selectedTransaction.postId ||
+                      "";
+                    const amount = selectedTransaction.price || "";
+                    const orderInfo = `Fee payment for: ${
+                      selectedTransaction.postTitle || "Post"
+                    }`;
+
+                    navigate(
+                      `/payment?paymentType=fee&transactionId=${transactionId}&postId=${postId}&amount=${amount}&orderInfo=${encodeURIComponent(
+                        orderInfo
+                      )}`
                     );
-
-                    if (response.data && response.data.paymentUrl) {
-                      // Redirect to VNPay
-                      window.location.href = response.data.paymentUrl;
-                    } else {
-                      console.error(
-                        "No payment URL in response:",
-                        response.data
-                      );
-                      // Fallback to payment page with all necessary info
-                      const postId =
-                        selectedTransaction.post?.id ||
-                        selectedTransaction.postId ||
-                        "";
-                      const amount = selectedTransaction.price || "";
-                      const orderInfo = `Fee payment for: ${
-                        selectedTransaction.postTitle || "Post"
-                      }`;
-
-                      navigate(
-                        `/payment?paymentType=fee&transactionId=${transactionId}&postId=${postId}&amount=${amount}&orderInfo=${encodeURIComponent(
-                          orderInfo
-                        )}`
-                      );
-                    }
                   } catch (error) {
                     console.error("Error creating payment:", error);
                     // Fallback to payment page with all necessary info
@@ -577,25 +563,21 @@ const TransactionPage = () => {
                                   return;
                                 }
 
-                                // Call the fee payment API directly
-                                const response = await api.post(
-                                  `/api/fee/create-payment/${transactionId}`
-                                );
+                                // Navigate to payment page first
+                                const postId =
+                                  transaction.post?.id ||
+                                  transaction.postId ||
+                                  "";
+                                const amount = transaction.price || "";
+                                const orderInfo = `Fee payment for: ${
+                                  transaction.postTitle || "Post"
+                                }`;
 
-                                if (response.data && response.data.paymentUrl) {
-                                  // Redirect to VNPay
-                                  window.location.href =
-                                    response.data.paymentUrl;
-                                } else {
-                                  console.error(
-                                    "No payment URL in response:",
-                                    response.data
-                                  );
-                                  // Fallback to payment page
-                                  navigate(
-                                    `/payment?paymentType=fee&transactionId=${transactionId}`
-                                  );
-                                }
+                                navigate(
+                                  `/payment?paymentType=fee&transactionId=${transactionId}&postId=${postId}&amount=${amount}&orderInfo=${encodeURIComponent(
+                                    orderInfo
+                                  )}`
+                                );
                               } catch (error) {
                                 console.error("Error creating payment:", error);
                                 // Fallback to payment page with all necessary info

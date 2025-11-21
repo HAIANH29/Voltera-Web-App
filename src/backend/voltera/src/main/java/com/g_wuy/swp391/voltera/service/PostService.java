@@ -10,6 +10,10 @@ import org.springframework.stereotype.Service;
 import com.g_wuy.swp391.voltera.entity.*;
 import com.g_wuy.swp391.voltera.exception.BusinessException;
 import com.g_wuy.swp391.voltera.mapper.PostMapper;
+import com.g_wuy.swp391.voltera.mapper.BatteryMapper;
+import com.g_wuy.swp391.voltera.mapper.VehicleMapper;
+import com.g_wuy.swp391.voltera.model.dto.BatteryDTO;
+import com.g_wuy.swp391.voltera.model.dto.VehicleDTO;
 import com.g_wuy.swp391.voltera.model.request.PostRequest;
 import com.g_wuy.swp391.voltera.model.request.RejectPostRequest;
 import com.g_wuy.swp391.voltera.model.response.ModerationResponse;
@@ -26,6 +30,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class PostService {
@@ -42,6 +47,10 @@ public class PostService {
     private VehicleRepository vehicleRepository;
     @Autowired
     private PostMapper postMapper;
+    @Autowired
+    private BatteryMapper batteryMapper;
+    @Autowired
+    private VehicleMapper vehicleMapper;
     @Autowired
     private VehicleImageRepository vehicleImageRepository;
     @Autowired
@@ -242,7 +251,7 @@ public class PostService {
         return postMapper.toRejectResponse(post, adminUsername, request.getReason());
     }
 
-    public List<Post> filterVehicles(
+    public List<PostResponse> filterVehicles(
             String keyword,
             String address,
             String brand,
@@ -262,7 +271,7 @@ public class PostService {
             Integer maxYearManufacture,
             Integer numberOfSeat) {
 
-        return postRepository.filterVehicles(
+        List<Post> posts = postRepository.filterVehicles(
                 keyword,
                 address,
                 brand,
@@ -282,10 +291,26 @@ public class PostService {
                 maxYearManufacture,
                 numberOfSeat
         );
+        
+        return posts.stream().map(post -> {
+            Battery battery = batteryRepository.findByPost(post).orElse(null);
+            Vehicle vehicle = vehicleRepository.findByPost(post).orElse(null);
+            
+            List<String> allImages = new ArrayList<>();
+            if (vehicle != null) {
+                List<String> vImages = vehicleImageRepository.findByVehicle(vehicle)
+                        .stream().map(VehicleImage::getImageUrl).collect(Collectors.toList());
+                allImages.addAll(vImages);
+            }
+            
+            PostResponse response = postMapper.toPostResponse(post, battery, vehicle, allImages);
+            response.setLocation(post.getSellerId().getAddress());
+            return response;
+        }).collect(Collectors.toList());
     }
 
 
-    public List<Post> filterBatteries(
+    public List<PostResponse> filterBatteries(
             String keyword,
             String address,
             String batteryType,
@@ -307,7 +332,7 @@ public class PostService {
             BigDecimal minPrice,
             BigDecimal maxPrice) {
 
-        return postRepository.filterBatteries(
+        List<Post> posts = postRepository.filterBatteries(
                 keyword,
                 address,
                 batteryType,
@@ -329,6 +354,22 @@ public class PostService {
                 minPrice,
                 maxPrice
         );
+        
+        return posts.stream().map(post -> {
+            Battery battery = batteryRepository.findByPost(post).orElse(null);
+            Vehicle vehicle = vehicleRepository.findByPost(post).orElse(null);
+            
+            List<String> allImages = new ArrayList<>();
+            if (battery != null) {
+                List<String> bImages = batteryImageRepository.findByBattery(battery)
+                        .stream().map(BatteryImage::getImageUrl).collect(Collectors.toList());
+                allImages.addAll(bImages);
+            }
+            
+            PostResponse response = postMapper.toPostResponse(post, battery, vehicle, allImages);
+            response.setLocation(post.getSellerId().getAddress());
+            return response;
+        }).collect(Collectors.toList());
     }
 
     public List<PostResponse> getAllPost(String status) {
@@ -353,7 +394,14 @@ public class PostService {
             }
 
             PostResponse response = postMapper.toPostResponse(post, battery, vehicle, allImages);
-            response.setLocation(post.getSellerId().getAddress());
+            // Fix lazy loading issue by safely getting address
+            try {
+                if (post.getSellerId() != null) {
+                    response.setLocation(post.getSellerId().getAddress());
+                }
+            } catch (Exception e) {
+                response.setLocation("Unknown location");
+            }
 
             responses.add(response);
         }
@@ -363,16 +411,35 @@ public class PostService {
 
     public List<PostResponse> getPendingPostsWithPaidFee() {
 
-        List<Post> posts = postRepository.findPendingPostsWithPaidFee();
+        List<Post> posts = postRepository.getAllPostByStatus("PENDING");
+        
+        // Filter to only posts with paid fees
+        posts = posts.stream()
+                .filter(post -> post.getFees() != null && 
+                               !post.getFees().isEmpty() && 
+                               post.getFees().stream().anyMatch(fee -> "PAID".equals(fee.getFeeStatus())))
+                .collect(Collectors.toList());
 
         return posts.stream().map(post -> {
-
-            Battery battery = post.getBattery();
-            Vehicle vehicle = post.getVehicle();
+            // Convert entities to DTOs to avoid lazy loading issues
+            BatteryDTO batteryDTO = null;
+            VehicleDTO vehicleDTO = null;
+            
+            if (post.getBattery() != null) {
+                batteryDTO = batteryMapper.toBatteryDTO(post.getBattery());
+            }
+            
+            if (post.getVehicle() != null) {
+                vehicleDTO = vehicleMapper.toVehicleDTO(post.getVehicle());
+            }
 
             List<String> imageUrls = List.of();
 
-            PostResponse response = postMapper.toPostResponse(post, battery, vehicle, imageUrls);
+            PostResponse response = postMapper.toPostResponse(post, post.getBattery(), post.getVehicle(), imageUrls);
+            
+            // Set DTO instead of entity to avoid serialization issues
+            response.setBattery(batteryDTO);
+            response.setVehicle(vehicleDTO);
             
             // 💰 Add fee status to response
             if (post.getFees() != null && !post.getFees().isEmpty()) {

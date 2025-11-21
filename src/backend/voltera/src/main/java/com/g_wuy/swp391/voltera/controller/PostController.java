@@ -72,7 +72,7 @@ public class PostController {
 
 
     @GetMapping("/filter/vehicles")
-    public ResponseEntity<List<Post>> filterVehicles(
+    public ResponseEntity<List<PostResponse>> filterVehicles(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String address,
             @RequestParam(required = false) String brand,
@@ -92,7 +92,7 @@ public class PostController {
             @RequestParam(required = false) Integer maxYearManufacture,
             @RequestParam(required = false) Integer numberOfSeat
     ) {
-        List<Post> result = postService.filterVehicles(
+        List<PostResponse> result = postService.filterVehicles(
                 keyword,
                 address,
                 brand,
@@ -116,7 +116,7 @@ public class PostController {
     }
 
     @GetMapping("/filter/batteries")
-    public ResponseEntity<List<Post>> filterBatteries(
+    public ResponseEntity<List<PostResponse>> filterBatteries(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String address,
             @RequestParam(required = false) String batteryType,
@@ -138,7 +138,7 @@ public class PostController {
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice
     ) {
-        List<Post> result = postService.filterBatteries(
+        List<PostResponse> result = postService.filterBatteries(
                 keyword,
                 address,
                 batteryType,

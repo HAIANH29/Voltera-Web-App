@@ -78,7 +78,7 @@ public class FeeService {
         }
 
         VNPayRequest vnPayRequest = new VNPayRequest();
-        vnPayRequest.setAmount(Long.valueOf(String.valueOf(fee.getAmount())));
+        vnPayRequest.setAmount(fee.getAmount().longValue());
         vnPayRequest.setPostId(transaction.getPost().getId());
         vnPayRequest.setOrderInfo("Pay for posting " + transaction.getPost().getTitle());
         vnPayRequest.setOrderType("Bill Payment");
@@ -172,9 +172,9 @@ public class FeeService {
                 transaction.setTransactionStatus("DONE");
                 payment.setPaymentStatus("COMPLETED");
                 
-                // 🎯 Update post status to indicate payment completed, ready for admin review
+                // Keep post in PENDING status for admin review after payment
                 Post post = transaction.getPost();
-                post.setStatus("PAID_PENDING_REVIEW");
+                post.setStatus("PENDING");
                 postRepository.save(post);
                 
                 fee.setFeeStatus("PAID");
