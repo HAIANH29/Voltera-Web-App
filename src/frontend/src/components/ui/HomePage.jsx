@@ -8,7 +8,6 @@ import {
 } from "lucide-react";
 import { ImageWithFallback } from "image/ImageWithFallback";
 import { NewestPosts } from "./NewestPosts";
-import { QuickSearch } from "./QuickSearch";
 
 export function PremiumHomepage({
   onNavigate,
@@ -63,33 +62,12 @@ export function PremiumHomepage({
     );
   };
 
-  const handleSearch = (query) => {
-    onNavigate("search-results", { query });
-  };
-
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section with Search */}
       <div className="bg-gray-50 py-8">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto">
-            {/* Enhanced Search Bar */}
-            <div className="flex gap-4 mb-8">
-              <div className="flex-1">
-                <QuickSearch
-                  onSearch={handleSearch}
-                  placeholder="Search vehicles, batteries, or brands..."
-                  size="lg"
-                  showSuggestions={true}
-                  showFilters={true}
-                  onFilterChange={(filters) => {
-                    // TODO: Apply filters to search results
-                  }}
-                  itemType="vehicles"
-                />
-              </div>
-            </div>
-
             {/* Newest Posts Section */}
             <div className="mb-8">
               <NewestPosts
