@@ -402,7 +402,7 @@ const DashboardSeller = () => {
               </button>
               <button
                 className="action-btn outline"
-                onClick={() => (window.location.href = "/contracts")}
+                onClick={() => (window.location.href = "/contract")}
               >
                 <Icons.Eye />
                 <span>Contracts</span>
