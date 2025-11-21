@@ -220,9 +220,10 @@ public class FeeService {
             long totalFees = allFees.size();
             long paidFees = allFees.stream().filter(f -> "PAID".equals(f.getFeeStatus())).count();
             long pendingFees = allFees.stream().filter(f -> "PENDING".equals(f.getFeeStatus())).count();
+            long cancelledFees = allFees.stream().filter(f -> "CANCELLED".equals(f.getFeeStatus())).count();
             long expiredFees = allFees.stream().filter(f -> isExpired(f)).count();
             
-            // Calculate total revenue from paid fees
+           
             BigDecimal totalRevenue = allFees.stream()
                     .filter(f -> "PAID".equals(f.getFeeStatus()))
                     .map(Fee::getAmount)
@@ -233,6 +234,7 @@ public class FeeService {
             stats.put("totalFees", totalFees);
             stats.put("paidFees", paidFees);
             stats.put("pendingFees", pendingFees);
+            stats.put("cancelledFees", cancelledFees);
             stats.put("expiredFees", expiredFees);
             stats.put("totalRevenue", totalRevenue);
             

@@ -242,6 +242,14 @@ public class PostService {
         
         post.setStatus("REJECT");
         post.setUpdatedAt(Instant.now());
+        
+       
+        List<Fee> fees = feeRepository.findFeesByPostIdOrderByCreatedAtDesc(postId);
+        for (Fee fee : fees) {
+            fee.setFeeStatus("CANCELLED");
+            feeRepository.save(fee);
+        }
+        
         postRepository.save(post);
         notificationService.sendForEvent(post);
 

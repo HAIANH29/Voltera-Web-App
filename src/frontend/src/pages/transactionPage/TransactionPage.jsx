@@ -18,6 +18,7 @@ const TransactionPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
 
   // Refund states
   const [showRefundModal, setShowRefundModal] = useState(false);
@@ -26,6 +27,12 @@ const TransactionPage = () => {
   const [refundImages, setRefundImages] = useState([]);
 
   const ITEMS_PER_PAGE = 10;
+
+  // Initialize current user
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("currentUser") || "{}");
+    setCurrentUser(user);
+  }, []);
 
   // Fetch transactions
   useEffect(() => {
@@ -353,18 +360,19 @@ const TransactionPage = () => {
                 💳 Pay Fee
               </button>
             )}
-            {selectedTransaction.transactionStatus === "DONE" && (
-              <button
-                className="btn btn-warning"
-                onClick={() => {
-                  setShowModal(false);
-                  setRefundTransaction(selectedTransaction);
-                  setShowRefundModal(true);
-                }}
-              >
-                🔄 Request Refund
-              </button>
-            )}
+            {selectedTransaction.transactionStatus === "DONE" &&
+              currentUser?.role !== "SELLER" && (
+                <button
+                  className="btn btn-warning"
+                  onClick={() => {
+                    setShowModal(false);
+                    setRefundTransaction(selectedTransaction);
+                    setShowRefundModal(true);
+                  }}
+                >
+                  🔄 Request Refund
+                </button>
+              )}
           </div>
         </div>
       </div>
@@ -606,15 +614,16 @@ const TransactionPage = () => {
                             💳
                           </button>
                         )}
-                        {transaction.transactionStatus === "DONE" && (
-                          <button
-                            className="btn-action btn-refund"
-                            onClick={() => handleRequestRefund(transaction)}
-                            title="Request Refund"
-                          >
-                            🔄
-                          </button>
-                        )}
+                        {transaction.transactionStatus === "DONE" &&
+                          currentUser?.role !== "SELLER" && (
+                            <button
+                              className="btn-action btn-refund"
+                              onClick={() => handleRequestRefund(transaction)}
+                              title="Request Refund"
+                            >
+                              🔄
+                            </button>
+                          )}
                       </td>
                     </tr>
                   ))}

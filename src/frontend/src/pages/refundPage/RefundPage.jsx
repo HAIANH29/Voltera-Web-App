@@ -8,7 +8,7 @@ const RefundPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("buyer");
-  const [statusFilter, setStatusFilter] = useState("ALL");
+  const [statusFilter, setStatusFilter] = useState("PENDING");
   const [userRole, setUserRole] = useState("BUYER");
   const [selectedRefund, setSelectedRefund] = useState(null);
   const [showImageModal, setShowImageModal] = useState(false);
@@ -316,8 +316,8 @@ const RefundPage = () => {
           onChange={(e) => setStatusFilter(e.target.value)}
           className="status-filter"
         >
-          <option value="ALL">All Status</option>
-          <option value="REQUESTED">Pending</option>
+          <option value="PENDING">Pending</option>
+          <option value="REQUESTED">Requested</option>
           <option value="APPROVED">Approved</option>
           <option value="REJECTED">Rejected</option>
           <option value="REFUNDED">Refunded</option>

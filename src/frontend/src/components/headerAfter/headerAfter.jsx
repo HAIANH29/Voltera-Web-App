@@ -286,83 +286,85 @@ const HeaderAfter = ({ user: userProp }) => {
 
         {/* Actions right */}
         <div className="header-right">
-          {/* Post dropdown */}
-          <div className="post-menu-container" ref={postMenuRef}>
-            <button
-              ref={postBtnRef}
-              className="post-item-btn"
-              onClick={togglePostMenu}
-              aria-expanded={showPostMenu}
-              aria-haspopup="menu"
-            >
-              + Post Item
-              <svg
-                className={`dropdown-arrow ${showPostMenu ? "rotate" : ""}`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
+          {/* Post dropdown - Only for SELLER role */}
+          {currentUser?.role === "SELLER" && (
+            <div className="post-menu-container" ref={postMenuRef}>
+              <button
+                ref={postBtnRef}
+                className="post-item-btn"
+                onClick={togglePostMenu}
+                aria-expanded={showPostMenu}
+                aria-haspopup="menu"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
-            </button>
+                + Post Item
+                <svg
+                  className={`dropdown-arrow ${showPostMenu ? "rotate" : ""}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </button>
 
-            {showPostMenu && (
-              <div className="post-dropdown" role="menu">
-                <ul className="post-dropdown-menu">
-                  <li>
-                    <Link
-                      to="/post/vehicles"
-                      className="post-dropdown-item"
-                      onClick={() => setShowPostMenu(false)}
-                    >
-                      <svg
-                        className="dropdown-icon"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
+              {showPostMenu && (
+                <div className="post-dropdown" role="menu">
+                  <ul className="post-dropdown-menu">
+                    <li>
+                      <Link
+                        to="/post/vehicles"
+                        className="post-dropdown-item"
+                        onClick={() => setShowPostMenu(false)}
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"
-                        />
-                      </svg>
-                      Post Vehicle
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      to="/post/electrics"
-                      className="post-dropdown-item"
-                      onClick={() => setShowPostMenu(false)}
-                    >
-                      <svg
-                        className="dropdown-icon"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
+                        <svg
+                          className="dropdown-icon"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"
+                          />
+                        </svg>
+                        Post Vehicle
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        to="/post/electrics"
+                        className="post-dropdown-item"
+                        onClick={() => setShowPostMenu(false)}
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M13 10V3L4 14h7v7l9-11h-7z"
-                        />
-                      </svg>
-                      Post Electric
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-            )}
-          </div>
+                        <svg
+                          className="dropdown-icon"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M13 10V3L4 14h7v7l9-11h-7z"
+                          />
+                        </svg>
+                        Post Electric
+                      </Link>
+                    </li>
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Notifications */}
           <NotificationBell />
@@ -481,50 +483,54 @@ const HeaderAfter = ({ user: userProp }) => {
                       Vehicle Comparison
                     </Link>
                   </li>
-                  <li>
-                    <Link
-                      to="/contract"
-                      className="dropdown-item"
-                      onClick={() => setShowUserMenu(false)}
-                    >
-                      <svg
-                        className="dropdown-icon"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
+                  {currentUser?.role !== "ADMIN" && (
+                    <li>
+                      <Link
+                        to="/contract"
+                        className="dropdown-item"
+                        onClick={() => setShowUserMenu(false)}
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                        />
-                      </svg>
-                      My Contracts
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      to="/refunds"
-                      className="dropdown-item"
-                      onClick={() => setShowUserMenu(false)}
-                    >
-                      <svg
-                        className="dropdown-icon"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
+                        <svg
+                          className="dropdown-icon"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                          />
+                        </svg>
+                        My Contracts
+                      </Link>
+                    </li>
+                  )}
+                  {currentUser?.role !== "ADMIN" && (
+                    <li>
+                      <Link
+                        to="/refunds"
+                        className="dropdown-item"
+                        onClick={() => setShowUserMenu(false)}
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                      </svg>
-                      My Refunds
-                    </Link>
-                  </li>
+                        <svg
+                          className="dropdown-icon"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
+                        </svg>
+                        My Refunds
+                      </Link>
+                    </li>
+                  )}
                   <li>
                     <div className="dropdown-divider" />
                   </li>
