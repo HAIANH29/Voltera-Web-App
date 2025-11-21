@@ -28,6 +28,16 @@ export default function PostInfo({ postData, contractData }) {
     finalIsBattery: isBattery, contractPostTitle
   });
 
+  console.log("📋 PostInfo vehicle data debug:", {
+    postData: postData,
+    vehicle: postData?.vehicle,
+    batteryCapacity: postData?.vehicle?.batteryCapacity,
+    batterycapacity: postData?.vehicle?.batterycapacity,
+    yearManufacture: postData?.vehicle?.yearManufacture,
+    yearmanufacture: postData?.vehicle?.yearmanufacture,
+    vehicleKeys: postData?.vehicle ? Object.keys(postData.vehicle) : 'no vehicle data'
+  });
+
   return (
     <div className="post-info-section">
       <div className="post-info-item">
@@ -95,8 +105,8 @@ export default function PostInfo({ postData, contractData }) {
           <div className="post-info-item">
             <span className="post-info-label">Battery Capacity</span>
             <span className="post-info-value">
-              {postData.vehicle.batterycapacity
-                ? `${postData.vehicle.batterycapacity} kWh`
+              {(postData.vehicle.batteryCapacity ?? postData.vehicle.batterycapacity)
+                ? `${postData.vehicle.batteryCapacity ?? postData.vehicle.batterycapacity} kWh`
                 : "N/A"}
             </span>
           </div>
@@ -109,7 +119,7 @@ export default function PostInfo({ postData, contractData }) {
           <div className="post-info-item">
             <span className="post-info-label">Year</span>
             <span className="post-info-value">
-              {postData.vehicle.yearmanufacture || "N/A"}
+              {postData.vehicle.yearManufacture ?? postData.vehicle.yearmanufacture ?? "N/A"}
             </span>
           </div>
         </>
