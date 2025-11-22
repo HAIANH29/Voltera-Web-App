@@ -184,7 +184,6 @@ public class RefundController {
     @GetMapping("/admin/seller/{refundStatus}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<RefundResponse>> getAdminSellerRefunds(
-            @RequestHeader("Authorization") String token,
             @PathVariable("refundStatus") String status) {
         return ResponseEntity.ok(refundService.findAllSellerRefundsByStatus(status).getBody());
     }

@@ -168,15 +168,15 @@ public class VNPayService {
                 payment.setPaymentStatus("COMPLETED");
                 Post post = transaction.getPost();
                 
-                // 🎯 Phân biệt Fee Payment vs Contract Payment dựa vào orderInfo
+                // Phân biệt Fee Payment vs Contract Payment dựa vào orderInfo
                 String orderInfo = payment.getOrderInfo();
                 if (orderInfo.contains("Pay for posting") || orderInfo.contains("Fee for posting") || orderInfo.contains("Gia hạn bài đăng")) {
-                    // 🏛️ FEE PAYMENT: Seller trả phí cho Admin
+                    // FEE PAYMENT: Seller trả phí cho Admin
                     post.setStatus("PENDING");  // Vẫn pending, nhưng đã trả phí, chờ admin duyệt
                     fee.setFeeStatus("PAID");
-                    log.info("✅ Fee payment successful - Post status: PENDING (fee paid), Fee status: PAID");
+                    log.info("Fee payment successful - Post status: PENDING (fee paid), Fee status: PAID");
                 } else if (orderInfo.contains("Payment for")) {
-                    // 💳 CONTRACT PAYMENT: Buyer mua xe từ Seller  
+                    // CONTRACT PAYMENT: Buyer mua xe từ Seller
                     post.setStatus("SOLD");
                     if (fee != null) {
                         fee.setFeeStatus("PAID"); // Contract payment cũng có thể có fee
@@ -221,7 +221,7 @@ public class VNPayService {
                                 .build();
                         bankTransferRepository.save(bankTransfer);
                     }
-                    log.info("✅ Contract payment successful - Post status: SOLD, Money transferred to seller");
+                    log.info("Contract payment successful - Post status: SOLD, Money transferred to seller");
                 }
                 postRepository.save(post);
             } else {
@@ -230,7 +230,7 @@ public class VNPayService {
                 if (fee != null) {
                     fee.setFeeStatus("PENDING");
                 }
-                log.warn("❌ Payment failed - Response code: {}", params.get("vnp_ResponseCode"));
+                log.warn("Payment failed - Response code: {}", params.get("vnp_ResponseCode"));
             }
 
             paymentRepository.save(payment);

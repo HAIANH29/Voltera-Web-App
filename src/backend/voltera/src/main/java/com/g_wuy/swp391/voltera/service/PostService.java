@@ -202,7 +202,7 @@ public class PostService {
                 .build();
         transactionRepository.save(transaction);
 
-        // 💰 Automatically create Fee record for immediate tracking in Fee Management
+        // Automatically create Fee record for immediate tracking in Fee Management
         Fee fee = Fee.builder()
                 .post(post)
                 .transaction(transaction)
@@ -441,7 +441,7 @@ public class PostService {
             response.setBattery(batteryDTO);
             response.setVehicle(vehicleDTO);
             
-            // 💰 Add fee status to response
+            // Add fee status to response
             if (post.getFees() != null && !post.getFees().isEmpty()) {
                 // Get the most recent fee
                 Fee mostRecentFee = post.getFees().stream()
@@ -451,7 +451,6 @@ public class PostService {
                     
                 if (mostRecentFee != null) {
                     response.setFeeStatus(mostRecentFee.getFeeStatus());
-                    System.out.println("🔍 [DEBUG] Post ID: " + post.getId() + ", Fee Status: " + mostRecentFee.getFeeStatus());
                 } else {
                     response.setFeeStatus("NO_FEE");
                 }

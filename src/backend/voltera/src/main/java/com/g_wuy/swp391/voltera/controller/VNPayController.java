@@ -56,13 +56,6 @@ public class VNPayController {
                     headers.append(name).append(": ").append(request.getHeader(name)).append("; ");
                 }
             }
-
-            log.info("VNPay return endpoint invoked: transactionId={} remoteAddr={} method={} headers={} params={}",
-                    transactionId,
-                    request.getRemoteAddr(),
-                    request.getMethod(),
-                    headers.toString(),
-                    params.toString());
         } catch (Exception e) {
             log.warn("Failed to log VNPay return request details", e);
         }
@@ -91,9 +84,6 @@ public class VNPayController {
             HttpServletResponse response) throws java.io.IOException {
         
         try {
-            log.info("Handling refund payment return for refund ID: {}", refundId);
-            log.info("VNPay return parameters: {}", params);
-            
             // Process the refund payment return
             vnPayService.handleRefundPaymentReturn(params, refundId);
             
@@ -102,7 +92,6 @@ public class VNPayController {
             response.sendRedirect(frontendUrl);
             
         } catch (Exception e) {
-            log.error("Error processing refund payment return: ", e);
             String frontendUrl = "http://localhost:5173/refunds?refundPaymentError=" + refundId;
             response.sendRedirect(frontendUrl);
         }

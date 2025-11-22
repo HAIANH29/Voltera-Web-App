@@ -86,30 +86,30 @@ public class UserController {
 
     @GetMapping("/api/v1/admin/accounts/pending")
     public ResponseEntity<List<ApproveResponse>> getPendingAccounts() {
-        System.out.println("🔍 [DEBUG] Getting pending accounts...");
+        System.out.println("[DEBUG] Getting pending accounts...");
         List<Account> pendingAccounts = accountService.getPendingAccounts();
-        System.out.println("📊 [DEBUG] Found " + pendingAccounts.size() + " pending accounts");
-        
+        System.out.println("[DEBUG] Found " + pendingAccounts.size() + " pending accounts");
+
         for (Account acc : pendingAccounts) {
-            System.out.println("👤 [DEBUG] Account: " + acc.getUsername() + " | Status: " + acc.getStatus());
+            System.out.println("[DEBUG] Account: " + acc.getUsername() + " | Status: " + acc.getStatus());
         }
         
         List<ApproveResponse> response = pendingAccounts.stream()
                 .map(accountMapper::toAccountResponse)
                 .collect(Collectors.toList());
-        System.out.println("✅ [DEBUG] Returning " + response.size() + " responses");
+        System.out.println("[DEBUG] Returning " + response.size() + " responses");
         return ResponseEntity.ok(response);
     }
 
     // Debug endpoint to check all accounts
     @GetMapping("/api/v1/admin/accounts/all")
     public ResponseEntity<List<ApproveResponse>> getAllAccounts() {
-        System.out.println("🔍 Admin requesting ALL accounts for debug...");
+        System.out.println("Admin requesting ALL accounts for debug...");
         List<Account> allAccounts = accountService.getAllAccounts();
-        System.out.println("📊 Found " + allAccounts.size() + " total accounts");
+        System.out.println("Found " + allAccounts.size() + " total accounts");
         
         for (Account acc : allAccounts) {
-            System.out.println("👤 Account: " + acc.getUsername() + " | Status: " + acc.getStatus() + " | Role: " + acc.getRole());
+            System.out.println("Account: " + acc.getUsername() + " | Status: " + acc.getStatus() + " | Role: " + acc.getRole());
         }
         
         List<ApproveResponse> response = allAccounts.stream()
@@ -120,35 +120,35 @@ public class UserController {
 
     @GetMapping("/api/v1/admin/accounts/approved")
     public ResponseEntity<List<ApproveResponse>> getApprovedAccounts() {
-        System.out.println("🔍 [DEBUG] Getting approved accounts...");
-        System.out.println("🔍 [DEBUG] User requesting: " + SecurityContextHolder.getContext().getAuthentication().getName());
-        System.out.println("🔍 [DEBUG] User roles: " + SecurityContextHolder.getContext().getAuthentication().getAuthorities());
+        System.out.println("[DEBUG] Getting approved accounts...");
+        System.out.println("[DEBUG] User requesting: " + SecurityContextHolder.getContext().getAuthentication().getName());
+        System.out.println("[DEBUG] User roles: " + SecurityContextHolder.getContext().getAuthentication().getAuthorities());
         
         List<Account> approvedAccounts = accountService.getApprovedAccounts();
-        System.out.println("📊 [DEBUG] Found " + approvedAccounts.size() + " approved accounts");
+        System.out.println("[DEBUG] Found " + approvedAccounts.size() + " approved accounts");
         
         for (Account acc : approvedAccounts) {
-            System.out.println("👤 [DEBUG] Account: " + acc.getUsername() + " | Status: " + acc.getStatus() + " | Role: " + acc.getRole());
+            System.out.println("[DEBUG] Account: " + acc.getUsername() + " | Status: " + acc.getStatus() + " | Role: " + acc.getRole());
         }
         
         List<ApproveResponse> response = approvedAccounts.stream()
                 .map(accountMapper::toAccountResponse)
                 .collect(Collectors.toList());
-        System.out.println("✅ [DEBUG] Returning " + response.size() + " responses");
+        System.out.println("[DEBUG] Returning " + response.size() + " responses");
         return ResponseEntity.ok(response);
     }
 
     @PutMapping("/api/v1/admin/account/{id}/lock")
     public ResponseEntity<ApproveResponse> lockAccount(@PathVariable Integer id) {
         try {
-            System.out.println("🔒 [DEBUG] Lock request by user: " + SecurityContextHolder.getContext().getAuthentication().getName());
+            System.out.println("[DEBUG] Lock request by user: " + SecurityContextHolder.getContext().getAuthentication().getName());
             userService.lockAccount(id);
             Account lockedAccount = accountService.findAccountById(id);
             ApproveResponse response = accountMapper.toAccountResponse(lockedAccount);
-            System.out.println("🔒 [DEBUG] Account locked: " + lockedAccount.getUsername() + " | New Status: " + lockedAccount.getStatus());
+            System.out.println("[DEBUG] Account locked: " + lockedAccount.getUsername() + " | New Status: " + lockedAccount.getStatus());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            System.err.println("❌ [ERROR] Failed to lock account " + id + ": " + e.getMessage());
+            System.err.println("[ERROR] Failed to lock account " + id + ": " + e.getMessage());
             throw e;
         }
     }
@@ -156,14 +156,14 @@ public class UserController {
     @PutMapping("/api/v1/admin/account/{id}/unlock")
     public ResponseEntity<ApproveResponse> unlockAccount(@PathVariable Integer id) {
         try {
-            System.out.println("🔓 [DEBUG] Unlock request by user: " + SecurityContextHolder.getContext().getAuthentication().getName());
+            System.out.println("[DEBUG] Unlock request by user: " + SecurityContextHolder.getContext().getAuthentication().getName());
             userService.unlockAccount(id);
             Account unlockedAccount = accountService.findAccountById(id);
             ApproveResponse response = accountMapper.toAccountResponse(unlockedAccount);
-            System.out.println("🔓 [DEBUG] Account unlocked: " + unlockedAccount.getUsername() + " | New Status: " + unlockedAccount.getStatus());
+            System.out.println("[DEBUG] Account unlocked: " + unlockedAccount.getUsername() + " | New Status: " + unlockedAccount.getStatus());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            System.err.println("❌ [ERROR] Failed to unlock account " + id + ": " + e.getMessage());
+            System.err.println("[ERROR] Failed to unlock account " + id + ": " + e.getMessage());
             throw e;
         }
     }

@@ -42,22 +42,8 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
-        System.out.println("🔍 [DEBUG] Login request received for username: " + request.getUsername());
-        try {
-            LoginResponse response = userService.login(request);
-            System.out.println("✅ [DEBUG] Login successful for: " + request.getUsername());
-            return ResponseEntity.ok(response);
-        } catch (BusinessException e) {
-            System.err.println("🔍 [DEBUG] BusinessException during login: " + e.getMessage());
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        } catch (RuntimeException e) {
-            System.err.println("🔍 [DEBUG] RuntimeException during login: " + e.getMessage());
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        } catch (Exception e) {
-            System.err.println("🔍 [DEBUG] Unexpected exception during login: " + e.getMessage());
-            e.printStackTrace();
-            return ResponseEntity.badRequest().body(Map.of("error", "Login failed: " + e.getMessage()));
-        }
+        LoginResponse response = userService.login(request);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/refresh")
@@ -75,13 +61,12 @@ public class AuthController {
     public ResponseEntity<?> handleValidationExceptions(MethodArgumentNotValidException ex) {
         BindingResult result = ex.getBindingResult();
         FieldError fieldError = result.getFieldError();
-        
+
         if (fieldError != null) {
             String message = fieldError.getDefaultMessage();
-            System.err.println("🔍 [DEBUG] Validation error: " + message);
             return ResponseEntity.badRequest().body(Map.of("error", message));
         }
-        
+
         return ResponseEntity.badRequest().body(Map.of("error", "Validation failed"));
     }
 
