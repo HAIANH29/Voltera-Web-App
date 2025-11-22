@@ -182,13 +182,21 @@ export default function VehiclesPage() {
         .sort(),
     [vehicles]
   );
-  const origins = useMemo(
-    () =>
-      Array.from(new Set(vehicles.map((v) => v.origin)))
-        .filter(Boolean)
-        .sort(),
-    [vehicles]
-  );
+  const origins = useMemo(() => {
+    // Normalize origin values for deduplication (trim + lowercase),
+    // but preserve a friendly display value (first seen, trimmed).
+    const map = new Map();
+    for (const v of vehicles) {
+      const raw = v.origin;
+      if (!raw) continue;
+      const norm = String(raw).trim().toLowerCase();
+      if (!norm) continue;
+      if (!map.has(norm)) {
+        map.set(norm, String(raw).trim());
+      }
+    }
+    return Array.from(map.values()).sort((a, b) => a.localeCompare(b));
+  }, [vehicles]);
   const seats = useMemo(
     () =>
       Array.from(new Set(vehicles.map((v) => v.numberOfSeat)))

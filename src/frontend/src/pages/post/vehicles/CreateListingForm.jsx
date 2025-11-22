@@ -527,7 +527,7 @@ function Step2({ formData, updateFormData, fieldErrors = {} }) {
 
       <div className="mt-6">
         <div>
-          <L htmlFor="price">Price (USD) *</L>
+          <L htmlFor="price">Price (VND) *</L>
           <div className="relative">
             <DollarSign className="v-left-icon" />
             <Inp
