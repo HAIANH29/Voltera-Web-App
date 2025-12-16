@@ -527,7 +527,7 @@ function Step2({ formData, updateFormData, fieldErrors = {} }) {
 
       <div className="mt-6">
         <div>
-          <L htmlFor="price">Price (USD) *</L>
+          <L htmlFor="price">Price (VND) *</L>
           <div className="relative">
             <DollarSign className="v-left-icon" />
             <Inp
@@ -659,7 +659,10 @@ const Step3 = ({
                 • <strong>First photo will be your main thumbnail</strong> -
                 make it count!
               </li>
-              <li><strong>• Upload at least 3 photos (REQUIRED)</strong> for your listing to be accepted</li>
+              <li>
+                <strong>• Upload at least 3 photos (REQUIRED)</strong> for your
+                listing to be accepted
+              </li>
               <li>• Take photos in good lighting (daytime/well-lit garage)</li>
               <li>• Clean your vehicle before photographing</li>
             </ul>
@@ -823,7 +826,8 @@ const Step3 = ({
                 </span>
               </div>
               <span className="text-xs text-orange-600 font-medium">
-                ⚠️ Need {3 - (formData.images?.length || 0)} more photos (minimum 3 required)
+                ⚠️ Need {3 - (formData.images?.length || 0)} more photos
+                (minimum 3 required)
               </span>
             </div>
           </div>
@@ -1057,8 +1061,10 @@ export default function CreateListingForm({
 }) {
   const navigate = useNavigate();
   useEffect(() => {
-    console.info("[CreateListingForm] mounted", { listingType });
-    return () => console.info("[CreateListingForm] unmounted", { listingType });
+    // Component mounted
+    return () => {
+      // Component unmounting cleanup
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const [step, setStep] = useState(1);
@@ -1298,14 +1304,6 @@ export default function CreateListingForm({
     if (!file) return;
     setUploadingSlot(slotKey);
     try {
-      // debug: log target upload endpoint
-      // eslint-disable-next-line no-console
-      console.debug(
-        "Uploading file to:",
-        `${
-          import.meta.env.VITE_BACK_END_BASE_URL
-        }/api/upload/product?folder=product`
-      );
       const url = await listingService.uploadImageOne(
         file,
         "product",
@@ -1315,8 +1313,6 @@ export default function CreateListingForm({
       toast.success("Image uploaded");
     } catch {
       // show more detailed error where possible
-      // eslint-disable-next-line no-console
-      console.error("Image upload error:", arguments[0] || "unknown");
       const err = arguments[0];
       const msg = err?.response?.data || err?.message || "Image upload failed";
       toast.error(String(msg));
@@ -1327,13 +1323,13 @@ export default function CreateListingForm({
   };
 
   useEffect(() => {
-    console.info(`[CreateListingForm] step changed -> ${step}`);
+    // Step change tracking
   }, [step]);
 
   const submitForm = async () => {
     // Ngăn submit nhiều lần
     if (isSubmitting) return;
-    
+
     if (!formData.agreeTerms || !formData.confirmOwnership)
       return toast.error("Please confirm ownership and accept the terms");
     if (!formData.title || !formData.brand || !formData.model || !formData.year)
@@ -1413,7 +1409,11 @@ export default function CreateListingForm({
     if (imgs.length === 0)
       return toast.error("Please upload at least 3 photos of your vehicle");
     if (imgs.length < 3)
-      return toast.error(`Please upload at least 3 photos of your vehicle. You currently have ${imgs.length} photo${imgs.length !== 1 ? 's' : ''}.`);
+      return toast.error(
+        `Please upload at least 3 photos of your vehicle. You currently have ${
+          imgs.length
+        } photo${imgs.length !== 1 ? "s" : ""}.`
+      );
     if (imgs.some((i) => !i.url))
       return toast.error("Please wait for all photos to finish uploading.");
 
@@ -1432,12 +1432,14 @@ export default function CreateListingForm({
         model: formData.model || "",
         version: formData.version || "",
         odo: formData.odo ? parseInt(formData.odo) : 0,
-        batteryCapacity: formData.batteryCapacity && parseFloat(formData.batteryCapacity) > 0
-          ? parseFloat(formData.batteryCapacity)
-          : 50.0, // Default reasonable battery capacity
-        range: formData.range && parseInt(formData.range) > 0 
-          ? Math.min(parseInt(formData.range), 600)
-          : 300, // Default reasonable range
+        batteryCapacity:
+          formData.batteryCapacity && parseFloat(formData.batteryCapacity) > 0
+            ? parseFloat(formData.batteryCapacity)
+            : 50.0, // Default reasonable battery capacity
+        range:
+          formData.range && parseInt(formData.range) > 0
+            ? Math.min(parseInt(formData.range), 600)
+            : 300, // Default reasonable range
         chargingTime: formData.chargingTime
           ? parseInt(formData.chargingTime)
           : 8, // Default 8 hours charging time
@@ -1468,9 +1470,6 @@ export default function CreateListingForm({
     };
 
     try {
-      // Debug payload structure
-      console.log("📤 Sending payload:", JSON.stringify(payload, null, 2));
-
       // Check authentication
       const getCookie = (name) => {
         const value = `; ${document.cookie}`;
@@ -1480,7 +1479,6 @@ export default function CreateListingForm({
       };
 
       const token = getCookie("accessToken");
-      console.log("🔐 Auth token present:", !!token);
       if (!token) {
         toast.error("Please login first");
         return;
@@ -1516,11 +1514,6 @@ export default function CreateListingForm({
         });
       }, 2000);
     } catch (e) {
-      console.error("❌ Submit error:", e);
-      console.error("❌ Response data:", e?.response?.data);
-      console.error("❌ Status:", e?.response?.status);
-      console.error("❌ Headers:", e?.response?.headers);
-
       const errorData = e?.response?.data;
       let msg = "Failed to create listing";
 
@@ -1628,9 +1621,18 @@ export default function CreateListingForm({
           </button>
           {step === 4 ? (
             <button
-              className={`v-btn v-btn-primary ${(isSubmitting || submitSuccess) ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`v-btn v-btn-primary ${
+                isSubmitting || submitSuccess
+                  ? "opacity-50 cursor-not-allowed"
+                  : ""
+              }`}
               onClick={submitForm}
-              disabled={!formData.agreeTerms || !formData.confirmOwnership || isSubmitting || submitSuccess}
+              disabled={
+                !formData.agreeTerms ||
+                !formData.confirmOwnership ||
+                isSubmitting ||
+                submitSuccess
+              }
             >
               {isSubmitting ? (
                 <>
@@ -1638,9 +1640,9 @@ export default function CreateListingForm({
                   Submitting...
                 </>
               ) : submitSuccess ? (
-                'Successfully Submitted!'
+                "Successfully Submitted!"
               ) : (
-                'Submit Listing'
+                "Submit Listing"
               )}
             </button>
           ) : (
@@ -1653,16 +1655,20 @@ export default function CreateListingForm({
                   toast.error("Please fix the errors before continuing");
                   return;
                 }
-                
+
                 // Kiểm tra yêu cầu tối thiểu 3 ảnh khi chuyển từ step 3 sang step 4
                 if (step === 3) {
                   const imgCount = formData.images?.length || 0;
                   if (imgCount < 3) {
-                    toast.error(`Please upload at least 3 photos to continue. You currently have ${imgCount} photo${imgCount !== 1 ? 's' : ''}.`);
+                    toast.error(
+                      `Please upload at least 3 photos to continue. You currently have ${imgCount} photo${
+                        imgCount !== 1 ? "s" : ""
+                      }.`
+                    );
                     return;
                   }
                 }
-                
+
                 setStep((s) => Math.min(4, s + 1));
               }}
             >

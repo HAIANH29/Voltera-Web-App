@@ -180,38 +180,26 @@ const DashboardSeller = () => {
         localStorage.getItem("token") ||
         localStorage.getItem("authToken");
 
-      console.log("🔍 Current user:", user);
-      console.log("🔍 User keys:", user ? Object.keys(user) : "no user");
-      console.log("� Access token:", token ? "exists" : "missing");
-      console.log("� Token type:", typeof token);
-      console.log("�🗂️ All localStorage keys:", Object.keys(localStorage));
-
       // Try to get token from persist:root (Redux persist)
       const persistRoot = localStorage.getItem("persist:root");
       if (persistRoot) {
-        console.log("🔍 Persist root exists, checking for token...");
         try {
           const parsedRoot = JSON.parse(persistRoot);
-          console.log("🔍 Persist root keys:", Object.keys(parsedRoot));
         } catch (e) {
-          console.log("❌ Failed to parse persist:root");
+          // Failed to parse persist:root
         }
       }
 
       if (!user) {
-        console.warn("⚠️ No user found in localStorage. User needs to login.");
         toast.warn("Please login to view your dashboard");
         return;
       }
 
       if (user) {
         // Skip wallet for now - focus on posts first
-        console.log("⏭️ Skipping wallet API for now...");
 
         // Get user's posts
-        console.log("📡 Calling posts API:", `/api/post/user/${user.userId}`);
         const postsRes = await api.get(`/api/post/user/${user.userId}`);
-        console.log("📝 Posts response:", postsRes.data);
         const posts = postsRes.data || [];
 
         // Get pending refunds for seller (REQUESTED status means pending)
@@ -221,7 +209,7 @@ const DashboardSeller = () => {
           const allRefunds = refundsRes || [];
           pendingRefunds = allRefunds.length;
         } catch (error) {
-          console.error("❌ Error loading refunds:", error);
+          // Error loading refunds
         }
 
         setStats({
@@ -232,19 +220,9 @@ const DashboardSeller = () => {
           pendingRefunds: pendingRefunds,
         });
 
-        console.log("📊 Final stats:", {
-          totalPosts: posts.length,
-          activePosts: posts.filter((p) => p.status === "APPROVED").length,
-          pendingPosts: posts.filter((p) => p.status === "PENDING").length,
-        });
-
         setRecentPosts(posts.slice(0, 5)); // Show recent 5 posts
-        console.log("📝 Recent posts set:", posts.slice(0, 5));
       }
     } catch (error) {
-      console.error("❌ Error loading seller data:", error);
-      console.error("❌ Error details:", error.response?.data);
-      console.error("❌ Error status:", error.response?.status);
       toast.error("Failed to load dashboard data");
     } finally {
       setLoading(false);
@@ -402,7 +380,7 @@ const DashboardSeller = () => {
               </button>
               <button
                 className="action-btn outline"
-                onClick={() => (window.location.href = "/contracts")}
+                onClick={() => (window.location.href = "/contract")}
               >
                 <Icons.Eye />
                 <span>Contracts</span>

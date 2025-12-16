@@ -36,9 +36,6 @@ import BankRegistration from "./pages/bankRegistration/BankRegistration";
 import RefundPage from "./pages/refundPage/RefundPage";
 import NotificationPage from "./pages/notificationPage/NotificationPage";
 
-console.log("routes:", routes);
-console.log("postVehicles:", routes.postVehicles);
-
 function App() {
   const router = createBrowserRouter([
     {

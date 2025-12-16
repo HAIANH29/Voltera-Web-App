@@ -27,10 +27,8 @@ export const favoriteService = {
         }
       );
 
-      console.log("✅ Added to favorites:", postId);
       return response;
     } catch (error) {
-      console.error("❌ Error adding to favorites:", error);
       throw error;
     }
   },
@@ -53,10 +51,8 @@ export const favoriteService = {
         },
       });
 
-      console.log("✅ Removed from favorites:", postId);
       return response;
     } catch (error) {
-      console.error("❌ Error removing from favorites:", error);
       throw error;
     }
   },
@@ -78,10 +74,8 @@ export const favoriteService = {
         },
       });
 
-      console.log("✅ Fetched favorites:", response.data?.length || 0);
       return response;
     } catch (error) {
-      console.error("❌ Error fetching favorites:", error);
       throw error;
     }
   },

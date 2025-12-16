@@ -8,6 +8,7 @@ class VolteraApplicationTests {
 
 	@Test
 	void contextLoads() {
+
 	}
 
 }

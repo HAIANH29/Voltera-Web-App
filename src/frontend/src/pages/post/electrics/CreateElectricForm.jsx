@@ -330,7 +330,11 @@ function Step2({ formData, updateFormData, fieldErrors = {} }) {
             <option value="3">LiFePO4</option>
             <option value="4">NiMH</option>
           </select>
-          {fieldErrors.batteryTypeId && <div className="text-red-500 text-sm mt-1">{fieldErrors.batteryTypeId}</div>}
+          {fieldErrors.batteryTypeId && (
+            <div className="text-red-500 text-sm mt-1">
+              {fieldErrors.batteryTypeId}
+            </div>
+          )}
         </div>
 
         <div>
@@ -391,10 +395,6 @@ function Step2({ formData, updateFormData, fieldErrors = {} }) {
           </div>
         </div>
 
-
-
-
-
         <div>
           <L htmlFor="weight">Weight (kg)</L>
           <Inp
@@ -430,8 +430,6 @@ function Step2({ formData, updateFormData, fieldErrors = {} }) {
             onChange={(e) => updateFormData("warranty", e.target.value)}
           />
         </div>
-
-
       </div>
 
       {/* Safety Notice */}
@@ -496,9 +494,12 @@ const Step3 = ({
                 • <strong>First photo will be your main thumbnail</strong>
               </li>
               <li>
-                • <strong>Upload at least 3 photos (REQUIRED)</strong> for listing approval
+                • <strong>Upload at least 3 photos (REQUIRED)</strong> for
+                listing approval
               </li>
-              <li>• Show battery pack, BMS, terminals, and serial numbers clearly</li>
+              <li>
+                • Show battery pack, BMS, terminals, and serial numbers clearly
+              </li>
               <li>• Include any certificates or documentation</li>
               <li>• Good lighting prevents safety concerns</li>
             </ul>
@@ -644,10 +645,7 @@ function Step4({ formData, updateFormData }) {
   const hasMainPhoto = formData.images?.[0]?.url;
 
   return (
-    <Card
-      title="Pricing & Final Review"
-      icon={<Zap className="w-5 h-5" />}
-    >
+    <Card title="Pricing & Final Review" icon={<Zap className="w-5 h-5" />}>
       {/* Pricing Section */}
       <div className="pricing-section mb-8">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
@@ -658,7 +656,9 @@ function Step4({ formData, updateFormData }) {
           <div>
             <L htmlFor="price">Price (VNĐ) *</L>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">₫</span>
+              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                ₫
+              </span>
               <Inp
                 id="price"
                 type="number"
@@ -961,29 +961,31 @@ export default function CreateElectricForm({
       if (!formData.title?.trim()) errors.title = "Title is required";
       if (!formData.brand?.trim()) errors.brand = "Brand is required";
       if (!formData.model?.trim()) errors.model = "Model is required";
-      
+
       // Serial Number validation - match backend @NotBlank + max 100 chars
       if (!formData.serialNumber?.trim()) {
         errors.serialNumber = "Serial Number is required";
       } else {
         const serialNumber = formData.serialNumber.trim();
-        
+
         // Check length (backend max 100)
         if (serialNumber.length < 5 || serialNumber.length > 100) {
           errors.serialNumber = "Serial Number must be 5-100 characters";
         }
-        
+
         // Check format: only letters, numbers, hyphens, underscores
         const validFormat = /^[A-Za-z0-9\-_]+$/;
         if (!validFormat.test(serialNumber)) {
-          errors.serialNumber = "Serial Number can only contain letters, numbers, hyphens, and underscores";
+          errors.serialNumber =
+            "Serial Number can only contain letters, numbers, hyphens, and underscores";
         }
-        
+
         // Check for at least one letter and one number
         const hasLetter = /[A-Za-z]/.test(serialNumber);
         const hasNumber = /[0-9]/.test(serialNumber);
         if (!hasLetter || !hasNumber) {
-          errors.serialNumber = "Serial Number must contain at least one letter and one number";
+          errors.serialNumber =
+            "Serial Number must contain at least one letter and one number";
         }
       }
     }
@@ -995,12 +997,19 @@ export default function CreateElectricForm({
       }
 
       // Backend validation: @NotNull, @DecimalMin > 0
-      if (!formData.originCapacity || parseFloat(formData.originCapacity) <= 0) {
+      if (
+        !formData.originCapacity ||
+        parseFloat(formData.originCapacity) <= 0
+      ) {
         errors.originCapacity = "Origin capacity must be greater than 0";
       }
 
       // Backend validation: @NotNull, @DecimalMin >= 0
-      if (formData.remainingCapacity === "" || formData.remainingCapacity === null || parseFloat(formData.remainingCapacity) < 0) {
+      if (
+        formData.remainingCapacity === "" ||
+        formData.remainingCapacity === null ||
+        parseFloat(formData.remainingCapacity) < 0
+      ) {
         errors.remainingCapacity = "Remaining capacity must be 0 or greater";
       }
 
@@ -1009,7 +1018,8 @@ export default function CreateElectricForm({
         const remaining = parseFloat(formData.remainingCapacity);
         const origin = parseFloat(formData.originCapacity);
         if (!isNaN(remaining) && !isNaN(origin) && remaining > origin) {
-          errors.remainingCapacity = "Remaining capacity cannot exceed original capacity";
+          errors.remainingCapacity =
+            "Remaining capacity cannot exceed original capacity";
         }
       }
 
@@ -1064,7 +1074,6 @@ export default function CreateElectricForm({
       setImageForSlot(slotKey, { url });
       toast.success("Image uploaded");
     } catch (error) {
-      console.error("Image upload error:", error);
       toast.error("Image upload failed");
     } finally {
       setUploadingSlot(null);
@@ -1083,159 +1092,182 @@ export default function CreateElectricForm({
     if (isSubmitting || submitSuccess) {
       return;
     }
-    
+
     if (!formData.agreeTerms || !formData.confirmOwnership) {
-      return toast.error("Please confirm ownership and accept the terms");
+      toast.error("Please confirm ownership and accept the terms");
+      return;
     }
 
     setIsSubmitting(true);
 
-    // Step 1 validation - Basic Information
-    if (!formData.title || !formData.brand || !formData.model) {
-      return toast.error(
-        "Please fill all required fields: Title, Brand, and Model"
-      );
-    }
-    
-    // Serial Number validation
-    if (!formData.serialNumber?.trim()) {
-      return toast.error("Please enter the battery serial number");
-    }
-    
-    const serialNumber = formData.serialNumber.trim();
-    if (serialNumber.length < 5 || serialNumber.length > 20) {
-      return toast.error("Serial Number must be 5-20 characters long");
-    }
-    
-    const validSerialFormat = /^[A-Za-z0-9\-_]+$/;
-    if (!validSerialFormat.test(serialNumber)) {
-      return toast.error("Serial Number can only contain letters, numbers, hyphens, and underscores");
-    }
-    
-    const hasLetter = /[A-Za-z]/.test(serialNumber);
-    const hasNumber = /[0-9]/.test(serialNumber);
-    if (!hasLetter || !hasNumber) {
-      return toast.error("Serial Number must contain at least one letter and one number");
-    }
-
-    if (!formData.description || formData.description.trim().length < 1) {
-      return toast.error("Please provide a description");
-    }
-
-    if (!formData.year) {
-      return toast.error("Please select the manufacturing year");
-    }
-
-    if (!formData.condition) {
-      return toast.error("Please select the battery condition");
-    }
-
-    // Location validation
-    if (!formData.coords || !formData.location) {
-      return toast.error(
-        "Please set the battery location for buyers to inspect/collect"
-      );
-    }
-
-    // Step 2 validation - Technical Specifications (match backend DTO)
-    if (!formData.batteryTypeId) {
-      return toast.error("Please select the battery type");
-    }
-    
-    if (!formData.originCapacity || Number(formData.originCapacity) <= 0) {
-      return toast.error("Please enter the original capacity (kWh)");
-    }
-
-    if (!formData.remainingCapacity || Number(formData.remainingCapacity) < 0) {
-      return toast.error("Please enter the current remaining capacity (kWh)");
-    }
-
-    if (!formData.voltage || Number(formData.voltage) <= 0) {
-      return toast.error("Please enter the nominal voltage");
-    }
-
-    if (!formData.cycleCount || Number(formData.cycleCount) < 0) {
-      return toast.error("Please enter the cycle count");
-    }
-
-    if (!formData.mileageCovered || Number(formData.mileageCovered) < 0) {
-      return toast.error("Please enter the mileage covered");
-    }
-
-    // Price validation
-    if (!formData.price || Number(formData.price) <= 0) {
-      return toast.error("Please enter a valid price");
-    }
-
-    // Basic range validations
-    if (
-      formData.remainingCapacity &&
-      formData.originCapacity &&
-      parseFloat(formData.remainingCapacity) > parseFloat(formData.originCapacity)
-    ) {
-      return toast.error("Remaining capacity cannot exceed original capacity");
-    }
-
-    if (
-      formData.batteryHealth &&
-      (formData.batteryHealth < 0 || formData.batteryHealth > 100)
-    ) {
-      return toast.error("Battery health must be between 0 and 100%");
-    }
-
-    if (!formData.hazmatAck) {
-      return toast.error("Please acknowledge hazmat transport requirements");
-    }
-
-    const imgs = formData.images || [];
-    const validImages = imgs.filter(img => img.url && img.url.trim() !== '');
-    if (validImages.length < 3) {
-      return toast.error(
-        "Please upload at least 3 photos of your battery pack"
-      );
-    }
-
-    if (validImages.some((i) => !i.url)) {
-      return toast.error("Please wait for all photos to finish uploading");
-    }
-
-    // Create payload for electric post
-    const payload = {
-      title: formData.title,
-      description: formData.description,
-      price: formData.price ? formData.price.toString() : "0",
-      status: "PENDING",
-      vehicle: null,
-      vehicleImages: [],
-      battery: {
-        serialNumber: formData.serialNumber.trim(),
-        originCapacity: formData.originCapacity
-          ? parseFloat(formData.originCapacity)
-          : 0,
-        remainingCapacity: formData.remainingCapacity
-          ? parseFloat(formData.remainingCapacity)
-          : 0,
-        mileageCovered: formData.mileageCovered
-          ? parseInt(formData.mileageCovered)
-          : 0,
-        voltage: formData.voltage ? parseFloat(formData.voltage) : 0,
-        cycleCount: formData.cycleCount ? parseInt(formData.cycleCount) : 0,
-        warranty: formData.warranty || "",
-        weight: formData.weight ? parseFloat(formData.weight) : null,
-        lifecycle: formData.condition || "",
-        // Backend requires batteryTypeId object with id
-        batteryTypeId: {
-          id: parseInt(formData.batteryTypeId) || 1, // From dropdown selection
-        },
-      },
-      batteryImages: validImages.map((i) => i.url),
-    };
-
     try {
-      console.log(
-        "📤 Sending electric post payload:",
-        JSON.stringify(payload, null, 2)
+      // Step 1 validation - Basic Information
+      if (!formData.title || !formData.brand || !formData.model) {
+        toast.error("Please fill all required fields: Title, Brand, and Model");
+        return;
+      }
+
+      // Serial Number validation
+      if (!formData.serialNumber?.trim()) {
+        toast.error("Please enter the battery serial number");
+        return;
+      }
+
+      const serialNumber = formData.serialNumber.trim();
+      if (serialNumber.length < 5 || serialNumber.length > 20) {
+        toast.error("Serial Number must be 5-20 characters long");
+        return;
+      }
+
+      const validSerialFormat = /^[A-Za-z0-9\-_]+$/;
+      if (!validSerialFormat.test(serialNumber)) {
+        toast.error(
+          "Serial Number can only contain letters, numbers, hyphens, and underscores"
+        );
+        return;
+      }
+
+      const hasLetter = /[A-Za-z]/.test(serialNumber);
+      const hasNumber = /[0-9]/.test(serialNumber);
+      if (!hasLetter || !hasNumber) {
+        toast.error(
+          "Serial Number must contain at least one letter and one number"
+        );
+        return;
+      }
+
+      if (!formData.description || formData.description.trim().length < 1) {
+        toast.error("Please provide a description");
+        return;
+      }
+
+      if (!formData.year) {
+        toast.error("Please select the manufacturing year");
+        return;
+      }
+
+      if (!formData.condition) {
+        toast.error("Please select the battery condition");
+        return;
+      }
+
+      // Location validation
+      if (!formData.coords || !formData.location) {
+        toast.error(
+          "Please set the battery location for buyers to inspect/collect"
+        );
+        return;
+      }
+
+      // Step 2 validation - Technical Specifications (match backend DTO)
+      if (!formData.batteryTypeId) {
+        toast.error("Please select the battery type");
+        return;
+      }
+
+      if (!formData.originCapacity || Number(formData.originCapacity) <= 0) {
+        toast.error("Please enter the original capacity (kWh)");
+        return;
+      }
+
+      if (
+        !formData.remainingCapacity ||
+        Number(formData.remainingCapacity) < 0
+      ) {
+        toast.error("Please enter the current remaining capacity (kWh)");
+        return;
+      }
+
+      if (!formData.voltage || Number(formData.voltage) <= 0) {
+        toast.error("Please enter the nominal voltage");
+        return;
+      }
+
+      if (!formData.cycleCount || Number(formData.cycleCount) < 0) {
+        toast.error("Please enter the cycle count");
+        return;
+      }
+
+      if (!formData.mileageCovered || Number(formData.mileageCovered) < 0) {
+        toast.error("Please enter the mileage covered");
+        return;
+      }
+
+      // Price validation
+      if (!formData.price || Number(formData.price) <= 0) {
+        toast.error("Please enter a valid price");
+        return;
+      }
+
+      // Basic range validations
+      if (
+        formData.remainingCapacity &&
+        formData.originCapacity &&
+        parseFloat(formData.remainingCapacity) >
+          parseFloat(formData.originCapacity)
+      ) {
+        toast.error("Remaining capacity cannot exceed original capacity");
+        return;
+      }
+
+      if (
+        formData.batteryHealth &&
+        (formData.batteryHealth < 0 || formData.batteryHealth > 100)
+      ) {
+        toast.error("Battery health must be between 0 and 100%");
+        return;
+      }
+
+      if (!formData.hazmatAck) {
+        toast.error("Please acknowledge hazmat transport requirements");
+        return;
+      }
+
+      const imgs = formData.images || [];
+      const validImages = imgs.filter(
+        (img) => img.url && img.url.trim() !== ""
       );
+      if (validImages.length < 3) {
+        toast.error("Please upload at least 3 photos of your battery pack");
+        return;
+      }
+
+      if (validImages.some((i) => !i.url)) {
+        toast.error("Please wait for all photos to finish uploading");
+        return;
+      }
+
+      // Create payload for electric post
+      const payload = {
+        title: formData.title,
+        description: formData.description,
+        price: formData.price ? formData.price.toString() : "0",
+        status: "PENDING",
+        vehicle: null,
+        vehicleImages: [],
+        battery: {
+          serialNumber: formData.serialNumber.trim(),
+          originCapacity: formData.originCapacity
+            ? parseFloat(formData.originCapacity)
+            : 0,
+          remainingCapacity: formData.remainingCapacity
+            ? parseFloat(formData.remainingCapacity)
+            : 0,
+          mileageCovered: formData.mileageCovered
+            ? parseInt(formData.mileageCovered)
+            : 0,
+          voltage: formData.voltage ? parseFloat(formData.voltage) : 0,
+          cycleCount: formData.cycleCount ? parseInt(formData.cycleCount) : 0,
+          warranty: formData.warranty || "",
+          weight: formData.weight ? parseFloat(formData.weight) : null,
+          lifecycle: formData.condition || "",
+          // Backend requires batteryTypeId object with id
+          batteryTypeId: {
+            id: parseInt(formData.batteryTypeId) || 1, // From dropdown selection
+          },
+        },
+        batteryImages: validImages.map((i) => i.url),
+      };
 
       // Check authentication
       const getCookie = (name) => {
@@ -1246,7 +1278,6 @@ export default function CreateElectricForm({
       };
 
       const token = getCookie("accessToken");
-      console.log("🔐 Auth token present:", !!token);
       if (!token) {
         toast.error("Please login first");
         return;
@@ -1262,14 +1293,9 @@ export default function CreateElectricForm({
         localStorage.removeItem(DRAFT_KEY);
       } catch {}
 
-      // Set success state for protection
+      // Set success state for protection (only on actual success)
       setSubmitSuccess(true);
-      
-      // Auto-reset after 10 seconds
-      setTimeout(() => {
-        setSubmitSuccess(false);
-      }, 10000);
-      
+
       onSubmit(created || payload);
 
       setTimeout(() => {
@@ -1282,11 +1308,6 @@ export default function CreateElectricForm({
         });
       }, 2000);
     } catch (error) {
-      console.error("❌ Submit error:", error);
-      console.error("❌ Response data:", error?.response?.data);
-      console.error("❌ Status:", error?.response?.status);
-      console.error("❌ Headers:", error?.response?.headers);
-
       const errorData = error?.response?.data;
       let msg = "Failed to create battery listing";
 
@@ -1377,12 +1398,16 @@ export default function CreateElectricForm({
             <button
               className="e-btn e-btn-primary"
               onClick={submitForm}
-              disabled={!formData.agreeTerms || !formData.confirmOwnership || isSubmitting || submitSuccess}
+              disabled={
+                !formData.agreeTerms ||
+                !formData.confirmOwnership ||
+                isSubmitting
+              }
             >
-              {isSubmitting 
-                ? "Submitting..." 
-                : submitSuccess 
-                ? "✅ Submitted (10s cooldown)" 
+              {isSubmitting
+                ? "Submitting..."
+                : submitSuccess
+                ? "✅ Successfully Submitted"
                 : "Submit Battery Listing"}
             </button>
           ) : (

@@ -12,16 +12,14 @@ export default function ForgotPasswordPage() {
     e.preventDefault();
     const email = e.currentTarget.elements.email.value.trim();
     if (!email) return;
-    
+
     setSubmitting(true);
     setError("");
-    
+
     try {
       await otpService.requestPasswordResetOtp(email);
-      console.log("Password reset OTP sent successfully");
       navigate("/verify-email", { state: { email, purpose: "reset" } });
     } catch (err) {
-      console.error("Send OTP error:", err);
       setError("Failed to send OTP. Please check your email and try again.");
       setSubmitting(false);
     }
@@ -32,9 +30,22 @@ export default function ForgotPasswordPage() {
       <div className="card">
         <h1>Forgot Password</h1>
         <p>Please enter your email address to reset your password.</p>
-        {error && <div className="error-message" style={{color: 'red', marginBottom: '16px'}}>{error}</div>}
+        {error && (
+          <div
+            className="error-message"
+            style={{ color: "red", marginBottom: "16px" }}
+          >
+            {error}
+          </div>
+        )}
         <form onSubmit={handleSubmit}>
-          <input name="email" type="email" placeholder="Email" required disabled={submitting} />
+          <input
+            name="email"
+            type="email"
+            placeholder="Email"
+            required
+            disabled={submitting}
+          />
           <button type="submit" disabled={submitting}>
             {submitting ? "Sending..." : "Send OTP"}
           </button>

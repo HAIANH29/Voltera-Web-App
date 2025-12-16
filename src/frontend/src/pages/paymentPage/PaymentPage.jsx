@@ -23,15 +23,6 @@ const PaymentPage = () => {
     const paymentType = searchParams.get("paymentType"); // fee or contract
     const orderInfoParam = searchParams.get("orderInfo");
 
-    console.log("PaymentPage URL params:", {
-      postIdParam,
-      amountParam,
-      contractId,
-      transactionId,
-      paymentType,
-      orderInfoParam,
-    });
-
     if (postIdParam) {
       setPostId(postIdParam);
       fetchPostDetails(postIdParam);
@@ -58,7 +49,7 @@ const PaymentPage = () => {
         );
       }
     } catch (err) {
-      console.error("Error fetching post details:", err);
+      // Error handling for fetching post details
     }
   };
 
@@ -76,14 +67,6 @@ const PaymentPage = () => {
       const transactionId = searchParams.get("transactionId");
       const paymentType = searchParams.get("paymentType"); // fee or contract
 
-      console.log("Creating payment with:", {
-        amount: parseInt(amount),
-        orderInfo,
-        postId: parseInt(postId),
-        transactionId: transactionId,
-        paymentType: paymentType,
-      });
-
       let apiUrl;
       let requestBody;
 
@@ -99,7 +82,6 @@ const PaymentPage = () => {
         }
         apiUrl = `/api/fee/create-payment/${transactionId}`;
         requestBody = {}; // Fee API might not need body
-        console.log("Processing FEE payment for seller");
       } else {
         // Contract payment: Buyer → Seller
         if (
@@ -118,26 +100,13 @@ const PaymentPage = () => {
           orderType: "other",
           language: "vn",
         };
-        console.log("Processing CONTRACT payment for buyer");
       }
 
-      console.log("API URL:", apiUrl);
-      console.log("Request body:", requestBody);
-
       const response = await api.post(apiUrl, requestBody);
-
-      console.log(
-        "🔍 Full VNPay response:",
-        JSON.stringify(response.data, null, 2)
-      );
 
       if (response.data.code === "00") {
         // Check response structure
         if (response.data.paymentUrl) {
-          console.log(
-            "✅ Payment URL found - redirecting to VNPay (supports MoMo):",
-            response.data.paymentUrl
-          );
           // Redirect tới VNPay web page (có QR cho MoMo)
           window.location.href = response.data.paymentUrl;
         } else if (
@@ -145,11 +114,10 @@ const PaymentPage = () => {
           response.data.data?.includes("00020101")
         ) {
           // Still got QR - force redirect to VNPay web anyway
-          console.log("📱 QR Code detected, redirecting to VNPay web page");
+
           window.location.href =
             "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
         } else {
-          console.log("❌ No payment URL found in response");
           setError(
             `No payment URL received. Response: ${JSON.stringify(
               response.data
@@ -165,7 +133,6 @@ const PaymentPage = () => {
       }
     } catch (err) {
       setError("An error occurred while creating payment");
-      console.error("Payment error:", err);
     } finally {
       setLoading(false);
     }

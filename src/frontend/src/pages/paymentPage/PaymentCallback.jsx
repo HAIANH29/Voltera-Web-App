@@ -12,7 +12,6 @@ const PaymentCallback = () => {
   useEffect(() => {
     const checkPaymentResult = () => {
       const params = Object.fromEntries(searchParams.entries());
-      console.log("Payment callback params:", params);
 
       // VNPay đã tự động callback về backend rồi
       // Frontend chỉ cần hiển thị kết quả dựa trên response code

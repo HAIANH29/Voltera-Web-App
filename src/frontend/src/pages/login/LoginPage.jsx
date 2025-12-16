@@ -10,7 +10,6 @@ import api from "../../config/api"; // instance có interceptors
 // ===== ENV =====
 const BASE_URL = import.meta.env.VITE_BACK_END_BASE_URL; // vd: http://localhost:8080
 const LOGIN_PATH = "/api/v1/auth/login"; // Fixed path to match backend
-const FORCE_MOCK = String(import.meta.env.VITE_USE_MOCK || "0") === "1";
 
 // ===== Token helpers (Cookie) =====
 const setAccessToken = (accessToken) => {
@@ -37,7 +36,6 @@ const clearTokens = () => {
 };
 
 const canUseRealApi = () => {
-  if (FORCE_MOCK) return false;
   if (!BASE_URL || BASE_URL === "/") return false;
   return true;
 };
@@ -53,8 +51,7 @@ async function loginApiDual({ email, password }) {
 
   if (canUseRealApi()) {
     // BE đang dùng LoginRequest.getUsername() -> body phải có "username"
-    console.log("🔗 Login URL:", BASE_URL + LOGIN_PATH);
-    console.log("📤 Login payload:", { username: e, password: "***" });
+
     const res = await api.post(LOGIN_PATH, { username: e, password });
     const data = res.data ?? {};
     const accessToken = data.token;
@@ -81,31 +78,8 @@ async function loginApiDual({ email, password }) {
     };
   }
 
-  // MOCK
-  return loginMock({ email: e, password });
-}
-
-function loginMock({ email }) {
-  setAccessToken("mock-access-token");
-  localStorage.setItem(
-    "currentUser",
-    JSON.stringify({
-      email,
-      username: email,
-      name: "Mock User",
-      userId: 1,
-      role: "USER",
-    })
-  );
-  return {
-    user: {
-      email,
-      username: email,
-      name: "Mock User",
-      userId: 1,
-      role: "USER",
-    },
-  };
+  // If no real API available, throw error
+  throw new Error("No backend API configured");
 }
 
 // ===== Validation schemas =====
@@ -155,8 +129,6 @@ export default function LoginPage() {
         );
         navigate(redirect || "/");
       } catch (err) {
-        console.error("Login error:", err?.response?.data || err?.message);
-
         const errorMessage =
           err?.response?.data?.message ||
           err?.response?.data?.error ||

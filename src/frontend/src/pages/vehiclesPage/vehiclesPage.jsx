@@ -117,8 +117,6 @@ export default function VehiclesPage() {
         // BE trả list PostResponse chỉ chứa vehicles
         const items = Array.isArray(res.data) ? res.data : [];
 
-        console.log("[VehiclesPage] Loaded", items.length, "vehicle posts");
-
         const mapped = items.map(mapPostToCard);
 
         // Load user favorites to sync favorite status
@@ -137,7 +135,6 @@ export default function VehiclesPage() {
 
             setVehicles(mappedWithFavorites);
           } catch (favError) {
-            console.error("Error loading favorites:", favError);
             // Still set vehicles even if favorites loading failed
             setVehicles(mapped);
           }
@@ -145,9 +142,6 @@ export default function VehiclesPage() {
           setVehicles(mapped);
         }
       } catch (e) {
-        console.error("Load vehicles failed:", e);
-        console.log("STATUS =", e?.response?.status);
-        console.log("DATA   =", e?.response?.data);
         setVehicles([]);
       } finally {
         setLoading(false);
@@ -188,13 +182,21 @@ export default function VehiclesPage() {
         .sort(),
     [vehicles]
   );
-  const origins = useMemo(
-    () =>
-      Array.from(new Set(vehicles.map((v) => v.origin)))
-        .filter(Boolean)
-        .sort(),
-    [vehicles]
-  );
+  const origins = useMemo(() => {
+    // Normalize origin values for deduplication (trim + lowercase),
+    // but preserve a friendly display value (first seen, trimmed).
+    const map = new Map();
+    for (const v of vehicles) {
+      const raw = v.origin;
+      if (!raw) continue;
+      const norm = String(raw).trim().toLowerCase();
+      if (!norm) continue;
+      if (!map.has(norm)) {
+        map.set(norm, String(raw).trim());
+      }
+    }
+    return Array.from(map.values()).sort((a, b) => a.localeCompare(b));
+  }, [vehicles]);
   const seats = useMemo(
     () =>
       Array.from(new Set(vehicles.map((v) => v.numberOfSeat)))
@@ -326,13 +328,11 @@ export default function VehiclesPage() {
         )
       );
 
-      console.error("Error toggling favorite:", error);
       alert("Failed to update favorites. Please try again.");
     }
   };
 
   const handleCardClick = (vehicle) => {
-    console.log("Navigating to vehicle detail:", vehicle.postID);
     navigate(`/vehicles/${vehicle.postID}`);
   };
 
@@ -467,24 +467,27 @@ export default function VehiclesPage() {
               </svg>
               Brand
             </label>
-            <select
-              className="filter-select"
-              value={draftFilters.brand}
-              onChange={(e) =>
-                setDraftFilters({
-                  ...draftFilters,
-                  brand: e.target.value,
-                  model: "",
-                })
-              }
-            >
-              <option value="">All Brands</option>
-              {brands.map((b) => (
-                <option key={b} value={b}>
-                  {b}
-                </option>
-              ))}
-            </select>
+            <div style={{ display: 'flex', width: '100%' }}>
+              <select
+                className="filter-select"
+                style={{ fontSize: '1rem', padding: '10px 18px', maxWidth: '100%' }}
+                value={draftFilters.brand}
+                onChange={(e) =>
+                  setDraftFilters({
+                    ...draftFilters,
+                    brand: e.target.value,
+                    model: "",
+                  })
+                }
+              >
+                <option value="">All Brands</option>
+                {brands.map((b) => (
+                  <option key={b} value={b}>
+                    {b}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           <div className="filter-group">
@@ -501,31 +504,34 @@ export default function VehiclesPage() {
               </svg>
               Model
             </label>
-            <select
-              className="filter-select"
-              value={draftFilters.model}
-              onChange={(e) =>
-                setDraftFilters({
-                  ...draftFilters,
-                  model: e.target.value,
-                })
-              }
-            >
-              <option value="">All Models</option>
-              {models
-                .filter(
-                  (m) =>
-                    !draftFilters.brand ||
-                    vehicles.some(
-                      (v) => v.brand === draftFilters.brand && v.model === m
-                    )
-                )
-                .map((m) => (
-                  <option key={m} value={m}>
-                    {m}
-                  </option>
-                ))}
-            </select>
+            <div style={{ display: 'flex', width: '100%' }}>
+              <select
+                className="filter-select"
+                style={{ fontSize: '1rem', padding: '10px 18px', maxWidth: '100%' }}
+                value={draftFilters.model}
+                onChange={(e) =>
+                  setDraftFilters({
+                    ...draftFilters,
+                    model: e.target.value,
+                  })
+                }
+              >
+                <option value="">All Models</option>
+                {models
+                  .filter(
+                    (m) =>
+                      !draftFilters.brand ||
+                      vehicles.some(
+                        (v) => v.brand === draftFilters.brand && v.model === m
+                      )
+                  )
+                  .map((m) => (
+                    <option key={m} value={m}>
+                      {m}
+                    </option>
+                  ))}
+              </select>
+            </div>
           </div>
 
           <div className="filter-group">
@@ -590,20 +596,23 @@ export default function VehiclesPage() {
               </svg>
               Origin
             </label>
-            <select
-              className="filter-select"
-              value={draftFilters.origin}
-              onChange={(e) =>
-                setDraftFilters({ ...draftFilters, origin: e.target.value })
-              }
-            >
-              <option value="">All Origins</option>
-              {origins.map((o) => (
-                <option key={o} value={o}>
-                  {o}
-                </option>
-              ))}
-            </select>
+            <div style={{ display: 'flex', width: '100%' }}>
+              <select
+                className="filter-select"
+                style={{ fontSize: '1rem', padding: '10px 18px', maxWidth: '100%' }}
+                value={draftFilters.origin}
+                onChange={(e) =>
+                  setDraftFilters({ ...draftFilters, origin: e.target.value })
+                }
+              >
+                <option value="">All Origins</option>
+                {origins.map((o) => (
+                  <option key={o} value={o}>
+                    {o}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           <div className="filter-group">
@@ -629,7 +638,6 @@ export default function VehiclesPage() {
                 value={draftFilters.minPrice}
                 onChange={(e) => {
                   const value = e.target.value.replace(/[^0-9]/g, "");
-                  console.log("Min price changed:", value);
                   setDraftFilters({ ...draftFilters, minPrice: value });
                 }}
                 className="simple-price-input"
@@ -640,7 +648,6 @@ export default function VehiclesPage() {
                 value={draftFilters.maxPrice}
                 onChange={(e) => {
                   const value = e.target.value.replace(/[^0-9]/g, "");
-                  console.log("Max price changed:", value);
                   setDraftFilters({ ...draftFilters, maxPrice: value });
                 }}
                 className="simple-price-input"

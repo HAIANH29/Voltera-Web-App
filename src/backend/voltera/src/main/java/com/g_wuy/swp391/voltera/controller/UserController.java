@@ -11,11 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.g_wuy.swp391.voltera.entity.Account;
 import com.g_wuy.swp391.voltera.entity.User;
@@ -139,10 +135,12 @@ public class UserController {
     }
 
     @PutMapping("/api/v1/admin/account/{id}/lock")
-    public ResponseEntity<ApproveResponse> lockAccount(@PathVariable Integer id) {
+    public ResponseEntity<ApproveResponse> lockAccount(
+            @PathVariable Integer id,
+            @RequestHeader("Authorization") String token) {
         try {
             System.out.println("[DEBUG] Lock request by user: " + SecurityContextHolder.getContext().getAuthentication().getName());
-            userService.lockAccount(id);
+            userService.lockAccount(id, token);
             Account lockedAccount = accountService.findAccountById(id);
             ApproveResponse response = accountMapper.toAccountResponse(lockedAccount);
             System.out.println("[DEBUG] Account locked: " + lockedAccount.getUsername() + " | New Status: " + lockedAccount.getStatus());
@@ -154,10 +152,12 @@ public class UserController {
     }
 
     @PutMapping("/api/v1/admin/account/{id}/unlock")
-    public ResponseEntity<ApproveResponse> unlockAccount(@PathVariable Integer id) {
+    public ResponseEntity<ApproveResponse> unlockAccount(
+            @PathVariable Integer id,
+            @RequestHeader("Authorization") String token) {
         try {
             System.out.println("[DEBUG] Unlock request by user: " + SecurityContextHolder.getContext().getAuthentication().getName());
-            userService.unlockAccount(id);
+            userService.unlockAccount(id, token);
             Account unlockedAccount = accountService.findAccountById(id);
             ApproveResponse response = accountMapper.toAccountResponse(unlockedAccount);
             System.out.println("[DEBUG] Account unlocked: " + unlockedAccount.getUsername() + " | New Status: " + unlockedAccount.getStatus());

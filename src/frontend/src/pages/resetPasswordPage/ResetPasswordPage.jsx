@@ -30,7 +30,6 @@ export default function ResetPasswordPage() {
     try {
       // Gọi API đổi mật khẩu chỉ với email và mật khẩu mới
       await otpService.resetPassword(email, password);
-      console.log("Password reset successfully");
       navigate("/login", {
         replace: true,
         state: {
@@ -39,7 +38,6 @@ export default function ResetPasswordPage() {
         },
       });
     } catch (err) {
-      console.error("Reset password error:", err);
       setError("Failed to reset password. Please try again.");
       setSubmitting(false);
     }

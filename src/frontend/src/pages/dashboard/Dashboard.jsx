@@ -40,12 +40,9 @@ const Dashboard = () => {
 
     // Nếu không có role, redirect về home
     if (!userRole) {
-      console.warn("User has no role defined");
       navigate("/", { replace: true });
       return;
     }
-
-    console.log("Dashboard access - User role:", userRole);
   }, [isAuthenticated, userRole, navigate]);
 
   // Loading state nếu đang kiểm tra auth
@@ -79,7 +76,6 @@ const Dashboard = () => {
 
     default:
       // Role không được hỗ trợ
-      console.error("Unsupported user role:", userRole);
       return (
         <div
           style={{

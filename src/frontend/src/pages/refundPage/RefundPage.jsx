@@ -8,7 +8,7 @@ const RefundPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("buyer");
-  const [statusFilter, setStatusFilter] = useState("ALL");
+  const [statusFilter, setStatusFilter] = useState("PENDING");
   const [userRole, setUserRole] = useState("BUYER");
   const [selectedRefund, setSelectedRefund] = useState(null);
   const [showImageModal, setShowImageModal] = useState(false);
@@ -23,7 +23,6 @@ const RefundPage = () => {
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("currentUser") || "{}");
     const role = user.role || localStorage.getItem("userRole") || "BUYER";
-    console.log("🔍 User role detected:", role, "from user:", user);
     setUserRole(role);
 
     // Set default tab based on role - only set initially
@@ -57,10 +56,6 @@ const RefundPage = () => {
     setLoading(true);
     setError("");
     try {
-      console.log(
-        `Loading refunds for tab: ${activeTab}, status: ${statusFilter}, userRole: ${userRole}`
-      );
-
       let data;
       if (activeTab === "buyer") {
         data = await refundService.getBuyerRefunds(statusFilter);
@@ -69,8 +64,6 @@ const RefundPage = () => {
       } else {
         data = [];
       }
-
-      console.log("Raw API response data:", data);
 
       const newRefunds = Array.isArray(data) ? data : [];
 
@@ -103,10 +96,7 @@ const RefundPage = () => {
 
       setPreviousRefunds(newRefunds);
       setRefunds(newRefunds);
-      console.log(`Loaded ${newRefunds.length || 0} refunds`);
     } catch (err) {
-      console.error("Error loading refunds:", err);
-      console.error("Error details:", err.response?.data || err.message);
       setError("Failed to load refunds. Please try again.");
       setRefunds([]);
     } finally {
@@ -123,7 +113,6 @@ const RefundPage = () => {
       );
       setTimeout(() => setNotification(""), 5000);
     } catch (err) {
-      console.error("Error accepting refund:", err);
       const errorMessage =
         err.response?.data || err.message || "Failed to accept refund";
 
@@ -152,7 +141,6 @@ const RefundPage = () => {
         alert("Failed to create payment URL");
       }
     } catch (err) {
-      console.error("Error creating refund payment:", err);
       const errorMessage =
         err.response?.data || err.message || "Failed to create payment";
       alert("Failed to create payment: " + errorMessage);
@@ -167,7 +155,6 @@ const RefundPage = () => {
       loadRefunds(); // Reload data
       alert("Refund rejected successfully");
     } catch (err) {
-      console.error("Error rejecting refund:", err);
       alert("Failed to reject refund: " + (err.response?.data || err.message));
     }
   };
@@ -189,7 +176,6 @@ const RefundPage = () => {
       setClaimedRefunds((prev) => new Set([...prev, refundId]));
       loadRefunds();
     } catch (err) {
-      console.error("Error claiming refund money:", err);
       alert(
         "❌ Failed to process refund: " + (err.response?.data || err.message)
       );
@@ -203,7 +189,7 @@ const RefundPage = () => {
         setClaimedRefunds((prev) => new Set([...prev, refundId]));
       }
     } catch (err) {
-      console.error("Error checking refund claim status:", err);
+      // Error handled silently
     }
   };
 
@@ -221,7 +207,6 @@ const RefundPage = () => {
       setSelectedRefund(null);
       loadRefunds();
     } catch (err) {
-      console.error("Error uploading images:", err);
       alert("Failed to upload images: " + (err.response?.data || err.message));
     }
   };
@@ -316,8 +301,8 @@ const RefundPage = () => {
           onChange={(e) => setStatusFilter(e.target.value)}
           className="status-filter"
         >
-          <option value="ALL">All Status</option>
-          <option value="REQUESTED">Pending</option>
+          <option value="PENDING">Pending</option>
+          <option value="REQUESTED">Requested</option>
           <option value="APPROVED">Approved</option>
           <option value="REJECTED">Rejected</option>
           <option value="REFUNDED">Refunded</option>
@@ -460,7 +445,7 @@ const RefundPage = () => {
                       <button
                         className="btn btn-info"
                         onClick={() => {
-                          console.log("Admin viewing refund details:", refund);
+                          // View details functionality can be added here
                         }}
                       >
                         View Details

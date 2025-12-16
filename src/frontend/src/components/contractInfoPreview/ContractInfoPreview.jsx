@@ -7,28 +7,37 @@ import "./ContractInfoPreview.css";
 const mapVehicleData = (vehicleData) => {
   const v = vehicleData || {};
   
+  // Handle both camelCase (from API) and lowercase field names
+  const batteryCapacity = v.batteryCapacity ?? v.batterycapacity;
+  const chargingTime = v.chargingTime ?? v.chargingtime;
+  const numberOfSeat = v.numberOfSeat ?? v.numberofseat;
+  const yearManufacture = v.yearManufacture ?? v.yearmanufacture;
+  const licensePlate = v.licensePlate ?? v.licenseplate;
+  const bodyInsurance = v.bodyInsurance ?? v.bodyinsurance;
+  const vehicleInspection = v.vehicleInspection ?? v.vehicleinspection;
+  
   return {
     ...v,
-    // Format fields with proper fallbacks
-    batterycapacity: v.batterycapacity != null ? v.batterycapacity : null,
-    batterycapacityDisplay: v.batterycapacity != null ? `${v.batterycapacity} kWh` : "Not specified",
+    // Format fields with proper fallbacks using both naming conventions
+    batterycapacity: batteryCapacity != null ? batteryCapacity : null,
+    batterycapacityDisplay: batteryCapacity != null ? `${batteryCapacity} kWh` : "Not specified",
     
     range: v.range != null ? v.range : null,
     rangeDisplay: v.range != null ? `${v.range} km` : "Not specified",
     
-    chargingtime: v.chargingtime != null ? v.chargingtime : null,
-    chargingtimeDisplay: v.chargingtime != null ? `${v.chargingtime} hours` : "Not specified",
+    chargingtime: chargingTime != null ? chargingTime : null,
+    chargingtimeDisplay: chargingTime != null ? `${chargingTime} hours` : "Not specified",
     
-    numberofseat: v.numberofseat != null ? v.numberofseat : 5, // default 5 seats
-    numberofseatDisplay: v.numberofseat != null ? v.numberofseat : 5,
+    numberofseat: numberOfSeat != null ? numberOfSeat : 5, // default 5 seats
+    numberofseatDisplay: numberOfSeat != null ? numberOfSeat : 5,
     
-    yearmanufacture: v.yearmanufacture > 0 ? v.yearmanufacture : new Date().getFullYear(),
+    yearmanufacture: yearManufacture > 0 ? yearManufacture : new Date().getFullYear(),
     
-    licenseplate: v.licenseplate || "Not assigned",
+    licenseplate: licensePlate || "Not assigned",
     origin: v.origin || "International",
     
-    bodyinsurance: v.bodyinsurance != null ? v.bodyinsurance : false,
-    vehicleinspection: v.vehicleinspection != null ? v.vehicleinspection : false,
+    bodyinsurance: bodyInsurance != null ? bodyInsurance : false,
+    vehicleinspection: vehicleInspection != null ? vehicleInspection : false,
     
     brand: v.brand || "Electric Vehicle",
     model: v.model || "Premium Model", 
@@ -109,7 +118,7 @@ export default function ContractInfoPreview({
           phone: payload.phone || "Không rõ",
         };
       } catch (tokenError) {
-        console.error("Error decoding token:", tokenError);
+
       }
     }
 
@@ -146,12 +155,18 @@ export default function ContractInfoPreview({
           brand: vehicleData.brand,
           model: vehicleData.model,
           version: vehicleData.version,
-          yearmanufacture: vehicleData.yearmanufacture,
+          yearManufacture: vehicleData.year, // Use correct field name
           color: vehicleData.color,
           odo: vehicleData.odo,
-          batterycapacity: vehicleData.batteryCapacityRaw,
-          range: vehicleData.rangeRaw,
-          numberofseat: vehicleData.numberOfSeat,
+          batteryCapacity: vehicleData.batteryCapacityRaw, // Use camelCase
+          range: vehicleData.rangeRaw, // Use rangeRaw for numeric value
+          chargingTime: vehicleData.chargingTimeRaw, // Use camelCase
+          numberOfSeat: vehicleData.numberOfSeat, // Use camelCase
+          licensePlate: vehicleData.licensePlate, // Use camelCase
+          origin: vehicleData.origin,
+          style: vehicleData.style,
+          bodyInsurance: vehicleData.bodyInsurance,
+          vehicleInspection: vehicleData.vehicleInspection,
         };
 
         const mappedVehicle = mapVehicleData(vehicleForMapping);
@@ -170,10 +185,15 @@ export default function ContractInfoPreview({
         };
 
         setPostData(finalData);
-        console.log("✅ ContractInfoPreview using vehicleData:");
-        console.log("- Original vehicleData:", vehicleData);
-        console.log("- Mapped vehicle:", mappedVehicle);
-        console.log("- Final postData:", finalData);
+
+
+
+
+
+
+
+
+
       } else {
         fetchAllData();
       }
@@ -187,7 +207,6 @@ export default function ContractInfoPreview({
 
       // Chỉ fetch từ API nếu không có vehicleData
       if (postId) {
-        console.log("🔄 Fetching post data for postID:", postId);
 
         // Thêm timeout để tránh load quá lâu
         const controller = new AbortController();
@@ -210,11 +229,11 @@ export default function ContractInfoPreview({
               battery: mapBatteryData(rawData.battery),
               type: 'battery'
             };
-            console.log("✅ Battery post data loaded:", rawData);
-            console.log("✅ Mapped battery data:", mappedData);
-            console.log("🔍 Battery mapping comparison:");
-            console.log("- Raw battery:", rawData.battery);
-            console.log("- Mapped battery:", mappedData.battery);
+
+
+
+
+
           } else if (rawData.vehicle) {
             // Vehicle post
             mappedData = {
@@ -222,18 +241,18 @@ export default function ContractInfoPreview({
               vehicle: mapVehicleData(rawData.vehicle),
               type: 'vehicle'
             };
-            console.log("✅ Vehicle post data loaded:", rawData);
-            console.log("✅ Mapped vehicle data:", mappedData);
-            console.log("🔍 Vehicle mapping comparison:");
-            console.log("- Raw vehicle:", rawData.vehicle);
-            console.log("- Mapped vehicle:", mappedData.vehicle);
+
+
+
+
+
           } else {
             // Unknown post type
             mappedData = {
               ...rawData,
               type: 'unknown'
             };
-            console.warn("⚠️ Unknown post type - no vehicle or battery data found");
+
           }
 
           setPostData(mappedData);
@@ -254,7 +273,7 @@ export default function ContractInfoPreview({
         throw new Error("No post information available to load");
       }
     } catch (err) {
-      console.error("❌ Error fetching contract data:", err);
+
       setError(
         err.response?.data?.message ||
           err.message ||
@@ -270,19 +289,10 @@ export default function ContractInfoPreview({
       setCreating(true);
       setError("");
 
-      console.log("🔄 Creating contract for post:", postId);
-      console.log("🔄 Post data for contract creation:", postData);
 
       // Determine contract type from postData
       const isBattery = postData?.battery || postData?.type === 'battery';
       const contractType = isBattery ? 'battery' : 'vehicle';
-      
-      console.log("🔍 Contract type for creation:", {
-        isBattery,
-        contractType,
-        hasBatteryData: !!postData?.battery,
-        postType: postData?.type
-      });
 
       // 1. Create contract with type information
       const contractResponse = await api.post("/api/contract/create", {
@@ -290,17 +300,12 @@ export default function ContractInfoPreview({
         contractType: contractType
       });
 
-      console.log("✅ Contract created:", contractResponse.data);
-
       if (contractResponse.data?.contractId) {
         // 2. Auto-sign contract as buyer
-        console.log("🔄 Auto-signing contract as buyer...");
 
         const signResponse = await api.put(
           `/api/contract/${contractResponse.data.contractId}/sign`
         );
-
-        console.log("✅ Contract signed:", signResponse.data);
 
         alert(
           "🎉 Contract has been created and signed successfully! The seller will be notified."
@@ -312,7 +317,7 @@ export default function ContractInfoPreview({
         }
       }
     } catch (err) {
-      console.error("❌ Error:", err);
+
       setError(
         err.response?.data?.message ||
           err.message ||
@@ -412,7 +417,7 @@ export default function ContractInfoPreview({
               </div>
               <div className="section-content">
                 <div className="info-row">
-                  <span className="label">Tiêu đề:</span>
+                  <span className="label">Title:</span>
                   <span className="value">
                     {postData.title ||
                       (isBattery 
@@ -633,3 +638,4 @@ export default function ContractInfoPreview({
     </div>
   );
 }
+

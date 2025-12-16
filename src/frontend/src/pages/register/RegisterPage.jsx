@@ -46,9 +46,7 @@ export default function RegisterPage() {
       setSubmitting(true);
       try {
         // Chỉ gửi OTP trước, chưa tạo account
-        console.log("Sending OTP for registration...");
         await otpService.requestOtp(values.email.trim());
-        console.log("OTP sent successfully");
 
         // Chuyển đến trang verify email với thông tin registration
         navigate("/verify-email", {
@@ -63,8 +61,6 @@ export default function RegisterPage() {
           },
         });
       } catch (err) {
-        console.error("Register error:", err.response?.data || err.message);
-
         // Chuẩn hoá thông điệp lỗi
         const resp = err?.response;
         const status = resp?.status;

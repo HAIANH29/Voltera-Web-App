@@ -220,11 +220,6 @@ public class PostService {
         return response;
     }
 
-
-    public List<Post> getPostByStatus(String status) {
-        return postRepository.getAllPostByStatus(status);
-    }
-
     public ModerationResponse approvePost(Integer postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
@@ -242,6 +237,14 @@ public class PostService {
         
         post.setStatus("REJECT");
         post.setUpdatedAt(Instant.now());
+        
+       
+        List<Fee> fees = feeRepository.findFeesByPostIdOrderByCreatedAtDesc(postId);
+        for (Fee fee : fees) {
+            fee.setFeeStatus("CANCELLED");
+            feeRepository.save(fee);
+        }
+        
         postRepository.save(post);
         notificationService.sendForEvent(post);
 

@@ -13,7 +13,6 @@ export default function FavoritesPage() {
   const [favorites, setFavorites] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
-  const [activeFilter, setActiveFilter] = useState("all"); // all, vehicles, batteries
 
   useEffect(() => {
     // Fetch real favorites from API
@@ -21,7 +20,6 @@ export default function FavoritesPage() {
       setLoading(true);
       try {
         if (!favoriteService.isUserLoggedIn()) {
-          console.log("❌ No access token found - user not logged in");
           setFavorites([]);
           setLoading(false);
           return;
@@ -31,29 +29,69 @@ export default function FavoritesPage() {
 
         if (response.data && Array.isArray(response.data)) {
           // Map backend FavListResponse to frontend format
-          const mappedFavorites = response.data.map((fav) => ({
-            id: fav.postId,
-            postID: String(fav.postId),
-            image:
-              fav.thumbnailUrl ||
-              "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=400",
-            productName: fav.postTitle || "Product",
-            basicInfo: ["Click to view details"],
-            sellerName: "Seller",
-            price: Number(fav.price) || 0,
-            isNew: true,
-            isFavorite: true,
-            category: "vehicle", // Default, will be determined by post details
-          }));
+          const mappedFavorites = await Promise.all(
+            response.data.map(async (fav) => {
+              let imageUrl = fav.thumbnailUrl;
 
-          console.log("✅ Loaded favorites from API:", mappedFavorites.length);
+              // Try to get the actual post image from post detail API
+              try {
+                const postDetailResponse = await api.get(
+                  `/api/post/detail/${fav.postId}`
+                );
+                if (postDetailResponse.data) {
+                  const postData = postDetailResponse.data;
+
+                  // Priority order for image selection:
+                  // 1. Use imageUrls[0] if available (most accurate for all posts)
+                  if (postData.imageUrls && postData.imageUrls.length > 0) {
+                    imageUrl = postData.imageUrls[0];
+                  }
+                  // 2. Use API thumbnail if available
+                  else if (postData.thumbnail) {
+                    imageUrl = postData.thumbnail;
+                  }
+                  // 3. For electric posts
+                  else if (postData.electric && postData.electric.image) {
+                    imageUrl = postData.electric.image;
+                  }
+                  // 4. For battery posts
+                  else if (postData.battery && postData.battery.image) {
+                    imageUrl = postData.battery.image;
+                  }
+                  // 5. For vehicle posts
+                  else if (postData.vehicle && postData.vehicle.image) {
+                    imageUrl = postData.vehicle.image;
+                  }
+                  // 6. Fallback to favorites thumbnail
+                  else if (fav.thumbnailUrl) {
+                    imageUrl = fav.thumbnailUrl;
+                  }
+                }
+              } catch (error) {
+                // Could not fetch detailed image, use thumbnail
+              }
+
+              return {
+                id: fav.postId,
+                postID: String(fav.postId),
+                image:
+                  imageUrl ||
+                  "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=400",
+                productName: fav.postTitle || "Product",
+                basicInfo: ["Click to view details"],
+                sellerName: "Seller",
+                price: Number(fav.price) || 0,
+                isNew: true,
+                isFavorite: true,
+              };
+            })
+          );
+
           setFavorites(mappedFavorites);
         } else {
-          console.log("✅ No favorites found");
           setFavorites([]);
         }
       } catch (error) {
-        console.error("❌ Error fetching favorites:", error);
         setFavorites([]);
       }
       setLoading(false);
@@ -62,32 +100,11 @@ export default function FavoritesPage() {
     fetchFavorites();
   }, []);
 
-  // Filter by category
-  const filteredFavorites = favorites.filter((item) => {
-    if (activeFilter === "all") return true;
-    if (activeFilter === "vehicles") return item.category === "vehicle";
-    if (activeFilter === "batteries") return item.category === "battery";
-    return true;
-  });
-
-  // Calculate pagination
-  const totalPages = Math.ceil(filteredFavorites.length / ITEMS_PER_PAGE);
+  // Calculate pagination for all favorites
+  const totalPages = Math.ceil(favorites.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
-  const currentFavorites = filteredFavorites.slice(startIndex, endIndex);
-
-  // Calculate counts for filter tabs
-  const vehiclesCount = favorites.filter(
-    (item) => item.category === "vehicle"
-  ).length;
-  const batteriesCount = favorites.filter(
-    (item) => item.category === "battery"
-  ).length;
-
-  // Reset current page when filter changes
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [activeFilter]);
+  const currentFavorites = favorites.slice(startIndex, endIndex);
 
   // Handle remove favorite
   const handleFavoriteClick = async (itemId) => {
@@ -100,38 +117,39 @@ export default function FavoritesPage() {
       // Update local state
       setFavorites((prev) => prev.filter((item) => item.id !== itemId));
     } catch (error) {
-      console.error("Error removing from favorites:", error);
       // Still update local state even if API call fails
       setFavorites((prev) => prev.filter((item) => item.id !== itemId));
     }
   };
 
   // Handle card click - navigate to detail page
-  const handleCardClick = (item) => {
-    console.log("Navigating to product detail:", item.postID);
+  const handleCardClick = async (item) => {
+    // Try to determine the correct route by checking post details
+    try {
+      const postDetailResponse = await api.get(
+        `/api/post/detail/${item.postID}`
+      );
+      const postData = postDetailResponse.data;
 
-    // Determine the route based on category or try to detect from product name
-    if (
-      item.category === "vehicle" ||
-      item.productName.toLowerCase().includes("car") ||
-      item.productName.toLowerCase().includes("vehicle") ||
-      item.productName.toLowerCase().includes("tesla") ||
-      item.productName.toLowerCase().includes("vinfast") ||
-      item.productName.toLowerCase().includes("audi") ||
-      item.productName.toLowerCase().includes("mercedes") ||
-      item.productName.toLowerCase().includes("lucid")
-    ) {
-      navigate(`/vehicles/${item.postID}`);
-    } else if (
-      item.category === "battery" ||
-      item.productName.toLowerCase().includes("battery") ||
-      item.productName.toLowerCase().includes("lithium") ||
-      item.productName.toLowerCase().includes("catl") ||
-      item.productName.toLowerCase().includes("samsung")
-    ) {
-      navigate(`/electrics/${item.postID}`);
-    } else {
-      // Default to vehicles for unknown type
+      // Check if post has vehicle data or electric data
+      if (postData.vehicle) {
+        navigate(`/vehicles/${item.postID}`);
+      } else if (postData.electric || postData.battery) {
+        navigate(`/electrics/${item.postID}`);
+      } else {
+        // Fallback: try to detect from product name
+        const name = item.productName.toLowerCase();
+        if (
+          name.includes("battery") ||
+          name.includes("lithium") ||
+          name.includes("electric")
+        ) {
+          navigate(`/electrics/${item.postID}`);
+        } else {
+          navigate(`/vehicles/${item.postID}`);
+        }
+      }
+    } catch (error) {
       navigate(`/vehicles/${item.postID}`);
     }
   };
@@ -291,34 +309,8 @@ export default function FavoritesPage() {
         </p>
       </div>
 
-      {/* Filter Tabs */}
-      <div className="filter-tabs">
-        <button
-          className={`filter-tab ${activeFilter === "all" ? "active" : ""}`}
-          onClick={() => setActiveFilter("all")}
-        >
-          All ({favorites.length})
-        </button>
-        <button
-          className={`filter-tab ${
-            activeFilter === "vehicles" ? "active" : ""
-          }`}
-          onClick={() => setActiveFilter("vehicles")}
-        >
-          Vehicle ({vehiclesCount})
-        </button>
-        <button
-          className={`filter-tab ${
-            activeFilter === "batteries" ? "active" : ""
-          }`}
-          onClick={() => setActiveFilter("batteries")}
-        >
-          Battery ({batteriesCount})
-        </button>
-      </div>
-
       {/* Favorites Grid */}
-      {filteredFavorites.length === 0 ? (
+      {favorites.length === 0 ? (
         <div className="empty-favorites">
           <div className="empty-icon">♡</div>
           <h2>No products found</h2>
@@ -329,7 +321,7 @@ export default function FavoritesPage() {
           <div className="favorites-grid">
             {currentFavorites.map((item) => (
               <MiniPost
-                key={`${item.category}-${item.id}`}
+                key={item.id}
                 image={item.image}
                 productName={item.productName}
                 basicInfo={item.basicInfo}
@@ -348,9 +340,8 @@ export default function FavoritesPage() {
             <div className="pagination-container">
               <div className="pagination">{renderPagination()}</div>
               <div className="pagination-info">
-                Showing {startIndex + 1}-
-                {Math.min(endIndex, filteredFavorites.length)} of{" "}
-                {filteredFavorites.length} favorite products
+                Showing {startIndex + 1}-{Math.min(endIndex, favorites.length)}{" "}
+                of {favorites.length} favorite products
               </div>
             </div>
           )}

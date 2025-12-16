@@ -1,6 +1,7 @@
 package com.g_wuy.swp391.voltera.service;
 
 import jakarta.transaction.Transactional;
+import org.apache.tomcat.util.http.fileupload.FileItemFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -227,22 +228,47 @@ public class UserService {
         accountRepository.save(account);
     }
 
-    public void lockAccount(Integer accountId) {
+    public void lockAccount(Integer accountId, String token) {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new BusinessException("Account not found"));
         if (account.getStatus().equals("INACTIVE")) {
             throw new LogicException("Account has already been locked");
         }
+
+        User admin = getUserByToken(token);
+        if(admin == null) {
+            throw new LogicException("User not found!!!");
+        }
+        Account adminAccount = getAccountByUserId(admin.getId());
+        if (adminAccount == null) {
+            throw new LogicException("Account not found!!!");
+        }
+        if (!hasPermission(adminAccount)) {
+            throw new BusinessException("You don't have permission to access this action");
+        }
         account.setStatus("INACTIVE");
         accountRepository.save(account);
     }
 
-    public void unlockAccount(Integer accountId) {
+    public void unlockAccount(Integer accountId, String token) {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new BusinessException("Account not found"));
         if (account.getStatus().equals("APPROVE")) {
             throw new LogicException("Account has already been unlocked");
         }
+
+        User admin = getUserByToken(token);
+        if(admin == null) {
+            throw new LogicException("User not found!!!");
+        }
+        Account adminAccount = getAccountByUserId(admin.getId());
+        if (adminAccount == null) {
+            throw new LogicException("Account not found!!!");
+        }
+        if (!hasPermission(adminAccount)) {
+            throw new BusinessException("You don't have permission to access this action");
+        }
+
         account.setStatus("APPROVE");
         accountRepository.save(account);
     }
@@ -251,5 +277,19 @@ public class UserService {
         Account account = accountRepository.findByUsername(username)
             .orElseThrow(() -> new BusinessException("Account not found with username: " + username));
         return account.getUser();
+    }
+
+    public boolean hasPermission(Account admin) {
+        return admin != null && admin.getRole().equalsIgnoreCase("ADMIN");
+    }
+
+    public User getUserByToken(String token) {
+        String jwt = token.substring(7);
+        User user = userRepository.findUserByUsername(jwtService.extractUsername(jwt));
+        return user;
+    }
+
+    public Account getAccountByUserId(Integer userId) {
+        return accountRepository.findAccountById(userId);
     }
 }

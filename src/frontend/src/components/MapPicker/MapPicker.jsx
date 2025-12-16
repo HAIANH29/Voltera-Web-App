@@ -96,7 +96,7 @@ export default function MapPicker({
           setMapLoaded(true);
         })
         .catch((error) => {
-          console.error("Failed to load Leaflet:", error);
+          // Leaflet loading failed
         });
     }
   }, [isOpen, mapLoaded]);
@@ -114,7 +114,7 @@ export default function MapPicker({
         setAddress(data.display_name);
       }
     } catch (error) {
-      console.error("Reverse geocoding failed:", error);
+      // Reverse geocoding failed
     }
   };
 
@@ -135,7 +135,7 @@ export default function MapPicker({
       const data = await response.json();
       setSuggestions(data.slice(0, 5));
     } catch (error) {
-      console.error("Search failed:", error);
+      // Search failed
       setSuggestions([]);
     } finally {
       setIsSearching(false);
@@ -196,7 +196,7 @@ export default function MapPicker({
         setIsGettingLocation(false);
       },
       (error) => {
-        console.error("Geolocation error:", error);
+        // Geolocation error
         alert("Cannot get current location. Please allow location access.");
         setIsGettingLocation(false);
       },

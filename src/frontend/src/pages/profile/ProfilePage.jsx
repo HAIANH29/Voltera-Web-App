@@ -36,7 +36,7 @@ export default function ProfilePage() {
         address: res.data.address || "",
       });
     } catch (err) {
-      console.error("Load profile error", err);
+      // Error handled silently
     }
   }
 
@@ -70,7 +70,6 @@ export default function ProfilePage() {
       setProfile(res.data);
       setEditing(false);
     } catch (err) {
-      console.error("Save profile error", err);
       alert("Save failed");
     } finally {
       setSaving(false);
@@ -117,7 +116,6 @@ export default function ProfilePage() {
 
       alert("Avatar updated successfully!");
     } catch (err) {
-      console.error("Avatar upload error", err);
       alert("Failed to upload avatar");
     } finally {
       setUploadingAvatar(false);
